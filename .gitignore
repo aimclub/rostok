@@ -1,0 +1,18 @@
+/primitives.py
+/px2.py
+/rules.py
+/spatial_ex.py
+/.idea/.gitignore
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/ladoshaka.iml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/vcs.xml
+/__pycache__/node.cpython-38.pyc
+/chorono_tests.py
+/data/block_grasp_log.bin
+/example.dot
+/examples_boba.py
+/graph_ex.py
+/ladoshaka - Ярлык.lnk
+/main.py
