@@ -202,9 +202,9 @@ def build_branch(sequence: list[Block]):
                 need_fix_joint = True
                 previous_body_block = block
             else:
-                block.move_to_out_frame(previous_body_block)
+                block.move_to_out_frame(previous_body_block) # NOQA gryazuka
                 if need_fix_joint:
-                    block.make_fix_joint(previous_body_block)
+                    block.make_fix_joint(previous_body_block) # NOQA
 
                 need_fix_joint = True
                 previous_body_block = block
@@ -215,17 +215,19 @@ def build_branch(sequence: list[Block]):
         elif block.block_type is BlockType.Transform:
             sequence[it - 1].apply_transform(block)
 
-        for it, block in enumerate(sequence):
+
+        for it, block in enumerate(sequence): # NOQA
             if block.block_type == BlockType.Bridge:
+
                 block_in = find_body_from_two_previous_blocks(sequence, it)
                 block_out = find_body_from_two_after_blocks(sequence, it)
 
                 if(block_in is None):
-                    raise Exception('Bridge element require', 'eggs')
+                    raise Exception('Bridge block require body block before')
                 if(block_out is None):
-                    raise Exception('spam', 'eggs')
+                    raise Exception('Bridge block require body block after')
 
-                block.connect(block_in, block_out)
+                block.connect(block_in, block_out) # NOQA
 
 
 
