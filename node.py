@@ -1,15 +1,28 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
-from enum import Enum
-from typing import AnyStr
+
+
+class BlockType:
+    def __init__(self, block_cls, *args, **kwargs):
+        self.builder = None
+        self.block_cls = block_cls
+        self.args = args
+        self.kwargs = kwargs
+
+    def create_block(self):
+        if self.builder is None:
+            raise Exception('Set builder first')
+        return self.block_cls(self.builder, *self.args, **self.kwargs)
 
 
 @dataclass
 class Node:
     label: str = "*"
-    is_constructable: bool = False
     is_terminal: bool = False
+
+    # None for non-terminal nodes
+    block_type = None
 
 
 @dataclass
@@ -275,11 +288,116 @@ def main2():
     nx.draw_networkx(G, pos=nx.planar_layout(G), node_size=500, labels={n: G.nodes[n]["Node"].label for n in G})
     for i in rule_action:
         G.apply_rule(i)
-        plt.figure()
-        nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800, labels={n: G.nodes[n]["Node"].label for n in G})
+    plt.figure()
+    nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800, labels={n: G.nodes[n]["Node"].label for n in G})
+
+    plt.show()
+
+def main3():
+    J = Node("J")
+    L = Node("L")
+    P = Node("P")
+    R = Node("R")
+    U = Node("U")
+    E = Node("E")
+    M = Node("M")
+
+    II = Node("II", is_terminal=True)
+
+    ABC_RULE1 = Node("ABC_RULE1")
+    ABC_RULE2 = Node("ABC_RULE2")
+
+    G = Grammar()
+
+    G.add_node(0, Node=P)
+    G.add_node(1, Node=U)
+    G.add_node(2, Node=U)
+    G.add_node(3, Node=U)
+    G.add_node(4, Node=U)
+
+    G.add_node(5, Node=J)
+    G.add_node(7, Node=J)
+    G.add_node(8, Node=J)
+
+    G.add_node(9, Node=L)
+    G.add_node(10, Node=L)
+    G.add_node(11, Node=L)
+
+    G.add_node(12, Node=E)
+    G.add_node(13, Node=E)
+
+    G.add_node(14, Node=J)
+    G.add_node(15, Node=L)
+    G.add_node(16, Node=E)
+
+    nx.add_path(G, [0, 1, 2, 3, 4])
+    nx.add_path(G, [5, 9, 12])
+    nx.add_path(G, [7, 10, 13])
+    nx.add_path(G, [8, 11, 14, 15, 16])
+
+    G.add_edges_from([(1, 5), (2, 7), (3, 8), (3, 4)])
+
+    # create a simple rule
+
+    Rula_Palmer = Rule()
+
+    rule_graph = nx.DiGraph()
+    rule_graph.add_node(0, Node=ABC_RULE1)
+    rule_graph.add_node(1, Node=ABC_RULE2)
+    rule_graph.add_edge(0, 1)
+
+    Rula_Palmer.id_node_connect_child = 0
+    Rula_Palmer.id_node_connect_parent = 0
+    Rula_Palmer.graph_insert = rule_graph
+
+    Rula_Palmer.replaced_node = E
+
+    for i in range(20):
+        G.get_uniq_id()
+
+
+    dfs_edges = nx.dfs_edges(G)
+    dfs_edges_list = list(dfs_edges)
+    print(dfs_edges)
+    for edge in dfs_edges_list:
+        print(f'EDGE{edge}')
+        print(f'OUT{G.out_edges(edge[1])}')
+
+
+    paths = []
+    path = []
+
+    for edge in dfs_edges_list:
+
+        if len(G.out_edges(edge[1])) == 0:
+            path.append(edge[1])
+            paths.append(path.copy())
+            path = []
+        else:
+            if len(path) == 0:
+                path.append(edge[0])
+                path.append(edge[1])
+            else:
+                path.append(edge[1])
+                
+    #for pp in paths:
+        #print(pp)
+
+    res = G.graph_partition_dfs()
+    for i in res:
+        print(i)
+
+
+    plt.figure()
+    nx.draw_networkx(G, pos=nx.planar_layout(G), node_size=500, labels={n: G.nodes[n]["Node"].label for n in G})
+
+
+
+    plt.figure()
+    nx.draw_networkx(G, pos=nx.planar_layout(G), node_size=500)
 
     plt.show()
 
 
 if __name__ == '__main__':
-    main2()
+    main3()
