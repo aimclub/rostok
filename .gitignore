@@ -2,13 +2,8 @@
 /px2.py
 /rules.py
 /spatial_ex.py
-/.idea/.gitignore
-/.idea/inspectionProfiles/profiles_settings.xml
-/.idea/ladoshaka.iml
-/.idea/misc.xml
-/.idea/modules.xml
-/.idea/vcs.xml
-/__pycache__/node.cpython-38.pyc
+/.idea/
+/__pycache__
 /chorono_tests.py
 /data/block_grasp_log.bin
 /example.dot
