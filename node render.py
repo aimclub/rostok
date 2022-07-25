@@ -51,22 +51,6 @@ class BlockBody(Block, ABC):
         self.body = None
 
 
-
-"""
-
-node (ref_frame_out)-> node_joint -> node(_ref_frame_in)
-
-Короче тема такая 
-
-Надо  сначала   зарендерить Body and Transform 
-Попутно пременять трансформы к выходам parent блоков 
-Даже жоинт хранит в себе выходной фрейм 
-Потом отдельно жоинты
-Отдельная функция для коннекта
-
-"""
-
-
 class ChronoBody(BlockBody):
     def __init__(self, builder, k):
         super().__init__(builder=builder)
@@ -239,6 +223,8 @@ bodik2 = ChronoBody(mysystem, k=0.5)
 bodik3 = ChronoBody(mysystem, k=0.5)
 bodik4 = ChronoBody(mysystem, k=0.5)
 bodik5 = ChronoBody(mysystem, k=1)
+bodik6 = ChronoBody(mysystem, k=1)
+bodik7 = ChronoBody(mysystem, k=1)
 
 cordan = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.ChQuaternionD(1, 0, 0, 0))
 transform1 = ChronoTransform(mysystem, cordan)
@@ -282,6 +268,8 @@ joint3 = ChronoRevolveJoint(mysystem)
 sequa2 = [bodik2, transform3,joint2,bodik4,transform3,joint3,bodik5]
 build_branch(sequa2)
 
+sequa3 = [bodik2, bodik6, transform2, bodik7]
+build_branch(sequa3)
 myapplication = chronoirr.ChIrrApp(mysystem, 'PyChrono example', chronoirr.dimension2du(1024, 768))
 myapplication.AddTypicalCamera(chronoirr.vector3df(0.6, 0.6, 0.6))
 myapplication.AddTypicalLights()
