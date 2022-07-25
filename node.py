@@ -90,6 +90,25 @@ class Grammar(nx.DiGraph):
         id_closest = self.closest_node_to_root(ids)
         self.replace_node(id_closest, rule)
 
+    def graph_partition_dfs(self):
+        paths = []
+        path = []
+
+        dfs_edges = nx.dfs_edges(self)
+        dfs_edges_list = list(dfs_edges)
+
+        for edge in dfs_edges_list:
+            if len(self.out_edges(edge[1])) == 0:
+                path.append(edge[1])
+                paths.append(path.copy())
+                path = []
+            else:
+                if len(path) == 0:
+                    path.append(edge[0])
+                    path.append(edge[1])
+                else:
+                    path.append(edge[1])
+        return paths
 
 def main():
     J = Node("J")
