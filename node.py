@@ -91,7 +91,11 @@ class Grammar(nx.DiGraph):
         self.add_edges_from(out_edges)
 
     def closest_node_to_root(self, list_ids):
-        root_id = list(self.nodes.keys())[0]
+        for raw_node in self.nodes.items():
+            raw_node_id = raw_node[0]
+            if self.in_degree(raw_node_id) == 0:
+                root_id = raw_node_id
+
         def sort_by_root_distance(node_id):
             return len(nx.shortest_path(self, root_id, node_id))
 
