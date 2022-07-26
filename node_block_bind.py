@@ -1,17 +1,66 @@
-import node_render
-import node
+from node import BlockWrapper, Node, Rule, Grammar
+from node_render import *
+from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
+from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
+    Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
+    Q_ROTATE_X_TO_Y, Q_ROTATE_X_TO_Z
+import networkx as nx
+import matplotlib.pyplot as plt
+import pychrono as chrono
 
-class NodeTerminal:
-    def __init__(self, block_cls, *args, **kwargs):
-        self.builder = None
-        self.block_cls = block_cls
-        self.args = args
-        self.kwargs = kwargs
+# Bodies
+link1 = BlockWrapper(ChronoBody, length=0.5)
+link2 = BlockWrapper(ChronoBody, length=0.2)
 
-    def create_block(self):
-        if self.builder is None:
-            raise Exception('Set builder first')
-        return self.block_cls(self.builder, *self.args, **self.kwargs)
+flat1 = BlockWrapper(ChronoBody, width=0.4, length=0.1)
+flat2 = BlockWrapper(ChronoBody, width=0.7, length=0.1)
+
+u1 = BlockWrapper(ChronoBody, width=0.1, length=0.1)
+
+# Transforms
+RZX = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_X)
+RZY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_Y)
+RXY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_X_TO_Y)
+
+MOVE_ZX_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
+MOVE_ZX_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, -0.3), ChQuaternionD(1, 0, 0, 0))
+
+transform_rzx = BlockWrapper(ChronoTransform, RZX)
+transform_rzy = BlockWrapper(ChronoTransform, RZY)
+transform_rxy = BlockWrapper(ChronoTransform, RXY)
+transform_mzx_plus = BlockWrapper(ChronoTransform, MOVE_ZX_PLUS)
+transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
+
+# Joints
+revolve1 = BlockWrapper(ChronoRevolveJoint)
+
+# Nodes
+ROOT = Node("ROOT")
+
+J1 = Node(label="J1", is_terminal=True, block_wrapper=revolve1)
+L1 = Node(label="L1", is_terminal=True, block_wrapper=link1)
+L2 = Node(label="L2", is_terminal=True, block_wrapper=link2)
+F1 = Node(label="F1", is_terminal=True, block_wrapper=flat1)
+F2 = Node(label="F2", is_terminal=True, block_wrapper=flat2)
+U1 = Node(label="U1", is_terminal=True, block_wrapper=u1)
+T1 = Node(label="T1", is_terminal=True, block_wrapper=transform_rzx)
+T2 = Node(label="T2", is_terminal=True, block_wrapper=transform_rzy)
+T3 = Node(label="T3", is_terminal=True, block_wrapper=transform_mzx_plus)
+T4 = Node(label="T4", is_terminal=True, block_wrapper=transform_mzx_minus)
+
+J = Node("J")
+L = Node("L")
+F = Node("F")
+M = Node("M")
+EF = Node("EF")
+EM = Node("EM")
+
+# Non terminal
+
+# Simple replace
+FlatCreate = Rule()
+rule_graph = nx.DiGraph()
+rule_graph.add_node(0, Node=F)
 FlatCreate.id_node_connect_child = 0
 FlatCreate.id_node_connect_parent = 0
 FlatCreate.graph_insert = rule_graph
@@ -113,3 +162,4 @@ mysystem = chrono.ChSystemNSC()
 
 wrapper_array = G.build_wrapper_array()
 print()
+
