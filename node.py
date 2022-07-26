@@ -1,9 +1,9 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
+from  collections import namedtuple
 
-
-class BlockType:
+class BlockWrapper:
     def __init__(self, block_cls, *args, **kwargs):
         self.builder = None
         self.block_cls = block_cls
@@ -22,7 +22,7 @@ class Node:
     is_terminal: bool = False
 
     # None for non-terminal nodes
-    block_type = None
+    block_wrapper: BlockWrapper = None
 
 
 @dataclass
@@ -42,7 +42,7 @@ class Grammar(nx.DiGraph):
         super().__init__(**attr)
         self.__uniq_id_counter = -1
         self.add_node(self.get_uniq_id(), Node=ROOT)
-
+        self.wrapper_tuple = namedtuple("WrapperTuple", ["id", "BlockWrapper"])
     def get_uniq_id(self):
         self.__uniq_id_counter += 1
         return self.__uniq_id_counter
@@ -126,6 +126,24 @@ class Grammar(nx.DiGraph):
                 else:
                     path.append(edge[1])
         return paths
+
+    def build_wrapper_array(self):
+        paths = self.graph_partition_dfs()
+        wrapper_array = []
+
+        for path in paths:
+            wrapper = []
+            for node_id in path:
+                node: Node = self.nodes[node_id]["Node"]
+                if node.is_terminal:
+                    buf = self.wrapper_tuple(node_id, node.block_wrapper)
+                    wrapper.append(buf)
+            wrapper_array.append(wrapper.copy())
+
+        return wrapper_array
+
+
+
 
 def main():
     J = Node("J")
