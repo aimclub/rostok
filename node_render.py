@@ -1,13 +1,9 @@
-import networkx
 import pychrono.core as chrono
 import pychrono.irrlicht as chronoirr
 from enum import Enum
 from abc import ABC
-from abc import abstractmethod
-from abc import abstractproperty
-from collections import namedtuple
 from typing import Optional
-from collections import namedtuple
+import random
 
 
 class BlockType(str, Enum):
@@ -52,17 +48,16 @@ class BlockBody(Block, ABC):
 
 
 class ChronoBody(BlockBody):
-    def __init__(self, builder, k):
+    def __init__(self, builder, length=1, width=0.1, random_color=True):
         super().__init__(builder=builder)
 
         # Create body
-        body = chrono.ChBody()
-        self.body = body
+        self.body = chrono.ChBody()
 
         # Create shape
         # TODO setter for shape
         box_asset = chrono.ChBoxShape()
-        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(0.1, 0.5 * k, 0.1)
+        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width, length, width)
 
         self.body.AddAsset(box_asset)
         self.builder.Add(self.body)
@@ -80,19 +75,22 @@ class ChronoBody(BlockBody):
         self.body.AddMarker(out_marker)
         self.body.AddMarker(transformed_out_marker)
 
-        input_marker.SetPos(chrono.ChVectorD(0, -0.5 * k, 0))
-        out_marker.SetPos(chrono.ChVectorD(0, 0.5 * k, 0))
+        input_marker.SetPos(chrono.ChVectorD(0, -length, 0))
+        out_marker.SetPos(chrono.ChVectorD(0, length, 0))
 
         # Calc SetPos
-
-
         transformed_out_marker.SetCoord(out_marker.GetCoord())
 
         self._ref_frame_in = input_marker
         self._ref_frame_out = out_marker
         self.transformed_frame_out = transformed_out_marker
 
-        #
+        if random_color:
+            color = chrono.ChColorAsset()
+            rgb = [random.random(), random.random(), random.random()]
+            rgb[int(random.random() * 2)] *= 0.2
+            color.SetColor(chrono.ChColor(*rgb))
+            self.body.AddAsset(color)
 
     def move_to_out_frame(self, in_block: Block):
         self.builder.Update()
@@ -105,7 +103,6 @@ class ChronoBody(BlockBody):
         coord = abs_coord_out_frame * trans
 
         self.body.SetCoord(coord)
-
 
     def make_fix_joint(self, in_block):
         fix_joint = chrono.ChLinkMateFix()
@@ -151,7 +148,6 @@ class ChronoRevolveJoint(BlockBridge):
         self.transformed_frame_out = self._ref_frame_out * in_block.transform
 
 
-
 class ChronoTransform(BlockTransform):
     def __init__(self, builder, transform: chrono.ChCoordsysD):
         super().__init__(builder=builder)
@@ -168,7 +164,7 @@ def find_body_from_two_previous_blocks(sequence: list[Block], it: int) -> Option
 
 def find_body_from_two_after_blocks(sequence: list[Block], it: int) -> Optional[Block]:
     # b->t->j->t->b Longest sequence
-    for block in sequence[it:it+2]:
+    for block in sequence[it:it + 2]:
         if block.block_type == BlockType.Body:
             return block
     return None
@@ -186,9 +182,9 @@ def build_branch(sequence: list[Block]):
                 need_fix_joint = True
                 previous_body_block = block
             else:
-                block.move_to_out_frame(previous_body_block) # NOQA gryazuka
+                block.move_to_out_frame(previous_body_block)  # NOQA gryazuka
                 if need_fix_joint:
-                    block.make_fix_joint(previous_body_block) # NOQA
+                    block.make_fix_joint(previous_body_block)  # NOQA
 
                 need_fix_joint = True
                 previous_body_block = block
@@ -199,89 +195,15 @@ def build_branch(sequence: list[Block]):
         elif block.block_type is BlockType.Transform:
             sequence[it - 1].apply_transform(block)
 
-
-        for it, block in enumerate(sequence): # NOQA
+        for it, block in enumerate(sequence):  # NOQA
             if block.block_type == BlockType.Bridge:
 
                 block_in = find_body_from_two_previous_blocks(sequence, it)
                 block_out = find_body_from_two_after_blocks(sequence, it)
 
-                if(block_in is None):
+                if block_in is None:
                     raise Exception('Bridge block require body block before')
-                if(block_out is None):
+                if block_out is None:
                     raise Exception('Bridge block require body block after')
 
-                block.connect(block_in, block_out) # NOQA
-
-
-
-
-mysystem = chrono.ChSystemNSC()
-
-bodik1 = ChronoBody(mysystem, k=1)
-bodik2 = ChronoBody(mysystem, k=0.5)
-bodik3 = ChronoBody(mysystem, k=0.5)
-bodik4 = ChronoBody(mysystem, k=0.5)
-bodik5 = ChronoBody(mysystem, k=1)
-bodik6 = ChronoBody(mysystem, k=1)
-bodik7 = ChronoBody(mysystem, k=1)
-
-cordan = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.ChQuaternionD(1, 0, 0, 0))
-transform1 = ChronoTransform(mysystem, cordan)
-
-cordan2 = chrono.ChCoordsysD(chrono.ChVectorD(0, 0.5, 0), chrono.Q_ROTATE_Z_TO_Y)
-transform2 = ChronoTransform(mysystem, cordan2)
-
-cordan3 = chrono.ChCoordsysD(chrono.ChVectorD(0, 0.0, 0), chrono.Q_ROTATE_Z_TO_Y)
-transform3 = ChronoTransform(mysystem, cordan3)
-
-col1 = chrono.ChColorAsset()
-col1.SetColor(chrono.ChColor(0.6, 0, 0))
-bodik1.body.AddAsset(col1)
-
-col1 = chrono.ChColorAsset()
-col1.SetColor(chrono.ChColor(0, 0.6, 0))
-bodik2.body.AddAsset(col1)
-
-col1 = chrono.ChColorAsset()
-col1.SetColor(chrono.ChColor(0, 0.6, 0.9))
-bodik3.body.AddAsset(col1)
-
-col1 = chrono.ChColorAsset()
-col1.SetColor(chrono.ChColor(0.9, 0.6, 0.9))
-bodik4.body.AddAsset(col1)
-
-col1 = chrono.ChColorAsset()
-col1.SetColor(chrono.ChColor(0.9, 0.0, 0.9))
-bodik5.body.AddAsset(col1)
-
-bodik1.body.SetBodyFixed(True)
-
-joint1 = ChronoRevolveJoint(mysystem)
-sequa1 = [bodik1, transform1,joint1 ,bodik2, transform2, bodik3]
-build_branch(sequa1)
-
-joint2 = ChronoRevolveJoint(mysystem)
-joint3 = ChronoRevolveJoint(mysystem)
-
-
-sequa2 = [bodik2, transform3,joint2,bodik4,transform3,joint3,bodik5]
-build_branch(sequa2)
-
-sequa3 = [bodik2, bodik6, transform2, bodik7]
-build_branch(sequa3)
-myapplication = chronoirr.ChIrrApp(mysystem, 'PyChrono example', chronoirr.dimension2du(1024, 768))
-myapplication.AddTypicalCamera(chronoirr.vector3df(0.6, 0.6, 0.6))
-myapplication.AddTypicalLights()
-myapplication.AssetBindAll()
-myapplication.AssetUpdateAll()
-myapplication.SetPlotLinkFrames(True)
-myapplication.SetTimestep(0.005)
-myapplication.SetTryRealtime(True)
-
-while myapplication.GetDevice().run():
-    mysystem.Update()
-    myapplication.BeginScene(True, True, chronoirr.SColor(255, 140, 161, 192))
-    myapplication.DrawAll()
-    myapplication.DoStep()
-    myapplication.EndScene()
+                block.connect(block_in, block_out)  # NOQA
