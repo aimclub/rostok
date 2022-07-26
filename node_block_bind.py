@@ -163,3 +163,45 @@ mysystem = chrono.ChSystemNSC()
 wrapper_array = G.build_wrapper_array()
 print()
 
+blocks = []
+uniq_blocks = {}
+for wrap in wrapper_array:
+    block_line = []
+    for it, wrapper in wrap:
+        if not (it in uniq_blocks.keys()):
+            wrapper.builder = mysystem
+            block_buf = wrapper.create_block()
+            block_line.append(block_buf)
+            uniq_blocks[it] = block_buf
+        else:
+            block_buf = uniq_blocks[it]
+            block_line.append(block_buf)
+    blocks.append(block_line)
+
+for line in blocks:
+    build_branch(line)
+blocks[0][0].body.SetBodyFixed(True)
+
+myapplication = chronoirr.ChIrrApp(mysystem, 'PyChrono example', chronoirr.dimension2du(1024, 768))
+myapplication.AddTypicalCamera(chronoirr.vector3df(0.6, 0.6, 0.6))
+myapplication.AddTypicalLights()
+myapplication.AssetBindAll()
+myapplication.AssetUpdateAll()
+myapplication.SetPlotLinkFrames(True)
+myapplication.SetTimestep(0.005)
+myapplication.SetTryRealtime(True)
+
+plt.figure()
+nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
+                 labels={n: G.nodes[n]["Node"].label for n in G})
+
+plt.figure()
+nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
+plt.show()
+
+while myapplication.GetDevice().run():
+    mysystem.Update()
+    myapplication.BeginScene(True, True, chronoirr.SColor(255, 140, 161, 192))
+    myapplication.DrawAll()
+    myapplication.DoStep()
+    myapplication.EndScene()
