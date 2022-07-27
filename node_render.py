@@ -11,6 +11,23 @@ class BlockType(str, Enum):
     Body = "Body"
     Bridge = "Bridge"
 
+ 
+class SpringTorque(chrono.TorqueFunctor):
+    def __init__(self, spring_coef, damping_coef, rest_angle):
+        super(SpringTorque, self).__init__()
+        self.spring_coef = spring_coef
+        self.damping_coef = damping_coef
+        self.rest_angle = rest_angle
+
+    def __call__(self,  #
+                 time,  # current time
+                 angle,  # relative angle of rotation
+                 vel,  # relative angular speed
+                 link):  # back-pointer to associated link
+
+        torque = -self.spring_coef * (angle - self.rest_angle) - self.damping_coef * vel
+        return torque
+
 
 class Block(ABC):
     def __init__(self, builder):
@@ -48,11 +65,12 @@ class BlockBody(Block, ABC):
 
 
 class ChronoBody(BlockBody):
-    def __init__(self, builder, length=1, width=0.1, random_color=True):
+    def __init__(self, builder, length=1, width=0.1, random_color=True, mass=1):
         super().__init__(builder=builder)
 
         # Create body
         self.body = chrono.ChBody()
+        self.body.SetMass(mass)
 
         # Create shape
         # TODO setter for shape
@@ -130,22 +148,39 @@ class ChronoRevolveJoint(BlockBridge):
         Y = chrono.Q_ROTATE_Z_TO_Y
         X = chrono.Q_ROTATE_Z_TO_X
 
-    def __init__(self, builder, axis=Axis.Z):
+    def __init__(self, builder, axis=Axis.Z,
+                 stiffness=0, damping=0, equilibrium_position=0):
         super().__init__(builder=builder)
         self.joint = None
         self.axis = axis
         self._ref_frame_out = chrono.ChCoordsysD()
+        # Spring Damper params
+        self.joint_spring = None
+        self.torque_functor = None
+        self.stiffness = stiffness
+        self.damping = damping
+        self.equilibrium_position = equilibrium_position
 
     def connect(self, in_block: ChronoBody, out_block: ChronoBody):
         # If we have two not initialize joints engine crash
-        self.joint = chrono.ChLinkMotorRotationSpeed()
-        self.builder.Add(self.joint)
 
+        self.joint = chrono.ChLinkRevolute()
         self.joint.Initialize(in_block.body, out_block.body, True,
                               in_block.transformed_frame_out, out_block.ref_frame_in)
+        self.builder.AddLink(self.joint)
+
+        if(self.stiffness != 0) or (self.stiffness != 0):
+            self.add_spring_damper(in_block, out_block)
 
     def apply_transform(self, in_block):
         self.transformed_frame_out = self._ref_frame_out * in_block.transform
+
+    def add_spring_damper(self, in_block: ChronoBody, out_block: ChronoBody):
+        self.torque_functor = SpringTorque(self.stiffness, self.damping, self.equilibrium_position)
+        self.joint_spring = chrono.ChLinkRotSpringCB()
+        self.joint_spring.Initialize(in_block.transformed_frame_out, out_block.ref_frame_in)
+        self.joint_spring.RegisterTorqueFunctor(self.torque_functor)
+        self.builder.AddLink(self.joint_spring)
 
 
 class ChronoTransform(BlockTransform):
