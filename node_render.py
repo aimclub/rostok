@@ -195,15 +195,15 @@ def build_branch(sequence: list[Block]):
         elif block.block_type is BlockType.Transform:
             sequence[it - 1].apply_transform(block)
 
-        for it, block in enumerate(sequence):  # NOQA
-            if block.block_type == BlockType.Bridge:
+    for it, block in enumerate(sequence):  # NOQA
+        if block.block_type == BlockType.Bridge:
 
-                block_in = find_body_from_two_previous_blocks(sequence, it)
-                block_out = find_body_from_two_after_blocks(sequence, it)
+            block_in = find_body_from_two_previous_blocks(sequence, it)
+            block_out = find_body_from_two_after_blocks(sequence, it)
 
-                if block_in is None:
-                    raise Exception('Bridge block require body block before')
-                if block_out is None:
-                    raise Exception('Bridge block require body block after')
+            if block_in is None:
+                raise Exception('Bridge block require body block before')
+            if block_out is None:
+                raise Exception('Bridge block require body block after')
 
-                block.connect(block_in, block_out)  # NOQA
+            block.connect(block_in, block_out)  # NOQA
