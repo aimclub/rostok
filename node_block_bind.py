@@ -8,6 +8,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import pychrono as chrono
 
+# Define block types
+
 # Bodies
 link1 = BlockWrapper(ChronoBody, length=0.5)
 link2 = BlockWrapper(ChronoBody, length=0.2)
@@ -34,6 +36,7 @@ transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
 # Joints
 revolve1 = BlockWrapper(ChronoRevolveJoint)
 
+# Defines rules
 # Nodes
 ROOT = Node("ROOT")
 
