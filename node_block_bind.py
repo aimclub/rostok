@@ -149,38 +149,41 @@ TerminalJoint.id_node_connect_parent = 0
 TerminalJoint.graph_insert = rule_graph
 TerminalJoint.replaced_node = J
 
+
 G = Grammar()
 
 rule_action = [FlatCreate, Mount, Mount, FingerUpper, FingerUpper,
                TerminalFlat, TerminalL1, TerminalL1, TerminalTransformR, TerminalTransformL, TerminalEndLimb,
                TerminalEndLimb,
                TerminalJoint, TerminalJoint]
+
 for i in rule_action:
     G.apply_rule(i)
 
 mysystem = chrono.ChSystemNSC()
-
 wrapper_array = G.build_wrapper_array()
-print()
+
 
 blocks = []
 uniq_blocks = {}
 for wrap in wrapper_array:
     block_line = []
-    for it, wrapper in wrap:
-        if not (it in uniq_blocks.keys()):
+    for id, wrapper in wrap:
+        if not (id in uniq_blocks.keys()):
             wrapper.builder = mysystem
             block_buf = wrapper.create_block()
             block_line.append(block_buf)
-            uniq_blocks[it] = block_buf
+            uniq_blocks[id] = block_buf
         else:
-            block_buf = uniq_blocks[it]
+            block_buf = uniq_blocks[id]
             block_line.append(block_buf)
     blocks.append(block_line)
 
 for line in blocks:
     build_branch(line)
 blocks[0][0].body.SetBodyFixed(True)
+
+# Create simulation loop
 
 myapplication = chronoirr.ChIrrApp(mysystem, 'PyChrono example', chronoirr.dimension2du(1024, 768))
 myapplication.AddTypicalCamera(chronoirr.vector3df(0.6, 0.6, 0.6))
