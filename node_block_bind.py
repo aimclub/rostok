@@ -200,7 +200,6 @@ myapplication.SetTryRealtime(True)
 plt.figure()
 nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
                  labels={n: G.nodes[n]["Node"].label for n in G})
-
 plt.figure()
 nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
 plt.show()
