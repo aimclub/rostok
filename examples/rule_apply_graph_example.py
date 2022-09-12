@@ -1,3 +1,5 @@
+
+from context import node
 from node import *
 
 J = Node("J")

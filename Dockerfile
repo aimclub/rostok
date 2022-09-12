@@ -24,7 +24,7 @@ ENV PATH=$CONDA_DIR/bin:$PATH
 RUN conda config --add channels https://conda.anaconda.org/conda-forge
 RUN conda config --add channels https://conda.anaconda.org/intel 
 
-RUN conda install -c conda-forge numpy irrlicht
+RUN conda install -c conda-forge numpy irrlicht scipy
 RUN conda install -c projectchrono pychrono=7.0.0
 
 ENV DISPLAY=host.docker.internal:0.0
