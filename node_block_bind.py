@@ -188,14 +188,13 @@ blocks[0][0].body.SetBodyFixed(True)
 
 # Create simulation loop
 
-myapplication = chronoirr.ChIrrApp(mysystem, 'PyChrono example', chronoirr.dimension2du(1024, 768))
-myapplication.AddTypicalCamera(chronoirr.vector3df(0.6, 0.6, 0.6))
-myapplication.AddTypicalLights()
-myapplication.AssetBindAll()
-myapplication.AssetUpdateAll()
-myapplication.SetPlotLinkFrames(True)
-myapplication.SetTimestep(0.005)
-myapplication.SetTryRealtime(True)
+vis = chronoirr.ChVisualSystemIrrlicht()
+vis.AttachSystem(mysystem)
+vis.SetWindowSize(1024,768)
+vis.SetWindowTitle('Custom contact demo')
+vis.Initialize()
+vis.AddCamera(chrono.ChVectorD(8, 8, -6))
+vis.AddTypicalLights()
 
 plt.figure()
 nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
@@ -204,9 +203,10 @@ plt.figure()
 nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
 plt.show()
 
-while myapplication.GetDevice().run():
+while vis.Run():
     mysystem.Update()
-    myapplication.BeginScene(True, True, chronoirr.SColor(255, 140, 161, 192))
-    myapplication.DrawAll()
-    myapplication.DoStep()
-    myapplication.EndScene()
+    mysystem.DoStepDynamics(5e-3)
+    vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
+    vis.Render()
+    
+    vis.EndScene()
