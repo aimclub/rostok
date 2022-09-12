@@ -1,5 +1,6 @@
+ 
+from context import node
 from node_render import *
-
 mysystem = chrono.ChSystemNSC()
 
 body_1 = ChronoBody(mysystem, length=1)
@@ -35,18 +36,23 @@ build_branch(seq2)
 build_branch(seq3)
 
 
-myapplication = chronoirr.ChIrrApp(mysystem, 'PyChrono example', chronoirr.dimension2du(1024, 768))
-myapplication.AddTypicalCamera(chronoirr.vector3df(0.6, 0.6, 0.6))
-myapplication.AddTypicalLights()
-myapplication.AssetBindAll()
-myapplication.AssetUpdateAll()
-myapplication.SetPlotLinkFrames(True)
-myapplication.SetTimestep(0.005)
-myapplication.SetTryRealtime(True)
+vis = chronoirr.ChVisualSystemIrrlicht()
+vis.AttachSystem(mysystem)
+vis.SetWindowSize(1024,768)
+vis.SetWindowTitle('Custom contact demo')
+vis.Initialize()
+ 
+ 
+vis.AddCamera(chrono.ChVectorD(8, 8, -6))
+vis.AddTypicalLights()
 
-while myapplication.GetDevice().run():
+ 
+ 
+
+while vis.Run():
     mysystem.Update()
-    myapplication.BeginScene(True, True, chronoirr.SColor(255, 140, 161, 192))
-    myapplication.DrawAll()
-    myapplication.DoStep()
-    myapplication.EndScene()
+    mysystem.DoStepDynamics(5e-3)
+    vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
+    vis.Render()
+    
+    vis.EndScene()

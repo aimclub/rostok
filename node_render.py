@@ -77,7 +77,7 @@ class ChronoBody(BlockBody):
         box_asset = chrono.ChBoxShape()
         box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width, length, width)
 
-        self.body.AddAsset(box_asset)
+        self.body.AddVisualShape(box_asset)
         self.builder.Add(self.body)
 
         # Create markers aka RefFrames
@@ -104,11 +104,9 @@ class ChronoBody(BlockBody):
         self.transformed_frame_out = transformed_out_marker
 
         if random_color:
-            color = chrono.ChColorAsset()
             rgb = [random.random(), random.random(), random.random()]
             rgb[int(random.random() * 2)] *= 0.2
-            color.SetColor(chrono.ChColor(*rgb))
-            self.body.AddAsset(color)
+            self.body.GetVisualShape(0).SetColor(chrono.ChColor(*rgb))
 
     def move_to_out_frame(self, in_block: Block):
         self.builder.Update()

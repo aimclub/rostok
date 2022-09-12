@@ -8,7 +8,7 @@ RUN apt-get install -y ffmpeg libsm6 libxext6
 
 # Install base utilities
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y wget git && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -24,8 +24,9 @@ ENV PATH=$CONDA_DIR/bin:$PATH
 RUN conda config --add channels https://conda.anaconda.org/conda-forge
 RUN conda config --add channels https://conda.anaconda.org/intel 
 
-RUN conda install -c conda-forge numpy irrlicht
+RUN conda install -c conda-forge numpy irrlicht scipy
 RUN conda install -c projectchrono pychrono=7.0.0
+RUN conda install -c anaconda networkx
 
 RUN conda install -c conda-forge networkx matplotlib
 ENV DISPLAY=host.docker.internal:0.0
