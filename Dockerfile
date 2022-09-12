@@ -8,7 +8,7 @@ RUN apt-get install -y ffmpeg libsm6 libxext6
 
 # Install base utilities
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y wget git && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
