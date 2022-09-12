@@ -26,5 +26,6 @@ RUN conda config --add channels https://conda.anaconda.org/intel
 
 RUN conda install -c conda-forge numpy irrlicht scipy
 RUN conda install -c projectchrono pychrono=7.0.0
+RUN conda install -c anaconda networkx
 
 ENV DISPLAY=host.docker.internal:0.0
