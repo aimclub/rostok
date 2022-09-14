@@ -7,6 +7,8 @@ from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
 import networkx as nx
 import matplotlib.pyplot as plt
 import pychrono as chrono
+import control as ctrl
+import numpy as np
 
 # Define block types
 
@@ -33,8 +35,9 @@ transform_rxy = BlockWrapper(ChronoTransform, RXY)
 transform_mzx_plus = BlockWrapper(ChronoTransform, MOVE_ZX_PLUS)
 transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
 
+type_of_input = ChronoRevolveJoint.InputType.Velocity
 # Joints
-revolve1 = BlockWrapper(ChronoRevolveJoint)
+revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
 
 # Defines rules
 # Nodes
@@ -187,6 +190,11 @@ for line in blocks:
 blocks[0][0].body.SetBodyFixed(True)
 
 # Create simulation loop
+des_points_1 = 1*np.array([0, -0.3, 0.3, -0.2, 0.4])
+des_points_2 = -1*np.array(des_points_1)
+
+track_ctrl_j_1 = ctrl.TrackingControl(blocks[0][2], des_points_1, (0.5,1.5))
+track_ctrl_j_2 = ctrl.TrackingControl(blocks[1][2], des_points_2, (0.5,1.5))
 
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(mysystem)

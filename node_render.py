@@ -140,17 +140,29 @@ class ChronoBody(BlockBody):
 
 
 class ChronoRevolveJoint(BlockBridge):
+    # Variants of joint control
+    class InputType(str,Enum):
+        Torque = {"Name":"Torque","TypeMotor":chrono.ChLinkMotorRotationTorque} 
+        Velocity = {"Name":"Speed" ,"TypeMotor":chrono.ChLinkMotorRotationSpeed}
+        Position = {"Name":"Angle" ,"TypeMotor":chrono.ChLinkMotorRotationAngle}
+        Uncontrol = {"Name":"Uncontrol" ,"TypeMotor":chrono.ChLinkRevolute}
+
+        def __init__(self,vals):
+            self.num = vals["Name"]
+            self.motor = vals["TypeMotor"]
+
     class Axis(str, Enum):
         # Z is default rotation axis
         Z = chrono.ChQuaternionD(1, 0, 0, 0)
         Y = chrono.Q_ROTATE_Z_TO_Y
         X = chrono.Q_ROTATE_Z_TO_X
 
-    def __init__(self, builder, axis=Axis.Z,
+    def __init__(self, builder, axis=Axis.Z, type_of_input = InputType.Position,
                  stiffness=0, damping=0, equilibrium_position=0):
         super().__init__(builder=builder)
         self.joint = None
         self.axis = axis
+        self.input_type = type_of_input
         self._ref_frame_out = chrono.ChCoordsysD()
         # Spring Damper params
         self.joint_spring = None
@@ -161,8 +173,7 @@ class ChronoRevolveJoint(BlockBridge):
 
     def connect(self, in_block: ChronoBody, out_block: ChronoBody):
         # If we have two not initialize joints engine crash
-
-        self.joint = chrono.ChLinkRevolute()
+        self.joint = self.input_type.motor()
         self.joint.Initialize(in_block.body, out_block.body, True,
                               in_block.transformed_frame_out, out_block.ref_frame_in)
         self.builder.AddLink(self.joint)
