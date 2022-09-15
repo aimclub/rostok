@@ -35,7 +35,7 @@ transform_rxy = BlockWrapper(ChronoTransform, RXY)
 transform_mzx_plus = BlockWrapper(ChronoTransform, MOVE_ZX_PLUS)
 transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
 
-type_of_input = ChronoRevolveJoint.InputType.Velocity
+type_of_input = ChronoRevolveJoint.InputType.Torque
 # Joints
 revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
 
@@ -193,8 +193,13 @@ blocks[0][0].body.SetBodyFixed(True)
 des_points_1 = 1*np.array([0, -0.3, 0.3, -0.2, 0.4])
 des_points_2 = -1*np.array(des_points_1)
 
-track_ctrl_j_1 = ctrl.TrackingControl(blocks[0][2], des_points_1, (0.5,1.5))
-track_ctrl_j_2 = ctrl.TrackingControl(blocks[1][2], des_points_2, (0.5,1.5))
+#track_ctrl_j_1 =  ctrl.TrackingControl(blocks[0][2], des_points_1, (0.5,1.5))
+track_ctrl_j_2 = ctrl.TrackingControl(blocks[1][2], des_points_1, (0.5,5))
+
+#pid = ctrl.ChPID(blocks[0][2].joint,80.,10.,1.)
+pid_track = ctrl.ChControllerPID(blocks[0][2], des_points_1 ,50.,5.,1.)
+
+#blocks[0][2].joint.SetTorqueFunction(pid)
 
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(mysystem)
@@ -203,14 +208,14 @@ vis.SetWindowTitle('Custom contact demo')
 vis.Initialize()
 vis.AddCamera(chrono.ChVectorD(8, 8, -6))
 vis.AddTypicalLights()
-
+'''
 plt.figure()
 nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
                  labels={n: G.nodes[n]["Node"].label for n in G})
 plt.figure()
 nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
 plt.show()
-
+'''
 while vis.Run():
     mysystem.Update()
     mysystem.DoStepDynamics(5e-3)
