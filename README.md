@@ -1,4 +1,4 @@
-# graph_assembler
+# Graph assembler
 
 # Установка
 
