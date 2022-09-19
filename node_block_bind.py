@@ -191,15 +191,17 @@ blocks[0][0].body.SetBodyFixed(True)
 
 # Create simulation loop
 des_points_1 = 1*np.array([0, -0.3, 0.3, -0.2, 0.4])
-des_points_2 = -1*np.array(des_points_1)
+des_points_2 = np.array([0.5, 0.6, 0.6, 0.7, 0.8])
+time_pos = np.array([[0.5, 1, 1.25, 1.5, 2],
+                    [0, -0.3, 0.3, -0.2, 0.4]])
 
 #track_ctrl_j_1 =  ctrl.TrackingControl(blocks[0][2], des_points_1, (0.5,1.5))
 track_ctrl_j_2 = ctrl.TrackingControl(blocks[1][2], des_points_1, (0.5,5))
 
-#pid = ctrl.ChPID(blocks[0][2].joint,80.,10.,1.)
-pid_track = ctrl.ChControllerPID(blocks[0][2], des_points_1 ,50.,5.,1.)
+pid_track = ctrl.ChControllerPID(blocks[0][2] ,50.,5.,1.)
+#pid_track.set_des_trajectory_interval(des_points_1,(0.5,2))
+pid_track.set_des_trajectory(time_pos)
 
-#blocks[0][2].joint.SetTorqueFunction(pid)
 
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(mysystem)
@@ -208,6 +210,7 @@ vis.SetWindowTitle('Custom contact demo')
 vis.Initialize()
 vis.AddCamera(chrono.ChVectorD(8, 8, -6))
 vis.AddTypicalLights()
+
 '''
 plt.figure()
 nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
@@ -216,10 +219,14 @@ plt.figure()
 nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
 plt.show()
 '''
+
 while vis.Run():
     mysystem.Update()
     mysystem.DoStepDynamics(5e-3)
     vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
     vis.Render()
+
+    if mysystem.GetChTime() > 2:
+        pid_track.set_des_trajectory_interval(des_points_2,(2,4))
     
     vis.EndScene()
