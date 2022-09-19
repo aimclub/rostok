@@ -12,15 +12,22 @@ class BlockType(str, Enum):
     Bridge = "Bridge"
 
 class SpringTorque(chrono.TorqueFunctor):
-    def __init__(self):
+    def __init__(self, spring_coef, damping_coef, rest_angle):
         super(SpringTorque, self).__init__()
+        self.spring_coef = spring_coef
+        self.damping_coef = damping_coef
+        self.rest_angle = rest_angle
 
     def evaluate(self,  #
                  time,  # current time
                  angle,  # relative angle of rotation
                  vel,  # relative angular speed
                  link):  # back-pointer to associated link
-        torque = -self.spring_coef * (angle - self.rest_angle) - self.damping_coef * vel
+        torque = 0
+        if self.spring_coef > 10**-3:
+            torque = -self.spring_coef * (angle - self.rest_angle) - self.damping_coef * vel
+        else:
+            torque = - self.damping_coef * vel
         return torque
 
 class Block(ABC):
@@ -170,7 +177,7 @@ class ChronoRevolveJoint(BlockBridge):
         self.joint = self.input_type.motor()
         self.joint.Initialize(in_block.body, out_block.body, True,
                               in_block.transformed_frame_out, out_block.ref_frame_in)
-        self.builder.Add(self.joint)
+        self.builder.AddLink(self.joint)
 
         if(self.stiffness != 0) or (self.damping != 0):
             self.add_spring_damper(in_block, out_block)
@@ -179,14 +186,14 @@ class ChronoRevolveJoint(BlockBridge):
         self.transformed_frame_out = self._ref_frame_out * in_block.transform
 
     def add_spring_damper(self, in_block: ChronoBody, out_block: ChronoBody):
-        #self.torque_functor = SpringTorque(self.stiffness, self.damping, self.equilibrium_position)
         self.joint_spring = chrono.ChLinkRSDA()
         self.joint_spring.Initialize(in_block.body, out_block.body, False,
                                      in_block.transformed_frame_out.GetAbsCoord(),out_block.ref_frame_in.GetAbsCoord())
+        #self.joint_spring.SetDampingCoefficient(self.damping)
+        #self.joint_spring.SetSpringCoefficient(self.stiffness)
+        #self.joint_spring.SetRestAngle(self.equilibrium_position)
+        self.torque_functor = SpringTorque(self.stiffness, self.damping, self.equilibrium_position)
         self.joint_spring.RegisterTorqueFunctor(self.torque_functor)
-        self.joint_spring.SetDampingCoefficient(self.damping)
-        self.joint_spring.SetSpringCoefficient(self.stiffness)
-        self.joint_spring.SetRestAngle(self.equilibrium_position)
         self.builder.Add(self.joint_spring)
 
 

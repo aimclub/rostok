@@ -37,7 +37,7 @@ transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
 
 type_of_input = ChronoRevolveJoint.InputType.Torque
 # Joints
-revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
+revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input, stiffness = 0, damping = 10)
 
 # Defines rules
 # Nodes
@@ -167,6 +167,7 @@ for i in rule_action:
     G.apply_rule(i)
 
 mysystem = chrono.ChSystemNSC()
+mysystem.Set_G_acc(chrono.ChVectorD(-9.8,0,0))
 wrapper_array = G.build_wrapper_array()
 
 
@@ -191,12 +192,12 @@ blocks[0][0].body.SetBodyFixed(True)
 
 # Create simulation loop
 des_points_1 = 1*np.array([0, -0.3, 0.3, -0.2, 0.4])
-des_points_2 = np.array([0.5, 0.6, 0.6, 0.7, 0.8])
+des_points_2 = np.array([-0.5, -0.6, -0.6, -0.7, -0.8])
 time_pos = np.array([[0.5, 1, 1.25, 1.5, 2],
                     [0, -0.3, 0.3, -0.2, 0.4]])
 
 #track_ctrl_j_1 =  ctrl.TrackingControl(blocks[0][2], des_points_1, (0.5,1.5))
-track_ctrl_j_2 = ctrl.TrackingControl(blocks[1][2], des_points_1, (0.5,5))
+#track_ctrl_j_2 = ctrl.TrackingControl(blocks[1][2], des_points_1, (0.5,5))
 
 pid_track = ctrl.ChControllerPID(blocks[0][2] ,50.,5.,1.)
 #pid_track.set_des_trajectory_interval(des_points_1,(0.5,2))
@@ -226,7 +227,7 @@ while vis.Run():
     vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
     vis.Render()
 
-    if mysystem.GetChTime() > 2:
-        pid_track.set_des_trajectory_interval(des_points_2,(2,4))
+    if mysystem.GetChTime() > 6:
+        pid_track.set_des_trajectory_interval(des_points_2,(6,10))
     
     vis.EndScene()
