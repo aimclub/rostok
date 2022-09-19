@@ -1,15 +1,9 @@
-# Graph assembler
+# graph_assembler
 
 # Установка
-
-* Установить Anaconda3
-* Создать окружение для работы с помощью команды **conda env create -f environment.yml**
-* Установить (Pychrono вариант 1)
-  * Скачать [архив](https://anaconda.org/projectchrono/pychrono/7.0.0/download/win-64/pychrono-7.0.0-py39_2112.tar.bz2) и поместить в папку с репозиторием
-  * Активировать окружение lic_ai **conda activate lic_ai**
-  * Установить Pychono из архива **conda install pychrono-7.0.0-py39_2112.tar.bz2**
-* Установить (Pychrono вариант 2)
-  * conda install -c projectchrono pychrono=7.0.0=py39_2112
+  
+  * Установить PyChrono по инструкции https://api.projectchrono.org/development/pychrono_installation.html
+  * Установить пакеты **pip install -r requirements.txt**
   
 # Прокидываем дисплей через Docker
 
