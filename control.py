@@ -38,19 +38,20 @@ def points_2_ChFunction(des_points, time_interval: tuple):
 
     return out_func
 
-# Set user's function trajectory 
-class ChUserFunction(chrono.ChFunction):
-    def __init__(self, function):
+# Create custom function trajectory 
+class ChCustomFunction(chrono.ChFunction):
+    def __init__(self, function, *args, **kwargs):
         super().__init__()
-        self.traj_function = function
+        self.function = function
+        self.args = args
+        self.kwargs = kwargs
         
     def Clone(self):
         return deepcopy(self)
     
     def Get_y(self, x):
-        y = self.traj_function(x)
+        y = self.function(x, *self.args, **self.kwargs)
         return y
-        
 
 # Subclass ChFunction for set movement's trajectory
 class ChSpline(chrono.ChFunction):
@@ -115,7 +116,7 @@ class Control(ABC):
         self.type_variants[ChronoRevolveJoint.InputType.Torque] = lambda x: self.get_joint().SetTorqueFunction(x)
         self.type_variants[ChronoRevolveJoint.InputType.Velocity] = lambda x: self.get_joint().SetSpeedFunction(x)
         self.type_variants[ChronoRevolveJoint.InputType.Position] = lambda x: self.get_joint().SetAngleFunction(x)
-        self.type_variants[ChronoRevolveJoint.InputType.Uncontrol] = print("Uncontrollable joint")
+        self.type_variants[ChronoRevolveJoint.InputType.Uncontrol] = None
 
     def get_joint(self):
         return self.__joint.joint
@@ -152,11 +153,16 @@ class ChControllerPID(Control):
         self.PID_ctrl = ChPID(self.get_joint(),coeff_p, coeff_d, coeff_i)
 
     def set_des_trajectory_interval(self, des_pos : np.array, time_interval: tuple):
-        self.traj = points_2_ChFunction(des_pos,time_interval)
-        self.PID_ctrl.set_des_point(self.traj)
+        self.trajectory = points_2_ChFunction(des_pos,time_interval)
+        self.PID_ctrl.set_des_point(self.trajectory)
         self.set_input(self.PID_ctrl)
 
     def set_des_trajectory(self, des_arr_time_to_pos: np.array):
-        self.traj = time_points_2_ChFunction(des_arr_time_to_pos)
-        self.PID_ctrl.set_des_point(self.traj)
+        self.trajectory = time_points_2_ChFunction(des_arr_time_to_pos)
+        self.PID_ctrl.set_des_point(self.trajectory)
+        self.set_input(self.PID_ctrl)
+        
+    def set_function_trajectory(self, function, *args, **kwargs):
+        self.trajectory = ChCustomFunction(function, *args, **kwargs)
+        self.PID_ctrl.set_des_point(self.trajectory)
         self.set_input(self.PID_ctrl)
