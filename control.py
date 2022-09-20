@@ -1,12 +1,9 @@
 from copy import deepcopy
-from logging import exception
 import pychrono as chrono
 import scipy.interpolate as interpolate
 import numpy as np
 from abc import ABC
-import enum as Enum
 from node_render import *
-#from multipledispatch import dispatch
 
 from node_render import ChronoRevolveJoint
 
@@ -19,8 +16,8 @@ def get_controllable_joints(blocks : list[Block]):
     #control_joint = filter(lambda x: isinstance(x,ChronoRevolveJoint), blocks)
     return control_joints
 
-# Trasfrom 2-D array [time, points] to ChSpline subclass ChFunction
-def time_points_2_ChFunction(arr_time_point):
+# Transform 2-D array [time, points] to ChSpline subclass ChFunction
+def time_points_2_ch_function(arr_time_point):
     arr_time_point = arr_time_point.T
     spline_coefficients = interpolate.splrep(arr_time_point[:,0],arr_time_point[:,1])
     time_interval = (arr_time_point[0,0],arr_time_point[-1,0])
@@ -29,11 +26,11 @@ def time_points_2_ChFunction(arr_time_point):
     return out_func
 
 # Transform 1-D array on the time interval to ChSpline subclass ChFunction
-def points_2_ChFunction(des_points, time_interval: tuple):
+def points_2_ch_function(des_points, time_interval: tuple):
     num_points  = np.size(des_points)
-    traj_time = np.linspace(time_interval[0],time_interval[1],num_points)
+    trajectory_time = np.linspace(time_interval[0],time_interval[1],num_points)
 
-    spline_coefficients = interpolate.splrep(traj_time,des_points)
+    spline_coefficients = interpolate.splrep(trajectory_time,des_points)
     out_func = ChSpline(spline_coefficients,time_interval)
 
     return out_func
@@ -73,11 +70,11 @@ class ChSpline(chrono.ChFunction):
 
 # Subclass ChFunction. PID-function calculate inputs for current time
 class ChPID(chrono.ChFunction_SetpointCallback):
-    def __init__(self, joint, coeff_p, coeff_d, coeff_i = 0.):
+    def __init__(self, joint, proportional_coefficient, differential_coefficient, integral_coefficients = 0.):
         super().__init__()
-        self.K_P = coeff_p
-        self.K_D = coeff_d
-        self.K_I = coeff_i
+        self.K_P = proportional_coefficient
+        self.K_D = differential_coefficient
+        self.K_I = integral_coefficients
         self.err_i = 0
         self.joint = joint
         self.prev_time = 0.
@@ -95,7 +92,7 @@ class ChPID(chrono.ChFunction_SetpointCallback):
 
     def SetpointCallback(self, x):
         time = x
-        if (self.prev_time < time):
+        if self.prev_time < time:
             mes_pos = self.joint.GetMotorRot()
             err =  self.des_pos.Get_y(time) - mes_pos
             
@@ -112,11 +109,10 @@ class ChPID(chrono.ChFunction_SetpointCallback):
 class Control(ABC):
     def __init__(self,joint_block):
         self.__joint = joint_block
-        self.type_variants = {}
-        self.type_variants[ChronoRevolveJoint.InputType.Torque] = lambda x: self.get_joint().SetTorqueFunction(x)
-        self.type_variants[ChronoRevolveJoint.InputType.Velocity] = lambda x: self.get_joint().SetSpeedFunction(x)
-        self.type_variants[ChronoRevolveJoint.InputType.Position] = lambda x: self.get_joint().SetAngleFunction(x)
-        self.type_variants[ChronoRevolveJoint.InputType.Uncontrol] = None
+        self.type_variants = {ChronoRevolveJoint.InputType.Torque: lambda x: self.get_joint().SetTorqueFunction(x),
+                              ChronoRevolveJoint.InputType.Velocity: lambda x: self.get_joint().SetSpeedFunction(x),
+                              ChronoRevolveJoint.InputType.Position: lambda x: self.get_joint().SetAngleFunction(x),
+                              ChronoRevolveJoint.InputType.Uncontrol: None}
 
     def get_joint(self):
         return self.__joint.joint
@@ -128,8 +124,8 @@ class Control(ABC):
     def set_input(self, inputs):
         try: 
             self.type_variants[self.get_type_input()](inputs)
-        except Exception:
-            print("Uncontrollable joint")
+        except TypeError:
+           raise Exception(f"{self.get_joint()} is uncontrollable joint")
 
 # Class ramp input on joint
 class RampControl(Control):
@@ -140,25 +136,39 @@ class RampControl(Control):
 
 # Class tracking the trajectory at the position input
 class TrackingControl(Control):
-    def __init__(self,in_joint_block,des_points, time_interval):
+    def __init__(self,in_joint_block):
         Control.__init__(self,in_joint_block)
+        self.time_interval = None
+        self.chr_function = None
+        
+    def set_des_positions_interval(self, des_positions : np.array, time_interval: tuple):
         self.time_interval = time_interval
-        self.chr_function = points_2_ChFunction(des_points,self.time_interval)
+        self.chr_function = points_2_ch_function(des_positions, self.time_interval)
         self.set_input(self.chr_function)
+        
+    def set_des_positions(self, des_arr_time_to_pos : np.array):
+        self.chr_function = time_points_2_ch_function(des_arr_time_to_pos)
+        self.set_input(self.chr_function)
+        
+    def set_function_trajectory(self, function, *args, **kwargs):
+        self.chr_function = ChCustomFunction(function, *args, **kwargs)
+        self.set_input(self.chr_function)
+
 
 # Class of PID tracking controller
 class ChControllerPID(Control):
-    def __init__(self, joint_block, coeff_p, coeff_d, coeff_i = 0.):
+    def __init__(self, joint_block, proportional_coefficient, differential_coefficient, integral_coefficients = 0.):
         Control.__init__(self,joint_block)
-        self.PID_ctrl = ChPID(self.get_joint(),coeff_p, coeff_d, coeff_i)
+        self.trajectory = None
+        self.PID_ctrl = ChPID(self.get_joint(), proportional_coefficient, differential_coefficient, integral_coefficients)
 
-    def set_des_trajectory_interval(self, des_pos : np.array, time_interval: tuple):
-        self.trajectory = points_2_ChFunction(des_pos,time_interval)
+    def set_des_positions_interval(self, des_pos : np.array, time_interval: tuple):
+        self.trajectory = points_2_ch_function(des_pos, time_interval)
         self.PID_ctrl.set_des_point(self.trajectory)
         self.set_input(self.PID_ctrl)
 
-    def set_des_trajectory(self, des_arr_time_to_pos: np.array):
-        self.trajectory = time_points_2_ChFunction(des_arr_time_to_pos)
+    def set_des_time_positions(self, des_arr_time_to_pos: np.array):
+        self.trajectory = time_points_2_ch_function(des_arr_time_to_pos)
         self.PID_ctrl.set_des_point(self.trajectory)
         self.set_input(self.PID_ctrl)
         

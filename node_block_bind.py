@@ -191,21 +191,21 @@ for line in blocks:
 blocks[0][0].body.SetBodyFixed(True)
 
 
-sine = lambda x: np.sin(x)
+def sine(x, amp, omg, off = 0):
+    return amp*np.sin(omg*x + off)
 # Create simulation loop
 des_points_1 = np.array([0, -0.3, 0.3, -0.2, 0.4])
 des_points_2 = np.array([-0.5, -0.6, -0.6, -0.7, -0.8])
 time_pos = np.array([[0.5, 1, 1.25, 1.5, 2],
                     [0, -0.3, 0.3, -0.2, 0.4]])
 
-#track_ctrl_j_1 =  ctrl.TrackingControl(blocks[0][2], des_points_1, (0.5,1.5))
-#track_ctrl_j_2 = ctrl.TrackingControl(blocks[1][2], des_points_1, (0.5,5))
-
 pid_track = ctrl.ChControllerPID(blocks[0][2] ,50.,5.,1.)
-#pid_track.set_des_trajectory_interval(des_points_1,(0.5,2))
-pid_track.set_des_trajectory(time_pos)
+#pid_track.set_des_positions_interval(des_points_1,(0.5,2))
+#pid_track.set_des_time_positions(time_pos)
+pid_track.set_function_trajectory(sine, amp=0.1, omg = 10)
 
 print(list(ctrl.get_controllable_joints(blocks)))
+
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(mysystem)
 vis.SetWindowSize(1024,768)
@@ -230,6 +230,6 @@ while vis.Run():
     vis.Render()
 
     if mysystem.GetChTime() > 6:
-        pid_track.set_des_trajectory_interval(des_points_2,(6,10))
+        pid_track.set_des_positions_interval(des_points_2,(6,10))
     
     vis.EndScene()
