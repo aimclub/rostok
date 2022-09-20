@@ -1,12 +1,23 @@
 from copy import deepcopy
+from logging import exception
 import pychrono as chrono
 import scipy.interpolate as interpolate
 import numpy as np
 from abc import ABC
 import enum as Enum
+from node_render import *
 #from multipledispatch import dispatch
 
 from node_render import ChronoRevolveJoint
+
+def get_controllable_joints(blocks : list[Block]):
+    control_joints = []
+    for path in blocks:
+        for n in path:
+            if isinstance(n,ChronoRevolveJoint):
+                control_joints.append(n)
+    #control_joint = filter(lambda x: isinstance(x,ChronoRevolveJoint), blocks)
+    return control_joints
 
 # Trasfrom 2-D array [time, points] to ChSpline subclass ChFunction
 def time_points_2_ChFunction(arr_time_point):
@@ -26,6 +37,20 @@ def points_2_ChFunction(des_points, time_interval: tuple):
     out_func = ChSpline(spline_coefficients,time_interval)
 
     return out_func
+
+# Set user's function trajectory 
+class ChUserFunction(chrono.ChFunction):
+    def __init__(self, function):
+        super().__init__()
+        self.traj_function = function
+        
+    def Clone(self):
+        return deepcopy(self)
+    
+    def Get_y(self, x):
+        y = self.traj_function(x)
+        return y
+        
 
 # Subclass ChFunction for set movement's trajectory
 class ChSpline(chrono.ChFunction):
@@ -87,9 +112,9 @@ class Control(ABC):
     def __init__(self,joint_block):
         self.__joint = joint_block
         self.type_variants = {}
-        self.type_variants[ChronoRevolveJoint.InputType.Torque] = lambda x:self.get_joint().SetTorqueFunction(x)
-        self.type_variants[ChronoRevolveJoint.InputType.Velocity] = lambda x:self.get_joint().SetSpeedFunction(x)
-        self.type_variants[ChronoRevolveJoint.InputType.Position] = lambda x:self.get_joint().SetAngleFunction(x)
+        self.type_variants[ChronoRevolveJoint.InputType.Torque] = lambda x: self.get_joint().SetTorqueFunction(x)
+        self.type_variants[ChronoRevolveJoint.InputType.Velocity] = lambda x: self.get_joint().SetSpeedFunction(x)
+        self.type_variants[ChronoRevolveJoint.InputType.Position] = lambda x: self.get_joint().SetAngleFunction(x)
         self.type_variants[ChronoRevolveJoint.InputType.Uncontrol] = print("Uncontrollable joint")
 
     def get_joint(self):
@@ -100,31 +125,25 @@ class Control(ABC):
 
 # Define type of input joint
     def set_input(self, inputs):
-        self.type_variants[self.get_type_input()](inputs)
-        #type_input = self.get_type_input()
-        #if type_input is ChronoRevolveJoint.InputType.Torque:
-        #    self.get_joint().SetTorqueFunction(inputs)
-        #elif type_input is ChronoRevolveJoint.InputType.Velocity:
-        #    self.get_joint().SetSpeedFunction(inputs)
-        #elif type_input is ChronoRevolveJoint.InputType.Position:
-        #    self.get_joint().SetAngleFunction(inputs)
-        #elif type_input is ChronoRevolveJoint.InputType.Uncontrol:
-        #    print("Uncontrollable joint")
+        try: 
+            self.type_variants[self.get_type_input()](inputs)
+        except Exception:
+            print("Uncontrollable joint")
 
 # Class ramp input on joint
 class RampControl(Control):
     def __init__(self,in_joint_block, y_0 = 0., angular = -0.5):
         Control.__init__(self,in_joint_block)
-        self.chr_Spline =  chrono.ChFunction_Ramp(y_0, angular)
-        self.set_input(self.chr_Spline)
+        self.chr_function =  chrono.ChFunction_Ramp(y_0, angular)
+        self.set_input(self.chr_function)
 
 # Class tracking the trajectory at the position input
 class TrackingControl(Control):
     def __init__(self,in_joint_block,des_points, time_interval):
         Control.__init__(self,in_joint_block)
         self.time_interval = time_interval
-        self.chr_Spline = points_2_ChFunction(des_points,self.time_interval)
-        self.set_input(self.chr_Spline)
+        self.chr_function = points_2_ChFunction(des_points,self.time_interval)
+        self.set_input(self.chr_function)
 
 # Class of PID tracking controller
 class ChControllerPID(Control):

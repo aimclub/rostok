@@ -190,8 +190,10 @@ for line in blocks:
     build_branch(line)
 blocks[0][0].body.SetBodyFixed(True)
 
+
+sine = lambda x: np.sin(x)
 # Create simulation loop
-des_points_1 = 1*np.array([0, -0.3, 0.3, -0.2, 0.4])
+des_points_1 = np.array([0, -0.3, 0.3, -0.2, 0.4])
 des_points_2 = np.array([-0.5, -0.6, -0.6, -0.7, -0.8])
 time_pos = np.array([[0.5, 1, 1.25, 1.5, 2],
                     [0, -0.3, 0.3, -0.2, 0.4]])
@@ -203,7 +205,7 @@ pid_track = ctrl.ChControllerPID(blocks[0][2] ,50.,5.,1.)
 #pid_track.set_des_trajectory_interval(des_points_1,(0.5,2))
 pid_track.set_des_trajectory(time_pos)
 
-
+print(list(ctrl.get_controllable_joints(blocks)))
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(mysystem)
 vis.SetWindowSize(1024,768)
@@ -212,14 +214,14 @@ vis.Initialize()
 vis.AddCamera(chrono.ChVectorD(8, 8, -6))
 vis.AddTypicalLights()
 
-'''
+
 plt.figure()
 nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
                  labels={n: G.nodes[n]["Node"].label for n in G})
 plt.figure()
 nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
 plt.show()
-'''
+
 
 while vis.Run():
     mysystem.Update()
