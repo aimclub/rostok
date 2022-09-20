@@ -37,7 +37,7 @@ transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
 
 type_of_input = ChronoRevolveJoint.InputType.Torque
 # Joints
-revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input, stiffness = 0, damping = 10)
+revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input, stiffness = 11**-3, damping = 10)
 
 # Defines rules
 # Nodes

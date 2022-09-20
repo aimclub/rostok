@@ -8,36 +8,27 @@ import enum as Enum
 
 from node_render import ChronoRevolveJoint
 
-def define_inputs(joint,des_input,type):
-    if type is ChronoRevolveJoint.InputType.Torque:
-        joint.SetTorqueFunction(des_input)
-    elif type is ChronoRevolveJoint.InputType.Velocity:
-        joint.SetSpeedFunction(des_input)
-    elif type is ChronoRevolveJoint.InputType.Position:
-        joint.SetAngleFunction(des_input)
-    elif type is ChronoRevolveJoint.InputType.Uncontrol:
-        print("Uncontrollable joint")
-
-
+# Trasfrom 2-D array [time, points] to ChSpline subclass ChFunction
 def time_points_2_ChFunction(arr_time_point):
     arr_time_point = arr_time_point.T
     spline_coefficients = interpolate.splrep(arr_time_point[:,0],arr_time_point[:,1])
     time_interval = (arr_time_point[0,0],arr_time_point[-1,0])
-    out_func = ChTrajectory(spline_coefficients,time_interval)
+    out_func = ChSpline(spline_coefficients,time_interval)
 
     return out_func
 
+# Transform 1-D array on the time interval to ChSpline subclass ChFunction
 def points_2_ChFunction(des_points, time_interval: tuple):
     num_points  = np.size(des_points)
     traj_time = np.linspace(time_interval[0],time_interval[1],num_points)
 
     spline_coefficients = interpolate.splrep(traj_time,des_points)
-    out_func = ChTrajectory(spline_coefficients,time_interval)
+    out_func = ChSpline(spline_coefficients,time_interval)
 
     return out_func
 
-
-class ChTrajectory(chrono.ChFunction):
+# Subclass ChFunction for set movement's trajectory
+class ChSpline(chrono.ChFunction):
     def __init__(self, coefficients, time_interval):
         super().__init__()
         self.coefficients = coefficients
@@ -54,6 +45,7 @@ class ChTrajectory(chrono.ChFunction):
             y = interpolate.splev(self.time_interval[1], self.coefficients)
         return float(y)
 
+# Subclass ChFunction. PID-function calculate inputs for current time
 class ChPID(chrono.ChFunction_SetpointCallback):
     def __init__(self, joint, coeff_p, coeff_d, coeff_i = 0.):
         super().__init__()
@@ -90,9 +82,15 @@ class ChPID(chrono.ChFunction_SetpointCallback):
             self.prev_time = time
         return self.F
 
+# Abstract class control
 class Control(ABC):
     def __init__(self,joint_block):
         self.__joint = joint_block
+        self.type_variants = {}
+        self.type_variants[ChronoRevolveJoint.InputType.Torque] = lambda x:self.get_joint().SetTorqueFunction(x)
+        self.type_variants[ChronoRevolveJoint.InputType.Velocity] = lambda x:self.get_joint().SetSpeedFunction(x)
+        self.type_variants[ChronoRevolveJoint.InputType.Position] = lambda x:self.get_joint().SetAngleFunction(x)
+        self.type_variants[ChronoRevolveJoint.InputType.Uncontrol] = print("Uncontrollable joint")
 
     def get_joint(self):
         return self.__joint.joint
@@ -100,30 +98,35 @@ class Control(ABC):
     def get_type_input(self):
         return self.__joint.input_type
 
+# Define type of input joint
     def set_input(self, inputs):
-        type_input = self.get_type_input()
-        if type_input is ChronoRevolveJoint.InputType.Torque:
-            self.get_joint().SetTorqueFunction(inputs)
-        elif type_input is ChronoRevolveJoint.InputType.Velocity:
-            self.get_joint().SetSpeedFunction(inputs)
-        elif type_input is ChronoRevolveJoint.InputType.Position:
-            self.get_joint().SetAngleFunction(inputs)
-        elif type_input is ChronoRevolveJoint.InputType.Uncontrol:
-            print("Uncontrollable joint")
+        self.type_variants[self.get_type_input()](inputs)
+        #type_input = self.get_type_input()
+        #if type_input is ChronoRevolveJoint.InputType.Torque:
+        #    self.get_joint().SetTorqueFunction(inputs)
+        #elif type_input is ChronoRevolveJoint.InputType.Velocity:
+        #    self.get_joint().SetSpeedFunction(inputs)
+        #elif type_input is ChronoRevolveJoint.InputType.Position:
+        #    self.get_joint().SetAngleFunction(inputs)
+        #elif type_input is ChronoRevolveJoint.InputType.Uncontrol:
+        #    print("Uncontrollable joint")
 
+# Class ramp input on joint
 class RampControl(Control):
     def __init__(self,in_joint_block, y_0 = 0., angular = -0.5):
         Control.__init__(self,in_joint_block)
-        self.chr_trajectory =  chrono.ChFunction_Ramp(y_0, angular)
-        self.set_input(self.chr_trajectory)
+        self.chr_Spline =  chrono.ChFunction_Ramp(y_0, angular)
+        self.set_input(self.chr_Spline)
 
+# Class tracking the trajectory at the position input
 class TrackingControl(Control):
     def __init__(self,in_joint_block,des_points, time_interval):
         Control.__init__(self,in_joint_block)
         self.time_interval = time_interval
-        self.chr_trajectory = points_2_ChFunction(des_points,self.time_interval)
-        self.set_input(self.chr_trajectory)
+        self.chr_Spline = points_2_ChFunction(des_points,self.time_interval)
+        self.set_input(self.chr_Spline)
 
+# Class of PID tracking controller
 class ChControllerPID(Control):
     def __init__(self, joint_block, coeff_p, coeff_d, coeff_i = 0.):
         Control.__init__(self,joint_block)
