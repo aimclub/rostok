@@ -8,12 +8,14 @@ from node_render import *
 from node_render import ChronoRevolveJoint
 
 def get_controllable_joints(blocks : list[Block]):
-    control_joints = []
+    #control_joints = filter(lambda x: isinstance(x,ChronoRevolveJoint), blocks)
+    control_joints = list()
     for path in blocks:
+        line = []
         for n in path:
             if isinstance(n,ChronoRevolveJoint):
-                control_joints.append(n)
-    #control_joint = filter(lambda x: isinstance(x,ChronoRevolveJoint), blocks)
+                line.append(n)
+        control_joints.append(line)
     return control_joints
 
 # Transform 2-D array [time, points] to ChSpline subclass ChFunction
@@ -69,7 +71,7 @@ class ChSpline(chrono.ChFunction):
         return float(y)
 
 # Subclass ChFunction. PID-function calculate inputs for current time
-class ChPID(chrono.ChFunction_SetpointCallback):
+class ChPIDposition(chrono.ChFunction_SetpointCallback):
     def __init__(self, joint, proportional_coefficient, differential_coefficient, integral_coefficients = 0.):
         super().__init__()
         self.K_P = proportional_coefficient
@@ -79,8 +81,6 @@ class ChPID(chrono.ChFunction_SetpointCallback):
         self.joint = joint
         self.prev_time = 0.
         self.des_pos = 0.
-        self.des_vel = 0.
-        self.des_acc = 0.
         self.F = 0
 
     def Clone(self):
@@ -160,7 +160,7 @@ class ChControllerPID(Control):
     def __init__(self, joint_block, proportional_coefficient, differential_coefficient, integral_coefficients = 0.):
         Control.__init__(self,joint_block)
         self.trajectory = None
-        self.PID_ctrl = ChPID(self.get_joint(), proportional_coefficient, differential_coefficient, integral_coefficients)
+        self.PID_ctrl = ChPIDposition(self.get_joint(), proportional_coefficient, differential_coefficient, integral_coefficients)
 
     def set_des_positions_interval(self, des_pos : np.array, time_interval: tuple):
         self.trajectory = points_2_ch_function(des_pos, time_interval)
