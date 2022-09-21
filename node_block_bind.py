@@ -10,6 +10,7 @@ import pychrono as chrono
 import control as ctrl
 import numpy as np
 
+
 # Define block types
 
 # Bodies
@@ -190,7 +191,6 @@ for line in blocks:
     build_branch(line)
 blocks[0][0].body.SetBodyFixed(True)
 
-
 def sine(x, amp, omg, off = 0):
     return amp*np.sin(omg*x + off)
 # Create simulation loop
@@ -206,6 +206,8 @@ pid_track.set_function_trajectory(sine, amp=0.1, omg = 10)
 
 print(list(ctrl.get_controllable_joints(blocks)))
 
+# Create simulation loop
+
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(mysystem)
 vis.SetWindowSize(1024,768)
@@ -214,7 +216,6 @@ vis.Initialize()
 vis.AddCamera(chrono.ChVectorD(8, 8, -6))
 vis.AddTypicalLights()
 
-
 plt.figure()
 nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
                  labels={n: G.nodes[n]["Node"].label for n in G})
@@ -222,14 +223,9 @@ plt.figure()
 nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
 plt.show()
 
-
 while vis.Run():
     mysystem.Update()
     mysystem.DoStepDynamics(5e-3)
     vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
     vis.Render()
-
-    if mysystem.GetChTime() > 6:
-        pid_track.set_des_positions_interval(des_points_2,(6,10))
-    
     vis.EndScene()
