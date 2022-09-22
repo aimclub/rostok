@@ -13,7 +13,7 @@ import numpy as np
 # Define block types
 
 # Bodies
-link1 = BlockWrapper(ChronoBody, length=0.5)
+link1 = BlockWrapper(ChronoBody, length=0.3)
 link2 = BlockWrapper(ChronoBody, length=0.2)
 
 flat1 = BlockWrapper(ChronoBody, width=0.4, length=0.1)
@@ -193,7 +193,7 @@ G = Grammar()
 rule_action_non_terminal = np.asarray([FlatCreate, Mount, Mount, Mount,
                                        FingerUpper, FingerUpper, FingerUpper, FingerUpper,  FingerUpper, FingerUpper])
 rule_action_terminal = np.asarray([TerminalFlat,
-                         TerminalL1, TerminalL2, TerminalL1, TerminalL2, TerminalL1, TerminalL2, 
+                         TerminalL1, TerminalL1, TerminalL1, TerminalL2, TerminalL2, TerminalL2,
                          TerminalTransformL, TerminalTransformLZ, TerminalTransformRX,
                          TerminalEndLimb, TerminalEndLimb, TerminalEndLimb,
                          TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint])
@@ -202,7 +202,7 @@ for i in list(rule_action):
     G.apply_rule(i)
 
 mysystem = chrono.ChSystemNSC()
-mysystem.Set_G_acc(chrono.ChVectorD(-9.8,0,0))
+mysystem.Set_G_acc(chrono.ChVectorD(0,-9.8,0))
 wrapper_array = G.build_wrapper_array()
 
 
@@ -241,10 +241,10 @@ pid_track = []
 for idx, finger in enumerate(rev_joint):
     for joint in finger:
         if idx != 2:
-            pid_track.append(ctrl.ChControllerPID(joint ,50.,5.,1.))
+            pid_track.append(ctrl.ChControllerPID(joint ,80.,5.,1.))
             pid_track[-1].set_des_positions_interval(des_points_1,(0.1,2))
         else:
-            pid_track.append(ctrl.ChControllerPID(joint ,50.,5.,1.))
+            pid_track.append(ctrl.ChControllerPID(joint ,80.,5.,1.))
             pid_track[-1].set_des_positions_interval(des_points_1_1,(0.1,2))
         print(idx)
         
