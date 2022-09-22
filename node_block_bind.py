@@ -183,7 +183,7 @@ for wrap in wrapper_array:
     blocks.append(block_line)
 
 for line in blocks:
-    build_branch(line)
+    connect_blocks(line)
 blocks[0][0].body.SetBodyFixed(True)
 
 # Create simulation loop
@@ -195,6 +195,7 @@ vis.SetWindowTitle('Custom contact demo')
 vis.Initialize()
 vis.AddCamera(chrono.ChVectorD(8, 8, -6))
 vis.AddTypicalLights()
+mysystem.Set_G_acc(chrono.ChVectorD(0, 0, 0))
 
 plt.figure()
 nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
