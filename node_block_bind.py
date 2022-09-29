@@ -11,6 +11,9 @@ import control as ctrl
 import numpy as np
 
 # Define block types
+mat = chrono.ChMaterialSurfaceNSC()
+mat.SetFriction(0.5)
+mat.SetDampingF(0.1)
 
 # Bodies
 link1 = BlockWrapper(ChronoBody, length=0.3)
@@ -19,7 +22,7 @@ link2 = BlockWrapper(ChronoBody, length=0.2)
 flat1 = BlockWrapper(ChronoBody, width=0.4, length=0.1)
 flat2 = BlockWrapper(ChronoBody, width=0.7, length=0.1)
 
-u1 = BlockWrapper(ChronoBody, width=0.1, length=0.1)
+u1 = BlockWrapper(ChronoBody, width=0.1, length=0.1, material=mat)
 
 # Transforms
 RZX = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_X)
@@ -42,7 +45,7 @@ transform_mz_plus_x_minus = BlockWrapper(ChronoTransform, MOVE_Z_PLUS_X_MINUS)
 
 type_of_input = ChronoRevolveJoint.InputType.Torque
 # Joints
-revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input, stiffness = 11**-3, damping = 10)
+revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
 
 # Nodes
 ROOT = Node("ROOT")
@@ -202,8 +205,14 @@ for i in list(rule_action):
     G.apply_rule(i)
 
 mysystem = chrono.ChSystemNSC()
-mysystem.Set_G_acc(chrono.ChVectorD(0,-9.8,0))
+mysystem.Set_G_acc(chrono.ChVectorD(0,0,0))
 wrapper_array = G.build_wrapper_array()
+
+obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,1000,True,True,mat)
+obj.SetCollide(True)
+obj.SetPos(chrono.ChVectorD(0,1.2,0))
+mysystem.Add(obj)
+
 
 
 blocks = []
@@ -225,6 +234,9 @@ for line in blocks:
     build_branch(line)
 blocks[0][0].body.SetBodyFixed(True)
 
+blocks[1][-1].body.SetCollide(True)
+blocks[0][-1].body.SetCollide(True)
+blocks[2][-1].body.SetCollide(True)
 
 rev_joint = ctrl.get_controllable_joints(blocks)
 def sine(x, amp, omg, off = 0):
@@ -241,19 +253,12 @@ pid_track = []
 for idx, finger in enumerate(rev_joint):
     for joint in finger:
         if idx != 2:
-            pid_track.append(ctrl.ChControllerPID(joint ,80.,5.,1.))
+            pid_track.append(ctrl.ChControllerPID(joint ,80.,5.,1.)) # ctrl.TrackingControl(joint)
             pid_track[-1].set_des_positions_interval(des_points_1,(0.1,2))
         else:
-            pid_track.append(ctrl.ChControllerPID(joint ,80.,5.,1.))
+            pid_track.append(ctrl.ChControllerPID(joint ,80.,5.,1.)) # ctrl.TrackingControl(joint)
             pid_track[-1].set_des_positions_interval(des_points_1_1,(0.1,2))
         print(idx)
-        
-#pid_track = ctrl.ChControllerPID(blocks[0][2] ,50.,5.,1.)
-#pid_track.set_des_positions_interval(des_points_1,(0.5,2))
-#pid_track.set_des_time_positions(time_pos)
-#pid_track.set_function_trajectory(sine, amp=0.1, omg = 10)
-
-# print(list(ctrl.get_controllable_joints(blocks)))
 
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(mysystem)
@@ -271,14 +276,22 @@ plt.figure()
 nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
 plt.show()
 
-
+mes_motor_torque = np.array([])
+arr_time = []
 while vis.Run():
     mysystem.Update()
     mysystem.DoStepDynamics(5e-3)
+    arr_time.append(mysystem.GetChTime())
+    mes_motor_torque = np.hstack((mes_motor_torque,rev_joint[0][0].joint.GetMotorTorque()))
     vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
     vis.Render()
-
-    # if mysystem.GetChTime() > 6:
-    #     pid_track.set_des_positions_interval(des_points_2,(6,10))
     
     vis.EndScene()
+    
+# plt.figure()
+# plt.plot(arr_time,mes_motor_torque)
+# plt.title("Torque motor with angle input")
+# plt.xlabel("time, [s]")
+# plt.ylabel("tau, [Nm]")
+# plt.grid()
+# plt.show()
