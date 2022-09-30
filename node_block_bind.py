@@ -7,6 +7,7 @@ from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
 import networkx as nx
 import matplotlib.pyplot as plt
 import pychrono as chrono
+import robot
 
 # Define block types
 
@@ -164,9 +165,11 @@ for i in rule_action:
     G.apply_rule(i)
 
 mysystem = chrono.ChSystemNSC()
-wrapper_array = G.build_wrapper_array()
+wrapper_array = G.build_terminal_wrapper_array()
 
+robot=robot.Robot(wrapper_array, mysystem)
 
+"""
 blocks = []
 uniq_blocks = {}
 for wrap in wrapper_array:
@@ -185,6 +188,7 @@ for wrap in wrapper_array:
 for line in blocks:
     connect_blocks(line)
 blocks[0][0].body.SetBodyFixed(True)
+"""
 
 # Create simulation loop
 
