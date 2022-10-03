@@ -44,13 +44,13 @@ class WrapperTuple:
 ROOT = Node("ROOT")
 
 
-class Grammar(nx.DiGraph):
+class GraphGrammar(nx.DiGraph):
     def __init__(self, **attr):
         super().__init__(**attr)
         self.__uniq_id_counter = -1
-        self.add_node(self.get_uniq_id(), Node=ROOT)
+        self.add_node(self._get_uniq_id(), Node=ROOT)
 
-    def get_uniq_id(self):
+    def _get_uniq_id(self):
         self.__uniq_id_counter += 1
         return self.__uniq_id_counter
 
@@ -64,13 +64,13 @@ class Grammar(nx.DiGraph):
                 match_nodes.append(node_id)
         return match_nodes
 
-    def replace_node(self, node_id, rule: Rule):
+    def _replace_node(self, node_id, rule: Rule):
         # Convert to list for mutable
         in_edges = [list(edge) for edge in self.in_edges(node_id)]
         out_edges = [list(edge) for edge in self.out_edges(node_id)]
 
-        id_node_connect_child_graph = self.get_uniq_id()
-        id_node_connect_parent_graph = self.get_uniq_id() \
+        id_node_connect_child_graph = self._get_uniq_id()
+        id_node_connect_parent_graph = self._get_uniq_id() \
             if rule.id_node_connect_parent != rule.id_node_connect_child else id_node_connect_child_graph
 
         relabel_in_rule = {rule.id_node_connect_child: id_node_connect_child_graph,
@@ -80,7 +80,7 @@ class Grammar(nx.DiGraph):
             raw_node_id = raw_nodes[0]
             if raw_node_id in relabel_in_rule.keys():
                 continue
-            relabel_in_rule[raw_node_id] = self.get_uniq_id()
+            relabel_in_rule[raw_node_id] = self._get_uniq_id()
 
         for edge in in_edges:
             edge[1] = id_node_connect_parent_graph
@@ -112,7 +112,7 @@ class Grammar(nx.DiGraph):
     def apply_rule(self, rule: Rule):
         ids = self.find_nodes(rule.replaced_node)
         id_closest = self.closest_node_to_root(ids)
-        self.replace_node(id_closest, rule)
+        self._replace_node(id_closest, rule)
 
     def graph_partition_dfs(self):
         paths = []
