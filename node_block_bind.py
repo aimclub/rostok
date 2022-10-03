@@ -1,4 +1,4 @@
-from node import BlockWrapper, Node, Rule, GraphGrammar
+from node import BlockWrapper, Node, Rule, Grammar
 from node_render import *
 from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
 from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
@@ -154,6 +154,7 @@ TerminalJoint.graph_insert = rule_graph
 TerminalJoint.replaced_node = J
 
 
+
 G = GraphGrammar()
 
 rule_action = [FlatCreate, Mount, Mount, FingerUpper, FingerUpper,
@@ -180,6 +181,21 @@ vis.Initialize()
 vis.AddCamera(chrono.ChVectorD(8, 8, -6))
 vis.AddTypicalLights()
 mysystem.Set_G_acc(chrono.ChVectorD(0, 0, 0))
+
+plt.figure()
+nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
+                 labels={n: G.nodes[n]["Node"].label for n in G})
+plt.figure()
+nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
+plt.show()
+
+while vis.Run():
+    mysystem.Update()
+    mysystem.DoStepDynamics(5e-3)
+    vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
+    vis.Render()
+    
+    vis.EndScene()
 
 plt.figure()
 nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,

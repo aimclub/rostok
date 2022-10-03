@@ -14,7 +14,7 @@ ROOT = Node("ROOT")
 # Create rules
 PalmCreate = Rule()
 rule_graph = nx.DiGraph()
-rule_graph.add_node(1, Node=P)
+rule_graph.add_node(0, Node=P)
 PalmCreate.id_node_connect_child = 0
 PalmCreate.id_node_connect_parent = 0
 PalmCreate.graph_insert = rule_graph
