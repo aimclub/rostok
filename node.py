@@ -1,7 +1,8 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
-from  collections import namedtuple
+from collections import namedtuple
+
 
 class BlockWrapper:
     def __init__(self, block_cls, *args, **kwargs):
@@ -39,7 +40,6 @@ class WrapperTuple:
     id: int
     block_wrapper: BlockWrapper  # Set default value
 
- 
 
 ROOT = Node("ROOT")
 
@@ -88,7 +88,8 @@ class GraphGrammar(nx.DiGraph):
             edge[0] = id_node_connect_child_graph
 
         # Convert ids in rule to graph ids system
-        rule_graph_relabeled = nx.relabel_nodes(rule.graph_insert, relabel_in_rule)
+        rule_graph_relabeled = nx.relabel_nodes(
+            rule.graph_insert, relabel_in_rule)
 
         # Push changes into graph
         self.remove_node(node_id)
@@ -134,7 +135,7 @@ class GraphGrammar(nx.DiGraph):
                     path.append(edge[1])
         return paths
 
-    def build_terminal_wrapper_array(self) ->list[list[WrapperTuple]]:
+    def build_terminal_wrapper_array(self) -> list[list[WrapperTuple]]:
         paths = self.graph_partition_dfs()
         wrapper_array = []
 

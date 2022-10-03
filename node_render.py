@@ -11,6 +11,7 @@ class BlockType(str, Enum):
     Body = "Body"
     Bridge = "Bridge"
 
+
 class SpringTorque(chrono.TorqueFunctor):
     def __init__(self, spring_coef, damping_coef, rest_angle):
         super(SpringTorque, self).__init__()
@@ -25,10 +26,12 @@ class SpringTorque(chrono.TorqueFunctor):
                  link):  # back-pointer to associated link
         torque = 0
         if self.spring_coef > 10**-3:
-            torque = -self.spring_coef * (angle - self.rest_angle) - self.damping_coef * vel
+            torque = -self.spring_coef * \
+                (angle - self.rest_angle) - self.damping_coef * vel
         else:
             torque = - self.damping_coef * vel
         return torque
+
 
 class Block(ABC):
     def __init__(self, builder):
@@ -88,7 +91,8 @@ class ChronoBody(BlockBody):
 
         input_marker.SetMotionType(chrono.ChMarker.M_MOTION_KEYFRAMED)
         out_marker.SetMotionType(chrono.ChMarker.M_MOTION_KEYFRAMED)
-        transformed_out_marker.SetMotionType(chrono.ChMarker.M_MOTION_KEYFRAMED)
+        transformed_out_marker.SetMotionType(
+            chrono.ChMarker.M_MOTION_KEYFRAMED)
 
         self.body.AddMarker(input_marker)
         self.body.AddMarker(out_marker)
@@ -142,13 +146,16 @@ class ChronoBody(BlockBody):
 
 class ChronoRevolveJoint(BlockBridge):
     # Variants of joint control
-    class InputType(str,Enum):
-        Torque = {"Name":"Torque","TypeMotor":chrono.ChLinkMotorRotationTorque} 
-        Velocity = {"Name":"Speed" ,"TypeMotor":chrono.ChLinkMotorRotationSpeed}
-        Position = {"Name":"Angle" ,"TypeMotor":chrono.ChLinkMotorRotationAngle}
-        Uncontrol = {"Name":"Uncontrol" ,"TypeMotor":chrono.ChLinkRevolute}
+    class InputType(str, Enum):
+        Torque = {"Name": "Torque",
+                  "TypeMotor": chrono.ChLinkMotorRotationTorque}
+        Velocity = {"Name": "Speed",
+                    "TypeMotor": chrono.ChLinkMotorRotationSpeed}
+        Position = {"Name": "Angle",
+                    "TypeMotor": chrono.ChLinkMotorRotationAngle}
+        Uncontrol = {"Name": "Uncontrol", "TypeMotor": chrono.ChLinkRevolute}
 
-        def __init__(self,vals):
+        def __init__(self, vals):
             self.num = vals["Name"]
             self.motor = vals["TypeMotor"]
 
@@ -158,7 +165,7 @@ class ChronoRevolveJoint(BlockBridge):
         Y = chrono.Q_ROTATE_Z_TO_Y
         X = chrono.Q_ROTATE_Z_TO_X
 
-    def __init__(self, builder, axis=Axis.Z, type_of_input = InputType.Position,
+    def __init__(self, builder, axis=Axis.Z, type_of_input=InputType.Position,
                  stiffness=0, damping=0, equilibrium_position=0):
         super().__init__(builder=builder)
         self.joint = None
@@ -179,7 +186,7 @@ class ChronoRevolveJoint(BlockBridge):
                               in_block.transformed_frame_out, out_block.ref_frame_in)
         self.builder.AddLink(self.joint)
 
-        if(self.stiffness != 0) or (self.damping != 0):
+        if (self.stiffness != 0) or (self.damping != 0):
             self.add_spring_damper(in_block, out_block)
 
     def apply_transform(self, in_block):
@@ -188,8 +195,9 @@ class ChronoRevolveJoint(BlockBridge):
     def add_spring_damper(self, in_block: ChronoBody, out_block: ChronoBody):
         self.joint_spring = chrono.ChLinkRSDA()
         self.joint_spring.Initialize(in_block.body, out_block.body, False,
-                                     in_block.transformed_frame_out.GetAbsCoord(),out_block.ref_frame_in.GetAbsCoord())
-        self.torque_functor = SpringTorque(self.stiffness, self.damping, self.equilibrium_position)
+                                     in_block.transformed_frame_out.GetAbsCoord(), out_block.ref_frame_in.GetAbsCoord())
+        self.torque_functor = SpringTorque(
+            self.stiffness, self.damping, self.equilibrium_position)
         self.joint_spring.RegisterTorqueFunctor(self.torque_functor)
         self.builder.Add(self.joint_spring)
 
