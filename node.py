@@ -104,8 +104,16 @@ class Grammar(nx.DiGraph):
 
     def apply_rule(self, rule: Rule):
         ids = self.find_nodes(rule.replaced_node)
+        nodes = list(self.edges)
+        # if self.nodes[ids]:
+        #     pass
         id_closest = self.closest_node_to_root(ids)
-        self.replace_node(id_closest, rule)
+        if rule.graph_insert.order() == 0:
+            #Stab removing leaf graphs if input rule is empty 
+            #self.remove_node(id_closest)
+            pass
+        else:
+            self.replace_node(id_closest, rule)
 
     def graph_partition_dfs(self):
         paths = []
