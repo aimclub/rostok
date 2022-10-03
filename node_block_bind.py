@@ -1,4 +1,4 @@
-from node import BlockWrapper, Node, Rule, Grammar
+from node import BlockWrapper, Node, Rule, GraphGrammar
 from node_render import *
 from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
 from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
@@ -7,9 +7,7 @@ from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
 import networkx as nx
 import matplotlib.pyplot as plt
 import pychrono as chrono
-import control as ctrl
-import numpy as np
-
+import robot
 
 # Define block types
 
@@ -36,9 +34,8 @@ transform_rxy = BlockWrapper(ChronoTransform, RXY)
 transform_mzx_plus = BlockWrapper(ChronoTransform, MOVE_ZX_PLUS)
 transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
 
-type_of_input = ChronoRevolveJoint.InputType.Torque
 # Joints
-revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input, stiffness = 11**-3, damping = 10)
+revolve1 = BlockWrapper(ChronoRevolveJoint)
 
 # Defines rules
 # Nodes
@@ -157,7 +154,8 @@ TerminalJoint.graph_insert = rule_graph
 TerminalJoint.replaced_node = J
 
 
-G = Grammar()
+
+G = GraphGrammar()
 
 rule_action = [FlatCreate, Mount, Mount, FingerUpper, FingerUpper,
                TerminalFlat, TerminalL1, TerminalL1, TerminalTransformR, TerminalTransformL, TerminalEndLimb,
@@ -168,43 +166,10 @@ for i in rule_action:
     G.apply_rule(i)
 
 mysystem = chrono.ChSystemNSC()
-mysystem.Set_G_acc(chrono.ChVectorD(-9.8,0,0))
-wrapper_array = G.build_wrapper_array()
+wrapper_array = G.build_terminal_wrapper_array()
 
+robot=robot.Robot(G, mysystem)
 
-blocks = []
-uniq_blocks = {}
-for wrap in wrapper_array:
-    block_line = []
-    for id, wrapper in wrap:
-        if not (id in uniq_blocks.keys()):
-            wrapper.builder = mysystem
-            block_buf = wrapper.create_block()
-            block_line.append(block_buf)
-            uniq_blocks[id] = block_buf
-        else:
-            block_buf = uniq_blocks[id]
-            block_line.append(block_buf)
-    blocks.append(block_line)
-
-for line in blocks:
-    build_branch(line)
-blocks[0][0].body.SetBodyFixed(True)
-
-def sine(x, amp, omg, off = 0):
-    return amp*np.sin(omg*x + off)
-# Create simulation loop
-des_points_1 = np.array([0, -0.3, 0.3, -0.2, 0.4])
-des_points_2 = np.array([-0.5, -0.6, -0.6, -0.7, -0.8])
-time_pos = np.array([[0.5, 1, 1.25, 1.5, 2],
-                    [0, -0.3, 0.3, -0.2, 0.4]])
-
-pid_track = ctrl.ChControllerPID(blocks[0][2] ,50.,5.,1.)
-#pid_track.set_des_positions_interval(des_points_1,(0.5,2))
-#pid_track.set_des_time_positions(time_pos)
-pid_track.set_function_trajectory(sine, amp=0.1, omg = 10)
-
-print(list(ctrl.get_controllable_joints(blocks)))
 
 # Create simulation loop
 
@@ -215,6 +180,7 @@ vis.SetWindowTitle('Custom contact demo')
 vis.Initialize()
 vis.AddCamera(chrono.ChVectorD(8, 8, -6))
 vis.AddTypicalLights()
+mysystem.Set_G_acc(chrono.ChVectorD(0, 0, 0))
 
 plt.figure()
 nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
@@ -228,4 +194,20 @@ while vis.Run():
     mysystem.DoStepDynamics(5e-3)
     vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
     vis.Render()
+    
+    vis.EndScene()
+
+plt.figure()
+nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
+                 labels={n: G.nodes[n]["Node"].label for n in G})
+plt.figure()
+nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
+plt.show()
+
+while vis.Run():
+    mysystem.Update()
+    mysystem.DoStepDynamics(5e-3)
+    vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
+    vis.Render()
+    
     vis.EndScene()

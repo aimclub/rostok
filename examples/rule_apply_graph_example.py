@@ -63,7 +63,7 @@ FingerUpper.graph_insert = rule_graph
 FingerUpper.replaced_node = EF
 
 
-G = Grammar()
+G = GraphGrammar()
 rule_action = [PalmCreate, Mount, MountAdd, MountAdd, MountUpper, FingerUpper]
 
 

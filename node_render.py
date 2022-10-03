@@ -216,7 +216,7 @@ def find_body_from_two_after_blocks(sequence: list[Block], it: int) -> Optional[
     return None
 
 
-def build_branch(sequence: list[Block]):
+def connect_blocks(sequence: list[Block]):
     # Make body and apply transform
     previous_body_block = None
     need_fix_joint = False

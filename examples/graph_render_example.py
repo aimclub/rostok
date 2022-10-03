@@ -31,9 +31,9 @@ seq1 = [body_1, transform1, joint1, body_2, transform2, body_3]
 seq2 = [body_2, transform3, joint2, body_4, transform3, joint3, body_5]
 seq3 = [body_2, body_6, transform2, body_7]
 
-build_branch(seq1)
-build_branch(seq2)
-build_branch(seq3)
+connect_blocks(seq1)
+connect_blocks(seq2)
+connect_blocks(seq3)
 
 
 vis = chronoirr.ChVisualSystemIrrlicht()
