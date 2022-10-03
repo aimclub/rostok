@@ -26,7 +26,8 @@ RZY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_Y)
 RXY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_X_TO_Y)
 
 MOVE_ZX_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
-MOVE_ZX_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, -0.3), ChQuaternionD(1, 0, 0, 0))
+MOVE_ZX_MINUS = ChCoordsysD(
+    ChVectorD(-0.3, 0, -0.3), ChQuaternionD(1, 0, 0, 0))
 
 transform_rzx = BlockWrapper(ChronoTransform, RZX)
 transform_rzy = BlockWrapper(ChronoTransform, RZY)
@@ -35,7 +36,8 @@ transform_mzx_plus = BlockWrapper(ChronoTransform, MOVE_ZX_PLUS)
 transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
 
 # Joints
-revolve1 = BlockWrapper(ChronoRevolveJoint)
+type_of_input = ChronoRevolveJoint.InputType.Uncontrol
+revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z, type_of_input)
 
 # Defines rules
 # Nodes
@@ -154,7 +156,6 @@ TerminalJoint.graph_insert = rule_graph
 TerminalJoint.replaced_node = J
 
 
-
 G = GraphGrammar()
 
 rule_action = [FlatCreate, Mount, Mount, FingerUpper, FingerUpper,
@@ -168,14 +169,14 @@ for i in rule_action:
 mysystem = chrono.ChSystemNSC()
 wrapper_array = G.build_terminal_wrapper_array()
 
-robot=robot.Robot(G, mysystem)
+robot = robot.Robot(G, mysystem)
 
 
 # Create simulation loop
 
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(mysystem)
-vis.SetWindowSize(1024,768)
+vis.SetWindowSize(1024, 768)
 vis.SetWindowTitle('Custom contact demo')
 vis.Initialize()
 vis.AddCamera(chrono.ChVectorD(8, 8, -6))
@@ -194,20 +195,5 @@ while vis.Run():
     mysystem.DoStepDynamics(5e-3)
     vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
     vis.Render()
-    
-    vis.EndScene()
 
-plt.figure()
-nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
-                 labels={n: G.nodes[n]["Node"].label for n in G})
-plt.figure()
-nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
-plt.show()
-
-while vis.Run():
-    mysystem.Update()
-    mysystem.DoStepDynamics(5e-3)
-    vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
-    vis.Render()
-    
     vis.EndScene()
