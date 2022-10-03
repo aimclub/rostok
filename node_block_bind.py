@@ -1,4 +1,4 @@
-from node import BlockWrapper, Node, Rule, Grammar
+from node import BlockWrapper, Node, Rule, GraphGrammar
 from node_render import *
 from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
 from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
