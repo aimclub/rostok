@@ -68,7 +68,8 @@ rule_action = [PalmCreate, Mount, MountAdd, MountAdd, MountUpper, FingerUpper]
 
 
 plt.figure()
-nx.draw_networkx(G, pos=nx.planar_layout(G), node_size=500, labels={n: G.nodes[n]["Node"].label for n in G})
+nx.draw_networkx(G, pos=nx.planar_layout(G), node_size=500,
+                 labels={n: G.nodes[n]["Node"].label for n in G})
 for i in rule_action:
     G.apply_rule(i)
 plt.figure()
