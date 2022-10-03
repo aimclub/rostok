@@ -1,10 +1,13 @@
-from node import Node, BlockWrapper, WrapperTuple
+from node import Node, BlockWrapper, WrapperTuple, GraphGrammar
 from node_render import connect_blocks
 
 class Robot:
-    def __init__(self, wrapper_tuple_array: list[list[WrapperTuple]], simulation):
-        self.block_map = self.__build_robot(simulation,wrapper_tuple_array) 
-
+    def __init__(self, robot_graph: GraphGrammar, simulation):
+        self.graph = robot_graph
+        wrapper_tuple_array = self.graph.build_terminal_wrapper_array()
+        # Map { id from graph : block }
+        self.block_map = self.__build_robot(simulation, wrapper_tuple_array)
+        
     def __build_robot(self, simulation, wrapper_tuple_array: list[list[WrapperTuple]]):
         blocks = []
         uniq_blocks = {}

@@ -1,4 +1,4 @@
-from node import BlockWrapper, Node, Rule, Grammar
+from node import BlockWrapper, Node, Rule, GraphGrammar
 from node_render import *
 from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
 from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
@@ -154,7 +154,7 @@ TerminalJoint.graph_insert = rule_graph
 TerminalJoint.replaced_node = J
 
 
-G = Grammar()
+G = GraphGrammar()
 
 rule_action = [FlatCreate, Mount, Mount, FingerUpper, FingerUpper,
                TerminalFlat, TerminalL1, TerminalL1, TerminalTransformR, TerminalTransformL, TerminalEndLimb,
@@ -167,28 +167,8 @@ for i in rule_action:
 mysystem = chrono.ChSystemNSC()
 wrapper_array = G.build_terminal_wrapper_array()
 
-robot=robot.Robot(wrapper_array, mysystem)
+robot=robot.Robot(G, mysystem)
 
-"""
-blocks = []
-uniq_blocks = {}
-for wrap in wrapper_array:
-    block_line = []
-    for id, wrapper in wrap:
-        if not (id in uniq_blocks.keys()):
-            wrapper.builder = mysystem
-            block_buf = wrapper.create_block()
-            block_line.append(block_buf)
-            uniq_blocks[id] = block_buf
-        else:
-            block_buf = uniq_blocks[id]
-            block_line.append(block_buf)
-    blocks.append(block_line)
-
-for line in blocks:
-    connect_blocks(line)
-blocks[0][0].body.SetBodyFixed(True)
-"""
 
 # Create simulation loop
 
