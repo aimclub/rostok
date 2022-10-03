@@ -1,6 +1,8 @@
+import context
+from engine.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint, connect_blocks
+import pychrono.core as chrono
+import pychrono.irrlicht as chronoirr
 
-from context import node
-from node_render import *
 mysystem = chrono.ChSystemNSC()
 
 body_1 = ChronoBody(mysystem, length=1)

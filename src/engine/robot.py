@@ -1,5 +1,5 @@
-from node import Node, BlockWrapper, WrapperTuple, GraphGrammar
-from node_render import connect_blocks
+from engine.node import Node, BlockWrapper, WrapperTuple, GraphGrammar
+from engine.node_render import connect_blocks
 
 
 class Robot:

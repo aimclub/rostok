@@ -1,6 +1,5 @@
-
-from context import node
-from node import *
+import context
+from engine.node import *
 
 J = Node("J")
 L = Node("L")
