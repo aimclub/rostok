@@ -1,11 +1,11 @@
+from engine.node import BlockWrapper
+from engine.node_render import ChronoRevolveJoint, Block
+
 from copy import deepcopy
 import pychrono as chrono
 import scipy.interpolate as interpolate
 import numpy as np
 from abc import ABC
-from node_render import *
-
-from node_render import ChronoRevolveJoint
 
 
 def get_controllable_joints(blocks: list[Block]):
