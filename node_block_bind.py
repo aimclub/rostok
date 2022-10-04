@@ -43,7 +43,7 @@ transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
 transform_mx_plus = BlockWrapper(ChronoTransform, MOVE_X_PLUS)
 transform_mz_plus_x_minus = BlockWrapper(ChronoTransform, MOVE_Z_PLUS_X_MINUS)
 
-type_of_input = ChronoRevolveJoint.InputType.Torque
+type_of_input = ChronoRevolveJoint.InputType.Velocity
 # Joints
 revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
 
@@ -253,12 +253,16 @@ pid_track = []
 for idx, finger in enumerate(rev_joint):
     for joint in finger:
         if idx != 2:
-            pid_track.append(ctrl.ChControllerPID(joint ,80.,5.,1.)) # ctrl.TrackingControl(joint)
+            pid_track.append(ctrl.ChControllerPID(joint ,80.,0.,1.)) # ctrl.TrackingControl(joint)
             pid_track[-1].set_des_positions_interval(des_points_1,(0.1,2))
         else:
-            pid_track.append(ctrl.ChControllerPID(joint ,80.,5.,1.)) # ctrl.TrackingControl(joint)
+            pid_track.append(ctrl.ChControllerPID(joint ,80.,0.,1.)) # ctrl.TrackingControl(joint)
             pid_track[-1].set_des_positions_interval(des_points_1_1,(0.1,2))
         print(idx)
+
+# pid_track.append(ctrl.RampControl(rev_joint[0][0],0,0.01))
+# pid_track.append(ctrl.RampControl(rev_joint[0][1],0,0.08))
+
 
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(mysystem)

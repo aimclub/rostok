@@ -32,6 +32,9 @@ class Rule:
     # In local is system!
     id_node_connect_child = -1
     id_node_connect_parent = -1
+    
+    def __hash__(self):
+        return hash(self.graph_insert)
 
 
 ROOT = Node("ROOT")
