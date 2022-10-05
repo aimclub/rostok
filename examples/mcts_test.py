@@ -135,16 +135,23 @@ G = GraphGrammar()
 rule_action = [PalmCreate, Mount, MountAdd, MountAdd, MountUpper, FingerUpper, # Non terminal
                 TerminalJ1, TerminalL1, TerminalM1, TerminalP1, TerminalU1, TerminalEM1, TerminalEF1] # Terminal
 
+# Create graph envirenments for algorithm (not gym)
 env = env_graph.GraphEnvironment(G,rule_action)
-time_limit = 300
+
+# Hyperparameters: increasing: > error reward, < search time
+time_limit = 1000
 iteration_limit=2000
+
+# Initilize MCTS
 searcher = mcts.mcts(timeLimit=time_limit)
 finish = False
 
+#Search until finding terminal mechanism with desired reward
 while not finish:
     action = searcher.search(initialState=env)
     finish, final_graph = env.step(action)
 
+# Plot final graph
 plt.figure()
 nx.draw_networkx(final_graph, pos=nx.kamada_kawai_layout(final_graph, dim=2), node_size=800,
                  labels={n: final_graph.nodes[n]["Node"].label for n in final_graph})
