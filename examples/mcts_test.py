@@ -1,8 +1,9 @@
 
 #from context import node
-from node import *
+import context
+from engine.node import *
 import mcts
-import playground as pg
+import engine.playground as pg
 
 J = Node("J")
 L = Node("L")
@@ -65,7 +66,7 @@ FingerUpper.graph_insert = rule_graph
 FingerUpper.replaced_node = EF
 
 
-G = Grammar()
+G = GraphGrammar()
 rule_action = [PalmCreate, Mount, MountAdd, MountAdd, MountUpper, FingerUpper]
 init_state = pg.GraphPlayground(G,rule_action)
 time_limit = 300

@@ -124,7 +124,7 @@ class GraphGrammar(nx.DiGraph):
             #self.remove_node(id_closest)
             pass
         else:
-            self.replace_node(id_closest, rule)
+            self._replace_node(id_closest, rule)
 
     def graph_partition_dfs(self):
         paths = []
