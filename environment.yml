@@ -11,3 +11,4 @@ dependencies:
     - networkx==2.8.6
     - matplotlib==3.6.0
     - scipy
+    - gym=0.26.2
