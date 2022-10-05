@@ -1,15 +1,21 @@
 from copy import deepcopy
 from engine.node import *
 
-class RuleAction():
+# Class action like rule grammar
+
+class RuleAction:
     def __init__(self,rule):
         self.rule = rule
     
     def get_replaced_node(self):
         return self.rule.replaced_node
     
+    # For this algorithm need override hash method
+    
     def __hash__(self):
         return hash(self.rule)
+
+# Class "environment" graph
 
 class GraphEnvironment():
     def __init__(self, initilize_graph, rules):
@@ -19,9 +25,12 @@ class GraphEnvironment():
         self.current_player = 1
         self.reward = 0 
         
+    # Need override for mcts libary
     
     def getCurrentPlayer(self):
         return self.current_player
+    
+    # getter possible actions for current state
     
     def getPossibleActions(self):
         
@@ -38,6 +47,8 @@ class GraphEnvironment():
         
         return possible_actions
     
+    # take action and return new state environment
+    
     def takeAction(self, action):
         rule_action = action.rule
 
@@ -45,15 +56,21 @@ class GraphEnvironment():
         new_state.graph.apply_rule(rule_action)
         return new_state
     
+    # Condition on terminal graph
+    
     def isTerminal(self):
         terminal_nodes = [node[1]["Node"].is_terminal for node in self.graph.nodes.items()]
         return sum(terminal_nodes) == len(terminal_nodes)
     
+    # getter reward
+    
     def getReward(self): # Add calculate reward
         # Reward in number (3) of nodes graph mechanism 
         nodes = [node[1]["Node"] for node in self.graph.nodes.items()]
-        self.reward = 10 if len(nodes) == 3 else 0
+        self.reward = 10 if len(nodes) == 4 else 0
         return self.reward
+    
+    # Move current environment to new state
     
     def step(self, action: RuleAction, render = False):
         new_state = self.takeAction(action)
@@ -68,6 +85,7 @@ class GraphEnvironment():
             plt.show()
         return done, self.graph
     
+    # Reset environment (experimental version)
     def reset(self, new_rules = None):
         self.graph = self.init_graph
         self.reward = 0
