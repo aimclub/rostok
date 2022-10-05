@@ -25,6 +25,9 @@ class Node:
     # None for non-terminal nodes
     block_wrapper: BlockWrapper = None
 
+    def __hash__(self) -> int:
+        return hash(str(self.label) + str(self.is_terminal))
+
 
 @dataclass
 class Rule:
