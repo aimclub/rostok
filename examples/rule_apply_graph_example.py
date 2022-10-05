@@ -1,6 +1,5 @@
-
-from context import node
-from node import *
+import context
+from engine.node import *
 
 J = Node("J")
 L = Node("L")
@@ -14,7 +13,7 @@ ROOT = Node("ROOT")
 # Create rules
 PalmCreate = Rule()
 rule_graph = nx.DiGraph()
-rule_graph.add_node(1, Node=P)
+rule_graph.add_node(0, Node=P)
 PalmCreate.id_node_connect_child = 0
 PalmCreate.id_node_connect_parent = 0
 PalmCreate.graph_insert = rule_graph
@@ -63,12 +62,13 @@ FingerUpper.graph_insert = rule_graph
 FingerUpper.replaced_node = EF
 
 
-G = Grammar()
+G = GraphGrammar()
 rule_action = [PalmCreate, Mount, MountAdd, MountAdd, MountUpper, FingerUpper]
 
 
 plt.figure()
-nx.draw_networkx(G, pos=nx.planar_layout(G), node_size=500, labels={n: G.nodes[n]["Node"].label for n in G})
+nx.draw_networkx(G, pos=nx.planar_layout(G), node_size=500,
+                 labels={n: G.nodes[n]["Node"].label for n in G})
 for i in rule_action:
     G.apply_rule(i)
 plt.figure()
