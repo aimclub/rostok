@@ -3,7 +3,7 @@
 import context
 from engine.node import *
 import mcts
-import engine.playground as pg
+import engine.graph_mtcs_environment as env_graph
 
 J = Node("J")
 L = Node("L")
@@ -65,25 +65,88 @@ FingerUpper.id_node_connect_parent = 0
 FingerUpper.graph_insert = rule_graph
 FingerUpper.replaced_node = EF
 
+# Terminal nodes
+
+J1 = Node("J1", is_terminal=True)
+M1 = Node("M1", is_terminal=True)
+U1 = Node("U1", is_terminal=True)
+L1 = Node("L1", is_terminal=True)
+P1 = Node("P1", is_terminal=True)
+EM1 = Node("EM1", is_terminal=True)
+EF1 = Node("EF1", is_terminal=True)
+
+TerminalJ1 = Rule()
+rule_graph = nx.DiGraph()
+rule_graph.add_node(0, Node=J1)
+TerminalJ1.id_node_connect_child = 0
+TerminalJ1.id_node_connect_parent = 0
+TerminalJ1.graph_insert = rule_graph
+TerminalJ1.replaced_node = J
+
+TerminalL1 = Rule()
+rule_graph = nx.DiGraph()
+rule_graph.add_node(0, Node=L1)
+TerminalL1.id_node_connect_child = 0
+TerminalL1.id_node_connect_parent = 0
+TerminalL1.graph_insert = rule_graph
+TerminalL1.replaced_node = L
+
+TerminalU1 = Rule()
+rule_graph = nx.DiGraph()
+rule_graph.add_node(0, Node=U1)
+TerminalU1.id_node_connect_child = 0
+TerminalU1.id_node_connect_parent = 0
+TerminalU1.graph_insert = rule_graph
+TerminalU1.replaced_node = U
+
+TerminalM1 = Rule()
+rule_graph = nx.DiGraph()
+rule_graph.add_node(0, Node=M1)
+TerminalM1.id_node_connect_child = 0
+TerminalM1.id_node_connect_parent = 0
+TerminalM1.graph_insert = rule_graph
+TerminalM1.replaced_node = M
+
+TerminalP1 = Rule()
+rule_graph = nx.DiGraph()
+rule_graph.add_node(0, Node=P1)
+TerminalP1.id_node_connect_child = 0
+TerminalP1.id_node_connect_parent = 0
+TerminalP1.graph_insert = rule_graph
+TerminalP1.replaced_node = P
+
+TerminalEM1 = Rule()
+rule_graph = nx.DiGraph()
+rule_graph.add_node(0, Node=EM1)
+TerminalEM1.id_node_connect_child = 0
+TerminalEM1.id_node_connect_parent = 0
+TerminalEM1.graph_insert = rule_graph
+TerminalEM1.replaced_node = EM
+
+TerminalEF1 = Rule()
+rule_graph = nx.DiGraph()
+rule_graph.add_node(0, Node=EF1)
+TerminalEF1.id_node_connect_child = 0
+TerminalEF1.id_node_connect_parent = 0
+TerminalEF1.graph_insert = rule_graph
+TerminalEF1.replaced_node = EF
 
 G = GraphGrammar()
-rule_action = [PalmCreate, Mount, MountAdd, MountAdd, MountUpper, FingerUpper]
-init_state = pg.GraphPlayground(G,rule_action)
+rule_action = [PalmCreate, Mount, MountAdd, MountAdd, MountUpper, FingerUpper, # Non terminal
+                TerminalJ1, TerminalL1, TerminalM1, TerminalP1, TerminalU1, TerminalEM1, TerminalEF1] # Terminal
+
+env = env_graph.GraphEnvironment(G,rule_action)
 time_limit = 300
 iteration_limit=2000
 searcher = mcts.mcts(timeLimit=time_limit)
-action = []
-num_iteration = 20
-for i in range(num_iteration):
-    print(i)
-    searcher = mcts.mcts(timeLimit=time_limit)
-    action.append(searcher.search(initialState=init_state))
-    init_state = init_state.takeAction(action[-1])
+finish = False
+
+while not finish:
+    action = searcher.search(initialState=env)
+    finish, final_graph = env.step(action)
 
 plt.figure()
-nx.draw_networkx(G, pos=nx.planar_layout(G), node_size=500, labels={n: G.nodes[n]["Node"].label for n in G})
-plt.figure()
-nx.draw_networkx(init_state.init_state, pos=nx.kamada_kawai_layout(init_state.init_state, dim=2), node_size=800,
-                 labels={n: init_state.init_state.nodes[n]["Node"].label for n in init_state.init_state})
+nx.draw_networkx(final_graph, pos=nx.kamada_kawai_layout(final_graph, dim=2), node_size=800,
+                 labels={n: final_graph.nodes[n]["Node"].label for n in final_graph})
 
 plt.show()
