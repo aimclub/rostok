@@ -68,12 +68,14 @@ FingerUpper.replaced_node = EF
 G = Grammar()
 rule_action = [PalmCreate, Mount, MountAdd, MountAdd, MountUpper, FingerUpper]
 init_state = pg.GraphPlayground(G,rule_action)
-searcher = mcts.mcts(iterationLimit=500)
+time_limit = 300
+iteration_limit=2000
+searcher = mcts.mcts(timeLimit=time_limit)
 action = []
-num_iteration = 5
+num_iteration = 20
 for i in range(num_iteration):
     print(i)
-    searcher = mcts.mcts(iterationLimit=500)
+    searcher = mcts.mcts(timeLimit=time_limit)
     action.append(searcher.search(initialState=init_state))
     init_state = init_state.takeAction(action[-1])
 

@@ -35,16 +35,18 @@ class GraphPlayground():
 
         new_state = deepcopy(self)
         new_state.init_state.apply_rule(rule_action)
+        self.count = 0
         return new_state
     
     def isTerminal(self):
         self.count += 1
         terminal_nodes = [node[1]["Node"].is_terminal for node in self.init_state.nodes.items()]
         #return sum(terminal_nodes) == len(terminal_nodes)
-        return self.count > 5
+        #print(self.count)
+        return self.count > 40
     
     def getReward(self): # Add calculate reward
-        reward = 1#rnd.randint(0, 10)
+        reward = rnd.randint(-10, 10)
         return reward#rnd.randint(0, 10)
         
     
