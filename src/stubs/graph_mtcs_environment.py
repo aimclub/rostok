@@ -1,5 +1,6 @@
 from copy import deepcopy
 from engine.node import *
+from stubs.graph_reward import get_graph_sum_complex_reward, get_graph_mul_reward
 
 # Class action like rule grammar
 
@@ -22,6 +23,7 @@ class GraphEnvironment():
         self.init_graph = initilize_graph
         self.graph = initilize_graph
         self.__actions = [RuleAction(r) for r in rules]
+        self.map_nodes_reward = {}
         self.current_player = 1
         self.reward = 0 
         
@@ -65,9 +67,15 @@ class GraphEnvironment():
     # getter reward
     
     def getReward(self): # Add calculate reward
-        # Reward in number (3) of nodes graph mechanism 
-        nodes = [node[1]["Node"] for node in self.graph.nodes.items()]
-        self.reward = 10 if len(nodes) == 4 else 0
+        # Reward in number (3) of nodes graph mechanism
+        func_rewards = {"mul" : get_graph_mul_reward,
+                        "complex": get_graph_sum_complex_reward}
+        if self.map_nodes_reward:
+            self.reward = func_rewards[self.type_of_reward](self.graph,self.map_nodes_reward)
+            print(self.reward)
+        else:
+            nodes = [node[1]["Node"] for node in self.graph.nodes.items()]
+            self.reward = 10 if len(nodes) == 4 else 0
         return self.reward
     
     # Move current environment to new state
@@ -84,6 +92,10 @@ class GraphEnvironment():
                  labels={n: self.graph.nodes[n]["Node"].label for n in self.graph})
             plt.show()
         return done, self.graph
+    
+    def set_node_rewards(self, map_of_reward: map, type_reward: str = "mul"):
+        self.map_nodes_reward = map_of_reward
+        self.type_of_reward = type_reward
     
     # Reset environment (experimental version)
     def reset(self, new_rules = None):

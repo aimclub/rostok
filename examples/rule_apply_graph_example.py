@@ -87,6 +87,7 @@ G = GraphGrammar()
 rule_action = [PalmCreate, Mount, MountAdd, MountAdd, MountUpper, FingerUpper,
                DeliteEndMount, DeliteEndFinger]
 
+reward_map = {J: 1, L: 2, P: 1, U: 1, M: 4, EF: 8, EM: 1}
 
 plt.figure()
 nx.draw_networkx(G, pos=nx.planar_layout(G), node_size=500,

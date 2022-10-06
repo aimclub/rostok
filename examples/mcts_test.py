@@ -3,7 +3,7 @@
 import context
 from engine.node import *
 import mcts
-import engine.graph_mtcs_environment as env_graph
+import stubs.graph_mtcs_environment as env_graph
 
 J = Node("J")
 L = Node("L")
@@ -146,10 +146,13 @@ iteration_limit=2000
 searcher = mcts.mcts(timeLimit=time_limit)
 finish = False
 
+reward_map = {J1: 1, L1: 2, P1: 1, U1: 1, M1: 4, EF1: 8, EM1: 1}
+env.set_node_rewards(reward_map, "complex")
+
 #Search until finding terminal mechanism with desired reward
 while not finish:
     action = searcher.search(initialState=env)
-    finish, final_graph = env.step(action)
+    finish, final_graph = env.step(action,True)
 
 # Plot final graph
 plt.figure()
