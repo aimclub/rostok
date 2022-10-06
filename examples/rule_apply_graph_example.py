@@ -61,16 +61,41 @@ FingerUpper.id_node_connect_parent = 0
 FingerUpper.graph_insert = rule_graph
 FingerUpper.replaced_node = EF
 
+DeliteEndFinger = Rule()
+rule_graph = nx.DiGraph()
+DeliteEndFinger.id_node_connect_child = 0
+DeliteEndFinger.id_node_connect_parent = 0
+DeliteEndFinger.graph_insert = rule_graph
+DeliteEndFinger.replaced_node = EF
+
+# DeliteFinger = Rule()
+# rule_graph = nx.DiGraph()
+# DeliteFinger.id_node_connect_child = 0
+# DeliteFinger.id_node_connect_parent = 0
+# DeliteFinger.graph_insert = rule_graph
+# DeliteFinger.replaced_node = J
+
+DeliteEndMount = Rule()
+rule_graph = nx.DiGraph()
+DeliteEndMount.id_node_connect_child = 0
+DeliteEndMount.id_node_connect_parent = 0
+DeliteEndMount.graph_insert = rule_graph
+DeliteEndMount.replaced_node = EM
+
 
 G = GraphGrammar()
-rule_action = [PalmCreate, Mount, MountAdd, MountAdd, MountUpper, FingerUpper]
+rule_action = [PalmCreate, Mount, MountAdd, MountAdd, MountUpper, FingerUpper,
+               DeliteEndMount, DeliteEndFinger]
 
 
 plt.figure()
 nx.draw_networkx(G, pos=nx.planar_layout(G), node_size=500,
                  labels={n: G.nodes[n]["Node"].label for n in G})
+
 for i in rule_action:
     G.apply_rule(i)
+
+    
 plt.figure()
 nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
                  labels={n: G.nodes[n]["Node"].label for n in G})

@@ -115,14 +115,14 @@ class GraphGrammar(nx.DiGraph):
 
     def apply_rule(self, rule: Rule):
         ids = self.find_nodes(rule.replaced_node)
-        nodes = list(self.edges)
-        # if self.nodes[ids]:
-        #     pass
+        edge_list = list(self.edges)
         id_closest = self.closest_node_to_root(ids)
         if rule.graph_insert.order() == 0:
-            #Stab removing leaf graphs if input rule is empty 
-            #self.remove_node(id_closest)
-            pass
+            # Stub removing leaf graphs if input rule is empty
+            out_edges_ids_node = list(filter(lambda x: x[0] == id_closest, edge_list))
+            if out_edges_ids_node:
+                raise Exception("Trying delete not leaf node") 
+            self.remove_node(id_closest)
         else:
             self._replace_node(id_closest, rule)
 
