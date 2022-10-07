@@ -2,6 +2,10 @@ from copy import deepcopy
 from engine.node import *
 from stubs.graph_reward import get_graph_sum_complex_reward, get_graph_mul_reward
 
+# Function finding non terminal rules 
+def rule_is_terminal(rule: Rule):
+    terminal_rule = [node[1]["Node"].is_terminal for node in rule.graph_insert.nodes.items()]
+    return sum(terminal_rule)
 # Class action like rule grammar
 
 class RuleAction:
@@ -11,6 +15,8 @@ class RuleAction:
     def get_replaced_node(self):
         return self.rule.replaced_node
     
+    def is_terminal(self):
+        return rule_is_terminal(self.rule)
     # For this algorithm need override hash method
     
     def __hash__(self):
@@ -19,13 +25,15 @@ class RuleAction:
 # Class "environment" graph
 
 class GraphEnvironment():
-    def __init__(self, initilize_graph, rules):
+    def __init__(self, initilize_graph, rules, max_numbers_rules_non_terminal = 20):
         self.init_graph = initilize_graph
         self.graph = initilize_graph
         self.__actions = [RuleAction(r) for r in rules]
+        self.max_actions_not_terminal = max_numbers_rules_non_terminal
         self.map_nodes_reward = {}
         self.current_player = 1
-        self.reward = 0 
+        self.reward = 0
+        self.counter_action = 0
         
     # Need override for mcts libary
     
@@ -37,10 +45,13 @@ class GraphEnvironment():
     def getPossibleActions(self):
         
         def filter_exist_node(action):
+            out = False
             if action.get_replaced_node().label == node:
-                return True
-            else: 
-                return False
+                if action.is_terminal():
+                    out = True
+                if self.counter_action <= self.max_actions_not_terminal:
+                    out = True
+            return out
             
         label_nodes = {node[1]["Node"].label for node in self.graph.nodes.items()}
         possible_actions = []
@@ -53,7 +64,8 @@ class GraphEnvironment():
     
     def takeAction(self, action):
         rule_action = action.rule
-
+        if not action.is_terminal():
+            self.counter_action += 1
         new_state = deepcopy(self)
         new_state.graph.apply_rule(rule_action)
         return new_state
@@ -72,7 +84,6 @@ class GraphEnvironment():
                         "complex": get_graph_sum_complex_reward}
         if self.map_nodes_reward:
             self.reward = func_rewards[self.type_of_reward](self.graph,self.map_nodes_reward)
-            print(self.reward)
         else:
             nodes = [node[1]["Node"] for node in self.graph.nodes.items()]
             self.reward = 10 if len(nodes) == 4 else 0
@@ -101,6 +112,7 @@ class GraphEnvironment():
     def reset(self, new_rules = None):
         self.graph = self.init_graph
         self.reward = 0
+        self.counter_action = 0
         if new_rules:
             self.__actions = [RuleAction(r) for r in new_rules]
         

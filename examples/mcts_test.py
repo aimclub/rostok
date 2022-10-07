@@ -132,15 +132,15 @@ TerminalEF1.graph_insert = rule_graph
 TerminalEF1.replaced_node = EF
 
 G = GraphGrammar()
-rule_action = [PalmCreate, Mount, MountAdd, MountAdd, MountUpper, FingerUpper, # Non terminal
+rule_action = [PalmCreate, Mount, MountAdd, MountUpper, FingerUpper, # Non terminal
                 TerminalJ1, TerminalL1, TerminalM1, TerminalP1, TerminalU1, TerminalEM1, TerminalEF1] # Terminal
-
+max_numbers_rules = 10
 # Create graph envirenments for algorithm (not gym)
-env = env_graph.GraphEnvironment(G,rule_action)
+env = env_graph.GraphEnvironment(G,rule_action, max_numbers_rules)
 
 # Hyperparameters: increasing: > error reward, < search time
 time_limit = 1000
-iteration_limit=2000
+iteration_limit = 2000
 
 # Initilize MCTS
 searcher = mcts.mcts(timeLimit=time_limit)
@@ -152,7 +152,7 @@ env.set_node_rewards(reward_map, "complex")
 #Search until finding terminal mechanism with desired reward
 while not finish:
     action = searcher.search(initialState=env)
-    finish, final_graph = env.step(action,True)
+    finish, final_graph = env.step(action)
 
 # Plot final graph
 plt.figure()

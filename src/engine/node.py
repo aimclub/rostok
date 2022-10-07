@@ -121,7 +121,7 @@ class GraphGrammar(nx.DiGraph):
         edge_list = list(self.edges)
         id_closest = self.closest_node_to_root(ids)
         if rule.graph_insert.order() == 0:
-            # Stub removing leaf graphs if input rule is empty
+            # Stub removing leaf node if input rule is empty
             out_edges_ids_node = list(filter(lambda x: x[0] == id_closest, edge_list))
             if out_edges_ids_node:
                 raise Exception("Trying delete not leaf node") 
