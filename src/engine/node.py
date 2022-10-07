@@ -29,13 +29,29 @@ class Node:
         return hash(str(self.label) + str(self.is_terminal))
 
 
-@dataclass
 class Rule:
-    graph_insert: nx.DiGraph = nx.DiGraph()
+    _graph_insert: nx.DiGraph = nx.DiGraph()
     replaced_node: Node = Node()
     # In local is system!
     id_node_connect_child = -1
     id_node_connect_parent = -1
+    _is_terminal: bool = None
+
+    @property
+    def graph_insert(self):
+        return self._graph_insert
+
+    @graph_insert.setter
+    def graph_insert(self, graph: nx.DiGraph):
+        self._is_terminal = all(
+            [raw_node["Node"].is_terminal
+             for _, raw_node in graph.nodes(data=True)]
+        )
+        self._graph_insert = graph
+
+    @ property
+    def is_terminal(self):
+        return self._is_terminal
     
     def __hash__(self):
         return hash(self.graph_insert)
