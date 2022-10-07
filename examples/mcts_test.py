@@ -139,20 +139,22 @@ max_numbers_rules = 10
 env = env_graph.GraphEnvironment(G,rule_action, max_numbers_rules)
 
 # Hyperparameters: increasing: > error reward, < search time
-time_limit = 1000
+time_limit = 500
 iteration_limit = 2000
 
 # Initilize MCTS
 searcher = mcts.mcts(timeLimit=time_limit)
 finish = False
 
-reward_map = {J1: 1, L1: 2, P1: 1, U1: 1, M1: 4, EF1: 8, EM1: 1}
+reward_map = {J1: 1, L1: 2, P1: 1, U1: 1, M1: 4, EF1: 2, EM1: 8}
 env.set_node_rewards(reward_map, "complex")
 
 #Search until finding terminal mechanism with desired reward
 while not finish:
+    print("---")
     action = searcher.search(initialState=env)
     finish, final_graph = env.step(action)
+    print(env.counter_action)
 
 # Plot final graph
 plt.figure()

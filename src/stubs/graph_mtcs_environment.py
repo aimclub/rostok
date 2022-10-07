@@ -16,7 +16,7 @@ class RuleAction:
         return self.rule.replaced_node
     
     def is_terminal(self):
-        return rule_is_terminal(self.rule)
+        return self.rule.is_terminal
     # For this algorithm need override hash method
     
     def __hash__(self):
@@ -46,13 +46,14 @@ class GraphEnvironment():
         
         def filter_exist_node(action):
             out = False
+            flags_max_actions = self.counter_action >= self.max_actions_not_terminal
             if action.get_replaced_node().label == node:
-                if action.is_terminal():
+                if action.is_terminal() and flags_max_actions:
                     out = True
-                if self.counter_action <= self.max_actions_not_terminal:
+                if not flags_max_actions:
                     out = True
+                
             return out
-            
         label_nodes = {node[1]["Node"].label for node in self.graph.nodes.items()}
         possible_actions = []
         for node in label_nodes:
@@ -64,10 +65,10 @@ class GraphEnvironment():
     
     def takeAction(self, action):
         rule_action = action.rule
-        if not action.is_terminal():
-            self.counter_action += 1
         new_state = deepcopy(self)
         new_state.graph.apply_rule(rule_action)
+        if not action.is_terminal():
+            new_state.counter_action += 1
         return new_state
     
     # Condition on terminal graph
@@ -83,7 +84,8 @@ class GraphEnvironment():
         func_rewards = {"mul" : get_graph_mul_reward,
                         "complex": get_graph_sum_complex_reward}
         if self.map_nodes_reward:
-            self.reward = func_rewards[self.type_of_reward](self.graph,self.map_nodes_reward)
+            reward = func_rewards[self.type_of_reward](self.graph,self.map_nodes_reward)
+            self.reward = reward
         else:
             nodes = [node[1]["Node"] for node in self.graph.nodes.items()]
             self.reward = 10 if len(nodes) == 4 else 0
@@ -95,6 +97,7 @@ class GraphEnvironment():
         new_state = self.takeAction(action)
         self.graph = new_state.graph
         self.reward = new_state.reward
+        self.counter_action = new_state.counter_action
         done = new_state.isTerminal()
         
         if render:
