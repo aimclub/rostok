@@ -11,6 +11,7 @@ from abc import ABC
 def get_controllable_joints(blocks: list[Block]):
     control_joints = []
     for path in blocks:
+        line = []
         for n in path:
             if isinstance(n, ChronoRevolveJoint):
                 control_joints.append(n)
@@ -92,8 +93,6 @@ class ChPID(chrono.ChFunction_SetpointCallback):
         self.joint = joint
         self.prev_time = 0.
         self.des_pos = 0.
-        self.des_vel = 0.
-        self.des_acc = 0.
         self.F = 0
 
     def Clone(self):
