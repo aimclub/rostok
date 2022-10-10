@@ -68,12 +68,12 @@ DeliteEndFinger.id_node_connect_parent = 0
 DeliteEndFinger.graph_insert = rule_graph
 DeliteEndFinger.replaced_node = EF
 
-# DeliteFinger = Rule()
-# rule_graph = nx.DiGraph()
-# DeliteFinger.id_node_connect_child = 0
-# DeliteFinger.id_node_connect_parent = 0
-# DeliteFinger.graph_insert = rule_graph
-# DeliteFinger.replaced_node = J
+DeliteFinger = Rule()
+rule_graph = nx.DiGraph()
+DeliteFinger.id_node_connect_child = 0
+DeliteFinger.id_node_connect_parent = 0
+DeliteFinger.graph_insert = rule_graph
+DeliteFinger.replaced_node = L
 
 DeliteEndMount = Rule()
 rule_graph = nx.DiGraph()
@@ -85,7 +85,7 @@ DeliteEndMount.replaced_node = EM
 
 G = GraphGrammar()
 rule_action = [PalmCreate, Mount, MountAdd, MountAdd, MountUpper, FingerUpper,
-               DeliteEndMount, DeliteEndFinger]
+               DeliteEndFinger]
 
 reward_map = {J: 1, L: 2, P: 1, U: 1, M: 4, EF: 8, EM: 1}
 

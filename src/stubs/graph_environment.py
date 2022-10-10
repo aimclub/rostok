@@ -1,6 +1,6 @@
 from copy import deepcopy
 from engine.node import *
-from stubs.graph_reward import get_graph_sum_complex_reward, get_graph_mul_reward
+from stubs.graph_reward import Reward
 
 # Function finding non terminal rules 
 def rule_is_terminal(rule: Rule):
@@ -10,17 +10,22 @@ def rule_is_terminal(rule: Rule):
 
 class RuleAction:
     def __init__(self,rule):
-        self.rule = rule
-    
+        self.__rule = rule
+        
+    @property
+    def get_rule(self):
+        return self.__rule
+
     def get_replaced_node(self):
-        return self.rule.replaced_node
+        return self.__rule.replaced_node
     
     def is_terminal(self):
-        return self.rule.is_terminal
+        return self.__rule.is_terminal
+    
     # For this algorithm need override hash method
     
     def __hash__(self):
-        return hash(self.rule)
+        return hash(self.__rule)
 
 # Class "environment" graph
 
@@ -48,7 +53,7 @@ class GraphEnvironment():
             out = False
             flags_max_actions = self.counter_action >= self.max_actions_not_terminal
             if action.get_replaced_node().label == node:
-                if action.is_terminal() and flags_max_actions:
+                if action.is_terminal():
                     out = True
                 if not flags_max_actions:
                     out = True
@@ -64,7 +69,7 @@ class GraphEnvironment():
     # take action and return new state environment
     
     def takeAction(self, action):
-        rule_action = action.rule
+        rule_action = action.get_rule
         new_state = deepcopy(self)
         new_state.graph.apply_rule(rule_action)
         if not action.is_terminal():
@@ -81,10 +86,8 @@ class GraphEnvironment():
     
     def getReward(self): # Add calculate reward
         # Reward in number (3) of nodes graph mechanism
-        func_rewards = {"mul" : get_graph_mul_reward,
-                        "complex": get_graph_sum_complex_reward}
         if self.map_nodes_reward:
-            reward = func_rewards[self.type_of_reward](self.graph,self.map_nodes_reward)
+            reward = self.function_reward(self.graph,self.map_nodes_reward)
             self.reward = reward
         else:
             nodes = [node[1]["Node"] for node in self.graph.nodes.items()]
@@ -107,9 +110,9 @@ class GraphEnvironment():
             plt.show()
         return done, self.graph
     
-    def set_node_rewards(self, map_of_reward: map, type_reward: str = "mul"):
+    def set_node_rewards(self, map_of_reward: map, func_reward: Reward.complex):
         self.map_nodes_reward = map_of_reward
-        self.type_of_reward = type_reward
+        self.function_reward = func_reward
     
     # Reset environment (experimental version)
     def reset(self, new_rules = None):
