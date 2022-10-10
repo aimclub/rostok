@@ -17,6 +17,22 @@ import engine.robot as robot
 import engine.control as control
 
 
+def plot_graph(graph):
+    plt.figure()
+    nx.draw_networkx(graph, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
+                    labels={n: G.nodes[n]["Node"].label for n in G})
+    plt.figure()
+    nx.draw_networkx(graph, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
+
+    fig = plt.figure()
+    ax = fig.add_subplot()
+    ax.axis([0, 10, 0, 10])
+    ax.text(2, 8, 'Close all matplotlib for start simlation', style='italic', fontsize=15,
+            bbox={'facecolor': 'red', 'alpha': 0.5, 'pad': 10})
+
+    plt.show()
+
+
 # Define block types
 mat = chrono.ChMaterialSurfaceNSC()
 mat.SetFriction(0.5)
@@ -232,6 +248,9 @@ mysystem.Add(obj)
 blocks = robot.block_map.values()
 body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
 make_collide(body_block, CollisionGroup.Robot)
+
+# Visualization
+plot_graph(G)
 
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(mysystem)
