@@ -1,5 +1,5 @@
+from dataclasses import dataclass
 from engine.node import Node, GraphGrammar
-
 
 # The deeper the node, the greater the reward
 def get_graph_sum_complex_reward(graph: GraphGrammar, reward_map: dict[Node, float]) -> float:
@@ -34,3 +34,8 @@ def get_graph_mul_reward(graph: GraphGrammar, reward_map: dict[Node, float]) -> 
             mul *= node_reward
 
     return mul
+
+
+class Reward:
+    complex = get_graph_sum_complex_reward
+    multiply = get_graph_mul_reward

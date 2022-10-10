@@ -52,6 +52,9 @@ class Rule:
     @ property
     def is_terminal(self):
         return self._is_terminal
+    
+    def __hash__(self):
+        return hash(self.graph_insert)
 
 
 @dataclass
@@ -131,8 +134,16 @@ class GraphGrammar(nx.DiGraph):
 
     def apply_rule(self, rule: Rule):
         ids = self.find_nodes(rule.replaced_node)
+        edge_list = list(self.edges)
         id_closest = self.closest_node_to_root(ids)
-        self._replace_node(id_closest, rule)
+        if rule.graph_insert.order() == 0:
+            # Stub removing leaf node if input rule is empty
+            out_edges_ids_node = list(filter(lambda x: x[0] == id_closest, edge_list))
+            if out_edges_ids_node:
+                raise Exception("Trying delete not leaf node") 
+            self.remove_node(id_closest)
+        else:
+            self._replace_node(id_closest, rule)
 
     def graph_partition_dfs(self):
         paths = []
