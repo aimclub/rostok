@@ -228,16 +228,17 @@ mysystem = chrono.ChSystemNSC()
 mysystem.Set_G_acc(chrono.ChVectorD(0,0,0))
 
 robot = robot.Robot(G, mysystem)
+joint_blocks = robot.get_joints
 
 base_id = robot.graph.find_nodes(F1)[0]
 robot.block_map[base_id].body.SetBodyFixed(True)
 
 # Add fixed torque
-joint_block_id = robot.graph.find_nodes(J1)[0]
-joint_block: chrono.ChMarker = robot.block_map[joint_block_id]
-controller = control.TrackingControl(joint_block)
-controller.set_function_trajectory(lambda x: 0.1)
- 
+controller = []
+for joint in joint_blocks:
+    controller.append(control.TrackingControl(joint))
+    controller[-1].set_function_trajectory(lambda x: 1)
+
 # Add object to grab
 obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,1000,True,True,mat)
 obj.SetCollide(True)
