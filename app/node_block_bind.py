@@ -235,7 +235,7 @@ robot.block_map[base_id].body.SetBodyFixed(True)
 
 # Add fixed torque
 controller = []
-for joint in joint_blocks:
+for joint in joint_blocks.values():
     controller.append(control.TrackingControl(joint))
     controller[-1].set_function_trajectory(lambda x: 1)
 

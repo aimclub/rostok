@@ -1,20 +1,21 @@
 from time import sleep
+from node_block_bind import plot_graph
 import context
 
-from engine.node  import BlockWrapper, Node, Rule, GraphGrammar
+from engine.node  import BlockWrapper, Node, Rule, GraphGrammar, ROOT
 from engine.node_render import *
-import engine.robot as robot
-import engine.control as control
-
+from engine.blocks_utils import make_collide, CollisionGroup   
 from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
 from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
     Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
     Q_ROTATE_X_TO_Y, Q_ROTATE_X_TO_Z
 import pychrono as chrono
-
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
+
+import engine.robot as robot
+import engine.control as ctrl
 
 # Define block types
 mat = chrono.ChMaterialSurfaceNSC()
@@ -212,59 +213,33 @@ for i in list(rule_action):
 
 mysystem = chrono.ChSystemNSC()
 mysystem.Set_G_acc(chrono.ChVectorD(0,0,0))
-wrapper_array = G.build_wrapper_array()
+
+robot = robot.Robot(G, mysystem)
+joint_blocks = robot.get_joints
 
 obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,1000,True,True,mat)
 obj.SetCollide(True)
 obj.SetPos(chrono.ChVectorD(0,1.2,0))
 mysystem.Add(obj)
 
+base_id = robot.graph.find_nodes(F1)[0]
+robot.block_map[base_id].body.SetBodyFixed(True)
 
-
-blocks = []
-uniq_blocks = {}
-for wrap in wrapper_array:
-    block_line = []
-    for id, wrapper in wrap:
-        if not (id in uniq_blocks.keys()):
-            wrapper.builder = mysystem
-            block_buf = wrapper.create_block()
-            block_line.append(block_buf)
-            uniq_blocks[id] = block_buf
-        else:
-            block_buf = uniq_blocks[id]
-            block_line.append(block_buf)
-    blocks.append(block_line)
-
-for line in blocks:
-    build_branch(line)
-blocks[0][0].body.SetBodyFixed(True)
-
-blocks[1][-1].body.SetCollide(True)
-blocks[0][-1].body.SetCollide(True)
-blocks[2][-1].body.SetCollide(True)
-
-rev_joint = ctrl.get_controllable_joints(blocks)
-def sine(x, amp, omg, off = 0):
-    return amp*np.sin(omg*x + off)
 # Create simulation loop
-# des_points_1 = np.array([0, -0.3, 0.3, -0.2, 0.4])
 des_points_1 = np.array([0, 0.1, 0.2, 0.3, 0.4])
 des_points_1_1 = - des_points_1
-des_points_2 = np.array([-0.5, -0.6, -0.6, -0.7, -0.8])
-time_pos = np.array([[0.5, 1, 1.25, 1.5, 2],
-                    [0, -0.3, 0.3, -0.2, 0.4]])
 
 pid_track = []
-for idx, finger in enumerate(rev_joint):
-    for joint in finger:
-        if idx != 2:
-            pid_track.append(ctrl.ChControllerPID(joint ,80.,5.,1.)) # ctrl.TrackingControl(joint)
-            pid_track[-1].set_des_positions_interval(des_points_1,(0.1,2))
-        else:
-            pid_track.append(ctrl.ChControllerPID(joint ,80.,5.,1.)) # ctrl.TrackingControl(joint)
-            pid_track[-1].set_des_positions_interval(des_points_1_1,(0.1,2))
-        print(idx)
+for id, joint in joint_blocks.items():
+    if id not in[44, 47]:
+        pid_track.append(ctrl.ChControllerPID(joint ,80.,5.,1.)) # ctrl.TrackingControl(joint)
+        pid_track[-1].set_des_positions_interval(des_points_1,(0.1,2))
+    else:
+        pid_track.append(ctrl.ChControllerPID(joint ,80.,5.,1.)) # ctrl.TrackingControl(joint)
+        pid_track[-1].set_des_positions_interval(des_points_1_1,(0.1,2))
+        
+# Visualization
+plot_graph(G)
 
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(mysystem)
@@ -275,20 +250,15 @@ vis.AddCamera(chrono.ChVectorD(8, 8, -6))
 vis.AddTypicalLights()
 
 
-plt.figure()
-nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
-                 labels={n: G.nodes[n]["Node"].label for n in G})
-plt.figure()
-nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
-plt.show()
+# Make robot collide
+blocks = robot.block_map.values()
+body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
+make_collide(body_block, CollisionGroup.Robot)
 
-mes_motor_torque = np.array([])
-arr_time = []
+
 while vis.Run():
     mysystem.Update()
     mysystem.DoStepDynamics(5e-3)
-    arr_time.append(mysystem.GetChTime())
-    mes_motor_torque = np.hstack((mes_motor_torque,rev_joint[0][0].joint.GetMotorTorque()))
     vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
     vis.Render()
     

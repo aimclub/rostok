@@ -59,5 +59,5 @@ class Robot:
                         for out_edge in out_edges:
                             self.__joint_graph.add_edge(in_edge[0],out_edge[1])
         self.__joint_graph.remove_nodes_from(not_joints)               
-        joint_blocks = [self.block_map[node] for node in list(self.__joint_graph)]
+        joint_blocks = {node: self.block_map[node] for node in list(self.__joint_graph)}
         return joint_blocks
