@@ -14,7 +14,7 @@ class FlagsSimualtions:
     def get_flag_state(self):
         return self.__flags_state
 
-class BadSimulation(FlagsSimualtions):
+class StopSimulation(FlagsSimualtions):
     def __init__(self, chrono_system, in_robot: robot.Robot, obj: chrono.ChBody,
                  time_to_contact: float, time_without_contact: float):
         super().__init__(chrono_system, in_robot, obj)
@@ -55,6 +55,9 @@ class SuccessSimulation(FlagsSimualtions):
     def __init__(self, chrono_system, in_robot: robot.Robot, obj: chrono.ChBody):
         super().__init__(chrono_system, in_robot, obj)
 
+    def sim_stop(self):
+        self.__number_contacts()
+        return True
         
     def __number_contacts(self):
         blocks = self.robot.block_map.values()
