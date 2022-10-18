@@ -1,5 +1,7 @@
 import context
 from engine.node import GraphGrammar
+from engine.node_render import ChronoBody
+from utils.blocks_utils import make_collide, CollisionGroup   
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 from engine.robot import Robot
@@ -23,15 +25,50 @@ class MinimizeStopper(object):
             # print("Elapsed: %.3f sec" % elapsed)
             return False
 
-class StepOptimization:
-    def __init__(self, control_trajectory, graph_mechanism: GraphGrammar, grasp_object: chrono.ChBody):
+class SimulationStepOptimization:
+    def __init__(self, control_trajectory, graph_mechanism: GraphGrammar, grasp_object: chrono.ChBody,  is_optimize: bool = False):
         self.control_trajectory = control_trajectory
         self.graph_mechanism = graph_mechanism
         self.grasp_object = grasp_object
         
         self.chrono_system = chrono.ChSystemNSC()
-        self.grasp_robot = Robot(self.graph_mechanism, self.chrono_system)
-
+        self.grab_robot = Robot(self.graph_mechanism, self.chrono_system)
+        
+        ids_blocks = list(self.grab_robot.block_map.keys())
+        base_id = graph_mechanism.closest_node_to_root(ids_blocks)
+        self.grab_robot.block_map[base_id].body.SetBodyFixed(True)
+        
+        blocks = self.grab_robot.block_map.values()
+        body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
+        make_collide(body_block, CollisionGroup.Robot)
+        
+        self.chrono_system.Add(self.grasp_object)
+        self.chrono_system.Set_G_acc(chrono.ChVectorD(0,0,0))
+        
+        if is_optimize:
+            # TODO: add function change joint to torque input
+            pass
+        self.controller_joints = []
+        
+        try:
+            for id_finger, finger in enumerate(self.grasp_robot.get_joints):
+                for id_joint, joint in finger:
+                    self.controller_joints.append(control.TrackingControl(joint))
+                    self.controller_joints[-1].set_des_positions(control_trajectory[id_finger][id_joint])
+        except IndexError:
+            raise IndexError("Arries control and joints aren't same shape")
+    
+    def change_config_system(self, dict_config: dict):
+            for str_method, input in dict_config.items():
+                try:
+                    metod_system = getattr(self.chrono_system, str_method)
+                    metod_system(input)
+                except AttributeError:
+                    raise AttributeError("Chrono system don't have method {0}".format(str_method))
+                
+    def simulate_system(self):
+        
+        
 class SimulationLooper:
     def __init__(self,
                  chrono_system: chrono.ChSystem,
@@ -61,7 +98,7 @@ class SimulationLooper:
         if hasattr(self,"function_constructor_robot"):
             self.function_constructor_robot(self.grab_robot)
         
-        ids_blocks = grab_robot.block_map.keys()
+        ids_blocks = list(grab_robot.block_map.keys())
         base_id = graph_mechanism.closest_node_to_root(ids_blocks)
         grab_robot.block_map[base_id].body.SetBodyFixed(True)
         
