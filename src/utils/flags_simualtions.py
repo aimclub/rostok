@@ -1,5 +1,4 @@
 from functools import reduce
-import context
 import engine.robot as robot
 import pychrono as chrono
 from engine.node_render import ChronoBody
@@ -27,7 +26,7 @@ class StopSimulation(FlagsSimualtions):
         self.time_last_contact = float("inf")
         self.time_first_contact = float("inf")
         
-    def sim_stop(self):
+    def stop_simulation(self):
         prev_time = self.curr_time
         current_time = self.system.GetChTime()
         
@@ -41,16 +40,18 @@ class StopSimulation(FlagsSimualtions):
             self.flag_slipout = not self.__is_contact() if current_time - self.time_last_contact >= self.time_out_contact and not self.flag_slipout else False
         
         self.curr_time = current_time
-        return self.__diff_center2object()
+        return self.flag_not_contact or self.flag_slipout
     
     def __is_contact(self):
         blocks = self.robot.block_map.values()
         body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
         array_normal_forces = map(lambda x: x.list_n_forces, body_block)
+        # array_normal_forces = map(lambda x: [0.] if x == None else x, array_normal_forces)
         sum_contacts = reduce(lambda x, y: sum(x) if isinstance(x,list) else x + sum(y),
                               array_normal_forces)
         return not sum_contacts == 0
 
+#TODO: Probably useful class later (20.10)
 class SuccessSimulation(FlagsSimualtions):
     def __init__(self, chrono_system, in_robot: robot.Robot, obj: chrono.ChBody):
         super().__init__(chrono_system, in_robot, obj)
@@ -63,7 +64,8 @@ class SuccessSimulation(FlagsSimualtions):
         blocks = self.robot.block_map.values()
         body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
         array_normal_forces = map(lambda x: x.list_n_forces, body_block)
-        is_contact = map(lambda x: not (sum(x) == 0) or x , # if isinstance(x,list) else x
-                              array_normal_forces)
-        number_contact = sum(is_contact)
+        #arr = list(array_normal_forces)
+        is_contact = filter(lambda x: x != None and sum(x) != 0, array_normal_forces)
+        list_contact = list(is_contact)
+        number_contact = len(list_contact)
         return number_contact

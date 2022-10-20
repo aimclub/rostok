@@ -77,7 +77,7 @@ class ChronoBody(BlockBody):
         self.body.SetMass(mass)
 
         # Create shape
-        # TODO setter for shape
+        # TODO: setter for shape
         box_asset = chrono.ChBoxShape()
         box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width, length, width)
 
@@ -113,6 +113,9 @@ class ChronoBody(BlockBody):
         self._ref_frame_out = out_marker
         self.transformed_frame_out = transformed_out_marker
 
+        # Normal Forces
+        self.__contact_reporter = self.ContactReporter(self.body)
+        
         if random_color:
             rgb = [random.random(), random.random(), random.random()]
             rgb[int(random.random() * 2)] *= 0.2
@@ -199,8 +202,7 @@ class ChronoBody(BlockBody):
         if contacts:
             self.__contact_reporter.list_clear()
             container.ReportAllContacts(self.__contact_reporter)
-        if ~self.__contact_reporter.is_empty():
-            return self.__contact_reporter.get_list_n_forces()
+        return self.__contact_reporter.get_list_n_forces()
 
 
 

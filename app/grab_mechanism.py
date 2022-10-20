@@ -12,7 +12,7 @@ import pychrono as chrono
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
-from flags_simualtions import SuccessSimulation, StopSimulation
+from utils.flags_simualtions import SuccessSimulation, StopSimulation
 import engine.robot as robot
 import engine.control as ctrl
 
@@ -253,13 +253,12 @@ vis.AddTypicalLights()
 blocks = robot.block_map.values()
 body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
 make_collide(body_block, CollisionGroup.Robot)
-success = SuccessSimulation(mysystem, robot, obj)
+stopper = StopSimulation(mysystem, robot, obj, 1, 0.1)
 # Create simulation loop
 while vis.Run():
     mysystem.Update()
     mysystem.DoStepDynamics(5e-3)
     vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
     vis.Render()
-    if mysystem.GetChTime() > 0:
-        success.sim_stop()
+    if stopper.stop_simulation(): break
     vis.EndScene()
