@@ -1,14 +1,17 @@
 from engine.node import Node, BlockWrapper, WrapperTuple, GraphGrammar
-from engine.node_render import connect_blocks, ChronoRevolveJoint
+from engine.node_render import connect_blocks, ChronoRevolveJoint, ChronoBody
 import networkx as nx
+import pychrono.core as chrono
 
 class Robot:
     def __init__(self, robot_graph: GraphGrammar, simulation):
         self.graph = robot_graph
         self.__joint_graph = nx.DiGraph()
         wrapper_tuple_array = self.graph.build_terminal_wrapper_array()
+        self.grab_center = chrono.ChMarker()
         # Map { id from graph : block }
         self.block_map = self.__build_robot(simulation, wrapper_tuple_array)
+        
 
     def __build_robot(self, simulation, wrapper_tuple_array: list[list[WrapperTuple]]):
         blocks = []
@@ -61,3 +64,15 @@ class Robot:
         self.__joint_graph.remove_nodes_from(not_joints)               
         joint_blocks = {node: self.block_map[node] for node in list(self.__joint_graph)}
         return joint_blocks
+    
+    # TODO: Change to correct method
+    def desired_grab_center(self):
+        blocks = self.block_map.values()
+        body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
+        sum_cog_coord = chrono.ChVectorD(0,0,0) 
+        bodies = list(body_block)
+        for body in bodies:
+            sum_cog_coord += body.body.GetFrame_COG_to_abs().GetPos()
+        num = bodies
+        des_center: chrono.ChVectorD = sum_cog_coord / len(bodies)
+        return des_center
