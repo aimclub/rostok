@@ -66,7 +66,7 @@ class Robot:
         return joint_blocks
     
     # TODO: Change to correct method
-    def desired_grab_center(self):
+    def mean_center(self):
         blocks = self.block_map.values()
         body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
         sum_cog_coord = chrono.ChVectorD(0,0,0) 
@@ -74,5 +74,5 @@ class Robot:
         for body in bodies:
             sum_cog_coord += body.body.GetFrame_COG_to_abs().GetPos()
         num = bodies
-        des_center: chrono.ChVectorD = sum_cog_coord / len(bodies)
-        return des_center
+        E_center: chrono.ChVectorD = sum_cog_coord / len(bodies)
+        return E_center
