@@ -252,14 +252,9 @@ body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
 make_collide(body_block, CollisionGroup.Robot)
 
 # Visualization
-# plot_graph(G)
+plot_graph(G)
 
 # Flags
-# flag_slipout = FlagSlipout(mysystem, robot1, obj, 0.5, 0.1)
-# flag_not_contact = FlagNotContact(mysystem, robot1, obj, 0.5)
-# flags = []
-# flags.append(flag_slipout)
-# flags.append(flag_not_contact) 
 time_to_contact = 0.5
 time_without_contact = 0.2
 flags = {FlagSlipout:(time_to_contact,time_without_contact),
