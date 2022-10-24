@@ -5,9 +5,9 @@ import networkx as nx
 
 class Robot:
     def __init__(self, robot_graph: GraphGrammar, simulation):
-        self.graph = robot_graph
+        self.__graph = robot_graph
         self.__joint_graph = nx.DiGraph()
-        wrapper_tuple_array = self.graph.build_terminal_wrapper_array()
+        wrapper_tuple_array = self.__graph.build_terminal_wrapper_array()
         # Map { id from graph : block }
         self.block_map = self.__build_robot(simulation, wrapper_tuple_array)
         self.__bind_blocks_to_graph()
@@ -39,10 +39,10 @@ class Robot:
         return uniq_blocks
     
     def __bind_blocks_to_graph(self):
-        for node_id, node in self.graph.nodes.items():
+        for node_id, node in self.__graph.nodes.items():
             block = self.block_map[node_id]
             # Modify graph
-            node[Block] = block
+            node["Block"] = block
 
     @property
     def get_joints(self):
@@ -53,7 +53,7 @@ class Robot:
             else:
                 return False
         
-        self.__joint_graph: nx.DiGraph = nx.DiGraph(self.graph)
+        self.__joint_graph: nx.DiGraph = nx.DiGraph(self.__graph)
         not_joints = []
         for raw_node in self.__joint_graph.nodes.items():
             node: Node = raw_node[1]["Node"]
@@ -69,3 +69,7 @@ class Robot:
         self.__joint_graph.remove_nodes_from(not_joints)               
         joint_blocks = {node: self.block_map[node] for node in list(self.__joint_graph)}
         return joint_blocks
+    
+    @property
+    def graph(self):
+        return self.__graph

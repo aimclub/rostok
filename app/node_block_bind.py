@@ -3,7 +3,7 @@ import context
 
 from engine.node  import BlockWrapper, Node, Rule, GraphGrammar, ROOT
 from engine.node_render import *
-from engine.blocks_utils import make_collide, CollisionGroup   
+from utils.blocks_utils import make_collide, CollisionGroup   
 from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
 from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
     Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
