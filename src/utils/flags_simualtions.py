@@ -4,22 +4,42 @@ import engine.robot as robot
 import pychrono as chrono
 from engine.node_render import ChronoBody
 
-
+class BuilderNotInitializedError(Exception):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.message = args[0] if args else None
+        
+    def __str__(self):
+        return_str = 'Builder Not Initialized: {0}!'.format(self.message) if self.message else 'Builder Not Initialized before use it!'
+        return return_str
+        
 class FlagStopSimualtions(ABC):
-    def __init__(self, chrono_system: chrono.ChSystem, in_robot: robot.Robot, obj: chrono.ChBody):
+    def __init__(self):
         self.flag_state = False
+        self.robot = None
+        self.obj = None
+        self.system = None
+        
+    def builder(self, chrono_system: chrono.ChSystem, in_robot: robot.Robot, obj: chrono.ChBody):
+        self.INIT_BUILD = True
         self.robot = in_robot
         self.obj = obj
         self.system = chrono_system
-        
+            
+    def _check_builder(self):
+        if self.robot is None or self.obj is None or self.system is None:
+            raise BuilderNotInitializedError("Flags builder must initialize for checking")
+    
     def get_flag_state(self):
+        self._check_builder()
         return self.flag_state
 
 class FlagWithContact(FlagStopSimualtions, ABC):
-    def __init__(self, chrono_system, in_robot: robot.Robot, obj: chrono.ChBody):
-        super().__init__(chrono_system, in_robot, obj)
+    def __init__(self):
+        super().__init__()
         
     def get_flag_state(self):
+        self._check_builder()
         self.flag_state =self.is_contact()
         return self.flag_state
     
@@ -32,9 +52,8 @@ class FlagWithContact(FlagStopSimualtions, ABC):
         return not sum_contacts == 0
         
 class FlagSlipout(FlagWithContact):
-    def __init__(self, chrono_system, in_robot: robot.Robot, obj: chrono.ChBody,
-                 time_to_contact: float = 3., time_without_contact: float = 0.2):
-        super().__init__(chrono_system, in_robot, obj)
+    def __init__(self, time_to_contact: float = 3., time_without_contact: float = 0.2):
+        super().__init__()
         
         self.time_to_contact = time_to_contact
         self.time_out_contact = time_without_contact
@@ -44,6 +63,7 @@ class FlagSlipout(FlagWithContact):
         self.time_last_contact = float("inf")
         
     def get_flag_state(self):
+        self._check_builder()
         prev_time = self.curr_time
         current_time = self.system.GetChTime()
         
@@ -55,9 +75,8 @@ class FlagSlipout(FlagWithContact):
         return self.flag_state
 
 class FlagNotContact(FlagWithContact):
-    def __init__(self, chrono_system, in_robot: robot.Robot, obj: chrono.ChBody,
-                 time_to_contact: float = 3.):
-        super().__init__(chrono_system, in_robot, obj)
+    def __init__(self, time_to_contact: float = 3.):
+        super().__init__()
         
         self.time_to_contact = time_to_contact
         
@@ -67,6 +86,7 @@ class FlagNotContact(FlagWithContact):
         self.time_first_contact = float("inf")
         
     def get_flag_state(self):
+        self._check_builder()
         prev_time = self.curr_time
         current_time = self.system.GetChTime()
         
@@ -80,12 +100,15 @@ class FlagNotContact(FlagWithContact):
     
 
 class ConditionStopSimulation:
-    def __init__(self, chrono_system: chrono.ChSystem, in_robot: robot.Robot, obj: chrono.ChBody, flags: dict):
+    def __init__(self, chrono_system: chrono.ChSystem, in_robot: robot.Robot, obj: chrono.ChBody, flags: list[FlagStopSimualtions]):
         self.__stop_flag = False
         self.chrono_system = chrono_system
         self.in_robot = in_robot
         self.obj = obj
-        self.flags = {flag(chrono_system,in_robot,obj, *params) for flag, params in flags.items()}
+        self.flags = flags
+        
+        for flag in flags:
+            flag.builder(self.chrono_system, self.in_robot, self.obj)
         
     def flag_stop_simulation(self):
         state_flags = map(lambda x: x.get_flag_state(), self.flags)

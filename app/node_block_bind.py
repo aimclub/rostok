@@ -252,13 +252,13 @@ body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
 make_collide(body_block, CollisionGroup.Robot)
 
 # Visualization
-plot_graph(G)
+# plot_graph(G)
 
 # Flags
 time_to_contact = 0.5
 time_without_contact = 0.2
-flags = {FlagSlipout:(time_to_contact,time_without_contact),
-         FlagNotContact:(time_to_contact,)}
+flags = [FlagSlipout(time_to_contact,time_without_contact),
+         FlagNotContact(time_to_contact)]
 condition_stop_simulation = ConditionStopSimulation(mysystem, robot1, obj, flags)
 
 vis = chronoirr.ChVisualSystemIrrlicht()
