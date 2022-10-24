@@ -12,14 +12,14 @@ class FlagStopSimualtions(ABC):
         self.obj = obj
         self.system = chrono_system
         
-    def check_stop_condition(self):
+    def get_flag_state(self):
         return self.flag_state
 
-class FlagWithContact(FlagStopSimualtions):
+class FlagWithContact(FlagStopSimualtions, ABC):
     def __init__(self, chrono_system, in_robot: robot.Robot, obj: chrono.ChBody):
         super().__init__(chrono_system, in_robot, obj)
         
-    def check_stop_condition(self):
+    def get_flag_state(self):
         self.flag_state =self.is_contact()
         return self.flag_state
     
@@ -33,7 +33,7 @@ class FlagWithContact(FlagStopSimualtions):
         
 class FlagSlipout(FlagWithContact):
     def __init__(self, chrono_system, in_robot: robot.Robot, obj: chrono.ChBody,
-                 time_to_contact: float, time_without_contact: float):
+                 time_to_contact: float = 3., time_without_contact: float = 0.2):
         super().__init__(chrono_system, in_robot, obj)
         
         self.time_to_contact = time_to_contact
@@ -43,7 +43,7 @@ class FlagSlipout(FlagWithContact):
         self.curr_time = 0.
         self.time_last_contact = float("inf")
         
-    def check_stop_condition(self):
+    def get_flag_state(self):
         prev_time = self.curr_time
         current_time = self.system.GetChTime()
         
@@ -56,7 +56,7 @@ class FlagSlipout(FlagWithContact):
 
 class FlagNotContact(FlagWithContact):
     def __init__(self, chrono_system, in_robot: robot.Robot, obj: chrono.ChBody,
-                 time_to_contact: float):
+                 time_to_contact: float = 3.):
         super().__init__(chrono_system, in_robot, obj)
         
         self.time_to_contact = time_to_contact
@@ -66,7 +66,7 @@ class FlagNotContact(FlagWithContact):
         self.time_last_contact = float("inf")
         self.time_first_contact = float("inf")
         
-    def check_stop_condition(self):
+    def get_flag_state(self):
         prev_time = self.curr_time
         current_time = self.system.GetChTime()
         
@@ -77,3 +77,17 @@ class FlagNotContact(FlagWithContact):
         
         self.curr_time = current_time
         return self.flag_state
+    
+
+class ConditionStopSimulation:
+    def __init__(self, chrono_system: chrono.ChSystem, in_robot: robot.Robot, obj: chrono.ChBody, flags: dict):
+        self.__stop_flag = False
+        self.chrono_system = chrono_system
+        self.in_robot = in_robot
+        self.obj = obj
+        self.flags = {flag(chrono_system,in_robot,obj, *params) for flag, params in flags.items()}
+        
+    def flag_stop_simulation(self):
+        state_flags = map(lambda x: x.get_flag_state(), self.flags)
+        self.__stop_flag = reduce(lambda x,y: x or y, state_flags)
+        return self.__stop_flag

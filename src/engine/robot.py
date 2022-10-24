@@ -73,6 +73,5 @@ class Robot:
         bodies = list(body_block)
         for body in bodies:
             sum_cog_coord += body.body.GetFrame_COG_to_abs().GetPos()
-        num = bodies
-        E_center: chrono.ChVectorD = sum_cog_coord / len(bodies)
-        return E_center
+        mean_center: chrono.ChVectorD = sum_cog_coord / len(bodies)
+        return mean_center
