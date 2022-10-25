@@ -1,5 +1,4 @@
 from time import sleep
-from node_block_bind import plot_graph
 import context
 
 from engine.node  import BlockWrapper, Node, Rule, GraphGrammar, ROOT
@@ -13,7 +12,7 @@ import pychrono as chrono
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
-
+from utils.flags_simualtions import SuccessSimulation, StopSimulation
 import engine.robot as robot
 import engine.control as ctrl
 
@@ -225,7 +224,7 @@ mysystem.Add(obj)
 base_id = robot.graph.find_nodes(F1)[0]
 robot.block_map[base_id].body.SetBodyFixed(True)
 
-# Create simulation loop
+
 des_points_1 = np.array([0, 0.1, 0.2, 0.3, 0.4])
 des_points_1_1 = - des_points_1
 
@@ -239,7 +238,7 @@ for id, joint in joint_blocks.items():
         pid_track[-1].set_des_positions_interval(des_points_1_1,(0.1,2))
         
 # Visualization
-plot_graph(G)
+# plot_graph(G)
 
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(mysystem)
@@ -254,12 +253,12 @@ vis.AddTypicalLights()
 blocks = robot.block_map.values()
 body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
 make_collide(body_block, CollisionGroup.Robot)
-
-
+stopper = StopSimulation(mysystem, robot, obj, 1, 0.1)
+# Create simulation loop
 while vis.Run():
     mysystem.Update()
     mysystem.DoStepDynamics(5e-3)
     vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
     vis.Render()
-    
+    if stopper.stop_simulation(): break
     vis.EndScene()
