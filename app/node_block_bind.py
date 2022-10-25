@@ -252,6 +252,8 @@ make_collide(body_block, CollisionGroup.Robot)
 
 # Visualization
 plot_graph(G)
+# Partition
+partition_dfs = robot.get_dfs_partiton()
 
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(mysystem)

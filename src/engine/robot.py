@@ -3,6 +3,14 @@ from engine.node_render import Block, connect_blocks, ChronoRevolveJoint
 from dataclasses import dataclass
 import networkx as nx
 
+
+@dataclass
+class RobotNode:
+    id: int
+    block: Block
+    node: Node
+
+
 class Robot:
     def __init__(self, robot_graph: GraphGrammar, simulation):
         self.__graph = robot_graph
@@ -37,7 +45,7 @@ class Robot:
             connect_blocks(line)
 
         return uniq_blocks
-    
+
     def __bind_blocks_to_graph(self):
         for node_id, node in self.__graph.nodes.items():
             block = self.block_map[node_id]
@@ -46,13 +54,13 @@ class Robot:
 
     @property
     def get_joints(self):
-        
+
         def is_joint(node: Node):
             if node.block_wrapper.block_cls == ChronoRevolveJoint:
                 return True
             else:
                 return False
-        
+
         self.__joint_graph: nx.DiGraph = nx.DiGraph(self.__graph)
         not_joints = []
         for raw_node in self.__joint_graph.nodes.items():
@@ -65,11 +73,26 @@ class Robot:
                 if in_edges and out_edges:
                     for in_edge in in_edges:
                         for out_edge in out_edges:
-                            self.__joint_graph.add_edge(in_edge[0],out_edge[1])
-        self.__joint_graph.remove_nodes_from(not_joints)               
-        joint_blocks = {node: self.block_map[node] for node in list(self.__joint_graph)}
+                            self.__joint_graph.add_edge(
+                                in_edge[0], out_edge[1])
+        self.__joint_graph.remove_nodes_from(not_joints)
+        joint_blocks = {node: self.block_map[node]
+                        for node in list(self.__joint_graph)}
         return joint_blocks
-    
+
     @property
     def graph(self):
         return self.__graph
+
+    def get_dfs_partiton(self) -> list[list[RobotNode]]:
+        partition = self.graph.graph_partition_dfs()
+
+        def covert_to_robot_node(x): 
+            return RobotNode(x, 
+            self.graph.nodes()[x]["Block"], 
+            self.graph.nodes()[x]["Node"])
+        
+        partiton_graph = [list(map(covert_to_robot_node, x))
+                                                for x in partition]
+
+        return partiton_graph
