@@ -9,7 +9,7 @@
   * Активировать окружение lic_ai `conda activate lic_ai`
   * Установить Pychono из архива `conda install pychrono-7.0.0-py39_2112.tar.bz2`
 * Установка движка способ 2
-  * conda install -c projectchrono pychrono
+  * `conda install -c projectchrono pychrono`
   
 # Прокидываем дисплей через Docker
 
