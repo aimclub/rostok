@@ -12,7 +12,6 @@ import pychrono as chrono
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
-from utils.flags_simualtions import SuccessSimulation, StopSimulation
 import engine.robot as robot
 import engine.control as ctrl
 
