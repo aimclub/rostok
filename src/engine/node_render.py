@@ -77,7 +77,7 @@ class ChronoBody(BlockBody):
         self.body.SetMass(mass)
 
         # Create shape
-        # TODO setter for shape
+        # TODO: setter for shape
         box_asset = chrono.ChBoxShape()
         box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width, length, width)
 
@@ -113,10 +113,52 @@ class ChronoBody(BlockBody):
         self._ref_frame_out = out_marker
         self.transformed_frame_out = transformed_out_marker
 
+        # Normal Forces
+        self.__contact_reporter = self.ContactReporter(self.body)
+        
         if random_color:
             rgb = [random.random(), random.random(), random.random()]
             rgb[int(random.random() * 2)] *= 0.2
             self.body.GetVisualShape(0).SetColor(chrono.ChColor(*rgb))
+
+            
+    class ContactReporter (chrono.ReportContactCallback):
+        def __init__(self, chrono_body) : 
+            self._body = chrono_body
+            self.__current_normal_forces = None
+            self.__list_normal_forces: list = []
+            super().__init__()
+
+        def OnReportContact(self,
+                            pA, # contact pA 
+                            pB, # contact pB 
+                            plane_coord, # contact plane coordsystem (A column 'X' is contact normal) 
+                            distance, # contact distance 
+                            eff_radius, # effective radius of curvature at contact 
+                            cforce, # react.forces (if already computed). In coordsystem 'plane_coord' 
+                            ctorque, # react.torques, if rolling friction (if already computed). 
+                            modA, # model A (note: some containers may not support it and could be nullptr) 
+                            modB): # model B (note: some containers may not support it and could be nullptr) 
+            bodyA = chrono.CastToChBody(modA)
+            bodyB = chrono.CastToChBody(modB)
+            if (bodyA == self._body) or (bodyB == self._body):
+                self.__current_normal_forces = cforce.x
+                self.__list_normal_forces.append(cforce.x)
+            return True
+        
+        def is_empty(self):
+            return len(self.__list_normal_forces) == 0
+        
+        def list_clear(self):
+            self.__list_normal_forces.clear()
+        
+        def get_normal_forces(self):
+            return self.__current_normal_forces
+        
+        def get_list_n_forces(self):
+            return self.__list_normal_forces
+
+    
 
     def move_to_out_frame(self, in_block: Block):
         self.builder.Update()
@@ -147,6 +189,21 @@ class ChronoBody(BlockBody):
     @property
     def ref_frame_in(self):
         return self._ref_frame_in
+    
+    @property
+    def normal_force(self):
+        self.builder.GetContactContainer().ReportAllContacts(self.__contact_reporter)
+        return self.__contact_reporter.get_normal_forces()
+    
+    @property
+    def list_n_forces(self):
+        container = self.builder.GetContactContainer()
+        contacts = container.GetNcontacts()
+        if contacts:
+            self.__contact_reporter.list_clear()
+            container.ReportAllContacts(self.__contact_reporter)
+        return self.__contact_reporter.get_list_n_forces()
+
 
 
 class ChronoRevolveJoint(BlockBridge):

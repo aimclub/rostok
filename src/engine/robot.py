@@ -1,14 +1,17 @@
 from engine.node import Node, BlockWrapper, WrapperTuple, GraphGrammar
-from engine.node_render import connect_blocks, ChronoRevolveJoint
+from engine.node_render import connect_blocks, ChronoRevolveJoint, ChronoBody
 import networkx as nx
+import pychrono.core as chrono
 
 class Robot:
     def __init__(self, robot_graph: GraphGrammar, simulation):
         self.graph = robot_graph
         self.__joint_graph = nx.DiGraph()
         wrapper_tuple_array = self.graph.build_terminal_wrapper_array()
+        self.grab_center = chrono.ChMarker()
         # Map { id from graph : block }
         self.block_map = self.__build_robot(simulation, wrapper_tuple_array)
+        
 
     def __build_robot(self, simulation, wrapper_tuple_array: list[list[WrapperTuple]]):
         blocks = []
