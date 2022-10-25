@@ -1,5 +1,8 @@
 import context
 from engine.node import GraphGrammar
+import pychrono as chrono
+import pychrono.irrlicht as chronoirr
+import time
 
 # Function for stopping simulation by time optimize
 class MinimizeStopper(object):
@@ -16,7 +19,14 @@ class MinimizeStopper(object):
             # you might want to report other stuff here
             # print("Elapsed: %.3f sec" % elapsed)
             return False
-        
+
+class SimulationLooper:
+    def __init__(self):
+        pass
+    
+    def do_iteration(self):
+        pass
+    
     
 class ControlOptimizer:
     def __init__(self, graph_mechanism: GraphGrammar, num_iterations: int):
@@ -50,9 +60,8 @@ class ControlOptimizer:
         blocks = robot1.block_map.values()
         body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
         make_collide(body_block, CollisionGroup.Robot)
+        
         # Visualization
-        # plot_graph(G)
-        # init_state_system = mysystem.Clone()
         vis = chronoirr.ChVisualSystemIrrlicht()
         vis.AttachSystem(mysystem)
         vis.SetWindowSize(1024,768)
