@@ -20,7 +20,7 @@ class FlagStopSimualtions(ABC):
         self.obj = None
         self.system = None
         
-    def builder(self, chrono_system: chrono.ChSystem, in_robot: robot.Robot, obj: chrono.ChBody):
+    def build(self, chrono_system: chrono.ChSystem, in_robot: robot.Robot, obj: chrono.ChBody):
         self.INIT_BUILD = True
         self.robot = in_robot
         self.obj = obj
@@ -108,7 +108,7 @@ class ConditionStopSimulation:
         self.flags = flags
         
         for flag in flags:
-            flag.builder(self.chrono_system, self.in_robot, self.obj)
+            flag.build(self.chrono_system, self.in_robot, self.obj)
         
     def flag_stop_simulation(self):
         state_flags = map(lambda x: x.get_flag_state(), self.flags)

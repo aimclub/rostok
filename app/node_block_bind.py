@@ -274,6 +274,5 @@ while vis.Run() and not condition_stop_simulation.flag_stop_simulation():
     mysystem.DoStepDynamics(1e-3)
     vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
     vis.Render()
-    print(condition_stop_simulation.flag_stop_simulation())
     vis.EndScene()
     

@@ -64,14 +64,3 @@ class Robot:
         self.__joint_graph.remove_nodes_from(not_joints)               
         joint_blocks = {node: self.block_map[node] for node in list(self.__joint_graph)}
         return joint_blocks
-    
-    # TODO: Change to correct method
-    def mean_center(self):
-        blocks = self.block_map.values()
-        body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
-        sum_cog_coord = chrono.ChVectorD(0,0,0) 
-        bodies = list(body_block)
-        for body in bodies:
-            sum_cog_coord += body.body.GetFrame_COG_to_abs().GetPos()
-        mean_center: chrono.ChVectorD = sum_cog_coord / len(bodies)
-        return mean_center
