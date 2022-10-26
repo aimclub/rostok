@@ -81,3 +81,4 @@ class Robot:
         for c in nx.connected_components(underected_graph_joint):
             joints_out.append([self.block_map[node_id] for node_id in c])     
         return joints_out
+

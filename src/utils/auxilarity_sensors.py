@@ -16,3 +16,9 @@ class RobotSensor:
         mean_center: chrono.ChVectorD = sum_cog_coord / len(bodies)
         return mean_center
     
+    @staticmethod
+    def sum_contact_forces(in_robot: Robot):
+        blocks = in_robot.block_map
+        body_block = filter(lambda x: isinstance(x.values(),ChronoBody),blocks)
+        
+        
