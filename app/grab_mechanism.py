@@ -3,7 +3,7 @@ import context
 
 from engine.node  import BlockWrapper, Node, Rule, GraphGrammar, ROOT
 from engine.node_render import *
-from engine.blocks_utils import make_collide, CollisionGroup   
+from utils.blocks_utils import make_collide, CollisionGroup   
 from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
 from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
     Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
@@ -12,7 +12,6 @@ import pychrono as chrono
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
-from utils.flags_simualtions import SuccessSimulation, StopSimulation
 import engine.robot as robot
 import engine.control as ctrl
 
@@ -221,7 +220,7 @@ obj.SetCollide(True)
 obj.SetPos(chrono.ChVectorD(0,1.2,0))
 mysystem.Add(obj)
 
-base_id = robot.graph.find_nodes(F1)[0]
+base_id = robot.get_block_graph().find_nodes(F1)[0]
 robot.block_map[base_id].body.SetBodyFixed(True)
 
 

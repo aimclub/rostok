@@ -3,8 +3,8 @@ import context
 
 from engine.node  import BlockWrapper, Node, Rule, GraphGrammar, ROOT
 from engine.node_render import *
-from utils.flags_simualtions import FlagNotContact, FlagSlipout, ConditionStopSimulation
-from engine.blocks_utils import make_collide, CollisionGroup   
+from utils.flags_simualtions import FlagSlipout, FlagNotContact, ConditionStopSimulation
+from utils.blocks_utils import make_collide, CollisionGroup   
 from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
 from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
     Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
@@ -228,11 +228,11 @@ for i in list(rule_action):
 mysystem = chrono.ChSystemNSC()
 mysystem.Set_G_acc(chrono.ChVectorD(0,0,0))
 
-robot1 = robot.Robot(G, mysystem)
-joint_blocks = robot1.get_joints
+grab_robot = robot.Robot(G, mysystem)
+joint_blocks = grab_robot.get_joints
 
-base_id = robot1.graph.find_nodes(F1)[0]
-robot1.block_map[base_id].body.SetBodyFixed(True)
+base_id = grab_robot.get_block_graph().find_nodes(F1)[0]
+grab_robot.block_map[base_id].body.SetBodyFixed(True)
 
 # Add fixed torque
 controller = []
@@ -247,19 +247,22 @@ obj.SetPos(chrono.ChVectorD(0,1.2,0))
 mysystem.Add(obj)
 
 # Make robot collide
-blocks = robot1.block_map.values()
+blocks = grab_robot.block_map.values()
 body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
 make_collide(body_block, CollisionGroup.Robot)
 
 # Visualization
-# plot_graph(G)
+plot_graph(G)
 
 # Flags
 time_to_contact = 0.5
 time_without_contact = 0.2
 flags = [FlagSlipout(time_to_contact,time_without_contact),
          FlagNotContact(time_to_contact)]
-condition_stop_simulation = ConditionStopSimulation(mysystem, robot1, obj, flags)
+condition_stop_simulation = ConditionStopSimulation(mysystem, grab_robot, obj, flags)
+
+# Partition
+partition_dfs = grab_robot.get_dfs_partiton()
 
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(mysystem)
@@ -275,4 +278,4 @@ while vis.Run() and not condition_stop_simulation.flag_stop_simulation():
     vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
     vis.Render()
     vis.EndScene()
-    
+ 
