@@ -34,6 +34,15 @@ class FlagStopSimualtions(ABC):
         self._check_builder()
         return self.flag_state
 
+class FlagMaxTime(FlagStopSimualtions):
+    def __init__(self, max_time_simulation):
+        super().__init__()
+        self.max_time = max_time_simulation
+        
+    def get_flag_state(self):
+        self._check_builder()
+        self.flag_state = self.system.GetChTime() > self.max_time
+
 class FlagWithContact(FlagStopSimualtions, ABC):
     def __init__(self):
         super().__init__()

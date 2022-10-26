@@ -1,7 +1,9 @@
+from dataclasses import dataclass
 import context
 from engine.node import GraphGrammar
 from engine.node_render import ChronoBody
-from utils.blocks_utils import make_collide, CollisionGroup   
+from utils.blocks_utils import make_collide, CollisionGroup
+from utils.flags_simualtions import ConditionStopSimulation, FlagStopSimualtions
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 from engine.robot import Robot
@@ -9,6 +11,20 @@ from chrono_simulatation import ChronoSimualtion
 import engine.control as control
 import time
 
+@dataclass(frozen=True)
+class SimulationDataBlock:
+    id_block: int
+    time: list[float]
+
+@dataclass(frozen=True)
+class DataJointBlock(SimulationDataBlock):
+    angle_list: list[float]
+
+@dataclass(frozen=True)
+class DataBodyBlock(SimulationDataBlock):
+    sum_contact_forces: list[float]
+    amount_contact_surfaces: list[float]
+    
 # Function for stopping simulation by time optimize
 class MinimizeStopper(object):
     def __init__(self, max_sec=0.3):
@@ -57,6 +73,12 @@ class SimulationStepOptimization:
                     self.controller_joints[-1].set_des_positions(control_trajectory[id_finger][id_joint])
         except IndexError:
             raise IndexError("Arries control and joints aren't same shape")
+        
+    def set_flags_stop_simulation(self, flags_stop_simulation: list[FlagStopSimualtions]):
+        self.condion_stop_simulation = ConditionStopSimulation(self.chrono_system,
+                                                                self.grab_robot,
+                                                                self.grasp_object,
+                                                                flags_stop_simulation)
     
     def change_config_system(self, dict_config: dict):
             for str_method, input in dict_config.items():
@@ -66,7 +88,11 @@ class SimulationStepOptimization:
                 except AttributeError:
                     raise AttributeError("Chrono system don't have method {0}".format(str_method))
                 
-    def simulate_system(self):
+    def simulate_system(self, time_step, stop_time):
+        while not self.condion_stop_simulation.flag_stop_simulation():
+            self.chrono_system.DoStepDynamics(time_step)
+            # TODO: Add function for calculation reward 
+        
         
         
 class SimulationLooper:
