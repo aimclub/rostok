@@ -22,4 +22,3 @@ def make_collide(body_list: list[ChronoBody], group_id: CollisionGroup, self_col
             colision_model.SetFamilyMaskNoCollisionWithFamily(group_id)
         body.body.SetCollide(True)
 
-
