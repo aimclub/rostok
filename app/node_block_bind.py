@@ -3,6 +3,7 @@ import context
 
 from engine.node  import BlockWrapper, Node, Rule, GraphGrammar, ROOT
 from engine.node_render import *
+from utils.flags_simualtions import FlagSlipout, FlagNotContact, ConditionStopSimulation
 from utils.blocks_utils import make_collide, CollisionGroup   
 from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
 from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
@@ -246,14 +247,22 @@ obj.SetPos(chrono.ChVectorD(0,1.2,0))
 mysystem.Add(obj)
 
 # Make robot collide
-blocks = robot.block_map.values()
+blocks = grab_robot.block_map.values()
 body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
 make_collide(body_block, CollisionGroup.Robot)
 
 # Visualization
 plot_graph(G)
+
+# Flags
+time_to_contact = 0.5
+time_without_contact = 0.2
+flags = [FlagSlipout(time_to_contact,time_without_contact),
+         FlagNotContact(time_to_contact)]
+condition_stop_simulation = ConditionStopSimulation(mysystem, grab_robot, obj, flags)
+
 # Partition
-partition_dfs = robot.get_dfs_partiton()
+partition_dfs = grab_robot.get_dfs_partiton()
 
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(mysystem)
@@ -263,7 +272,7 @@ vis.Initialize()
 vis.AddCamera(chrono.ChVectorD(8, 8, -6))
 vis.AddTypicalLights()
 
-while vis.Run():
+while vis.Run() and not condition_stop_simulation.flag_stop_simulation():
     mysystem.Update()
     mysystem.DoStepDynamics(1e-3)
     vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
