@@ -227,11 +227,11 @@ for i in list(rule_action):
 mysystem = chrono.ChSystemNSC()
 mysystem.Set_G_acc(chrono.ChVectorD(0,0,0))
 
-robot = robot.Robot(G, mysystem)
-joint_blocks = robot.get_joints
+grab_robot = robot.Robot(G, mysystem)
+joint_blocks = grab_robot.get_joints
 
-base_id = robot.graph.find_nodes(F1)[0]
-robot.block_map[base_id].body.SetBodyFixed(True)
+base_id = grab_robot.graph.find_nodes(F1)[0]
+grab_robot.block_map[base_id].body.SetBodyFixed(True)
 
 # Add fixed torque
 controller = []
