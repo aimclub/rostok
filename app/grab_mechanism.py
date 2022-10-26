@@ -220,7 +220,7 @@ obj.SetCollide(True)
 obj.SetPos(chrono.ChVectorD(0,1.2,0))
 mysystem.Add(obj)
 
-base_id = robot.graph.find_nodes(F1)[0]
+base_id = robot.get_block_graph().find_nodes(F1)[0]
 robot.block_map[base_id].body.SetBodyFixed(True)
 
 
