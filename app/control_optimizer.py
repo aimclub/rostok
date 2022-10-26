@@ -2,6 +2,8 @@ import context
 from engine.node import GraphGrammar
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
+from engine.robot import Robot
+from chrono_simulatation import ChronoSimualtion
 import time
 
 # Function for stopping simulation by time optimize
@@ -21,8 +23,46 @@ class MinimizeStopper(object):
             return False
 
 class SimulationLooper:
-    def __init__(self):
-        pass
+    def __init__(self,
+                 chrono_system: chrono.ChSystem,
+                 grab_robot: Robot,
+                 grab_object: chrono.ChBody):
+        self.chrono_system = chrono_system
+        self.grab_robot = grab_robot
+        self.grab_object = grab_object
+        
+    def set_function_constructor_object(self, function):
+        self.function_constructor_object = function
+    
+    def set_function_constructor_system(self, function)ё  :
+        self.function_constructor_system = function
+        
+    def set_function_constructor_robot(self, function):
+        self.function_constructor_robot = function
+        
+    def initilize_looper(self, graph_mechanism: GraphGrammar):
+        system: chrono.ChSystem = self.chrono_system()
+        
+        if hasattr(self,"function_constructor_system"):
+            self.function_constructor_system(system)
+        
+        grab_robot: Robot = self.grab_robot(graph_mechanism, system)
+        
+        if hasattr(self,"function_constructor_robot"):
+            self.function_constructor_robot(self.grab_robot)
+        
+        ids_blocks = grab_robot.block_map.keys()
+        base_id = graph_mechanism.closest_node_to_root(ids_blocks)
+        grab_robot.block_map[base_id].body.SetBodyFixed(True)
+        
+        if hasattr(self,"function_constructor_object"):
+            self.function_constructor_object(self.grab_object)
+            
+        system.Add(self.grab_object)
+        
+        return system, grab_robot
+        
+        
     
     def do_iteration(self):
         pass
@@ -38,28 +78,28 @@ class ControlOptimizer:
         mysystem = chrono.ChSystemNSC()
         mysystem.Set_G_acc(chrono.ChVectorD(0,0,0))
 
-        robot1 = robot.Robot(G, mysystem)
-        joint_blocks = robot1.get_joints
+        # robot1 = robot.Robot(G, mysystem)
+        # joint_blocks = robot1.get_joints
 
-        base_id = robot1.graph.find_nodes(F1)[0]
-        robot1.block_map[base_id].body.SetBodyFixed(True)
+        # base_id = robot1.graph.find_nodes(F1)[0]
+        # robot1.block_map[base_id].body.SetBodyFixed(True)
 
-        # Add fixed torque
-        controller = []
-        for joint in joint_blocks.values():
-            controller.append(control.TrackingControl(joint))
-            controller[-1].set_function_trajectory(lambda x: 1)
+        # # Add fixed torque
+        # controller = []
+        # for joint in joint_blocks.values():
+        #     controller.append(control.TrackingControl(joint))
+        #     controller[-1].set_function_trajectory(lambda x: 1)
 
-        # Add object to grab
-        obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,1000,True,True,mat)
-        obj.SetCollide(True)
-        obj.SetPos(chrono.ChVectorD(0,1.2,0))
-        mysystem.Add(obj)
+        # # Add object to grab
+        # obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,1000,True,True,mat)
+        # obj.SetCollide(True)
+        # obj.SetPos(chrono.ChVectorD(0,1.2,0))
+        # mysystem.Add(obj)
 
-        # Make robot collide
-        blocks = robot1.block_map.values()
-        body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
-        make_collide(body_block, CollisionGroup.Robot)
+        # # Make robot collide
+        # blocks = robot1.block_map.values()
+        # body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
+        # make_collide(body_block, CollisionGroup.Robot)
         
         # Visualization
         vis = chronoirr.ChVisualSystemIrrlicht()
@@ -69,7 +109,7 @@ class ControlOptimizer:
         vis.Initialize()
         vis.AddCamera(chrono.ChVectorD(8, 8, -6))
         vis.AddTypicalLights()
-        print(i)
+        # print(i)
         while vis.Run():
             mysystem.Update()
             mysystem.DoStepDynamics(1e-3)
