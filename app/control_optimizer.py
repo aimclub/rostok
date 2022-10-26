@@ -4,6 +4,7 @@ import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 from engine.robot import Robot
 from chrono_simulatation import ChronoSimualtion
+import engine.control as control
 import time
 
 # Function for stopping simulation by time optimize
@@ -22,6 +23,15 @@ class MinimizeStopper(object):
             # print("Elapsed: %.3f sec" % elapsed)
             return False
 
+class StepOptimization:
+    def __init__(self, control_trajectory, graph_mechanism: GraphGrammar, grasp_object: chrono.ChBody):
+        self.control_trajectory = control_trajectory
+        self.graph_mechanism = graph_mechanism
+        self.grasp_object = grasp_object
+        
+        self.chrono_system = chrono.ChSystemNSC()
+        self.grasp_robot = Robot(self.graph_mechanism, self.chrono_system)
+
 class SimulationLooper:
     def __init__(self,
                  chrono_system: chrono.ChSystem,
@@ -34,7 +44,7 @@ class SimulationLooper:
     def set_function_constructor_object(self, function):
         self.function_constructor_object = function
     
-    def set_function_constructor_system(self, function)ё  :
+    def set_function_constructor_system(self, function):
         self.function_constructor_system = function
         
     def set_function_constructor_robot(self, function):
