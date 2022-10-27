@@ -229,8 +229,8 @@ chrono_system = chrono.ChSystemNSC()
 grab_robot = robot.Robot(G, chrono_system)
 
 joints = np.array(grab_robot.get_joints)
-print(np.shape(joints))
-traj_controller = np.array(np.mat('0 0.1 0.2 0.3 0.4 0.5; 0 0.2 0.4 0.6 0.8 1'))
+
+traj_controller = np.array(np.mat('0 0.1 0.15 0.2 0.25 0.3; 0 0.2 0.4 0.6 0.8 1'))
 arr_traj = []
 for ind, finger in enumerate(joints):
     arr_finger_traj = []
@@ -257,5 +257,5 @@ times_step = 1e-2
 sim = step.SimulationStepOptimization(arr_traj, G, obj)
 sim.set_flags_stop_simulation(flags)
 sim.change_config_system(config_sys)
-sim_output = sim.simulate_system(times_step)
-print(None)
+sim_output = sim.simulate_system(times_step,True)
+print(sim_output[40].sum_contact_forces)
