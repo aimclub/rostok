@@ -1,10 +1,10 @@
-from copy import deepcopy
-from time import sleep
+from time import sleep,time
 import context
-import time
+
 from engine.node  import BlockWrapper, Node, Rule, GraphGrammar, ROOT
 from engine.node_render import *
-from engine.blocks_utils import make_collide, CollisionGroup   
+from utils.flags_simualtions import FlagSlipout, FlagNotContact, FlagMaxTime
+from utils.blocks_utils import make_collide, CollisionGroup   
 from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
 from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
     Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
@@ -13,7 +13,7 @@ import pychrono as chrono
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
-
+import control_optimizer as optim
 import engine.robot as robot
 import engine.control as control
 
@@ -225,52 +225,35 @@ rule_action = np.r_[rule_action_non_terminal, rule_action_terminal]
 for i in list(rule_action):
     G.apply_rule(i)
 
+chrono_system = chrono.ChSystemNSC()
+grab_robot = robot.Robot(G, chrono_system)
 
-time_model = time.time()
-for i in range(2):
-    mysystem = chrono.ChSystemNSC()
-    mysystem.Set_G_acc(chrono.ChVectorD(0,0,0))
+joints = np.array(grab_robot.get_joints)
+print(np.shape(joints))
+traj_controller = np.array(np.mat('0 0.1 0.2 0.3 0.4 0.5; 0 0.2 0.4 0.6 0.8 1'))
+arr_traj = []
+for ind, finger in enumerate(joints):
+    arr_finger_traj = []
+    for i, joint in enumerate(finger):
+        arr_finger_traj.append(traj_controller)
+    arr_traj.append(arr_finger_traj)
 
-    robot1 = robot.Robot(G, mysystem)
-    joint_blocks = robot1.get_joints
+obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,1000,True,True,mat)
+obj.SetCollide(True)
+obj.SetPos(chrono.ChVectorD(0,1.2,0))
 
-    base_id = robot1.graph.find_nodes(F1)[0]
-    robot1.block_map[base_id].body.SetBodyFixed(True)
+config_sys = {"Set_G_acc":chrono.ChVectorD(0,0,0)}
 
-    # Add fixed torque
-    controller = []
-    for joint in joint_blocks.values():
-        controller.append(control.TrackingControl(joint))
-        controller[-1].set_function_trajectory(lambda x: 1)
+time_model = time()
 
-    # Add object to grab
-    obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,1000,True,True,mat)
-    obj.SetCollide(True)
-    obj.SetPos(chrono.ChVectorD(0,1.2,0))
-    mysystem.Add(obj)
+time_to_contact = 1
+time_without_contact = 0.2
+max_time = 10
+flags = [FlagSlipout(time_to_contact,time_without_contact),
+         FlagNotContact(time_to_contact), FlagMaxTime(max_time)]
 
-    # Make robot collide
-    blocks = robot1.block_map.values()
-    body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
-    make_collide(body_block, CollisionGroup.Robot)
-    # Visualization
-    # plot_graph(G)
-    # init_state_system = mysystem.Clone()
-    vis = chronoirr.ChVisualSystemIrrlicht()
-    vis.AttachSystem(mysystem)
-    vis.SetWindowSize(1024,768)
-    vis.SetWindowTitle('Grab demo')
-    vis.Initialize()
-    vis.AddCamera(chrono.ChVectorD(8, 8, -6))
-    vis.AddTypicalLights()
-    print(i)
-    while vis.Run():
-        mysystem.Update()
-        mysystem.DoStepDynamics(1e-3)
-        vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
-        vis.Render()
-        vis.EndScene()
-        if abs(mysystem.GetChTime() -  1) <= 0.001 :
-            # mysystem.Clear()
-            break
-print(time.time() - time_model)
+sim = optim.SimulationStepOptimization(arr_traj, G, obj)
+sim.set_flags_stop_simulation(flags)
+sim.change_config_system(config_sys)
+angle_joints = sim.simulate_system(1e-3)
+print(None)

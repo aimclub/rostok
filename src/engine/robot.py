@@ -82,3 +82,18 @@ class Robot:
             joints_out.append([self.block_map[node_id] for node_id in c])     
         return joints_out
 
+    def get_block_graph(self):
+        return self.__graph
+
+    def get_dfs_partiton(self) -> list[list[RobotNode]]:
+        partition = self.__graph.graph_partition_dfs()
+
+        def covert_to_robot_node(x): 
+            return RobotNode(x, 
+            self.__graph.nodes()[x]["Block"], 
+            self.__graph.nodes()[x]["Node"])
+        
+        partiton_graph = [list(map(covert_to_robot_node, x))
+                                                for x in partition]
+
+        return partiton_graph

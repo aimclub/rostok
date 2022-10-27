@@ -1,7 +1,9 @@
+from copy import deepcopy
 from dataclasses import dataclass
 import context
 from engine.node import GraphGrammar
-from engine.node_render import ChronoBody
+from engine.node_render import ChronoBody, ChronoRevolveJoint
+from utils.auxilarity_sensors import RobotSensor
 from utils.blocks_utils import make_collide, CollisionGroup
 from utils.flags_simualtions import ConditionStopSimulation, FlagStopSimualtions
 import pychrono as chrono
@@ -23,7 +25,8 @@ class DataJointBlock(SimulationDataBlock):
 @dataclass(frozen=True)
 class DataBodyBlock(SimulationDataBlock):
     sum_contact_forces: list[float]
-    amount_contact_surfaces: list[float]
+    abs_coord_COG: list[chrono.ChVectorD]
+    amount_contact_surfaces: list[int]
     
 # Function for stopping simulation by time optimize
 class MinimizeStopper(object):
@@ -42,7 +45,7 @@ class MinimizeStopper(object):
             return False
 
 class SimulationStepOptimization:
-    def __init__(self, control_trajectory, graph_mechanism: GraphGrammar, grasp_object: chrono.ChBody,  is_optimize: bool = False):
+    def __init__(self, control_trajectory, graph_mechanism: GraphGrammar, grasp_object: chrono.ChBody):
         self.control_trajectory = control_trajectory
         self.graph_mechanism = graph_mechanism
         self.grasp_object = grasp_object
@@ -61,14 +64,11 @@ class SimulationStepOptimization:
         self.chrono_system.Add(self.grasp_object)
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0,0,0))
         
-        if is_optimize:
-            # TODO: add function change joint to torque input
-            pass
         self.controller_joints = []
         
         try:
-            for id_finger, finger in enumerate(self.grasp_robot.get_joints):
-                for id_joint, joint in finger:
+            for id_finger, finger in enumerate(self.grab_robot.get_joints):
+                for id_joint, joint in enumerate(finger):
                     self.controller_joints.append(control.TrackingControl(joint))
                     self.controller_joints[-1].set_des_positions(control_trajectory[id_finger][id_joint])
         except IndexError:
@@ -88,11 +88,50 @@ class SimulationStepOptimization:
                 except AttributeError:
                     raise AttributeError("Chrono system don't have method {0}".format(str_method))
                 
-    def simulate_system(self, time_step, stop_time):
-        while not self.condion_stop_simulation.flag_stop_simulation():
-            self.chrono_system.DoStepDynamics(time_step)
-            # TODO: Add function for calculation reward 
+    def simulate_system(self, time_step):
         
+        arrays_simulation_data_time = []
+        arrays_simulation_data_joint_angle= map(lambda x: (x[0], []),
+                                                     filter(lambda x: isinstance(x[1],ChronoRevolveJoint),self.grab_robot.block_map.items()))
+        arrays_simulation_data_sum_contact_forces = map(lambda x: (x[0], []),
+                                                     filter(lambda x: isinstance(x[1],ChronoBody),self.grab_robot.block_map.items()))
+        arrays_simulation_data_abs_coord_COG = map(lambda x: (x[0], []),
+                                                     filter(lambda x: isinstance(x[1],ChronoBody),self.grab_robot.block_map.items()))
+        arrays_simulation_data_amount_contact_surfaces = map(lambda x: (x[0], []),
+                                                     filter(lambda x: isinstance(x[1],ChronoBody),self.grab_robot.block_map.items()))
+        
+        while not self.condion_stop_simulation.flag_stop_simulation():
+            
+            def append_arr_in_dict(x,y):
+                if x[0] == y[0]:
+                    return (y[0], y[1] + [x[1]])
+            
+            self.chrono_system.DoStepDynamics(time_step)
+            arrays_simulation_data_time.append(self.chrono_system.GetChTime())
+            
+            current_data_joint_angle = RobotSensor.joints_angle(self.grab_robot)
+            current_data_amount_contact_surfaces = RobotSensor.amount_contact_surfaces_blocks(self.grab_robot)
+            current_data_sum_contact_forces = RobotSensor.sum_contact_forces_blocks(self.grab_robot)
+            current_data_abs_coord_COG = RobotSensor.abs_coord_COG_blocks(self.grab_robot)
+            
+            arrays_simulation_data_joint_angle = map(append_arr_in_dict,
+                                                          current_data_joint_angle.items(), arrays_simulation_data_joint_angle)
+            arrays_simulation_data_sum_contact_forces = map(append_arr_in_dict,
+                                                current_data_sum_contact_forces.items(),arrays_simulation_data_sum_contact_forces)
+            arrays_simulation_data_abs_coord_COG = map(append_arr_in_dict,
+                                    current_data_abs_coord_COG.items(),arrays_simulation_data_abs_coord_COG)
+            arrays_simulation_data_amount_contact_surfaces = map(append_arr_in_dict,
+                                                current_data_amount_contact_surfaces.items(),arrays_simulation_data_amount_contact_surfaces)
+        
+        simulation_data_joint_angle: dict[int, SimulationDataBlock] = dict(map(lambda x: (x[0], DataJointBlock(x[0], arrays_simulation_data_time, x[1])),
+                                               arrays_simulation_data_joint_angle))
+        simulation_data_body: dict[int, SimulationDataBlock]  = dict(map(lambda x,y,z: (x[0], DataBodyBlock(x[0], arrays_simulation_data_time, x[1], y[1], z[1])),
+                                               arrays_simulation_data_sum_contact_forces,
+                                               arrays_simulation_data_abs_coord_COG,
+                                               arrays_simulation_data_amount_contact_surfaces))
+        simulation_data_joint_angle.update(simulation_data_body)
+        return simulation_data_joint_angle
+
         
         
 class SimulationLooper:
