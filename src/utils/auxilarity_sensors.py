@@ -34,8 +34,12 @@ class RobotSensor:
     @staticmethod
     def amount_contact_surfaces_blocks(in_robot: Robot) -> dict[int, int]:
         blocks = in_robot.block_map
-        body_block = filter(lambda x: isinstance(x[1],ChronoBody),blocks.items())
-        num_contact_surfaces = map(lambda x: (x[0], int(not sum(x[1].list_n_forces) != 0)), body_block)
+        body_block = filter(lambda x: isinstance(x[1],ChronoBody),
+                            blocks.items())
+        
+        num_contact_surfaces = map(lambda x: (x[0], int(not (sum(x[1].list_n_forces) == 0))),
+                                   body_block)
+        
         return dict(num_contact_surfaces)
     
     @staticmethod

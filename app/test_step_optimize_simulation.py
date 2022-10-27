@@ -13,7 +13,7 @@ import pychrono as chrono
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
-import control_optimizer as optim
+import simulation_step as step
 import engine.robot as robot
 import engine.control as control
 
@@ -69,7 +69,7 @@ transform_mz_plus_x_minus = BlockWrapper(ChronoTransform, MOVE_Z_PLUS_X_MINUS)
 
 # Joints
 
-type_of_input = ChronoRevolveJoint.InputType.Torque
+type_of_input = ChronoRevolveJoint.InputType.Position
 revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
 
 # Nodes
@@ -246,14 +246,16 @@ config_sys = {"Set_G_acc":chrono.ChVectorD(0,0,0)}
 
 time_model = time()
 
-time_to_contact = 1
+time_to_contact = 2
 time_without_contact = 0.2
 max_time = 10
 flags = [FlagSlipout(time_to_contact,time_without_contact),
          FlagNotContact(time_to_contact), FlagMaxTime(max_time)]
 
-sim = optim.SimulationStepOptimization(arr_traj, G, obj)
+times_step = 1e-2
+
+sim = step.SimulationStepOptimization(arr_traj, G, obj)
 sim.set_flags_stop_simulation(flags)
 sim.change_config_system(config_sys)
-angle_joints = sim.simulate_system(1e-3)
+sim_output = sim.simulate_system(times_step)
 print(None)

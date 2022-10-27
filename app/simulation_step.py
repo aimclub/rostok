@@ -27,22 +27,6 @@ class DataBodyBlock(SimulationDataBlock):
     sum_contact_forces: list[float]
     abs_coord_COG: list[chrono.ChVectorD]
     amount_contact_surfaces: list[int]
-    
-# Function for stopping simulation by time optimize
-class MinimizeStopper(object):
-    def __init__(self, max_sec=0.3):
-        self.max_sec = max_sec
-        self.start = time.time()
-
-    def __call__(self, xk=None, convergence=None):
-        elapsed = time.time() - self.start
-        if elapsed > self.max_sec:
-            print("Terminating optimization: time limit reached")
-            return True
-        else:
-            # you might want to report other stuff here
-            # print("Elapsed: %.3f sec" % elapsed)
-            return False
 
 class SimulationStepOptimization:
     def __init__(self, control_trajectory, graph_mechanism: GraphGrammar, grasp_object: chrono.ChBody):
@@ -88,25 +72,46 @@ class SimulationStepOptimization:
                 except AttributeError:
                     raise AttributeError("Chrono system don't have method {0}".format(str_method))
                 
-    def simulate_system(self, time_step):
+    def simulate_system(self, time_step, visualize = False):
+        def append_arr_in_dict(x,y):
+            if x[0] == y[0]:
+                return (y[0], y[1] + [x[1]])
         
+        if visualize:
+            vis = chronoirr.ChVisualSystemIrrlicht()
+            vis.AttachSystem(self.chrono_system)
+            vis.SetWindowSize(1024,768)
+            vis.SetWindowTitle('Grab demo')
+            vis.Initialize()
+            vis.AddCamera(chrono.ChVectorD(8, 8, -6))
+            vis.AddTypicalLights()
+
         arrays_simulation_data_time = []
         arrays_simulation_data_joint_angle= map(lambda x: (x[0], []),
-                                                     filter(lambda x: isinstance(x[1],ChronoRevolveJoint),self.grab_robot.block_map.items()))
+                                                     filter(lambda x: isinstance(x[1],ChronoRevolveJoint),
+                                                            self.grab_robot.block_map.items()))
+        
         arrays_simulation_data_sum_contact_forces = map(lambda x: (x[0], []),
-                                                     filter(lambda x: isinstance(x[1],ChronoBody),self.grab_robot.block_map.items()))
+                                                     filter(lambda x: isinstance(x[1],ChronoBody),
+                                                            self.grab_robot.block_map.items()))
+        
         arrays_simulation_data_abs_coord_COG = map(lambda x: (x[0], []),
-                                                     filter(lambda x: isinstance(x[1],ChronoBody),self.grab_robot.block_map.items()))
+                                                     filter(lambda x: isinstance(x[1],ChronoBody),
+                                                            self.grab_robot.block_map.items()))
+        
         arrays_simulation_data_amount_contact_surfaces = map(lambda x: (x[0], []),
-                                                     filter(lambda x: isinstance(x[1],ChronoBody),self.grab_robot.block_map.items()))
+                                                     filter(lambda x: isinstance(x[1],ChronoBody),
+                                                            self.grab_robot.block_map.items()))
         
         while not self.condion_stop_simulation.flag_stop_simulation():
-            
-            def append_arr_in_dict(x,y):
-                if x[0] == y[0]:
-                    return (y[0], y[1] + [x[1]])
-            
+            self.chrono_system.Update()
             self.chrono_system.DoStepDynamics(time_step)
+            
+            if visualize:
+                vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
+                vis.Render()
+                vis.EndScene()
+            
             arrays_simulation_data_time.append(self.chrono_system.GetChTime())
             
             current_data_joint_angle = RobotSensor.joints_angle(self.grab_robot)
@@ -115,21 +120,29 @@ class SimulationStepOptimization:
             current_data_abs_coord_COG = RobotSensor.abs_coord_COG_blocks(self.grab_robot)
             
             arrays_simulation_data_joint_angle = map(append_arr_in_dict,
-                                                          current_data_joint_angle.items(), arrays_simulation_data_joint_angle)
+                                                          current_data_joint_angle.items(), 
+                                                          arrays_simulation_data_joint_angle)
+            
             arrays_simulation_data_sum_contact_forces = map(append_arr_in_dict,
-                                                current_data_sum_contact_forces.items(),arrays_simulation_data_sum_contact_forces)
+                                                current_data_sum_contact_forces.items(),
+                                                arrays_simulation_data_sum_contact_forces)
+            
             arrays_simulation_data_abs_coord_COG = map(append_arr_in_dict,
-                                    current_data_abs_coord_COG.items(),arrays_simulation_data_abs_coord_COG)
+                                    current_data_abs_coord_COG.items(),
+                                    arrays_simulation_data_abs_coord_COG)
+            
             arrays_simulation_data_amount_contact_surfaces = map(append_arr_in_dict,
-                                                current_data_amount_contact_surfaces.items(),arrays_simulation_data_amount_contact_surfaces)
+                                                current_data_amount_contact_surfaces.items(),
+                                                arrays_simulation_data_amount_contact_surfaces)
         
-        simulation_data_joint_angle: dict[int, SimulationDataBlock] = dict(map(lambda x: (x[0], DataJointBlock(x[0], arrays_simulation_data_time, x[1])),
+        simulation_data_joint_angle = dict(map(lambda x: (x[0], DataJointBlock(x[0], arrays_simulation_data_time, x[1])),
                                                arrays_simulation_data_joint_angle))
-        simulation_data_body: dict[int, SimulationDataBlock]  = dict(map(lambda x,y,z: (x[0], DataBodyBlock(x[0], arrays_simulation_data_time, x[1], y[1], z[1])),
+        simulation_data_body  = dict(map(lambda x,y,z: (x[0], DataBodyBlock(x[0], arrays_simulation_data_time, x[1], y[1], z[1])),
                                                arrays_simulation_data_sum_contact_forces,
                                                arrays_simulation_data_abs_coord_COG,
                                                arrays_simulation_data_amount_contact_surfaces))
         simulation_data_joint_angle.update(simulation_data_body)
+        
         return simulation_data_joint_angle
 
         
