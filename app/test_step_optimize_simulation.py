@@ -229,33 +229,40 @@ chrono_system = chrono.ChSystemNSC()
 grab_robot = robot.Robot(G, chrono_system)
 
 joints = np.array(grab_robot.get_joints)
+for m in range(6):
+    if m == 0:
+        traj_controller = np.array(np.mat('0 0.1 0.15 0.2 0.25 0.3; 0 0.2 0.4 0.6 0.8 1'))
+    elif m != 1:
+        traj_controller[0,:] *=2
+        print(traj_controller)
+        
+    arr_traj = []
+    for ind, finger in enumerate(joints):
+        arr_finger_traj = []
+        for i, joint in enumerate(finger):
+            arr_finger_traj.append(traj_controller)
+        arr_traj.append(arr_finger_traj)
 
-traj_controller = np.array(np.mat('0 0.1 0.15 0.2 0.25 0.3; 0 0.2 0.4 0.6 0.8 1'))
-arr_traj = []
-for ind, finger in enumerate(joints):
-    arr_finger_traj = []
-    for i, joint in enumerate(finger):
-        arr_finger_traj.append(traj_controller)
-    arr_traj.append(arr_finger_traj)
+    config_sys = {"Set_G_acc":chrono.ChVectorD(0,0,0)}
 
-obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,1000,True,True,mat)
-obj.SetCollide(True)
-obj.SetPos(chrono.ChVectorD(0,1.2,0))
+    time_to_contact = 2
+    time_without_contact = 0.2
+    max_time = 10
 
-config_sys = {"Set_G_acc":chrono.ChVectorD(0,0,0)}
 
-time_model = time()
+    flags = [FlagSlipout(time_to_contact,time_without_contact),
+            FlagNotContact(time_to_contact), FlagMaxTime(max_time)]
 
-time_to_contact = 2
-time_without_contact = 0.2
-max_time = 10
-flags = [FlagSlipout(time_to_contact,time_without_contact),
-         FlagNotContact(time_to_contact), FlagMaxTime(max_time)]
+    times_step = 1e-2
 
-times_step = 1e-2
 
-sim = step.SimulationStepOptimization(arr_traj, G, obj)
-sim.set_flags_stop_simulation(flags)
-sim.change_config_system(config_sys)
-sim_output = sim.simulate_system(times_step,True)
-print(sim_output[40].sum_contact_forces)
+    obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,1000,True,True,mat)
+    obj.SetCollide(True)
+    obj.SetPos(chrono.ChVectorD(0,1.2,0))
+    
+    sim = step.SimulationStepOptimization(arr_traj, G, obj)
+    sim.set_flags_stop_simulation(flags)
+    sim.change_config_system(config_sys)
+    sim_output = sim.simulate_system(times_step,True)
+    print(m)
+    print(sim_output[40].sum_contact_forces)
