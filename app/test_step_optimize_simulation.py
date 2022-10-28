@@ -13,7 +13,7 @@ import pychrono as chrono
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
-import simulation_step as step
+import utils.simulation_step as step
 import engine.robot as robot
 import engine.control as control
 
