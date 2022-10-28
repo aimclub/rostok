@@ -152,7 +152,7 @@ class SimulationStepOptimization:
                                                 current_data_amount_contact_surfaces.items(),
                                                 arrays_simulation_data_amount_contact_surfaces)
         if visualize:
-            vis.close
+            vis.GetDevice().closeDevice()
         
         # Create instance output data and add in dictionary
         simulation_data_joint_angle: dict[int,DataJointBlock] = dict(map(lambda x: (x[0], DataJointBlock(x[0], arrays_simulation_data_time, x[1])),
