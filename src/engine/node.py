@@ -26,6 +26,12 @@ class Node:
     def __hash__(self) -> int:
         return hash(str(self.label) + str(self.is_terminal))
 
+    def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, self.__class__):
+            raise Exception(
+                "Wrong type of comparable object. Must be Node instead {wrong_type}".format(wrong_type=type(__o)))
+        return self.label == __o.label
+
 
 class Rule:
     _graph_insert: nx.DiGraph = nx.DiGraph()
