@@ -53,12 +53,12 @@ class Rule:
         )
         self._graph_insert = graph
 
-    @ property
+    @property
     def is_terminal(self):
         return self._is_terminal
 
     def __hash__(self):
-        return hash(self.graph_insert)
+        return hash(self.graph_insert + hash(self.replaced_node))
 
 
 @dataclass
