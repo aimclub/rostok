@@ -74,12 +74,12 @@ class Robot:
                     for in_edge in in_edges:
                         for out_edge in out_edges:
                             self.__joint_graph.add_edge(
-                                in_edge[0],out_edge[1])
+                                in_edge[0], out_edge[1])
         self.__joint_graph.remove_nodes_from(not_joints)
         underected_graph_joint = nx.to_undirected(self.__joint_graph)
         joints_out = []
         for c in nx.connected_components(underected_graph_joint):
-            joints_out.append([self.block_map[node_id] for node_id in c])     
+            joints_out.append([self.block_map[node_id] for node_id in c])
         return joints_out
 
     def get_block_graph(self):
@@ -88,12 +88,12 @@ class Robot:
     def get_dfs_partiton(self) -> list[list[RobotNode]]:
         partition = self.__graph.graph_partition_dfs()
 
-        def covert_to_robot_node(x): 
-            return RobotNode(x, 
-            self.__graph.nodes()[x]["Block"], 
-            self.__graph.nodes()[x]["Node"])
-        
-        partiton_graph = [list(map(covert_to_robot_node, x))
-                                                for x in partition]
+        partiton_graph = [list(map(self.get_robot_node_by_id, x))
+                          for x in partition]
 
         return partiton_graph
+
+    def get_robot_node_by_id(self, node_id: int):
+        return RobotNode(node_id,
+                         self.__graph.nodes()[node_id]["Block"],
+                         self.__graph.nodes()[node_id]["Node"])
