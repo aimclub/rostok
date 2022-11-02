@@ -1,7 +1,5 @@
 import networkx as nx
-import matplotlib.pyplot as plt
 from dataclasses import dataclass
-from collections import namedtuple
 
 
 class BlockWrapper:
@@ -52,7 +50,7 @@ class Rule:
     @ property
     def is_terminal(self):
         return self._is_terminal
-    
+
     def __hash__(self):
         return hash(self.graph_insert)
 
@@ -92,11 +90,14 @@ class GraphGrammar(nx.DiGraph):
         out_edges = [list(edge) for edge in self.out_edges(node_id)]
 
         id_node_connect_child_graph = self._get_uniq_id()
-        id_node_connect_parent_graph = self._get_uniq_id() \
-            if rule.id_node_connect_parent != rule.id_node_connect_child else id_node_connect_child_graph
 
-        relabel_in_rule = {rule.id_node_connect_child: id_node_connect_child_graph,
-                           rule.id_node_connect_parent: id_node_connect_parent_graph}
+        is_equal_id = rule.id_node_connect_parent != rule.id_node_connect_child
+        id_node_connect_parent_graph = self._get_uniq_id(
+        ) if is_equal_id else id_node_connect_child_graph
+
+        relabel_in_rule = \
+            {rule.id_node_connect_child: id_node_connect_child_graph,
+             rule.id_node_connect_parent: id_node_connect_parent_graph}
 
         for raw_nodes in rule.graph_insert.nodes.items():
             raw_node_id = raw_nodes[0]
@@ -138,9 +139,10 @@ class GraphGrammar(nx.DiGraph):
         id_closest = self.closest_node_to_root(ids)
         if rule.graph_insert.order() == 0:
             # Stub removing leaf node if input rule is empty
-            out_edges_ids_node = list(filter(lambda x: x[0] == id_closest, edge_list))
+            out_edges_ids_node = list(
+                filter(lambda x: x[0] == id_closest, edge_list))
             if out_edges_ids_node:
-                raise Exception("Trying delete not leaf node") 
+                raise Exception("Trying delete not leaf node")
             self.remove_node(id_closest)
         else:
             self._replace_node(id_closest, rule)
