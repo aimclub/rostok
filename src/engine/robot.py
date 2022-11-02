@@ -74,11 +74,13 @@ class Robot:
                     for in_edge in in_edges:
                         for out_edge in out_edges:
                             self.__joint_graph.add_edge(
-                                in_edge[0], out_edge[1])
+                                in_edge[0],out_edge[1])
         self.__joint_graph.remove_nodes_from(not_joints)
-        joint_blocks = {node: self.block_map[node]
-                        for node in list(self.__joint_graph)}
-        return joint_blocks
+        underected_graph_joint = nx.to_undirected(self.__joint_graph)
+        joints_out = []
+        for c in nx.connected_components(underected_graph_joint):
+            joints_out.append([self.block_map[node_id] for node_id in c])     
+        return joints_out
 
     def get_block_graph(self):
         return self.__graph
