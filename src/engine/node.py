@@ -1,5 +1,6 @@
 import networkx as nx
 from dataclasses import dataclass
+from networkx.algorithms.traversal import dfs_preorder_nodes
 
 
 class BlockWrapper:
@@ -128,16 +129,20 @@ class GraphGrammar(nx.DiGraph):
         self.add_edges_from(out_edges)
 
     def closest_node_to_root(self, list_ids):
-        for raw_node in self.nodes.items():
-            raw_node_id = raw_node[0]
-            if self.in_degree(raw_node_id) == 0:
-                root_id = raw_node_id
+        root_id = self.get_root_id()
 
         def sort_by_root_distance(node_id):
             return len(nx.shortest_path(self, root_id, node_id))
 
         sorta = sorted(list_ids, key=sort_by_root_distance)
         return sorta[0]
+
+    def get_root_id(self):
+        for raw_node in self.nodes.items():
+            raw_node_id = raw_node[0]
+            if self.in_degree(raw_node_id) == 0:
+                root_id = raw_node_id
+        return root_id
 
     def apply_rule(self, rule: Rule):
         ids = self.find_nodes(rule.replaced_node)
