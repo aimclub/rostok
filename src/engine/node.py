@@ -158,11 +158,20 @@ class GraphGrammar(nx.DiGraph):
         else:
             self._replace_node(id_closest, rule)
 
-    def graph_partition_dfs(self):
+    def graph_partition_dfs(self) -> list[list[int]]:
+        """
+        Returns
+        -------
+        list[list[int]]
+            2D list
+            Row is branch of graph
+            Collum is id node
+        """
         paths = []
         path = []
 
-        dfs_edges = nx.dfs_edges(self)
+        root_id = self.get_root_id()
+        dfs_edges = nx.dfs_edges(self, root_id)
         dfs_edges_list = list(dfs_edges)
 
         for edge in dfs_edges_list:
@@ -185,7 +194,7 @@ class GraphGrammar(nx.DiGraph):
         for path in paths:
             wrapper = []
             for node_id in path:
-                node: Node = self.nodes[node_id]["Node"]
+                node: Node = self.get_node_by_id(node_id)
                 if node.is_terminal:
                     buf = WrapperTuple(node_id, node.block_wrapper)
                     wrapper.append(buf)
@@ -194,3 +203,18 @@ class GraphGrammar(nx.DiGraph):
             wrapper_array.append(wrapper.copy())
 
         return wrapper_array
+
+    def get_node_by_id(self, node_id: int) -> Node:
+        return self.nodes[node_id]["Node"]
+
+    def get_ids_in_dfs_order(self) -> list[int]:
+        """ 
+        Iterate in deep first order over node ids
+        One of the options to present the graph in a flat form
+
+        Returns
+        -------
+        list[int]
+            List ids 
+        """
+        return list(dfs_preorder_nodes(self, self.get_root_id()))
