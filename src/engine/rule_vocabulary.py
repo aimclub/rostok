@@ -1,7 +1,7 @@
 """Class RuleVocabulary."""
 
-from node_vocabulary import NodeVocabulary
-from node import Rule, GraphGrammar, ROOT
+from engine.node_vocabulary import NodeVocabulary
+from engine.node import Rule, GraphGrammar, ROOT
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
@@ -246,7 +246,7 @@ class RuleVocabulary():
         return rule_list
     
     def make_graph_terminal(self, G:GraphGrammar):
-        """Converts a graph with only nonterminal nods into a graph with only terminal nodes with a random terminal rule for each node.
+        """Converts a graph into a graph with only terminal nodes with a random terminal rule for each node.
         
         Parameters
         ----------
@@ -255,9 +255,10 @@ class RuleVocabulary():
         """
         rule_list = []
         for node in G.nodes.items():
-            rules = self.terminal_rules_for_node(node[1]['Node'].label)
-            rule=self.terminal_rule_dict[rules[np.random.choice(len(rules))]]
-            rule_list.append(rule)
+            if not node[1]["Node"].is_terminal:
+                rules = self.terminal_rules_for_node(node[1]['Node'].label)
+                rule=self.terminal_rule_dict[rules[np.random.choice(len(rules))]]
+                rule_list.append(rule)
         for rule in rule_list:
             G.apply_rule(rule)
 

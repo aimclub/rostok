@@ -1,6 +1,6 @@
 """Class NodeVocabulary"""
 
-from node import Node, BlockWrapper, ROOT
+from engine.node import Node, BlockWrapper, ROOT
 
 
 class NodeVocabulary():
@@ -93,7 +93,7 @@ class NodeVocabulary():
             If the node with label doesn't exist in the vocabulary
         """
         node = self.node_dict.get(label, None)
-        if node == None:
+        if node is None:
             raise Exception(f"Node with label {label} not found!")
 
         return node
