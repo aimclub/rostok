@@ -1,6 +1,5 @@
-from engine.node_render import ChronoBody
-import pychrono.core as chrono
-import pychrono.irrlicht as chronoirr
+from engine.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint
+from engine.node import Node
 from enum import Enum
 
 
@@ -22,3 +21,12 @@ def make_collide(body_list: list[ChronoBody], group_id: CollisionGroup, self_col
             colision_model.SetFamilyMaskNoCollisionWithFamily(group_id)
         body.body.SetCollide(True)
 
+
+class NodeFeatures:
+    @staticmethod
+    def is_joint(node: Node):
+        return node.block_wrapper.block_cls is ChronoRevolveJoint
+    def is_body(node: Node):
+        return node.block_wrapper.block_cls is ChronoBody
+    def is_transform(node: Node):
+        return node.block_wrapper.block_cls is ChronoTransform    
