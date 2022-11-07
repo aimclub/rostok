@@ -1,5 +1,7 @@
 import context
-from engine.node import *
+from engine.node import Rule, Node, GraphGrammar
+import networkx as nx
+import matplotlib.pyplot as plt
 
 J = Node("J")
 L = Node("L")
@@ -91,14 +93,13 @@ reward_map = {J: 1, L: 2, P: 1, U: 1, M: 4, EF: 8, EM: 1}
 
 plt.figure()
 nx.draw_networkx(G, pos=nx.planar_layout(G), node_size=500,
-                 labels={n: G.nodes[n]["Node"].label for n in G})
+                 labels={n: G.get_node_by_id(n).label for n in G})
 
 for i in rule_action:
     G.apply_rule(i)
 
-    
 plt.figure()
 nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
-                 labels={n: G.nodes[n]["Node"].label for n in G})
+                 labels={n: G.get_node_by_id(n).label for n in G})
 
 plt.show()
