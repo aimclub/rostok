@@ -16,6 +16,7 @@ import numpy as np
 
 import engine.robot as robot
 import engine.control as control
+from utils.graph_utils import replace_nodes
 
 
 def plot_graph(graph):
@@ -72,9 +73,13 @@ transform_mz_plus_x_minus = BlockWrapper(ChronoTransform, MOVE_Z_PLUS_X_MINUS)
 type_of_input = ChronoRevolveJoint.InputType.Torque
 revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
 
+type_of_input2 = ChronoRevolveJoint.InputType.Position
+revolve2 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input2)
+
 # Nodes
 
 J1 = Node(label="J1", is_terminal=True, block_wrapper=revolve1)
+J2 = Node(label="J2", is_terminal=True, block_wrapper=revolve2)
 L1 = Node(label="L1", is_terminal=True, block_wrapper=link1)
 L2 = Node(label="L2", is_terminal=True, block_wrapper=link2)
 F1 = Node(label="F1", is_terminal=True, block_wrapper=flat1)
@@ -224,6 +229,10 @@ rule_action_terminal = np.asarray([TerminalFlat,
 rule_action = np.r_[rule_action_non_terminal, rule_action_terminal]
 for i in list(rule_action):
     G.apply_rule(i)
+
+# Usage of replace
+mapping = {J1: J2}
+replace_nodes(G, mapping)
 
 mysystem = chrono.ChSystemNSC()
 mysystem.Set_G_acc(chrono.ChVectorD(0,0,0))
