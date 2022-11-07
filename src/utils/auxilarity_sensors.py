@@ -1,7 +1,6 @@
 from engine.robot import Robot
 import pychrono as chrono
 from engine.node_render import ChronoBody, ChronoRevolveJoint
-
 class RobotSensor:
     
     # FIXME: Change to correct method
@@ -27,7 +26,8 @@ class RobotSensor:
     def abs_coord_COG_blocks(in_robot: Robot) -> dict[int, chrono.ChVectorD]:
         blocks = in_robot.block_map
         body_block = filter(lambda x: isinstance(x[1],ChronoBody),blocks.items())
-        coord_COG_blocks = map(lambda x: (x[0], x[1].body.GetPos()), body_block)
+        def cog_from_tuple(tupled): pos = tupled[1].body.GetPos(); return(tupled[0], [pos.x, pos.y, pos.z])
+        coord_COG_blocks = map(cog_from_tuple, body_block)
         return dict(coord_COG_blocks)
     
     # FIXME: Current method return bool of contact, not number of contact surfaces
