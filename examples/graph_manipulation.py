@@ -1,9 +1,9 @@
 import context
-from example_ruleset import get_terminal_graph, J_NODES, B_NODES, T_EXAMPLE
+from example_ruleset import get_terminal_graph_three_finger, J_NODES, B_NODES, T_EXAMPLE
 from engine.robot import Robot
 from engine.node import Node
 
-graph_grab_torque_robot = get_terminal_graph()
+graph_grab_torque_robot = get_terminal_graph_three_finger()
 
 # Iterate over id and get Node object
 node_list_plain = map(graph_grab_torque_robot.get_node_by_id,

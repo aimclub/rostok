@@ -203,10 +203,10 @@ TerminalJoint.graph_insert = rule_graph
 TerminalJoint.replaced_node = J
 
 
-rule_action_non_terminal = np.asarray([FlatCreate, Mount, Mount, Mount,
+rule_action_non_terminal_three_finger = np.asarray([FlatCreate, Mount, Mount, Mount,
                                        FingerUpper, FingerUpper, FingerUpper,
                                        FingerUpper,  FingerUpper, FingerUpper])
-rule_action_terminal = np.asarray([TerminalFlat,
+rule_action_terminal_three_finger = np.asarray([TerminalFlat,
                                    TerminalL1, TerminalL1, TerminalL1,
                                    TerminalL2, TerminalL2, TerminalL2,
                                    TerminalTransformL, TerminalTransformLZ,
@@ -215,11 +215,44 @@ rule_action_terminal = np.asarray([TerminalFlat,
                                    TerminalEndLimb,
                                    TerminalJoint, TerminalJoint, TerminalJoint,
                                    TerminalJoint, TerminalJoint, TerminalJoint])
-rule_action = np.r_[rule_action_non_terminal, rule_action_terminal]
+rule_action_three_finger = np.r_[rule_action_non_terminal_three_finger, rule_action_terminal_three_finger]
 
 
-def get_terminal_graph():
+
+rule_action_non_terminal_two_finger = np.asarray([FlatCreate, Mount, Mount,
+                                       FingerUpper, FingerUpper, FingerUpper, FingerUpper,  FingerUpper])
+
+rule_action_terminal_two_finger = np.asarray([TerminalFlat,
+                         TerminalL1, TerminalL1, TerminalL1, TerminalL2, TerminalL2,
+                         TerminalTransformL, TerminalTransformLZ,
+                         TerminalEndLimb, TerminalEndLimb,
+                         TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint])
+rule_action_two_finger = np.r_[rule_action_non_terminal_two_finger, rule_action_terminal_two_finger]
+
+
+rule_action_non_terminal_ladoshaka = np.asarray([FlatCreate,Mount])
+
+rule_action_terminal_ladoshaka = np.asarray([TerminalFlat,TerminalTransformL,TerminalEndLimb])
+
+rule_action_ladoshaka = np.r_[rule_action_non_terminal_ladoshaka, rule_action_terminal_ladoshaka]
+
+
+
+
+def get_terminal_graph_three_finger():
     G = GraphGrammar()
-    for i in list(rule_action):
+    for i in list(rule_action_three_finger):
+        G.apply_rule(i)
+    return G
+
+def get_terminal_graph_ladoshaka():
+    G = GraphGrammar()
+    for i in list(rule_action_ladoshaka):
+        G.apply_rule(i)
+    return G
+
+def get_terminal_graph_two_finger():
+    G = GraphGrammar()
+    for i in list(rule_action_two_finger):
         G.apply_rule(i)
     return G
