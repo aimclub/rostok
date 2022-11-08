@@ -1,10 +1,12 @@
-
-#from context import node
 import context
-from engine.node import *
-import mcts
 import stubs.graph_environment as env_graph
+import mcts
+import networkx as nx
+import matplotlib.pyplot as plt
+
+from engine.node import Node, Rule, GraphGrammar, ROOT
 from stubs.graph_reward import Reward
+
 
 J = Node("J")
 L = Node("L")
@@ -13,7 +15,6 @@ U = Node("U")
 M = Node("M")
 EF = Node("EF")
 EM = Node("EM")
-ROOT = Node("ROOT")
 
 # Create rules
 PalmCreate = Rule()
@@ -140,11 +141,11 @@ DeliteEndMount.graph_insert = rule_graph
 DeliteEndMount.replaced_node = EM
 
 G = GraphGrammar()
-rule_action = [PalmCreate, Mount, MountAdd, MountUpper, FingerUpper, DeliteEndMount, # Non terminal
-                TerminalJ1, TerminalL1, TerminalM1, TerminalP1, TerminalU1, TerminalEM1, TerminalEF1] # Terminal
+rule_action = [PalmCreate, Mount, MountAdd, MountUpper, FingerUpper, DeliteEndMount,  # Non terminal
+               TerminalJ1, TerminalL1, TerminalM1, TerminalP1, TerminalU1, TerminalEM1, TerminalEF1]  # Terminal
 max_numbers_rules = 10
 # Create graph envirenments for algorithm (not gym)
-env = env_graph.GraphEnvironment(G,rule_action, max_numbers_rules)
+env = env_graph.GraphEnvironment(G, rule_action, max_numbers_rules)
 
 # Hyperparameters: increasing: > error reward, < search time
 time_limit = 1000
@@ -154,11 +155,11 @@ iteration_limit = 2000
 searcher = mcts.mcts(timeLimit=time_limit)
 finish = False
 
-#reward_map_1 = {ROOT:1, J: 1, L: 1, P: 1, U: 1, M: 1, EF: 1, EM: 1}
+
 reward_map_2 = {J1: 1, L1: 2, P1: 1, U1: 1, M1: 4, EF1: -2, EM1: -5}
 env.set_node_rewards(reward_map_2, Reward.complex)
 
-#Search until finding terminal mechanism with desired reward
+# Search until finding terminal mechanism with desired reward
 while not finish:
     print("---")
     action = searcher.search(initialState=env)
