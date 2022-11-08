@@ -1,22 +1,16 @@
-from time import sleep
 import context
+import pychrono as chrono
+import networkx as nx
+import numpy as np
 
 from engine.node import BlockWrapper, Node, Rule, GraphGrammar, ROOT
 from engine.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint
-from utils.flags_simualtions import FlagSlipout, FlagNotContact, ConditionStopSimulation
+
 from utils.blocks_utils import make_collide, CollisionGroup
 from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
 from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
     Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
     Q_ROTATE_X_TO_Y, Q_ROTATE_X_TO_Z
-import pychrono as chrono
-import networkx as nx
-import matplotlib.pyplot as plt
-import numpy as np
-
-import engine.robot as robot
-import engine.control as control
-import matplotlib
 
 
 # Define block types

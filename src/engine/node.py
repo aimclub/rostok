@@ -59,7 +59,7 @@ class Rule:
         return self._is_terminal
 
     def __hash__(self):
-        return hash(self.graph_insert + hash(self.replaced_node))
+        return hash(str(self.graph_insert) + str(self.replaced_node))
 
 
 @dataclass
