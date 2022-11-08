@@ -144,6 +144,7 @@ G = GraphGrammar()
 rule_action = [PalmCreate, Mount, MountAdd, MountUpper, FingerUpper, DeliteEndMount,  # Non terminal
                TerminalJ1, TerminalL1, TerminalM1, TerminalP1, TerminalU1, TerminalEM1, TerminalEF1]  # Terminal
 max_numbers_rules = 10
+
 # Create graph envirenments for algorithm (not gym)
 env = env_graph.GraphEnvironment(G, rule_action, max_numbers_rules)
 
