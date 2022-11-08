@@ -1,19 +1,20 @@
-from time import sleep
-import context
 
-from engine.node  import BlockWrapper, Node, Rule, GraphGrammar, ROOT
-from engine.node_render import *
-from utils.blocks_utils import make_collide, CollisionGroup   
+import context
+import pychrono as chrono
+import pychrono.irrlicht as chronoirr
+import networkx as nx
+import numpy as np
+import engine.robot as robot
+import engine.control as ctrl
+
+from engine.node import BlockWrapper, Node, Rule, GraphGrammar, ROOT
+from engine.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint
+from utils.blocks_utils import make_collide, CollisionGroup
 from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
 from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
     Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
     Q_ROTATE_X_TO_Y, Q_ROTATE_X_TO_Z
-import pychrono as chrono
-import networkx as nx
-import matplotlib.pyplot as plt
-import numpy as np
-import engine.robot as robot
-import engine.control as ctrl
+from utils.flags_simualtions import FlagMaxTime
 
 # Define block types
 mat = chrono.ChMaterialSurfaceNSC()
@@ -35,10 +36,12 @@ RZY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_Y)
 RXY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_X_TO_Y)
 
 MOVE_ZX_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
-MOVE_ZX_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, -0.3), ChQuaternionD(1, 0, 0, 0))
+MOVE_ZX_MINUS = ChCoordsysD(
+    ChVectorD(-0.3, 0, -0.3), ChQuaternionD(1, 0, 0, 0))
 
 MOVE_X_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0), ChQuaternionD(1, 0, 0, 0))
-MOVE_Z_PLUS_X_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
+MOVE_Z_PLUS_X_MINUS = ChCoordsysD(
+    ChVectorD(-0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
 
 transform_rzx = BlockWrapper(ChronoTransform, RZX)
 transform_rzy = BlockWrapper(ChronoTransform, RZY)
@@ -50,10 +53,9 @@ transform_mz_plus_x_minus = BlockWrapper(ChronoTransform, MOVE_Z_PLUS_X_MINUS)
 
 type_of_input = ChronoRevolveJoint.InputType.Torque
 # Joints
-revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
+revolve1 = BlockWrapper(
+    ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
 
-# Nodes
-ROOT = Node("ROOT")
 
 J1 = Node(label="J1", is_terminal=True, block_wrapper=revolve1)
 L1 = Node(label="L1", is_terminal=True, block_wrapper=link1)
@@ -62,10 +64,10 @@ F1 = Node(label="F1", is_terminal=True, block_wrapper=flat1)
 F2 = Node(label="F2", is_terminal=True, block_wrapper=flat2)
 U1 = Node(label="U1", is_terminal=True, block_wrapper=u1)
 T1 = Node(label="T1", is_terminal=True, block_wrapper=transform_mx_plus)
-T2 = Node(label="T2", is_terminal=True, block_wrapper=transform_mz_plus_x_minus)
+T2 = Node(label="T2", is_terminal=True,
+          block_wrapper=transform_mz_plus_x_minus)
 T3 = Node(label="T3", is_terminal=True, block_wrapper=transform_mzx_plus)
 T4 = Node(label="T4", is_terminal=True, block_wrapper=transform_mzx_minus)
-
 
 
 J = Node("J")
@@ -201,47 +203,49 @@ G = GraphGrammar()
 rule_action_non_terminal = np.asarray([FlatCreate, Mount, Mount, Mount,
                                        FingerUpper, FingerUpper, FingerUpper, FingerUpper,  FingerUpper, FingerUpper])
 rule_action_terminal = np.asarray([TerminalFlat,
-                         TerminalL1, TerminalL1, TerminalL1, TerminalL2, TerminalL2, TerminalL2,
-                         TerminalTransformL, TerminalTransformLZ, TerminalTransformRX,
-                         TerminalEndLimb, TerminalEndLimb, TerminalEndLimb,
-                         TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint])
+                                   TerminalL1, TerminalL1, TerminalL1, TerminalL2, TerminalL2, TerminalL2,
+                                   TerminalTransformL, TerminalTransformLZ, TerminalTransformRX,
+                                   TerminalEndLimb, TerminalEndLimb, TerminalEndLimb,
+                                   TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint])
 rule_action = np.r_[rule_action_non_terminal, rule_action_terminal]
 for i in list(rule_action):
     G.apply_rule(i)
 
 mysystem = chrono.ChSystemNSC()
-mysystem.Set_G_acc(chrono.ChVectorD(0,0,0))
+mysystem.Set_G_acc(chrono.ChVectorD(0, 0, 0))
 
-robot = robot.Robot(G, mysystem)
-joint_blocks = robot.get_joints
+grab_robot = robot.Robot(G, mysystem)
+joint_blocks = grab_robot.get_joints
 
-obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,1000,True,True,mat)
+obj = chrono.ChBodyEasyBox(0.2, 0.2, 0.6, 1000, True, True, mat)
 obj.SetCollide(True)
-obj.SetPos(chrono.ChVectorD(0,1.2,0))
+obj.SetPos(chrono.ChVectorD(0, 1.2, 0))
 mysystem.Add(obj)
 
-base_id = robot.get_block_graph().find_nodes(F1)[0]
-robot.block_map[base_id].body.SetBodyFixed(True)
+base_id = grab_robot.get_block_graph().find_nodes(F1)[0]
+grab_robot.block_map[base_id].body.SetBodyFixed(True)
 
 
 des_points_1 = np.array([0, 0.1, 0.2, 0.3, 0.4])
 des_points_1_1 = - des_points_1
 
 pid_track = []
-for id, joint in joint_blocks.items():
-    if id not in[44, 47]:
-        pid_track.append(ctrl.ChControllerPID(joint ,80.,5.,1.)) # ctrl.TrackingControl(joint)
-        pid_track[-1].set_des_positions_interval(des_points_1,(0.1,2))
+for id, joint in joint_blocks:
+    if id not in [44, 47]:
+        # ctrl.TrackingControl(joint)
+        pid_track.append(ctrl.ChControllerPID(joint, 80., 5., 1.))
+        pid_track[-1].set_des_positions_interval(des_points_1, (0.1, 2))
     else:
-        pid_track.append(ctrl.ChControllerPID(joint ,80.,5.,1.)) # ctrl.TrackingControl(joint)
-        pid_track[-1].set_des_positions_interval(des_points_1_1,(0.1,2))
-        
+        # ctrl.TrackingControl(joint)
+        pid_track.append(ctrl.ChControllerPID(joint, 80., 5., 1.))
+        pid_track[-1].set_des_positions_interval(des_points_1_1, (0.1, 2))
+
 # Visualization
 # plot_graph(G)
 
 vis = chronoirr.ChVisualSystemIrrlicht()
 vis.AttachSystem(mysystem)
-vis.SetWindowSize(1024,768)
+vis.SetWindowSize(1024, 768)
 vis.SetWindowTitle('Custom contact demo')
 vis.Initialize()
 vis.AddCamera(chrono.ChVectorD(8, 8, -6))
@@ -249,15 +253,18 @@ vis.AddTypicalLights()
 
 
 # Make robot collide
-blocks = robot.block_map.values()
-body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
+blocks = grab_robot.block_map.values()
+body_block = filter(lambda x: isinstance(x, ChronoBody), blocks)
 make_collide(body_block, CollisionGroup.Robot)
-stopper = StopSimulation(mysystem, robot, obj, 1, 0.1)
+
+
+stoper = FlagMaxTime(2)
+stoper.build(mysystem, grab_robot, obj)
+
 # Create simulation loop
-while vis.Run():
+while vis.Run() and not stoper.get_flag_state():
     mysystem.Update()
     mysystem.DoStepDynamics(5e-3)
     vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
     vis.Render()
-    if stopper.stop_simulation(): break
     vis.EndScene()
