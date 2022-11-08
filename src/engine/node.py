@@ -1,4 +1,7 @@
 import networkx as nx
+import matplotlib.pyplot as plt
+import pychrono as chrono
+from copy import deepcopy
 from dataclasses import dataclass
 from networkx.algorithms.traversal import dfs_preorder_nodes
 
@@ -14,6 +17,22 @@ class BlockWrapper:
         if self.builder is None:
             raise Exception('Set builder first')
         return self.block_cls(self.builder, *self.args, **self.kwargs)
+    
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            if k == "builder":
+                str_chrono_class = str(v.__class__).split(".")[-1][0:-2] 
+                if hasattr(chrono, str_chrono_class):
+                    print(str_chrono_class)
+                    duplicate_chrono =  getattr(chrono, str_chrono_class)
+                    setattr(result, k, duplicate_chrono)
+            else:
+                setattr(result, k, deepcopy(v, memo))
+        return result
 
 
 @dataclass
