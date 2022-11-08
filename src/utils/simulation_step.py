@@ -27,7 +27,7 @@ class DataJointBlock(SimulationDataBlock):
 @dataclass(frozen=True)
 class DataBodyBlock(SimulationDataBlock):
     sum_contact_forces: list[float]
-    abs_coord_COG: list[chrono.ChVectorD]
+    abs_coord_COG: list[list[float]
     amount_contact_surfaces: list[int]
 
 # Class for simulation system in loop optimization control
