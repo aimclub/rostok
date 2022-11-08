@@ -287,4 +287,3 @@ while vis.Run() and not condition_stop_simulation.flag_stop_simulation():
     vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
     vis.Render()
     vis.EndScene()
- 

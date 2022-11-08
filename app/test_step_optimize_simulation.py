@@ -1,10 +1,10 @@
-from time import sleep
+from time import sleep,time
 import context
 
-from engine.node import BlockWrapper, Node, Rule, GraphGrammar, ROOT
-from engine.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint
-from utils.flags_simualtions import FlagSlipout, FlagNotContact, ConditionStopSimulation
-from utils.blocks_utils import make_collide, CollisionGroup
+from engine.node  import BlockWrapper, Node, Rule, GraphGrammar, ROOT
+from engine.node_render import *
+from utils.flags_simualtions import FlagSlipout, FlagNotContact, FlagMaxTime
+from utils.blocks_utils import make_collide, CollisionGroup   
 from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
 from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
     Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
@@ -13,10 +13,25 @@ import pychrono as chrono
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
-
+import utils.simulation_step as step
 import engine.robot as robot
 import engine.control as control
-import matplotlib
+
+
+def plot_graph(graph):
+    plt.figure()
+    nx.draw_networkx(graph, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
+                    labels={n: G.nodes[n]["Node"].label for n in G})
+    plt.figure()
+    nx.draw_networkx(graph, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
+
+    fig = plt.figure()
+    ax = fig.add_subplot()
+    ax.axis([0, 10, 0, 10])
+    ax.text(2, 8, 'Close all matplotlib for start simlation', style='italic', fontsize=15,
+            bbox={'facecolor': 'red', 'alpha': 0.5, 'pad': 10})
+
+    plt.show()
 
 
 # Define block types
@@ -42,8 +57,7 @@ MOVE_ZX_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
 MOVE_ZX_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, -0.3), ChQuaternionD(1, 0, 0, 0))
 
 MOVE_X_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0), ChQuaternionD(1, 0, 0, 0))
-MOVE_Z_PLUS_X_MINUS = ChCoordsysD(
-    ChVectorD(-0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
+MOVE_Z_PLUS_X_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
 
 transform_rzx = BlockWrapper(ChronoTransform, RZX)
 transform_rzy = BlockWrapper(ChronoTransform, RZY)
@@ -55,9 +69,8 @@ transform_mz_plus_x_minus = BlockWrapper(ChronoTransform, MOVE_Z_PLUS_X_MINUS)
 
 # Joints
 
-type_of_input = ChronoRevolveJoint.InputType.Torque
-revolve1 = BlockWrapper(
-    ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
+type_of_input = ChronoRevolveJoint.InputType.Position
+revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
 
 # Nodes
 
@@ -79,10 +92,6 @@ F = Node("F")
 M = Node("M")
 EF = Node("EF")
 EM = Node("EM")
-
-J_NODES = [J, J1]
-B_NODES = [L, L1, L2, F1, F2]
-T_EXAMPLE = [T1, T2]
 
 # Defines rules
 
@@ -203,56 +212,57 @@ TerminalJoint.graph_insert = rule_graph
 TerminalJoint.replaced_node = J
 
 
-rule_action_non_terminal_three_finger = np.asarray([FlatCreate, Mount, Mount, Mount,
-                                       FingerUpper, FingerUpper, FingerUpper,
-                                       FingerUpper,  FingerUpper, FingerUpper])
-rule_action_terminal_three_finger = np.asarray([TerminalFlat,
-                                   TerminalL1, TerminalL1, TerminalL1,
-                                   TerminalL2, TerminalL2, TerminalL2,
-                                   TerminalTransformL, TerminalTransformLZ,
-                                   TerminalTransformRX,
-                                   TerminalEndLimb, TerminalEndLimb,
-                                   TerminalEndLimb,
-                                   TerminalJoint, TerminalJoint, TerminalJoint,
-                                   TerminalJoint, TerminalJoint, TerminalJoint])
-rule_action_three_finger = np.r_[rule_action_non_terminal_three_finger, rule_action_terminal_three_finger]
+G = GraphGrammar()
+
+rule_action_non_terminal = np.asarray([FlatCreate, Mount, Mount, Mount,
+                                       FingerUpper, FingerUpper, FingerUpper, FingerUpper,  FingerUpper, FingerUpper])
+rule_action_terminal = np.asarray([TerminalFlat,
+                         TerminalL1, TerminalL1, TerminalL1, TerminalL2, TerminalL2, TerminalL2,
+                         TerminalTransformL, TerminalTransformLZ, TerminalTransformRX,
+                         TerminalEndLimb, TerminalEndLimb, TerminalEndLimb,
+                         TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint])
+rule_action = np.r_[rule_action_non_terminal, rule_action_terminal]
+for i in list(rule_action):
+    G.apply_rule(i)
+
+chrono_system = chrono.ChSystemNSC()
+grab_robot = robot.Robot(G, chrono_system)
+
+joints = np.array(grab_robot.get_joints)
+for m in range(6):
+    if m == 0:
+        traj_controller = np.array(np.mat('0 0.1 0.15 0.2 0.25 0.3; 0 0.2 0.4 0.6 0.8 1'))
+    elif m != 1:
+        traj_controller[0,:] *=2
+        print(traj_controller)
+        
+    arr_traj = []
+    for ind, finger in enumerate(joints):
+        arr_finger_traj = []
+        for i, joint in enumerate(finger):
+            arr_finger_traj.append(traj_controller)
+        arr_traj.append(arr_finger_traj)
+
+    config_sys = {"Set_G_acc":chrono.ChVectorD(0,0,0)}
+
+    time_to_contact = 2
+    time_without_contact = 0.2
+    max_time = 10
 
 
+    flags = [FlagSlipout(time_to_contact,time_without_contact),
+            FlagNotContact(time_to_contact), FlagMaxTime(max_time)]
 
-rule_action_non_terminal_two_finger = np.asarray([FlatCreate, Mount, Mount,
-                                       FingerUpper, FingerUpper, FingerUpper, FingerUpper,  FingerUpper])
-
-rule_action_terminal_two_finger = np.asarray([TerminalFlat,
-                         TerminalL1, TerminalL1, TerminalL1, TerminalL2, TerminalL2,
-                         TerminalTransformL, TerminalTransformLZ,
-                         TerminalEndLimb, TerminalEndLimb,
-                         TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint])
-rule_action_two_finger = np.r_[rule_action_non_terminal_two_finger, rule_action_terminal_two_finger]
+    times_step = 1e-2
 
 
-rule_action_non_terminal_ladoshaka = np.asarray([FlatCreate,Mount])
-
-rule_action_terminal_ladoshaka = np.asarray([TerminalFlat,TerminalTransformL,TerminalEndLimb])
-
-rule_action_ladoshaka = np.r_[rule_action_non_terminal_ladoshaka, rule_action_terminal_ladoshaka]
-
-
-
-
-def get_terminal_graph_three_finger():
-    G = GraphGrammar()
-    for i in list(rule_action_three_finger):
-        G.apply_rule(i)
-    return G
-
-def get_terminal_graph_ladoshaka():
-    G = GraphGrammar()
-    for i in list(rule_action_ladoshaka):
-        G.apply_rule(i)
-    return G
-
-def get_terminal_graph_two_finger():
-    G = GraphGrammar()
-    for i in list(rule_action_two_finger):
-        G.apply_rule(i)
-    return G
+    obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,1000,True,True,mat)
+    obj.SetCollide(True)
+    obj.SetPos(chrono.ChVectorD(0,1.2,0))
+    
+    sim = step.SimulationStepOptimization(arr_traj, G, obj)
+    sim.set_flags_stop_simulation(flags)
+    sim.change_config_system(config_sys)
+    sim_output = sim.simulate_system(times_step,True)
+    print(m)
+    print(sim_output[40].sum_contact_forces)
