@@ -158,6 +158,39 @@ class GraphGrammar(nx.DiGraph):
         else:
             self._replace_node(id_closest, rule)
 
+    def node_levels_bfs(self):
+        """Devide nodes into levels.
+        
+        Return a list of lists of nodes where each inner list is a 
+        level in respect to the \'root\', which is the node with no in edges. 
+        This function should be reviewed once we start to use graphs with cycles and not just trees"""
+        levels = []
+        # Get the root node that has no in_edges. Currently, we assume that where is only one node without in_edges 
+        for raw_node in self.nodes.items():
+            raw_node_id = raw_node[0]
+            if self.in_degree(raw_node_id) == 0:
+                root_id = raw_node_id
+
+        current_level = [root_id]
+        next_level = []
+        # The list of edges that is built on the bases of the range to the source
+        bfs_edges_list = list(nx.bfs_edges(self, source=root_id))  
+        for edge in bfs_edges_list:
+            # If the edge starts in current level, the end of the edge appends to the next level 
+            if edge[0] in current_level:
+                next_level.append(edge[1])
+                #print(next_level)
+            # Else, the current level is finished and appended to the levels. next_level becomes current_level and the end of the edge goes to the new  next_level
+            else:
+                levels.append(current_level)
+                current_level = next_level
+                next_level = [edge[1]]
+        
+        # Finish the levels by appending current and next_level. In the cycle the appending occurs, when the edge of the next level is found.
+        levels.append(current_level)
+        levels.append(next_level)
+        return levels
+
     def graph_partition_dfs(self) -> list[list[int]]:
         """
         Returns
