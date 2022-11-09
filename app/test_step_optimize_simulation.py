@@ -17,7 +17,7 @@ import pychrono as chrono
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
-import simulation_step as step
+import utils.simulation_step as step
 import engine.robot as robot
 import engine.control as control
 
@@ -74,7 +74,7 @@ RXY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_X_TO_Y)
 MOVE_ZX_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
 MOVE_ZX_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, -0.3), ChQuaternionD(1, 0, 0, 0))
 
-MOVE_X_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
+MOVE_X_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0), ChQuaternionD(1, 0, 0, 0))
 MOVE_Z_PLUS_X_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
 
 transform_rzx = BlockWrapper(ChronoTransform, RZX)
@@ -266,17 +266,15 @@ for i in list(rule_action):
 
 #Set type of system 
 
-# chrono_system = chrono.ChSystemNSC()
-chrono_system = chrono.ChSystemSMC()
+chrono_system = chrono.ChSystemNSC()
+# chrono_system = chrono.ChSystemSMC()
 
 grab_robot = robot.Robot(G, chrono_system)
-
 
 joints = np.array(grab_robot.get_joints)
 for m in range(6):
     if m == 0:
         traj_controller = np.array(np.mat('0 0.3 0.6 0.9 1.2 2; 0.5 0.5 0.5 0.5 0.5 0.5')) #Format: [Time; Value].
-        # traj_controller = np.array(np.mat('0 0.3 0.6 0.9 1.2 2; 0.0 0.0 0.0 0.0 0.0 0.0 ')) #Format: [Time; Value].
     elif m != 1:
         traj_controller[1,:] *=2
         print(traj_controller)
@@ -287,6 +285,8 @@ for m in range(6):
         for i, joint in enumerate(finger):
             arr_finger_traj.append(traj_controller)
         arr_traj.append(arr_finger_traj)
+
+
 
 obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,1000,True,True,mat)
 obj.SetCollide(True)
@@ -313,22 +313,7 @@ LB_NODES_NEW = sort_left_right(grab_robot, list_LM, list_B)
 RJ_NODES_NEW = sort_left_right(grab_robot, list_RM, list_J)
 LJ_NODES_NEW = sort_left_right(grab_robot, list_LM, list_J)
 
-RB_blocks = [B_NODES_NEW[0].block]
-LB_blocks = [B_NODES_NEW[0].block]
-for i in range(len(RB_NODES_NEW)):
-    for j in range(len(RB_NODES_NEW[i])):
-        RB_blocks.append(RB_NODES_NEW[i][j].block)
-
-for i in range(len(LB_NODES_NEW)):
-    for j in range(len(LB_NODES_NEW[i])):
-        LB_blocks.append(LB_NODES_NEW[i][j].block)
-
-# test_block = []
-# for i in range(len(RB_NODES_NEW)):
-#     test_block.append(list(filter(is_body,RB_NODES_NEW[i])))
-
 time_model = time()
-
 time_to_contact = 2
 time_without_contact = 0.2
 max_time = 10
@@ -338,7 +323,7 @@ flags = [FlagSlipout(time_to_contact,time_without_contact),
 times_step = 1e-3
 
 
-sim = step.SimulationStepOptimization(arr_traj, G, obj, RB_blocks, LB_blocks)
+sim = step.SimulationStepOptimization(arr_traj, G, obj)
 sim.set_flags_stop_simulation(flags)
 sim.change_config_system(config_sys)
 sim_output = sim.simulate_system(times_step, True)
@@ -347,4 +332,3 @@ sim_output = sim.simulate_system(times_step, True)
 [B_NODES_NEW, J_NODES_NEW, LB_NODES_NEW, RB_NODES_NEW]  = traj_to_list(B_NODES_NEW, J_NODES_NEW, LB_NODES_NEW, RB_NODES_NEW, sim_output)
 reward = criterion_calc(B_NODES_NEW, J_NODES_NEW, LB_NODES_NEW, RB_NODES_NEW)
 print(reward)
-print(None)
