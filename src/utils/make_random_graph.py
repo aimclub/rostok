@@ -1,5 +1,6 @@
 from engine.node import GraphGrammar
 from engine import rule_vocabulary
+import numpy as np
 
 
 def make_random_graph(n_iter: int, rule_vocab: rule_vocabulary.RuleVocabulary, use_nonterminal_only: bool=True):
