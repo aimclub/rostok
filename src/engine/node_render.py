@@ -265,9 +265,16 @@ class ChronoRevolveJoint(BlockBridge):
 
 
 class ChronoTransform(BlockTransform):
-    def __init__(self, builder, transform: chrono.ChCoordsysD):
+    def __init__(self, builder:chrono.ChSystem, transform):
         super().__init__(builder=builder)
-        self.transform = transform
+        if isinstance(transform,chrono.ChCoordsysD):
+            self.transform = transform
+        elif type(transform) is dict:
+            coordsys_transform = chrono.ChCoordsysD(
+            chrono.ChVectorD(transform["pos"][0],transform["pos"][1],transform["pos"][2]),
+            chrono.ChQuaternionD(transform["rot"][0],transform["rot"][1],transform["rot"][2],transform["rot"][3]))
+            self.transform = coordsys_transform
+        None
 
 
 def find_body_from_two_previous_blocks(sequence: list[Block], it: int) -> Optional[Block]:
