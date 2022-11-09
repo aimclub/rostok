@@ -22,13 +22,13 @@ mat.SetFriction(0.5)
 mat.SetDampingF(0.1)
 
 # Bodies
-link1 = BlockWrapper(ChronoBody, length=0.3)
-link2 = BlockWrapper(ChronoBody, length=0.2)
+link1 = BlockWrapper(ChronoBody, length=0.6)
+link2 = BlockWrapper(ChronoBody, length=0.4)
 
-flat1 = BlockWrapper(ChronoBody, width=0.4, length=0.1)
-flat2 = BlockWrapper(ChronoBody, width=0.7, length=0.1)
+flat1 = BlockWrapper(ChronoBody, width=0.8, length=0.2)
+flat2 = BlockWrapper(ChronoBody, width=1.4, length=0.2)
 
-u1 = BlockWrapper(ChronoBody, width=0.1, length=0.1, material=mat)
+u1 = BlockWrapper(ChronoBody, width=0.2, length=0.2)
 
 # Transforms
 RZX = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_X)
@@ -258,7 +258,7 @@ body_block = filter(lambda x: isinstance(x, ChronoBody), blocks)
 make_collide(body_block, CollisionGroup.Robot)
 
 
-stoper = FlagMaxTime(2)
+stoper = FlagMaxTime(10)
 stoper.build(mysystem, grab_robot, obj)
 
 # Create simulation loop
