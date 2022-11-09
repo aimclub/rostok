@@ -1,5 +1,6 @@
 import pychrono.core as chrono
 import pychrono.irrlicht as chronoirr
+from utils.load_save_materials import create_chrono_material
 from enum import Enum
 from abc import ABC
 from typing import Optional
@@ -69,7 +70,7 @@ class BlockBody(Block, ABC):
 
 
 class ChronoBody(BlockBody):
-    def __init__(self, builder, length=1, width=0.1, random_color=True, mass=1, material = None ):
+    def __init__(self, builder, length=1, width=0.1, random_color=True, mass=1, material_config = ("rubber", "./src/utils/material.xml") ):
         super().__init__(builder=builder)
 
         # Create body
@@ -81,7 +82,8 @@ class ChronoBody(BlockBody):
         box_asset = chrono.ChBoxShape()
         box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width/2, length/2, width/2)
 
-        if material:
+        if material_config:
+            material = create_chrono_material(material_config[0],material_config[1])
             self.body.GetCollisionModel().ClearModel()
             self.body.GetCollisionModel().AddBox(material,width/2,length/2,width/2)
             self.body.GetCollisionModel().BuildModel()
