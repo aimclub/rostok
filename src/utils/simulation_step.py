@@ -135,7 +135,8 @@ class SimulationStepOptimization:
                                                                     self.grab_robot.block_map.items()))
 
         # Loop of simulation
-        while not self.condion_stop_simulation.flag_stop_simulation():
+        # while not self.condion_stop_simulation.flag_stop_simulation():
+        while self.chrono_system.GetChTime() < 5:
             self.chrono_system.Update()
             self.chrono_system.DoStepDynamics(time_step)
 

@@ -61,13 +61,14 @@ def criterion_calc(B_NODES_NEW, J_NODES_NEW, LB_NODES_NEW, RB_NODES_NEW):
 
     # Weights
     w1 = 5
-    w2 = 1
-    w3 = 1
-    w4 = 5
+    w2 = 2
+    w3 = 2
+    w4 = 1
   
     #f1
     for i in range(len(B_NODES_NEW)):
-        cont.append(np.mean(B_NODES_NEW[i]['sum_contact_forces'])) #All mean values of contact forces (for each body) 
+        if sum(B_NODES_NEW[i]['sum_contact_forces'])>0:
+            cont.append(np.mean(B_NODES_NEW[i]['sum_contact_forces'])) #All mean values of contact forces (for each body) 
     if sum(cont) == 0:
         f1 = 0
     else:
