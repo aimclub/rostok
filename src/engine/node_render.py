@@ -79,11 +79,11 @@ class ChronoBody(BlockBody):
         # Create shape
         # TODO: setter for shape
         box_asset = chrono.ChBoxShape()
-        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width, length, width)
+        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width, length/2, width)
 
         if material:
             self.body.GetCollisionModel().ClearModel()
-            self.body.GetCollisionModel().AddBox(material,width,length,width)
+            self.body.GetCollisionModel().AddBox(material,width,length/2,width)
             self.body.GetCollisionModel().BuildModel()
 
         self.body.AddVisualShape(box_asset)
@@ -103,8 +103,8 @@ class ChronoBody(BlockBody):
         self.body.AddMarker(out_marker)
         self.body.AddMarker(transformed_out_marker)
 
-        input_marker.SetPos(chrono.ChVectorD(0, -length, 0))
-        out_marker.SetPos(chrono.ChVectorD(0, length, 0))
+        input_marker.SetPos(chrono.ChVectorD(0, -length/2, 0))
+        out_marker.SetPos(chrono.ChVectorD(0, length/2, 0))
 
         # Calc SetPos
         transformed_out_marker.SetCoord(out_marker.GetCoord())
