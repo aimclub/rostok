@@ -1,5 +1,5 @@
 """Class NodeVocabulary"""
-
+import context 
 from engine.node import Node, BlockWrapper, ROOT
 
 

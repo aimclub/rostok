@@ -1,4 +1,5 @@
 # imports from our code
+import context
 from engine import rule_vocabulary
 from engine import node_vocabulary
 from engine.node import ROOT, GraphGrammar, BlockWrapper

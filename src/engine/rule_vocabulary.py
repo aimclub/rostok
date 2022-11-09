@@ -1,5 +1,5 @@
 """Class RuleVocabulary."""
-
+import context 
 from engine.node_vocabulary import NodeVocabulary
 from engine.node import Rule, GraphGrammar, ROOT
 import networkx as nx
@@ -97,6 +97,12 @@ class RuleVocabulary():
             if not self.node_vocab.check_node(node):
                 raise Exception(f'Label {node} not in node vocabulary!')
 
+        # if the rule deletes a node dont check its in and out connections
+        if len(new_nodes)!=0:
+             #Currently current_ins_links and current_out_links should be just numbers
+            if current_in_edges > len(new_nodes)-1 or current_out_edges > len(new_nodes)-1 or current_in_edges < 0 or current_out_edges<0:
+                raise Exception("Invalid linking of the in or out edges!")
+            
         i=0
         # creating the new subgraph
         new_graph=nx.DiGraph()
@@ -109,9 +115,7 @@ class RuleVocabulary():
                 raise Exception(f'Invalid edge {edge}')
             new_graph.add_edge(*edge)
             
-        #Currently current_ins_links and current_out_links should be just numbers
-        if current_in_edges > len(new_nodes)-1 or current_out_edges > len(new_nodes)-1 or current_in_edges < 0 or current_out_edges<0:
-            raise Exception("Invalid linking of the in or out edges!")
+
         
         # graph_insert set the terminal status for the rule
         new_rule = Rule()
@@ -123,10 +127,11 @@ class RuleVocabulary():
         if new_rule._is_terminal:
             self.terminal_rule_dict[name] = new_rule
             self.rules_terminal_node_set.update(set(new_nodes))
-            if current_nodes[0] in self.terminal_dict:
-                self.terminal_dict[current_nodes[0]].append(new_nodes[0])
-            else:
-                self.terminal_dict[current_nodes[0]]=[new_nodes[0]]
+            if len(new_nodes)>0:
+                if current_nodes[0] in self.terminal_dict:
+                    self.terminal_dict[current_nodes[0]].append(new_nodes[0])
+                else:
+                    self.terminal_dict[current_nodes[0]]=[new_nodes[0]]
         else:
             self.nonterminal_rule_dict[name] = new_rule
             #self.rules_nonterminal_node_set.update(set(current_nodes+new_nodes))
@@ -281,12 +286,14 @@ if __name__=='__main__':
     rule_vocab.create_rule("BT",['B'], ['B1'],0,0)
     rule_vocab.create_rule("CT",['C'], ['C1'],0,0)
     rule_vocab.create_rule("ROOT",["ROOT"],["A"],0,0)
+    rule_vocab.create_rule("CD",["C"], [], 0, 0)
     print(rule_vocab)
 
     rule_vocab.check_rules()
     G = GraphGrammar()
     G.apply_rule(rule_vocab.get_rule("ROOT"))
     G.apply_rule(rule_vocab.get_rule("First_Rule"))
+    G.apply_rule(rule_vocab.get_rule("CD"))
     rule_vocab.make_graph_terminal(G)
 
     plt.figure()

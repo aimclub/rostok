@@ -159,6 +159,11 @@ class GraphGrammar(nx.DiGraph):
             self._replace_node(id_closest, rule)
 
     def node_levels_bfs(self):
+        """Devide nodes into levels.
+        
+        Return a list of lists of nodes where each inner list is a 
+        level in respect to the \'root\', which is the node with no in edges. 
+        This function should be reviewed once we start to use graphs with cycles and not just trees"""
         levels = []
         # Get the root node that has no in_edges. Currently, we assume that where is only one node without in_edges 
         for raw_node in self.nodes.items():
