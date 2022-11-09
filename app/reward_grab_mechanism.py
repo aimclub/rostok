@@ -271,22 +271,6 @@ chrono_system = chrono.ChSystemNSC()
 
 grab_robot = robot.Robot(G, chrono_system)
 
-joints = np.array(grab_robot.get_joints)
-for m in range(6):
-    if m == 0:
-        traj_controller = np.array(np.mat('0 0.3 0.6 0.9 1.2 2; 0.5 0.5 0.5 0.5 0.5 0.5')) #Format: [Time; Value].
-    elif m != 1:
-        traj_controller[1,:] *=2
-        print(traj_controller)
-        
-    arr_traj = []
-    for ind, finger in enumerate(joints):
-        arr_finger_traj = []
-        for i, joint in enumerate(finger):
-            arr_finger_traj.append(traj_controller)
-        arr_traj.append(arr_finger_traj)
-
-
 
 obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,1000,True,True,mat)
 obj.SetCollide(True)
@@ -312,6 +296,35 @@ RB_NODES_NEW = sort_left_right(grab_robot, list_RM, list_B)
 LB_NODES_NEW = sort_left_right(grab_robot, list_LM, list_B)
 RJ_NODES_NEW = sort_left_right(grab_robot, list_RM, list_J)
 LJ_NODES_NEW = sort_left_right(grab_robot, list_LM, list_J)
+
+
+RJ_blocks = []
+for i in range(len(RJ_NODES_NEW)):
+    for j in range(len(RJ_NODES_NEW[i])):
+        RJ_blocks.append(RJ_NODES_NEW[i][j].block)
+
+
+joint_blocks = grab_robot.get_joints
+joints = np.array(joint_blocks)
+
+for m in range(6):
+    if m == 0:
+        traj_controller = np.array(np.mat('0 0.3 0.6 0.9 1.2 2; 0.5 0.5 0.5 0.5 0.5 0.5')) #Format: [Time; Value].
+        traj_controller_inv = np.array(np.mat('0 0.3 0.6 0.9 1.2 2; -0.5 -0.5 -0.5 -0.5 -0.5 -0.5')) #Format: [Time; Value].
+    elif m != 1:
+        traj_controller[1,:] *=2
+        traj_controller_inv[1,:] *=2
+        print(traj_controller)
+        
+    arr_traj = []
+    for ind, finger in enumerate(joints):
+        arr_finger_traj = []
+        for i, joint in enumerate(finger):
+            if joint in RJ_blocks:
+                arr_finger_traj.append(traj_controller)
+            else:
+                arr_finger_traj.append(traj_controller_inv)
+        arr_traj.append(arr_finger_traj)
 
 time_model = time()
 time_to_contact = 2
