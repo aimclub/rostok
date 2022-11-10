@@ -24,6 +24,8 @@ gait_period = 2.5 # период захвата объекта
 
 
 def appV2L(final: list, val: list ):
+
+   
     """
     Function to append value of the list "val" to list "final"
     Args:
@@ -39,8 +41,10 @@ def appV2L(final: list, val: list ):
         final[i].append(it)
     return final
 
-def criterion_calc(B_NODES_NEW, J_NODES_NEW, LB_NODES_NEW, RB_NODES_NEW):
+def criterion_calc(sim,  sim_output):
 
+
+    [B_NODES_NEW, J_NODES_NEW, LB_NODES_NEW, RB_NODES_NEW]  = traj_to_list(sim.B_NODES_NEW, sim.J_NODES_NEW, sim.LB_NODES_NEW, sim.RB_NODES_NEW, sim_output)
     """
     Function that calculates reward for grasp device. It has four (f1-f4) criterions. All of them should be maximized.
     1) Criterion of isotropy of contact forces
