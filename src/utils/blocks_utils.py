@@ -4,13 +4,15 @@ from enum import Enum
 
 
 class CollisionGroup(int, Enum):
-    Default = 0
-    Robot = 1
-    Object = 2
-    World  = 3
+    DEFAUL = 0
+    ROBOT = 1
+    OBJECT = 2
+    PALM  = 3
+    RIGHT_SIDE_PALM = 4
+    LEFT_SIDE_PALM = 5
 
-
-def make_collide(body_list: list[ChronoBody], group_id: CollisionGroup, self_colide=False):
+def make_collide(body_list: list[ChronoBody], group_id: CollisionGroup, disable_gproup: list[CollisionGroup], self_colide=False):
+    
     if type(group_id) is  not CollisionGroup:
         raise Exception("group_id must be CollisionGroup. Instead {wrong_type}".format(wrong_type=type(group_id)))
     
@@ -19,8 +21,9 @@ def make_collide(body_list: list[ChronoBody], group_id: CollisionGroup, self_col
         colision_model.SetFamily(group_id)
         if not self_colide:
             colision_model.SetFamilyMaskNoCollisionWithFamily(group_id)
+        
+        for items in disable_gproup: colision_model.SetFamilyMaskNoCollisionWithFamily(items)
         body.body.SetCollide(True)
-
 
 class NodeFeatures:
     @staticmethod
