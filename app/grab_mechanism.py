@@ -226,19 +226,18 @@ base_id = grab_robot.get_block_graph().find_nodes(F1)[0]
 grab_robot.block_map[base_id].body.SetBodyFixed(True)
 
 
-des_points_1 = np.array([0, 0.1, 0.2, 0.3, 0.4])
+des_points_1 = np.array([0, 0.1, 0.2, 0.3, 0.4])*2
 des_points_1_1 = - des_points_1
 
 pid_track = []
-for id, joint in joint_blocks:
-    if id not in [44, 47]:
-        # ctrl.TrackingControl(joint)
-        pid_track.append(ctrl.ChControllerPID(joint, 80., 5., 1.))
-        pid_track[-1].set_des_positions_interval(des_points_1, (0.1, 2))
-    else:
-        # ctrl.TrackingControl(joint)
-        pid_track.append(ctrl.ChControllerPID(joint, 80., 5., 1.))
-        pid_track[-1].set_des_positions_interval(des_points_1_1, (0.1, 2))
+for id, finger in enumerate(joint_blocks):
+    for joint in finger:
+        if id != 2:
+            pid_track.append(ctrl.ChControllerPID(joint, 80., 5., 1.))
+            pid_track[-1].set_des_positions_interval(des_points_1, (0.1, 2))
+        else:
+            pid_track.append(ctrl.ChControllerPID(joint, 80., 5., 1.))
+            pid_track[-1].set_des_positions_interval(des_points_1_1, (0.1, 2))
 
 # Visualization
 # plot_graph(G)
