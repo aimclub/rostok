@@ -1,3 +1,4 @@
+import sys
 from copy import deepcopy
 from dataclasses import dataclass
 from engine.node import GraphGrammar
@@ -9,6 +10,11 @@ import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 from engine.robot import Robot
 import engine.control as control
+from utils.nodes_division import *
+sys.path.append("...app")
+import reward_grab_mechanism
+
+import numpy as np
 
 
 
@@ -38,8 +44,8 @@ class DataBodyBlock(SimulationDataBlock):
 # TODO: Move methods to utils
 
 class SimulationStepOptimization:
-    def __init__(self, control_trajectory, graph_mechanism: GraphGrammar, grasp_object: chrono.ChBody):
-        self.control_trajectory = control_trajectory
+    def __init__(self, graph_mechanism: GraphGrammar, grasp_object: chrono.ChBody):
+        self.control_trajectory = None
         self.graph_mechanism = graph_mechanism
         self.grasp_object = grasp_object
         self.controller_joints = []
@@ -66,35 +72,82 @@ class SimulationStepOptimization:
         # timestepper.SetMaxiters(5)
 
     
-        # Create familry collision for robot
-        blocks = self.grab_robot.block_map.values()
-        body_block = filter(lambda x: isinstance(x, ChronoBody), blocks)
-        make_collide(body_block, CollisionGroup.Robot)
+        self.grab_robot = Robot(self.graph_mechanism, self.chrono_system)   
+        joints = np.array(self.grab_robot.get_joints)   
+        
+        list_J = reward_grab_mechanism.list_J
+        list_RM = reward_grab_mechanism.list_RM
+        list_LM = reward_grab_mechanism.list_LM
+        list_B = reward_grab_mechanism.list_B
+        list_Palm = reward_grab_mechanism.list_Palm
+        
+        self.J_NODES_NEW = nodes_division(self.grab_robot, list_J)
+        self.B_NODES_NEW = nodes_division(self.grab_robot, list_B)
+        self.RB_NODES_NEW = sort_left_right(self.grab_robot, list_RM, list_B)
+        self.LB_NODES_NEW = sort_left_right(self.grab_robot, list_LM, list_B)
+        self.RJ_NODES_NEW = sort_left_right(self.grab_robot, list_RM, list_J)
+        self.LJ_NODES_NEW = sort_left_right(self.grab_robot, list_LM, list_J)
+        
+        RB_blocks = [self.B_NODES_NEW[0].block]
+        LB_blocks = [self.B_NODES_NEW[0].block]
+        RJ_blocks = []
+        
+        PALM_blocks = self.B_NODES_NEW[0].block
+        
+        for i in range(len(self.RB_NODES_NEW)):
+            for j in range(len(self.RB_NODES_NEW[i])):
+                RB_blocks.append(self.RB_NODES_NEW[i][j].block)
 
+        for i in range(len(self.LB_NODES_NEW)):
+            for j in range(len(self.LB_NODES_NEW[i])):
+                LB_blocks.append(self.LB_NODES_NEW[i][j].block)
 
-        # Add grasp object in system and set system without gravity
-        self.chrono_system.Add(self.grasp_object)
-        self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
-
-
-        self.bind_trajectory(self.control_trajectory)
-        self.fix_robot_base()
-
-    def fix_robot_base(self):
-        # Fixation palm of grab mechanism
+        for i in range(len(self.RJ_NODES_NEW)):
+            for j in range(len(self.RJ_NODES_NEW[i])):
+                RJ_blocks.append(self.RJ_NODES_NEW[i][j].block)
+        
+        for m in range(6):
+            if m == 0:
+                traj_controller = np.array(np.mat('0 0.3 0.6 0.9 1.2 2; 0.5 0.5 0.5 0.5 0.5 0.5')) #Format: [Time; Value].
+                traj_controller_inv = np.array(np.mat('0 0.3 0.6 0.9 1.2 2; -0.5 -0.5 -0.5 -0.5 -0.5 -0.5')) #Format: [Time; Value].
+            elif m != 1:
+                traj_controller[1,:] *=2
+                traj_controller_inv[1,:] *=2
+                print(traj_controller)
+                
+            arr_traj = []
+            for ind, finger in enumerate(joints):
+                arr_finger_traj = []
+                for i, joint in enumerate(finger):
+                    if joint in RJ_blocks:
+                        arr_finger_traj.append(traj_controller)
+                    else:
+                        arr_finger_traj.append(traj_controller_inv)
+                arr_traj.append(arr_finger_traj)
+        
+        self.control_trajectory = arr_traj
+        
         ids_blocks = list(self.grab_robot.block_map.keys())
-        base_id = self.graph_mechanism.closest_node_to_root(ids_blocks)
+        base_id = graph_mechanism.closest_node_to_root(ids_blocks)
         self.grab_robot.block_map[base_id].body.SetBodyFixed(True)
-
-    def bind_trajectory(self, control_trajectory):
-        # Create the controller joint from the control trajectory
+        
+        # blocks = self.grab_robot.block_map.values()
+        # body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
+        # make_collide(body_block, CollisionGroup.ROBOT)
+        make_collide(RB_blocks, CollisionGroup.RIGHT_SIDE_PALM, disable_gproup=[CollisionGroup.PALM])
+        make_collide(LB_blocks, CollisionGroup.LEFT_SIDE_PALM, disable_gproup=[CollisionGroup.PALM])
+        
+        self.chrono_system.Add(self.grasp_object)
+        self.chrono_system.Set_G_acc(chrono.ChVectorD(0,0,0))
+        
+        self.controller_joints = []
         try:
             for id_finger, finger in enumerate(self.grab_robot.get_joints):
                 for id_joint, joint in enumerate(finger):
                     self.controller_joints.append(
                         control.TrackingControl(joint))
                     self.controller_joints[-1].set_des_positions(
-                        control_trajectory[id_finger][id_joint])
+                    self.control_trajectory[id_finger][id_joint])
         except IndexError:
             raise IndexError("Arries control and joints aren't same shape")
 
