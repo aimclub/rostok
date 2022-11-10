@@ -83,7 +83,11 @@ class ChronoBody(BlockBody):
         box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width/2, length/2, width/2)
 
         if material_config:
-            material = create_chrono_material(material_config[0],material_config[1])
+            if len(material_config) == 3:
+                material = create_chrono_material(material_config[0],material_config[1], material_config[2])
+            else:
+                material = create_chrono_material(material_config[0],material_config[1])
+                
             self.body.GetCollisionModel().ClearModel()
             self.body.GetCollisionModel().AddBox(material,width/2,length/2,width/2)
             self.body.GetCollisionModel().BuildModel()
