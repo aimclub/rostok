@@ -1,3 +1,4 @@
+from copy import deepcopy
 from engine.node import Node, BlockWrapper, WrapperTuple, GraphGrammar
 from engine.node_render import Block, connect_blocks, ChronoRevolveJoint
 from dataclasses import dataclass
@@ -13,7 +14,7 @@ class RobotNode:
 
 class Robot:
     def __init__(self, robot_graph: GraphGrammar, simulation):
-        self.__graph = robot_graph
+        self.__graph = deepcopy(robot_graph)
         self.__joint_graph = nx.DiGraph()
         wrapper_tuple_array = self.__graph.build_terminal_wrapper_array()
         # Map { id from graph : block }
@@ -31,9 +32,7 @@ class Robot:
                 wrapper = wrapper_tuple.block_wrapper
 
                 if not (id in uniq_blocks.keys()):
-                    wrapper.builder = simulation
-
-                    block_buf = wrapper.create_block()
+                    block_buf = wrapper.create_block(simulation)
                     block_line.append(block_buf)
                     uniq_blocks[id] = block_buf
                 else:
