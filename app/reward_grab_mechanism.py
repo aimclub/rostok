@@ -17,7 +17,7 @@ import pychrono as chrono
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
-import utils.simulation_step as step
+import utils.simulation_step as simulation_step
 import engine.robot as robot
 import engine.control as control
 
@@ -74,7 +74,7 @@ RXY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_X_TO_Y)
 MOVE_ZX_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
 MOVE_ZX_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, -0.3), ChQuaternionD(1, 0, 0, 0))
 
-MOVE_X_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0), ChQuaternionD(1, 0, 0, 0))
+MOVE_X_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
 MOVE_Z_PLUS_X_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
 
 transform_rzx = BlockWrapper(ChronoTransform, RZX)
@@ -116,6 +116,7 @@ list_J = [J1]
 list_RM = [T1, T3]
 list_LM = [T2, T4]
 list_B = [L1, L2, F1, F2, U1]
+list_Palm = [F1]
 
 # Defines rules
 
@@ -248,18 +249,6 @@ rule_action_terminal = np.asarray([TerminalFlat,
 rule_action = np.r_[rule_action_non_terminal, rule_action_terminal]
 
 
-# Test for 2 fingers:
-
-# rule_action_non_terminal = np.asarray([FlatCreate, Mount, Mount,
-#                                        FingerUpper, FingerUpper, FingerUpper, FingerUpper])
-# rule_action_terminal = np.asarray([TerminalFlat,
-#                          TerminalL1, TerminalL1, TerminalL2, TerminalL2,
-#                          TerminalTransformL, TerminalTransformRX,
-#                          TerminalEndLimb, TerminalEndLimb,
-#                          TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint])
-# rule_action = np.r_[rule_action_non_terminal, rule_action_terminal]
-
-
 for i in list(rule_action):
     G.apply_rule(i)
 
@@ -275,56 +264,15 @@ grab_robot = robot.Robot(G, chrono_system)
 obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,1000,True,True,mat)
 obj.SetCollide(True)
 obj.SetPos(chrono.ChVectorD(0,0.5,0))
-obj.SetBodyFixed(True)
-
-# plt.figure()
-# nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
-#                  labels={n: G.nodes[n]["Node"].label for n in G})
-# plt.figure()
-# nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
-# plt.show()
+# obj.SetBodyFixed(True)
 
 node_list_plain = list(map(G.get_node_by_id,
                       G.get_ids_in_dfs_order()))
 
 config_sys = {"Set_G_acc":chrono.ChVectorD(0,-10,0)}
 
-#Create sorted lists 
-J_NODES_NEW = nodes_division(grab_robot, list_J)
-B_NODES_NEW = nodes_division(grab_robot, list_B)
-RB_NODES_NEW = sort_left_right(grab_robot, list_RM, list_B)
-LB_NODES_NEW = sort_left_right(grab_robot, list_LM, list_B)
-RJ_NODES_NEW = sort_left_right(grab_robot, list_RM, list_J)
-LJ_NODES_NEW = sort_left_right(grab_robot, list_LM, list_J)
 
 
-RJ_blocks = []
-for i in range(len(RJ_NODES_NEW)):
-    for j in range(len(RJ_NODES_NEW[i])):
-        RJ_blocks.append(RJ_NODES_NEW[i][j].block)
-
-
-joint_blocks = grab_robot.get_joints
-joints = np.array(joint_blocks)
-
-for m in range(6):
-    if m == 0:
-        traj_controller = np.array(np.mat('0 0.3 0.6 0.9 1.2 2; 0.5 0.5 0.5 0.5 0.5 0.5')) #Format: [Time; Value].
-        traj_controller_inv = np.array(np.mat('0 0.3 0.6 0.9 1.2 2; -0.5 -0.5 -0.5 -0.5 -0.5 -0.5')) #Format: [Time; Value].
-    elif m != 1:
-        traj_controller[1,:] *=2
-        traj_controller_inv[1,:] *=2
-        print(traj_controller)
-        
-    arr_traj = []
-    for ind, finger in enumerate(joints):
-        arr_finger_traj = []
-        for i, joint in enumerate(finger):
-            if joint in RJ_blocks:
-                arr_finger_traj.append(traj_controller)
-            else:
-                arr_finger_traj.append(traj_controller_inv)
-        arr_traj.append(arr_finger_traj)
 
 time_model = time()
 time_to_contact = 2
@@ -335,13 +283,12 @@ flags = [FlagSlipout(time_to_contact,time_without_contact),
 
 times_step = 1e-3
 
+if __name__ == '__main__':
+    sim = simulation_step.SimulationStepOptimization(G, obj)
+    sim.set_flags_stop_simulation(flags)
+    sim.change_config_system(config_sys)
+    sim_output = sim.simulate_system(times_step, True)
 
-sim = step.SimulationStepOptimization(arr_traj, G, obj)
-sim.set_flags_stop_simulation(flags)
-sim.change_config_system(config_sys)
-sim_output = sim.simulate_system(times_step, True)
-
-
-[B_NODES_NEW, J_NODES_NEW, LB_NODES_NEW, RB_NODES_NEW]  = traj_to_list(B_NODES_NEW, J_NODES_NEW, LB_NODES_NEW, RB_NODES_NEW, sim_output)
-reward = criterion_calc(B_NODES_NEW, J_NODES_NEW, LB_NODES_NEW, RB_NODES_NEW)
-print(reward)
+    reward = criterion_calc(sim, sim_output)
+    print(reward)
+    print(None)
