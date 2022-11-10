@@ -6,9 +6,8 @@ def nodes_division(rob: robot, list_N):
     partition_dfs = rob.get_dfs_partiton()
     for i in range(len(partition_dfs)):
         for j in range(len(partition_dfs[i])):
-           for z in range(len(list_N)):
-                if (partition_dfs[i][j].node is list_N[z]) and partition_dfs[i][j] not in NODES_NEW:
-                    NODES_NEW.append(partition_dfs[i][j])   
+            if (partition_dfs[i][j].node in list_N) and partition_dfs[i][j] not in NODES_NEW:
+                NODES_NEW.append(partition_dfs[i][j])   
     return NODES_NEW
 
 
