@@ -21,9 +21,11 @@ mat = chrono.ChMaterialSurfaceNSC()
 mat.SetFriction(0.5)
 mat.SetDampingF(0.1)
 
+mat_r = ("polyactide", "./src/utils/material.xml", "ChMaterialSurfaceNSC")
+
 # Bodies
-link1 = BlockWrapper(ChronoBody, length=0.6)
-link2 = BlockWrapper(ChronoBody, length=0.4)
+link1 = BlockWrapper(ChronoBody, length=0.6, material_config = mat_r)
+link2 = BlockWrapper(ChronoBody, length=0.4, material_config = mat_r)
 
 flat1 = BlockWrapper(ChronoBody, width=0.8, length=0.2)
 flat2 = BlockWrapper(ChronoBody, width=1.4, length=0.2)
