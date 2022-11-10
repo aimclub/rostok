@@ -57,6 +57,8 @@ class SimulationStepOptimization:
         self.chrono_system.SetSolverMaxIterations(100)
         self.chrono_system.SetSolverForceTolerance(1e-6)
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
+        
+        self.grab_robot = Robot(self.graph_mechanism, self.chrono_system)
 
         # self.chrono_system = chrono.ChSystemSMC()
         # self.chrono_system.SetSolverType(chrono.ChSolver.Type_MINRES)
