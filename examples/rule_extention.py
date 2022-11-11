@@ -224,7 +224,7 @@ mysystem.SetSolverMaxIterations(100)
 mysystem.SetSolverForceTolerance(0)
 
 my_robot = robot.Robot(G, mysystem)
-joint_blocks = robot.get_joints
+joint_blocks = my_robot.get_joints
 
 obj = chrono.ChBodyEasyCylinder(0.5,0.5,1000,True,True,mat)
 # obj = chrono.ChBodyEasySphere(0.5,1000,True,True,mat)
@@ -241,7 +241,6 @@ for name in list_of_base_nodes:
 
 my_robot.block_map[base_id].body.SetBodyFixed(True)
 
-#
 # Make robot collide
 blocks = my_robot.block_map.values()
 body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
