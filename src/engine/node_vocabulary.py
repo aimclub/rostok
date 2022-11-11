@@ -113,6 +113,12 @@ class NodeVocabulary():
         """Return the list of the labels in the vocabulary."""
         return str(self.node_dict.keys())
 
+    def get_list_of_nodes(self, nodes:list[str]) -> list[Node]:
+        result = []
+        for node in nodes:
+            result.append(self.get_node(node))
+        return result
+
 
 if __name__ == '__main__':
     node_vocab = NodeVocabulary()
