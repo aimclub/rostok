@@ -78,9 +78,9 @@ MOVE_TO_RIGHT_SIDE_MINUS = map(lambda x: {"pos":[x, 0, -0.5],"rot":[0,0,1,0]},
                 width)
 MOVE_TO_LEFT_SIDE = map(lambda x:  {"pos":[-x, 0, 0],"rot":[1,0,0,0]},
                 width)
-MOVE_TO_LEFT_SIDE_PLUS = map(lambda x: {"pos":[-x, 0, +0.5],"rot":[0,0,1,0]},
+MOVE_TO_LEFT_SIDE_PLUS = map(lambda x: {"pos":[-x, 0, +0.5],"rot":[1,0,0,0]},
                 width)
-MOVE_TO_LEFT_SIDE_MINUS = map(lambda x: {"pos":[-x, 0, -0.5],"rot":[0,0,1,0]},
+MOVE_TO_LEFT_SIDE_MINUS = map(lambda x: {"pos":[-x, 0, -0.5],"rot":[1,0,0,0]},
                 width)
 
 quat_Y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))
