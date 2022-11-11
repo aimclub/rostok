@@ -28,20 +28,12 @@ flat2 = BlockWrapper(ChronoBody, width=1.4, length=0.2)
 u1 = BlockWrapper(ChronoBody, width=0.2, length=0.2)
 
 # Transforms
-RZX = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_X)
-RZY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_Y)
-RXY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_X_TO_Y)
+MOVE_ZX_PLUS = {"pos":[0.3,0,0.3],"rot":[1,0,0,0]}
+MOVE_ZX_MINUS = {"pos":[-0.3,0,-0.3],"rot":[1,0,0,0]}
 
-MOVE_ZX_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
-MOVE_ZX_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, -0.3), ChQuaternionD(1, 0, 0, 0))
+MOVE_X_PLUS = {"pos":[0.3,0,0.],"rot":[1,0,0,0]}
+MOVE_Z_PLUS_X_MINUS = {"pos":[-0.3,0,0.3],"rot":[1,0,0,0]}
 
-MOVE_X_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0), ChQuaternionD(1, 0, 0, 0))
-MOVE_Z_PLUS_X_MINUS = ChCoordsysD(
-    ChVectorD(-0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
-
-transform_rzx = BlockWrapper(ChronoTransform, RZX)
-transform_rzy = BlockWrapper(ChronoTransform, RZY)
-transform_rxy = BlockWrapper(ChronoTransform, RXY)
 transform_mzx_plus = BlockWrapper(ChronoTransform, MOVE_ZX_PLUS)
 transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
 transform_mx_plus = BlockWrapper(ChronoTransform, MOVE_X_PLUS)

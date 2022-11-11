@@ -8,15 +8,12 @@ from networkx.algorithms.traversal import dfs_preorder_nodes
 
 class BlockWrapper:
     def __init__(self, block_cls, *args, **kwargs):
-        self.builder = None
         self.block_cls = block_cls
         self.args = args
         self.kwargs = kwargs
 
-    def create_block(self):
-        if self.builder is None:
-            raise Exception('Set builder first')
-        return self.block_cls(self.builder, *self.args, **self.kwargs)
+    def create_block(self, builder):
+        return self.block_cls(builder, *self.args, **self.kwargs)
     
 
     def __deepcopy__(self, memo):

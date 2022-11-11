@@ -1,29 +1,30 @@
 
 import context
-import pychrono as chrono
-import pychrono.irrlicht as chronoirr
 import networkx as nx
 import numpy as np
-import engine.robot as robot
+import pychrono as chrono
+import pychrono.irrlicht as chronoirr
+from pychrono import (Q_ROTATE_X_TO_Y, Q_ROTATE_X_TO_Z, Q_ROTATE_Y_TO_X,
+                      Q_ROTATE_Y_TO_Z, Q_ROTATE_Z_TO_X, Q_ROTATE_Z_TO_Y,
+                      ChCoordsysD, ChQuaternionD, ChVectorD)
+
 import engine.control as ctrl
-
-from engine.node import BlockWrapper, Node, Rule, GraphGrammar, ROOT
-from engine.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint
-from utils.blocks_utils import make_collide, CollisionGroup
-from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
-from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
-    Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
-    Q_ROTATE_X_TO_Y, Q_ROTATE_X_TO_Z
+import engine.robot as robot
+from engine.node import ROOT, BlockWrapper, GraphGrammar, Node, Rule
+from engine.node_render import ChronoBody, ChronoRevolveJoint, ChronoTransform
+from utils.blocks_utils import CollisionGroup, make_collide
 from utils.flags_simualtions import FlagMaxTime
-
+from copy import deepcopy
 # Define block types
 mat = chrono.ChMaterialSurfaceNSC()
 mat.SetFriction(0.5)
 mat.SetDampingF(0.1)
 
+mat_r = ("polyactide", "./src/utils/material.xml", "ChMaterialSurfaceNSC")
+
 # Bodies
-link1 = BlockWrapper(ChronoBody, length=0.6)
-link2 = BlockWrapper(ChronoBody, length=0.4)
+link1 = BlockWrapper(ChronoBody, length=0.6, material_config = mat_r)
+link2 = BlockWrapper(ChronoBody, length=0.4, material_config = mat_r)
 
 flat1 = BlockWrapper(ChronoBody, width=0.8, length=0.2)
 flat2 = BlockWrapper(ChronoBody, width=1.4, length=0.2)
@@ -31,21 +32,13 @@ flat2 = BlockWrapper(ChronoBody, width=1.4, length=0.2)
 u1 = BlockWrapper(ChronoBody, width=0.2, length=0.2)
 
 # Transforms
-RZX = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_X)
-RZY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_Y)
-RXY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_X_TO_Y)
 
-MOVE_ZX_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
-MOVE_ZX_MINUS = ChCoordsysD(
-    ChVectorD(-0.3, 0, -0.3), ChQuaternionD(1, 0, 0, 0))
+MOVE_ZX_PLUS = {"pos":[0.3,0,0.3],"rot":[1,0,0,0]}
+MOVE_ZX_MINUS = {"pos":[-0.3,0,-0.3],"rot":[1,0,0,0]}
 
-MOVE_X_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0), ChQuaternionD(1, 0, 0, 0))
-MOVE_Z_PLUS_X_MINUS = ChCoordsysD(
-    ChVectorD(-0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
+MOVE_X_PLUS = {"pos":[0.3,0,0.],"rot":[1,0,0,0]}
+MOVE_Z_PLUS_X_MINUS = {"pos":[-0.3,0,0.3],"rot":[1,0,0,0]}
 
-transform_rzx = BlockWrapper(ChronoTransform, RZX)
-transform_rzy = BlockWrapper(ChronoTransform, RZY)
-transform_rxy = BlockWrapper(ChronoTransform, RXY)
 transform_mzx_plus = BlockWrapper(ChronoTransform, MOVE_ZX_PLUS)
 transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
 transform_mx_plus = BlockWrapper(ChronoTransform, MOVE_X_PLUS)
