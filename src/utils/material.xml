@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<material>
+
+    <rubber>
+        <ChMaterialSurfaceNSC>
+            <SetFriction>0.7</SetFriction>
+            <SetDampingF>0.1</SetDampingF>
+        </ChMaterialSurfaceNSC>
+    </rubber>
+
+    <polyactide>
+        <ChMaterialSurfaceNSC>    
+            <SetFriction>0.4</SetFriction>
+            <SetDampingF>0.1</SetDampingF>
+        </ChMaterialSurfaceNSC>        
+    </polyactide>
+
+    <steel>
+        <ChMaterialSurfaceSMC>
+            <SetYoungModulus>210</SetYoungModulus>
+            <SetPoissonRatio>0.28</SetPoissonRatio>
+            <SetKt>100</SetKt>
+            <SetKn>100</SetKn>
+            <SetGt>10</SetGt>
+            <SetGn>10</SetGn>
+        </ChMaterialSurfaceSMC>
+    </steel>
+</material>

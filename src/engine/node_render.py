@@ -1,5 +1,6 @@
 import pychrono.core as chrono
 import pychrono.irrlicht as chronoirr
+from utils.load_save_materials import create_chrono_material
 from enum import Enum
 from abc import ABC
 from typing import Optional
@@ -69,7 +70,7 @@ class BlockBody(Block, ABC):
 
 
 class ChronoBody(BlockBody):
-    def __init__(self, builder, length=1, width=0.1, random_color=True, mass=1, material = None ):
+    def __init__(self, builder, length=2, width=0.2, random_color=True, mass=1, material_config = ("rubber", "./src/utils/material.xml") ):
         super().__init__(builder=builder)
 
         # Create body
@@ -79,11 +80,12 @@ class ChronoBody(BlockBody):
         # Create shape
         # TODO: setter for shape
         box_asset = chrono.ChBoxShape()
-        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width, length, width)
+        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width/2, length/2, width/2)
 
-        if material:
+        if material_config:
+            material = create_chrono_material(material_config[0],material_config[1])
             self.body.GetCollisionModel().ClearModel()
-            self.body.GetCollisionModel().AddBox(material,width,length,width)
+            self.body.GetCollisionModel().AddBox(material,width/2,length/2,width/2)
             self.body.GetCollisionModel().BuildModel()
 
         self.body.AddVisualShape(box_asset)
@@ -103,8 +105,8 @@ class ChronoBody(BlockBody):
         self.body.AddMarker(out_marker)
         self.body.AddMarker(transformed_out_marker)
 
-        input_marker.SetPos(chrono.ChVectorD(0, -length, 0))
-        out_marker.SetPos(chrono.ChVectorD(0, length, 0))
+        input_marker.SetPos(chrono.ChVectorD(0, -length/2, 0))
+        out_marker.SetPos(chrono.ChVectorD(0, length/2, 0))
 
         # Calc SetPos
         transformed_out_marker.SetCoord(out_marker.GetCoord())
@@ -265,9 +267,16 @@ class ChronoRevolveJoint(BlockBridge):
 
 
 class ChronoTransform(BlockTransform):
-    def __init__(self, builder, transform: chrono.ChCoordsysD):
+    def __init__(self, builder:chrono.ChSystem, transform):
         super().__init__(builder=builder)
-        self.transform = transform
+        if isinstance(transform,chrono.ChCoordsysD):
+            self.transform = transform
+        elif type(transform) is dict:
+            coordsys_transform = chrono.ChCoordsysD(
+            chrono.ChVectorD(transform["pos"][0],transform["pos"][1],transform["pos"][2]),
+            chrono.ChQuaternionD(transform["rot"][0],transform["rot"][1],transform["rot"][2],transform["rot"][3]))
+            self.transform = coordsys_transform
+        None
 
 
 def find_body_from_two_previous_blocks(sequence: list[Block], it: int) -> Optional[Block]:
