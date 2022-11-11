@@ -78,9 +78,9 @@ MOVE_TO_RIGHT_SIDE_MINUS = map(lambda x: {"pos":[x, 0, -0.5],"rot":[0,0,1,0]},
                 width)
 MOVE_TO_LEFT_SIDE = map(lambda x:  {"pos":[-x, 0, 0],"rot":[1,0,0,0]},
                 width)
-MOVE_TO_LEFT_SIDE_PLUS = map(lambda x: {"pos":[x, 0, +0.5],"rot":[0,0,1,0]},
+MOVE_TO_LEFT_SIDE_PLUS = map(lambda x: {"pos":[-x, 0, +0.5],"rot":[0,0,1,0]},
                 width)
-MOVE_TO_LEFT_SIDE_MINUS = map(lambda x: {"pos":[x, 0, -0.5],"rot":[0,0,1,0]},
+MOVE_TO_LEFT_SIDE_MINUS = map(lambda x: {"pos":[-x, 0, -0.5],"rot":[0,0,1,0]},
                 width)
 
 quat_Y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))
@@ -210,7 +210,7 @@ G = GraphGrammar()
 
 from utils.make_random_graph import make_random_graph
 
-G = make_random_graph(10, rule_vocab, False)
+G = make_random_graph(20, rule_vocab, False)
 
 plot_graph(G)
 # %%
@@ -226,7 +226,7 @@ mysystem.SetSolverForceTolerance(0)
 my_robot = robot.Robot(G, mysystem)
 joint_blocks = my_robot.get_joints
 
-obj = chrono.ChBodyEasyCylinder(0.5,0.5,1000,True,True,mat)
+obj = chrono.ChBodyEasyCylinder(0.3,2, 1000,True,True,mat)
 # obj = chrono.ChBodyEasySphere(0.5,1000,True,True,mat)
 obj.SetCollide(True)
 obj.SetMass(2)
@@ -255,15 +255,13 @@ T_0 = 1
 T_1 = T_0
 
 joint_blocks = my_robot.get_joints
+print(joint_blocks)
 const_trq = []
-const_trq.append(ctrl.ConstControl(joint_blocks[0][0], T_1)) 
-const_trq.append(ctrl.ConstControl(joint_blocks[0][1], T_1*0.7)) 
-const_trq.append(ctrl.ConstControl(joint_blocks[0][2], T_1*0.5*0.7)) 
-const_trq.append(ctrl.ConstControl(joint_blocks[0][3], T_1*0.5*0.5*0.7)) 
-const_trq.append(ctrl.ConstControl(joint_blocks[1][0], T_0))
-const_trq.append(ctrl.ConstControl(joint_blocks[1][1], T_0*0.7)) 
-const_trq.append(ctrl.ConstControl(joint_blocks[1][2], T_0*0.5*0.7)) 
-const_trq.append(ctrl.ConstControl(joint_blocks[1][3], T_0*0.5*0.5*0.7)) 
+for joints in joint_blocks:
+    i=0
+    for joint in joints:
+        const_trq.append(ctrl.ConstControl(joint, T_1*0.7*0.5**i))
+        i+=1 
 
 
 # link_L2_id = robot.get_block_graph().find_nodes(L2)[0]

@@ -195,3 +195,9 @@ class ChControllerPID(Control):
         self.trajectory = ChCustomFunction(function, *args, **kwargs)
         self.PID_ctrl.set_des_point(self.trajectory)
         self.set_input(self.PID_ctrl)
+
+class ConstControl(Control):
+    def __init__(self, in_joint_block, T=0.):
+        Control.__init__(self, in_joint_block)
+        self.chr_function = chrono.ChFunction_Const(T)
+        self.set_input(self.chr_function)
