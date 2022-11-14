@@ -150,6 +150,8 @@ my_robot = robot.Robot(G, mysystem)
 joint_blocks = my_robot.get_joints[0]
 obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,1000,True,True,mat)
 obj.SetCollide(True)
+obj.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
+obj.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
 obj.SetPos(chrono.ChVectorD(0,1.2,0))
 mysystem.Add(obj)
 for name in list_of_base_nodes:
