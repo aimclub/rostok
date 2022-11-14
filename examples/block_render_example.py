@@ -14,7 +14,8 @@ body_5 = ChronoBody(mysystem, length=1)
 body_6 = ChronoBody(mysystem, length=1)
 body_7 = ChronoBody(mysystem, length=1)
 
-transform1 = FrameTransform([0,0,0],[1,0,0,0]) 
+cord_sys_1 = FrameTransform([0,0,0],[1,0,0,0]) 
+transform1 = ChronoTransform(mysystem, cord_sys_1)
 
 quat_z_y = chrono.Q_ROTATE_Z_TO_Y
 cord_sys_2 = FrameTransform([0,0.5,0],[quat_z_y.e0,quat_z_y.e1,quat_z_y.e2,quat_z_y.e3])

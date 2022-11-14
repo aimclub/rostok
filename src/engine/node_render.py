@@ -1,6 +1,5 @@
 import pychrono.core as chrono
-import pychrono.irrlicht as chronoirr
-from utils.load_save_materials import create_chrono_material
+from utils.load_save_materials import create_chrono_material, string_xml2ChMaterial
 from utils.transform_srtucture import FrameTransform
 from enum import Enum
 from abc import ABC
@@ -71,7 +70,7 @@ class BlockBody(Block, ABC):
 
 
 class ChronoBody(BlockBody):
-    def __init__(self, builder, length=2, width=0.2, random_color=True, mass=1, material_config = ("rubber", "./src/utils/material.xml") ):
+    def __init__(self, builder, length=2, width=0.2, random_color=True, mass=1, material_config = None):
         super().__init__(builder=builder)
 
         # Create body
@@ -82,17 +81,8 @@ class ChronoBody(BlockBody):
         # TODO: setter for shape
         box_asset = chrono.ChBoxShape()
         box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width/2, length/2, width/2)
-
-        if material_config:
-            if len(material_config) == 3:
-                material = create_chrono_material(material_config[0],material_config[1], material_config[2])
-            else:
-                material = create_chrono_material(material_config[0],material_config[1])
-                
-            self.body.GetCollisionModel().ClearModel()
-            self.body.GetCollisionModel().AddBox(material,width/2,length/2,width/2)
-            self.body.GetCollisionModel().BuildModel()
-
+        
+        self.__build_material(material_config, width, length)
         self.body.AddVisualShape(box_asset)
         self.builder.Add(self.body)
 
@@ -165,7 +155,27 @@ class ChronoBody(BlockBody):
         def get_list_n_forces(self):
             return self.__list_normal_forces
 
-    
+    def __build_material(self, material_config, width, length):
+        if material_config:
+            if len(material_config) == 3:
+                material = create_chrono_material(material_config[0],material_config[1], material_config[2])
+            else:
+                material = create_chrono_material(material_config[0],material_config[1])
+                
+            self.body.GetCollisionModel().ClearModel()
+            self.body.GetCollisionModel().AddBox(material,width/2,length/2,width/2)
+            self.body.GetCollisionModel().BuildModel()
+        else:
+            str_xml_material = """
+                                <ChMaterialSurfaceNSC>
+                                    <SetFriction>0.5</SetFriction>
+                                    <SetDampingF>0.1</SetDampingF>
+                                </ChMaterialSurfaceNSC>
+                                """
+        material = string_xml2ChMaterial(str_xml_material)
+        self.body.GetCollisionModel().ClearModel()
+        self.body.GetCollisionModel().AddBox(material,width/2,length/2,width/2)
+        self.body.GetCollisionModel().BuildModel()
 
     def move_to_out_frame(self, in_block: Block):
         self.builder.Update()
@@ -272,7 +282,7 @@ class ChronoRevolveJoint(BlockBridge):
 
 
 class ChronoTransform(BlockTransform):
-    def __init__(self, builder:chrono.ChSystem, transform):
+    def __init__(self, builder: chrono.ChSystem, transform):
         super().__init__(builder=builder)
         if isinstance(transform,chrono.ChCoordsysD):
             self.transform = transform
@@ -281,7 +291,6 @@ class ChronoTransform(BlockTransform):
             chrono.ChVectorD(transform.position[0],transform.position[1],transform.position[2]),
             chrono.ChQuaternionD(transform.rotation[0],transform.rotation[1],transform.rotation[2],transform.rotation[3]))
             self.transform = coordsys_transform
-        None
 
 
 def find_body_from_two_previous_blocks(sequence: list[Block], it: int) -> Optional[Block]:

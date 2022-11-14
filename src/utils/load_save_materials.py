@@ -1,6 +1,20 @@
 import xml.etree.ElementTree as ET
 import pychrono as chrono
 
+def string_xml2ChMaterial(xml_string, class_material: str = "ChMaterialSurfaceNSC"):
+    
+    methods_class_material = ET.fromstring(xml_string)
+    
+    chrono_material = getattr(chrono, class_material)()
+    if methods_class_material is None:
+        raise Exception("Didn't set parameters material for your class material")
+    for method in methods_class_material:
+        try:
+            getattr(chrono_material,method.tag)(float(method.text))
+        except AttributeError:
+            raise Exception("Your class material don't have method {0}".format(method.tag))
+    return chrono_material
+
 def parse_dataset_material(str_type_material: str, file: str):
     """Parse file with materials and find the material in dataset
 
@@ -16,12 +30,13 @@ def parse_dataset_material(str_type_material: str, file: str):
     info_material = dataset_material.find(str_type_material)
     return info_material
     
-def create_chrono_material(str_type_material: str, file, class_material: str = "ChMaterialSurfaceNSC"):
+def create_chrono_material(str_type_material: str, file = None, class_material: str = "ChMaterialSurfaceNSC"):
     """Create material object from xml-file
 
     Args:
         str_type_material (str): Name of the material
-        file (str): Path to the file with the material
+        file (str): Path to the file with the material. Defaults to "ChMaterialSurfaceNSC".
+
         class_material (str, optional): Type of creating object. Defaults to "ChMaterialSurfaceNSC".
 
     Raises:
