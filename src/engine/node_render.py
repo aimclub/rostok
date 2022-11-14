@@ -69,12 +69,12 @@ class BlockBody(Block, ABC):
 
 
 class ChronoBody(BlockBody):
-    def __init__(self, builder, length=1, width=0.1, random_color=True, mass=1, material = None ):
+    def __init__(self, builder, length=1, width=0.1, random_color=True, density=2700, material = None ):
         super().__init__(builder=builder)
 
         # Create body
         self.body = chrono.ChBody()
-        self.body.SetMass(mass)
+        self.body.SetDensity(density)
 
         # Create shape
         # TODO: setter for shape
@@ -84,6 +84,8 @@ class ChronoBody(BlockBody):
         if material:
             self.body.GetCollisionModel().ClearModel()
             self.body.GetCollisionModel().AddBox(material,width,length/2,width)
+            self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
+            self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
             self.body.GetCollisionModel().BuildModel()
 
         self.body.AddVisualShape(box_asset)
