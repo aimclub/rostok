@@ -14,7 +14,9 @@ from engine.node import ROOT, BlockWrapper, GraphGrammar, Node, Rule
 from engine.node_render import ChronoBody, ChronoRevolveJoint, ChronoTransform
 from utils.blocks_utils import CollisionGroup, make_collide
 from utils.flags_simualtions import FlagMaxTime
-from copy import deepcopy
+
+from utils.transform_srtucture import FrameTransform
+
 # Define block types
 mat = chrono.ChMaterialSurfaceNSC()
 mat.SetFriction(0.5)
@@ -33,11 +35,11 @@ u1 = BlockWrapper(ChronoBody, width=0.2, length=0.2)
 
 # Transforms
 
-MOVE_ZX_PLUS = {"pos":[0.3,0,0.3],"rot":[1,0,0,0]}
-MOVE_ZX_MINUS = {"pos":[-0.3,0,-0.3],"rot":[1,0,0,0]}
+MOVE_ZX_PLUS = FrameTransform([0.3,0,0.3],[1,0,0,0])
+MOVE_ZX_MINUS = FrameTransform([-0.3,0,-0.3],[1,0,0,0])
 
-MOVE_X_PLUS = {"pos":[0.3,0,0.],"rot":[1,0,0,0]}
-MOVE_Z_PLUS_X_MINUS = {"pos":[-0.3,0,0.3],"rot":[1,0,0,0]}
+MOVE_X_PLUS = FrameTransform([0.3,0,0.],[1,0,0,0])
+MOVE_Z_PLUS_X_MINUS = FrameTransform([-0.3,0,0.3],[1,0,0,0])
 
 transform_mzx_plus = BlockWrapper(ChronoTransform, MOVE_ZX_PLUS)
 transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)

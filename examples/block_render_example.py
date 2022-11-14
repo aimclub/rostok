@@ -1,6 +1,7 @@
 import context
 from engine.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint, connect_blocks
 import pychrono.core as chrono
+from utils.transform_srtucture import FrameTransform
 import pychrono.irrlicht as chronoirr
 
 mysystem = chrono.ChSystemNSC()
@@ -13,15 +14,14 @@ body_5 = ChronoBody(mysystem, length=1)
 body_6 = ChronoBody(mysystem, length=1)
 body_7 = ChronoBody(mysystem, length=1)
 
-cord_sys_1 = {"pos":[0,0,0],"rot":[1,0,0,0]} # chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.ChQuaternionD(1, 0, 0, 0))
-transform1 = ChronoTransform(mysystem, cord_sys_1)
+transform1 = FrameTransform([0,0,0],[1,0,0,0]) 
 
 quat_z_y = chrono.Q_ROTATE_Z_TO_Y
-cord_sys_2 = {"pos":[0,0.5,0],"rot":[quat_z_y.e0,quat_z_y.e1,quat_z_y.e2,quat_z_y.e3]}#chrono.ChCoordsysD( chrono.ChVectorD(0, 0.5, 0), chrono.Q_ROTATE_Z_TO_Y)
+cord_sys_2 = FrameTransform([0,0.5,0],[quat_z_y.e0,quat_z_y.e1,quat_z_y.e2,quat_z_y.e3])
 transform2 = ChronoTransform(mysystem, cord_sys_2)
 
 
-cord_sys_3 =  {"pos":[0,0.,0],"rot":[quat_z_y.e0,quat_z_y.e1,quat_z_y.e2,quat_z_y.e3]}#chrono.ChCoordsysD(chrono.ChVectorD(0, 0.0, 0), chrono.Q_ROTATE_Z_TO_Y)
+cord_sys_3 =  FrameTransform([0,0.,0],[quat_z_y.e0,quat_z_y.e1,quat_z_y.e2,quat_z_y.e3])
 transform3 = ChronoTransform(mysystem, cord_sys_3)
 
 joint1 = ChronoRevolveJoint(mysystem)

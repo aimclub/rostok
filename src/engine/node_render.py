@@ -1,6 +1,7 @@
 import pychrono.core as chrono
 import pychrono.irrlicht as chronoirr
 from utils.load_save_materials import create_chrono_material
+from utils.transform_srtucture import FrameTransform
 from enum import Enum
 from abc import ABC
 from typing import Optional
@@ -275,10 +276,10 @@ class ChronoTransform(BlockTransform):
         super().__init__(builder=builder)
         if isinstance(transform,chrono.ChCoordsysD):
             self.transform = transform
-        elif type(transform) is dict:
+        elif type(transform) is FrameTransform:
             coordsys_transform = chrono.ChCoordsysD(
-            chrono.ChVectorD(transform["pos"][0],transform["pos"][1],transform["pos"][2]),
-            chrono.ChQuaternionD(transform["rot"][0],transform["rot"][1],transform["rot"][2],transform["rot"][3]))
+            chrono.ChVectorD(transform.position[0],transform.position[1],transform.position[2]),
+            chrono.ChQuaternionD(transform.rotation[0],transform.rotation[1],transform.rotation[2],transform.rotation[3]))
             self.transform = coordsys_transform
         None
 
