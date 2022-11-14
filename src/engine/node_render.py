@@ -71,7 +71,7 @@ class BlockBody(Block, ABC):
 
 
 class ChronoBody(BlockBody):
-    def __init__(self, builder, length=2, width=0.2, random_color=True, mass=1, material = DefaultChronoMaterial):
+    def __init__(self, builder, length=2, width=0.2, random_color=True, mass=1, material = DefaultChronoMaterial()):
         super().__init__(builder=builder)
 
         # Create body
@@ -83,7 +83,7 @@ class ChronoBody(BlockBody):
         box_asset = chrono.ChBoxShape()
         box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width/2, length/2, width/2)
         
-        self.__build_material(material, width, length)
+        self.__build_collision_model(material, width, length)
         self.body.AddVisualShape(box_asset)
         self.builder.Add(self.body)
 
