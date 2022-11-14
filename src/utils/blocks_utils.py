@@ -9,8 +9,8 @@ class CollisionGroup(int, Enum):
     Object = 2
     World  = 3
 
-
-def make_collide(body_list: list[ChronoBody], group_id: CollisionGroup, self_colide=False):
+def make_collide(body_list: list[ChronoBody], group_id: CollisionGroup, disable_group: list[CollisionGroup] = None, self_colide=False):
+    
     if type(group_id) is  not CollisionGroup:
         raise Exception("group_id must be CollisionGroup. Instead {wrong_type}".format(wrong_type=type(group_id)))
     
@@ -19,8 +19,13 @@ def make_collide(body_list: list[ChronoBody], group_id: CollisionGroup, self_col
         colision_model.SetFamily(group_id)
         if not self_colide:
             colision_model.SetFamilyMaskNoCollisionWithFamily(group_id)
-        body.body.SetCollide(True)
-
+        
+        #Uncomment if wanr selfcollision btwn fingers
+        if disable_group != None:
+            for items in disable_group: colision_model.SetFamilyMaskNoCollisionWithFamily(items)
+            body.body.SetCollide(True)
+        else:
+            body.body.SetCollide(True)
 
 class NodeFeatures:
     @staticmethod
