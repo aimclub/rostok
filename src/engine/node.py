@@ -14,22 +14,6 @@ class BlockWrapper:
 
     def create_block(self, builder):
         return self.block_cls(builder, *self.args, **self.kwargs)
-    
-
-    def __deepcopy__(self, memo):
-        cls = self.__class__
-        result = cls.__new__(cls)
-        memo[id(self)] = result
-        for k, v in self.__dict__.items():
-            if k == "builder":
-                str_chrono_class = str(v.__class__).split(".")[-1][0:-2] 
-                if hasattr(chrono, str_chrono_class):
-                    print(str_chrono_class)
-                    duplicate_chrono =  getattr(chrono, str_chrono_class)
-                    setattr(result, k, duplicate_chrono)
-            else:
-                setattr(result, k, deepcopy(v, memo))
-        return result
 
 
 @dataclass
