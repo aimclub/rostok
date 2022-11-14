@@ -53,7 +53,10 @@ class Robot:
 
     @property
     def get_joints(self):
+        """Create 2D-list joints from list of blocks. First index is the number
+            partition graph, second index is the number of joint + create graph joint of robot
 
+        """
         def is_joint(node: Node):
             if node.block_wrapper.block_cls == ChronoRevolveJoint:
                 return True

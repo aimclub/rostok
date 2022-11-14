@@ -4,25 +4,41 @@ import pychrono as chrono
 
 @dataclass
 class Material:
+    """Dataclass for materials
+    """
     name: str
     type_class: str
     
 @dataclass
 class DefaultChronoMaterial(Material):
+    """Dataclass of default materials for chrono bodies
+    """
     name: str = "default"
     type_class: str = "ChMaterialSurfaceNSC"
     Friction = 0.5
     DampingF = 0.1
     
-def struct_material2object_material(struct_mateial: Material, prefix_setter: str = "Set"):
-    chrono_material = getattr(chrono, struct_mateial.type_class)()
+def struct_material2object_material(struct_material: Material, prefix_setter: str = "Set"):
+    """Convert dataclass Materal from struct_material to some object material
+
+    Args:
+        struct_mateial (Material): Description some object material how structure.
+        prefix_setter (str): Define prefix for setter of object material. Defaults to "Set".
+
+    Raises:
+        Exception: Raise when object don't have a setter method in structure
+
+    Returns:
+        struct_material.type_class: Object of material is defined dataclass Material
+    """
+    chrono_material = getattr(chrono, struct_material.type_class)()
     
-    struct_material_attributes = set(dir(struct_mateial)) -  set(["name", "type_class"]) - set(dir(dataclass))
+    struct_material_attributes = set(dir(struct_material)) -  set(["name", "type_class"]) - set(dir(dataclass))
 
     
     for method in struct_material_attributes:
         if method[0:2] != "__":
-            value = getattr(struct_mateial,method)
+            value = getattr(struct_material,method)
             try:
                 getattr(chrono_material,prefix_setter + method)(value)
             except AttributeError:
@@ -30,7 +46,14 @@ def struct_material2object_material(struct_mateial: Material, prefix_setter: str
     return chrono_material
 
 def string_xml2struct_material(xml_string):
+    """Convert string xml to dataclass Material
 
+    Args:
+        xml_string (str): String of methods and class material 
+
+    Returns:
+        Material: Dataclass of Material
+    """
     
     xml_material = ET.fromstring(xml_string)
     
@@ -47,7 +70,7 @@ def parse_dataset_material(str_type_material: str, file: str):
 
     Args:
         str_type_material (str): Name of the material
-        file (_type_): Path to the xml-file
+        file (str): Path to the xml-file
 
     Returns:
         xml.etree.ElementTree.Element: Element with info and configs material
@@ -58,19 +81,19 @@ def parse_dataset_material(str_type_material: str, file: str):
     return info_material
     
 def create_struct_material_from_file(str_type_material: str, file = None, class_material: str = "ChMaterialSurfaceNSC"):
-    """Create struct material from xml-file
+    """Create dataclass Material from xml-file
 
     Args:
         str_type_material (str): Name of the material
         file (str): Path to the file with the material. Defaults to "None".
 
-        class_material (str, optional): Type of creating object. Defaults to "ChMaterialSurfaceNSC".
+        class_material (str, optional): Class of material. Defaults to "ChMaterialSurfaceNSC".
 
     Raises:
         Exception: If your material don't have parameters for the type of object
 
     Returns:
-        struct_material (Material): Dataclass of material
+        struct_material(Material): Dataclass of material
     """
     struct_material = Material(str_type_material, class_material)
     info_material = parse_dataset_material(str_type_material,file)
