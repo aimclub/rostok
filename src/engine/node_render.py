@@ -121,7 +121,12 @@ class ChronoBody(BlockBody):
 
             
     class ContactReporter (chrono.ReportContactCallback):
-        def __init__(self, chrono_body) : 
+        def __init__(self, chrono_body):
+            """Create a reporter normal contact forces for the body
+
+            Args:
+                chrono_body (ChBody): Repoter's body
+            """
             self._body = chrono_body
             self.__current_normal_forces = None
             self.__list_normal_forces: list = []
@@ -156,7 +161,14 @@ class ChronoBody(BlockBody):
         def get_list_n_forces(self):
             return self.__list_normal_forces
 
-    def __build_material(self, struct_material, width, length):
+    def __build_collision_model(self, struct_material, width, length):
+        """Build collision model of the block on material width and length
+
+        Args:
+            struct_material (Material): Dataclass of material body
+            width (flaot): Width of the box
+            length (float): Length of the box
+        """
         chrono_object_material = struct_material2object_material(struct_material)                
 
         self.body.GetCollisionModel().ClearModel()
