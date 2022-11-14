@@ -15,17 +15,39 @@ import engine.control as control
 # Immutable classes with output simulation data for robot block
 @dataclass(frozen=True)
 class SimulationDataBlock:
+    """Immutable class with output simulation data for robot block.
+
+        Attr:
+            id_block (int): id of robot block
+            time (list[float]): list of time of simulation 
+    """
     id_block: int
     time: list[float]
 
 
 @dataclass(frozen=True)
 class DataJointBlock(SimulationDataBlock):
+    """Immutable class with output simulation data for robot joint block.
+
+        Attr:
+            id_block (int): id of robot block
+            time (list[float]): list of time of simulation
+            angle_list (list[float]): list of angle of robot joint block
+    """
     angle_list: list[float]
 
 
 @dataclass(frozen=True)
 class DataBodyBlock(SimulationDataBlock):
+    """Immutable class with output simulation data for robot body block.
+
+        Attr:
+            id_block (int): id of robot block
+            time (list[float]): list of time of simulation
+            sum_contact_forces (list[float]): list of contact forces sum
+            abs_coord_COG (list[float]): list of absolute coordinates of block
+            amount_contact_surfaces (list[int]): list of number of contact surfaces
+    """
     sum_contact_forces: list[float]
     abs_coord_COG: list [list[float]]
     amount_contact_surfaces: list[int]
