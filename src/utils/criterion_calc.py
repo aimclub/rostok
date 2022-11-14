@@ -1,6 +1,6 @@
 from ast import Break
 from time import sleep
-
+import sys
 
 
 from engine.node  import BlockWrapper, Node, Rule, GraphGrammar
@@ -20,9 +20,6 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
 
-gait_period = 2.5 # период захвата объекта
-
-
 def appV2L(final: list, val: list ):
 
    
@@ -41,10 +38,10 @@ def appV2L(final: list, val: list ):
         final[i].append(it)
     return final
 
-def criterion_calc(sim,  sim_output):
+def criterion_calc(sim_output, B, J, LB, RB, W, gait):
 
 
-    [B_NODES_NEW, J_NODES_NEW, LB_NODES_NEW, RB_NODES_NEW]  = traj_to_list(sim.B_NODES_NEW, sim.J_NODES_NEW, sim.LB_NODES_NEW, sim.RB_NODES_NEW, sim_output)
+    [B_NODES_NEW, J_NODES_NEW, LB_NODES_NEW, RB_NODES_NEW]  = traj_to_list(B, J, LB, RB, sim_output)
     """
     Function that calculates reward for grasp device. It has four (f1-f4) criterions. All of them should be maximized.
     1) Criterion of isotropy of contact forces
@@ -57,18 +54,19 @@ def criterion_calc(sim,  sim_output):
     4) Criterion of simulation time
         Desciption: algorithm has to maximize simulation time
 
+    Args:
+        sim (SimulationStepOptimization): instance of class
+        sim_output (dict): simulation results
+        W (list): list of weight coefficients 
+        gait (float): time value of grasping's gait period
+
     Returns:
         reward (float): Reward for grasping device
     """
     
     cont = []
 
-    # Weights
-    w1 = 5
-    w2 = 2
-    w3 = 2
-    w4 = 1
-  
+
     #f1
     for i in range(len(B_NODES_NEW)):
         if sum(B_NODES_NEW[i]['sum_contact_forces'])>0:
@@ -153,10 +151,10 @@ def criterion_calc(sim,  sim_output):
    
     #f4
     if len(J_NODES_NEW) > 0:
-        f4 = J_NODES_NEW[0]['time'][-1]/gait_period
+        f4 = J_NODES_NEW[0]['time'][-1]/gait
 
     
-    return -w1*f1 - w2*f2 - w3*f3 - w4*f4
+    return -W[0]*f1 - W[1]*f2 - W[2]*f3 - W[3]*f4
     
  
     
