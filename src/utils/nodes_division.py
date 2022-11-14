@@ -2,6 +2,13 @@ import engine.robot as robot
 from itertools import product 
 
 def nodes_division(rob: robot, list_N):
+    """Division all nodes by type (body, joint, etc.)
+    Args:
+        rob (robot): instance of the Robot class 
+        list_N (list): desired type of joints
+    Returns:
+        NODES_NEW(list): list of nodes of the desired type from the robot
+    """
     NODES_NEW = []
     partition_dfs = rob.get_dfs_partiton()
     for i in range(len(partition_dfs)):
@@ -12,6 +19,17 @@ def nodes_division(rob: robot, list_N):
 
 
 def sort_left_right(rob: robot, list_S, list_B):
+    """Sorting nodes of Body type into right/left (depending on finger's side) and splitting them by fingers 
+    Args:
+        rob (robot): instance of the robot class 
+        list_S (list):side list that contains transition node (left/right)
+        list_B (list): list of possible Body nodes
+    Raises:
+        StopIteration: If finger has "side" node from list_S
+    Returns:
+        NODES_NEW (list): list that contains lists of nodes of Body type with side from list_S; size 
+                          size of list NODES_NEW is equal numbers of fingers from a relevant side
+    """
     NODES_NEW = []
     partition_dfs = rob.get_dfs_partiton() 
     for i in range(len(partition_dfs)):
@@ -32,6 +50,19 @@ def sort_left_right(rob: robot, list_S, list_B):
 
 
 def traj_to_list(B_NODES, J_NODES, LB_NODES, RB_NODES, sim_out: dict):
+    """Combines simulation results with the corresponding node
+    Args:
+        B_NODES (list): list that contains nodes of Body type 
+        J_NODES (list): list that contains nodes of Joint type 
+        LB_NODES (list): list that contains lists of nodes of Body type from left fingers
+        RB_NODES (list): list that contains lists of nodes of Body type from right fingers
+        sim_out (dict): results of simulation
+    Returns:
+        B: list of dictionaries that contains required information (id, number of contact surfaces, contact forces) about node of Body type after simulation
+        J: list of dictionaries that contains required information (id, angle time-series values) about node of Joint type after simulation
+        LB: list of lists that contain dictionaries with required information (id, COG) about node of Body type from left fingers after simulation
+        RB: list of lists that contain dictionaries with required information (id, COG) about node of Body type from right fingers after simulation
+    """
     b_temp = {}
     j_temp = {}
     lb_temp = {}
