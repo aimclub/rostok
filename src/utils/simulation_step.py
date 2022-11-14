@@ -1,4 +1,3 @@
-import sys
 from copy import deepcopy
 from dataclasses import dataclass
 from engine.node import GraphGrammar
@@ -10,11 +9,6 @@ import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 from engine.robot import Robot
 import engine.control as control
-from utils.nodes_division import *
-
-
-
-import numpy as np
 
 
 
@@ -44,8 +38,8 @@ class DataBodyBlock(SimulationDataBlock):
 # TODO: Move methods to utils
 
 class SimulationStepOptimization:
-    def __init__(self, arr_traj, graph_mechanism: GraphGrammar, grasp_object: chrono.ChBody):
-        self.control_trajectory = arr_traj
+    def __init__(self, control_trajectory, graph_mechanism: GraphGrammar, grasp_object: chrono.ChBody):
+        self.control_trajectory = control_trajectory
         self.graph_mechanism = graph_mechanism
         self.grasp_object = grasp_object
         self.controller_joints = []
@@ -74,29 +68,38 @@ class SimulationStepOptimization:
         # timestepper.SetMaxiters(5)
 
     
-        self.grab_robot = Robot(self.graph_mechanism, self.chrono_system)   
-        joints = np.array(self.grab_robot.get_joints)   
-        
-        
-        ids_blocks = list(self.grab_robot.block_map.keys())
-        base_id = graph_mechanism.closest_node_to_root(ids_blocks)
-        self.grab_robot.block_map[base_id].body.SetBodyFixed(True)
-        
-        blocks = self.grab_robot.block_map.values()
-        body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
-        make_collide(body_block, CollisionGroup.ROBOT, None)
+        self.grab_robot = Robot(self.graph_mechanism, self.chrono_system)
 
+    
+        # Create familry collision for robot
+        blocks = self.grab_robot.block_map.values()
+        body_block = filter(lambda x: isinstance(x, ChronoBody), blocks)
+        make_collide(body_block, CollisionGroup.Robot)
+
+
+        # Add grasp object in system and set system without gravity
         self.chrono_system.Add(self.grasp_object)
-        self.chrono_system.Set_G_acc(chrono.ChVectorD(0,0,0))
-        
-        self.controller_joints = []
+        self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
+
+
+        self.bind_trajectory(self.control_trajectory)
+        self.fix_robot_base()
+
+    def fix_robot_base(self):
+        # Fixation palm of grab mechanism
+        ids_blocks = list(self.grab_robot.block_map.keys())
+        base_id = self.graph_mechanism.closest_node_to_root(ids_blocks)
+        self.grab_robot.block_map[base_id].body.SetBodyFixed(True)
+
+    def bind_trajectory(self, control_trajectory):
+        # Create the controller joint from the control trajectory
         try:
             for id_finger, finger in enumerate(self.grab_robot.get_joints):
                 for id_joint, joint in enumerate(finger):
                     self.controller_joints.append(
                         control.TrackingControl(joint))
                     self.controller_joints[-1].set_des_positions(
-                    self.control_trajectory[id_finger][id_joint])
+                        control_trajectory[id_finger][id_joint])
         except IndexError:
             raise IndexError("Arries control and joints aren't same shape")
 
@@ -153,8 +156,7 @@ class SimulationStepOptimization:
                                                                     self.grab_robot.block_map.items()))
 
         # Loop of simulation
-        # while not self.condion_stop_simulation.flag_stop_simulation():
-        while self.chrono_system.GetChTime() < 5:
+        while not self.condion_stop_simulation.flag_stop_simulation():
             self.chrono_system.Update()
             self.chrono_system.DoStepDynamics(time_step)
 
