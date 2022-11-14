@@ -1,51 +1,46 @@
 
 import context
-import pychrono as chrono
-import pychrono.irrlicht as chronoirr
 import networkx as nx
 import numpy as np
-import engine.robot as robot
-import engine.control as ctrl
+import pychrono as chrono
+import pychrono.irrlicht as chronoirr
+from pychrono import (Q_ROTATE_X_TO_Y, Q_ROTATE_X_TO_Z, Q_ROTATE_Y_TO_X,
+                      Q_ROTATE_Y_TO_Z, Q_ROTATE_Z_TO_X, Q_ROTATE_Z_TO_Y,
+                      ChCoordsysD, ChQuaternionD, ChVectorD)
 
-from engine.node import BlockWrapper, Node, Rule, GraphGrammar, ROOT
-from engine.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint
-from utils.blocks_utils import make_collide, CollisionGroup
-from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
-from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
-    Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
-    Q_ROTATE_X_TO_Y, Q_ROTATE_X_TO_Z
+import engine.control as ctrl
+import engine.robot as robot
+from engine.node import ROOT, BlockWrapper, GraphGrammar, Node, Rule
+from engine.node_render import ChronoBody, ChronoRevolveJoint, ChronoTransform
+from utils.blocks_utils import CollisionGroup, make_collide
 from utils.flags_simualtions import FlagMaxTime
+from utils.dataset_materials.material_dataclass_manipulating import create_struct_material_from_file
+from utils.transform_srtucture import FrameTransform
 
 # Define block types
 mat = chrono.ChMaterialSurfaceNSC()
 mat.SetFriction(0.5)
 mat.SetDampingF(0.1)
 
+mat_r = ("polyactide", "./src/utils/dataset_materials/material.xml", "ChMaterialSurfaceNSC")
+polyactide_material_struct = create_struct_material_from_file(*mat_r)
 # Bodies
-link1 = BlockWrapper(ChronoBody, length=0.3)
-link2 = BlockWrapper(ChronoBody, length=0.2)
+link1 = BlockWrapper(ChronoBody, length=0.6, material = polyactide_material_struct)
+link2 = BlockWrapper(ChronoBody, length=0.4, material = polyactide_material_struct)
 
-flat1 = BlockWrapper(ChronoBody, width=0.4, length=0.1)
-flat2 = BlockWrapper(ChronoBody, width=0.7, length=0.1)
+flat1 = BlockWrapper(ChronoBody, width=0.8, length=0.2)
+flat2 = BlockWrapper(ChronoBody, width=1.4, length=0.2)
 
-u1 = BlockWrapper(ChronoBody, width=0.1, length=0.1, material=mat)
+u1 = BlockWrapper(ChronoBody, width=0.2, length=0.2)
 
 # Transforms
-RZX = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_X)
-RZY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_Y)
-RXY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_X_TO_Y)
 
-MOVE_ZX_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
-MOVE_ZX_MINUS = ChCoordsysD(
-    ChVectorD(-0.3, 0, -0.3), ChQuaternionD(1, 0, 0, 0))
+MOVE_ZX_PLUS = FrameTransform([0.3,0,0.3],[1,0,0,0])
+MOVE_ZX_MINUS = FrameTransform([-0.3,0,-0.3],[1,0,0,0])
 
-MOVE_X_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0), ChQuaternionD(1, 0, 0, 0))
-MOVE_Z_PLUS_X_MINUS = ChCoordsysD(
-    ChVectorD(-0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
+MOVE_X_PLUS = FrameTransform([0.3,0,0.],[1,0,0,0])
+MOVE_Z_PLUS_X_MINUS = FrameTransform([-0.3,0,0.3],[1,0,0,0])
 
-transform_rzx = BlockWrapper(ChronoTransform, RZX)
-transform_rzy = BlockWrapper(ChronoTransform, RZY)
-transform_rxy = BlockWrapper(ChronoTransform, RXY)
 transform_mzx_plus = BlockWrapper(ChronoTransform, MOVE_ZX_PLUS)
 transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
 transform_mx_plus = BlockWrapper(ChronoTransform, MOVE_X_PLUS)
@@ -226,19 +221,18 @@ base_id = grab_robot.get_block_graph().find_nodes(F1)[0]
 grab_robot.block_map[base_id].body.SetBodyFixed(True)
 
 
-des_points_1 = np.array([0, 0.1, 0.2, 0.3, 0.4])
+des_points_1 = np.array([0, 0.1, 0.2, 0.3, 0.4])*2
 des_points_1_1 = - des_points_1
 
 pid_track = []
-for id, joint in joint_blocks:
-    if id not in [44, 47]:
-        # ctrl.TrackingControl(joint)
-        pid_track.append(ctrl.ChControllerPID(joint, 80., 5., 1.))
-        pid_track[-1].set_des_positions_interval(des_points_1, (0.1, 2))
-    else:
-        # ctrl.TrackingControl(joint)
-        pid_track.append(ctrl.ChControllerPID(joint, 80., 5., 1.))
-        pid_track[-1].set_des_positions_interval(des_points_1_1, (0.1, 2))
+for id, finger in enumerate(joint_blocks):
+    for joint in finger:
+        if id != 2:
+            pid_track.append(ctrl.ChControllerPID(joint, 80., 5., 1.))
+            pid_track[-1].set_des_positions_interval(des_points_1, (0.1, 2))
+        else:
+            pid_track.append(ctrl.ChControllerPID(joint, 80., 5., 1.))
+            pid_track[-1].set_des_positions_interval(des_points_1_1, (0.1, 2))
 
 # Visualization
 # plot_graph(G)
@@ -258,7 +252,7 @@ body_block = filter(lambda x: isinstance(x, ChronoBody), blocks)
 make_collide(body_block, CollisionGroup.Robot)
 
 
-stoper = FlagMaxTime(2)
+stoper = FlagMaxTime(10)
 stoper.build(mysystem, grab_robot, obj)
 
 # Create simulation loop

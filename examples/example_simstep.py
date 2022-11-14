@@ -75,7 +75,7 @@ for get_graph in mechs:
 
     time_to_contact = 2
     time_without_contact = 0.2
-    max_time = 10
+    max_time = 2
 
     flags = [FlagMaxTime(max_time)]
 

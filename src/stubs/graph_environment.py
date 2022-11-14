@@ -2,14 +2,26 @@ from copy import deepcopy
 from engine.node import *
 from stubs.graph_reward import Reward
 
-# Function finding non terminal rules 
 def rule_is_terminal(rule: Rule):
+    """Function finding non terminal rules 
+
+    Args:
+        rule (Rule): Input rule to checking
+
+    Returns:
+        int: amount of terminal nodes in rule
+    """
     terminal_rule = [node[1]["Node"].is_terminal for node in rule.graph_insert.nodes.items()]
     return sum(terminal_rule)
-# Class action like rule grammar
+
 
 class RuleAction:
     def __init__(self,rule):
+        """Class action like rule grammar
+
+        Args:
+            rule (Rule): The rule defines action
+        """
         self.__rule = rule
         
     @property
@@ -27,13 +39,18 @@ class RuleAction:
     def __hash__(self):
         return hash(self.__rule)
 
-# Class "environment" graph
-
 class GraphEnvironment():
     def __init__(self, initilize_graph, rules, max_numbers_rules_non_terminal = 20):
+        """Class of "environment" of graph grammar 
+
+        Args:
+            initilize_graph (GraphGrammar): Initial state of the graph
+            rules (list[Rule]): List of rules 
+            max_numbers_rules_non_terminal (int): Max amount of non-terminal rules. Defaults to 20.
+        """        
         self.init_graph = initilize_graph
         self.graph = initilize_graph
-        self.__actions = [RuleAction(r) for r in rules]
+        self._actions = [RuleAction(r) for r in rules]
         self.max_actions_not_terminal = max_numbers_rules_non_terminal
         self.map_nodes_reward = {}
         self.current_player = 1
@@ -45,10 +62,11 @@ class GraphEnvironment():
     def getCurrentPlayer(self):
         return self.current_player
     
-    # getter possible actions for current state
+
     
     def getPossibleActions(self):
-        
+        """Getter possible actions for current state
+        """
         def filter_exist_node(action):
             out = False
             flags_max_actions = self.counter_action >= self.max_actions_not_terminal
@@ -62,13 +80,19 @@ class GraphEnvironment():
         label_nodes = {node[1]["Node"].label for node in self.graph.nodes.items()}
         possible_actions = []
         for node in label_nodes:
-            possible_actions += set(filter(filter_exist_node, self.__actions))
+            possible_actions += set(filter(filter_exist_node, self._actions))
         
         return possible_actions
-    
-    # take action and return new state environment
-    
+        
     def takeAction(self, action):
+        """Take action and return new state environment
+
+        Args:
+            action (RuleAction): Action to take
+
+        Returns:
+            GraphEnvironment: New state environment after action taken
+        """
         rule_action = action.get_rule
         new_state = deepcopy(self)
         new_state.graph.apply_rule(rule_action)
@@ -76,16 +100,23 @@ class GraphEnvironment():
             new_state.counter_action += 1
         return new_state
     
-    # Condition on terminal graph
-    
     def isTerminal(self):
+        """Condition on terminal graph
+
+        Returns:
+            bool: State graph is terminal
+        """
         terminal_nodes = [node[1]["Node"].is_terminal for node in self.graph.nodes.items()]
         return sum(terminal_nodes) == len(terminal_nodes)
     
     # getter reward
     
-    def getReward(self): # Add calculate reward
-        # Reward in number (3) of nodes graph mechanism
+    def getReward(self):
+        """Reward in number (3) of nodes graph mechanism
+
+        Returns:
+            float: Reward of terminal state graph
+        """
         if self.map_nodes_reward:
             reward = self.function_reward(self.graph,self.map_nodes_reward)
             self.reward = reward
@@ -94,9 +125,17 @@ class GraphEnvironment():
             self.reward = 10 if len(nodes) == 4 else 0
         return self.reward
     
-    # Move current environment to new state
     
     def step(self, action: RuleAction, render = False):
+        """Move current environment to new state
+
+        Args:
+            action (RuleAction): Action is take
+            render (bool): Turn on render each step. Defaults to False.
+
+        Returns:
+            bool, GraphGrammar: Return state of graph. If it is terminal then finish generate graph and new state graph.
+        """
         new_state = self.takeAction(action)
         self.graph = new_state.graph
         self.reward = new_state.reward
@@ -113,13 +152,17 @@ class GraphEnvironment():
     def set_node_rewards(self, map_of_reward: map, func_reward: Reward.complex):
         self.map_nodes_reward = map_of_reward
         self.function_reward = func_reward
-    
-    # Reset environment (experimental version)
+
     def reset(self, new_rules = None):
+        """Reset environment (experimental version)
+
+        Args:
+            new_rules (list[Rule]): Replace on new rules. Defaults to None.
+        """
         self.graph = self.init_graph
         self.reward = 0
         self.counter_action = 0
         if new_rules:
-            self.__actions = [RuleAction(r) for r in new_rules]
+            self._actions = [RuleAction(r) for r in new_rules]
         
     
