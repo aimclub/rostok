@@ -69,6 +69,27 @@ class SimulationStepOptimization:
 
         # Create instance of chrono system and robot: grab mechanism
         self.chrono_system = chrono.ChSystemNSC()
+        self.chrono_system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
+        self.chrono_system.SetSolverMaxIterations(100)
+        self.chrono_system.SetSolverForceTolerance(1e-6)
+        self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
+        
+      
+
+        # self.chrono_system = chrono.ChSystemSMC()
+        # self.chrono_system.SetSolverType(chrono.ChSolver.Type_MINRES)
+        # self.chrono_system.SetSolverForceTolerance(1e-10)
+        # self.chrono_system.SetSolverMaxIterations(100)
+        # timestepper = chrono.ChTimestepperHHT(self.chrono_system)
+        # self.chrono_system.SetTimestepper(timestepper)
+        # timestepper.SetAbsTolerances(1e-5)
+        # timestepper.SetScaling(True)
+        # timestepper.SetStepControl(True)
+        # timestepper.SetMinStepSize(1e-4)
+        # timestepper.SetAlpha(-0.2)
+        # timestepper.SetMaxiters(5)
+
+    
         self.grab_robot = Robot(self.graph_mechanism, self.chrono_system)
 
     
