@@ -1,19 +1,46 @@
+from dataclasses import dataclass, asdict
 import xml.etree.ElementTree as ET
 import pychrono as chrono
 
-def string_xml2ChMaterial(xml_string, class_material: str = "ChMaterialSurfaceNSC"):
+@dataclass
+class Material:
+    name: str
+    type_class: str
     
-    methods_class_material = ET.fromstring(xml_string)
+@dataclass
+class DefaultChronoMaterial(Material):
+    name: str = "default"
+    type_class: str = "ChMaterialSurfaceNSC"
+    Friction = 0.5
+    DampingF = 0.1
     
-    chrono_material = getattr(chrono, class_material)()
-    if methods_class_material is None:
-        raise Exception("Didn't set parameters material for your class material")
-    for method in methods_class_material:
-        try:
-            getattr(chrono_material,method.tag)(float(method.text))
-        except AttributeError:
-            raise Exception("Your class material don't have method {0}".format(method.tag))
+def struct_material2object_material(struct_mateial: Material, prefix_setter: str = "Set"):
+    chrono_material = getattr(chrono, struct_mateial.type_class)()
+    
+    struct_material_attributes = set(dir(struct_mateial)) -  set(["name", "type_class"]) - set(dir(dataclass))
+
+    
+    for method in struct_material_attributes:
+        if method[0:2] != "__":
+            value = getattr(struct_mateial,method)
+            try:
+                getattr(chrono_material,prefix_setter + method)(value)
+            except AttributeError:
+                raise Exception("Your class material don't have method {0}".format(prefix_setter + method))
     return chrono_material
+
+def string_xml2struct_material(xml_string):
+
+    
+    xml_material = ET.fromstring(xml_string)
+    
+    class_material = xml_material[0]
+    
+    struct_material: Material = Material(xml_material.tag,class_material.tag)
+    for method in class_material:
+            setattr(struct_material,method.tag, float(method.text))
+            
+    return struct_material
 
 def parse_dataset_material(str_type_material: str, file: str):
     """Parse file with materials and find the material in dataset
@@ -30,39 +57,35 @@ def parse_dataset_material(str_type_material: str, file: str):
     info_material = dataset_material.find(str_type_material)
     return info_material
     
-def create_chrono_material(str_type_material: str, file = None, class_material: str = "ChMaterialSurfaceNSC"):
-    """Create material object from xml-file
+def create_struct_material_from_file(str_type_material: str, file = None, class_material: str = "ChMaterialSurfaceNSC"):
+    """Create struct material from xml-file
 
     Args:
         str_type_material (str): Name of the material
-        file (str): Path to the file with the material. Defaults to "ChMaterialSurfaceNSC".
+        file (str): Path to the file with the material. Defaults to "None".
 
         class_material (str, optional): Type of creating object. Defaults to "ChMaterialSurfaceNSC".
 
     Raises:
         Exception: If your material don't have parameters for the type of object
-        Exception: If in the materials method config don't exist the method for the type of object material
 
     Returns:
-        class_material: Object of material
+        struct_material (Material): Dataclass of material
     """
+    struct_material = Material(str_type_material, class_material)
     info_material = parse_dataset_material(str_type_material,file)
     try:
         methods_class_material =  info_material.find(class_material)
     except AttributeError:
         raise AttributeError("File don't have the material {0}".format(str_type_material))
     
-    chrono_material = getattr(chrono, class_material)()
     if methods_class_material is None:
         raise Exception("Didn't set parameters material for your class material")
     for method in methods_class_material:
-        try:
-            getattr(chrono_material,method.tag)(float(method.text))
-        except AttributeError:
-            raise Exception("Your class material don't have method {0}".format(method.tag))
-    return chrono_material
+        setattr(struct_material, method.tag, float(method.text))
+    return struct_material
 
-def save_chrono_material(object_material, name_material: str, file: str):
+def save_object_material(object_material, name_material: str, file: str, prefix_getter = "Get"):
     """Save object material with parameters in file
 
     Args:
@@ -70,7 +93,7 @@ def save_chrono_material(object_material, name_material: str, file: str):
         name_material (str): Name of material 
         file (str): Path to the xml file for saving material information
     """
-    getter_material = (method for method in set(dir(object_material)) - set(dir(object)) if method[0:3]=="Get")
+    getter_material = (method for method in set(dir(object_material)) - set(dir(object)) if method[0:3]==prefix_getter)
     
     tree = ET.ElementTree(file=file)
     root = tree.getroot()
@@ -97,7 +120,7 @@ def save_chrono_material(object_material, name_material: str, file: str):
     
     for getter in getter_material:
         value = getattr(object_material, getter)()
-        setter = "Set"+getter[3:len(getter)]
+        setter = getter[3:len(getter)]
 
         if hasattr(object_material, setter):
             exist_params = element_class_material.find(setter)
@@ -111,3 +134,17 @@ def save_chrono_material(object_material, name_material: str, file: str):
     
     with open(file, "wb") as fh:
         tree.write(fh)
+        
+if __name__ == "__main__":
+    str_xml_material = """<test_mat>
+                            <ChMaterialSurfaceNSC>}
+                            <Friction>0.5</Friction>
+                            <DampingF>0.1</DampingF>
+                            </ChMaterialSurfaceNSC>
+                        </test_mat>"""
+                    
+    data_material1 = string_xml2struct_material(str_xml_material)
+    chr_object = struct_material2object_material(data_material1)
+    file = "./src/utils/dataset_materials/material.xml"
+    data_material2 = create_struct_material_from_file("rubber", file)
+    print("Done!")

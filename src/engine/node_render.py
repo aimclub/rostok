@@ -1,5 +1,6 @@
 import pychrono.core as chrono
-from utils.load_save_materials import create_chrono_material, string_xml2ChMaterial
+from utils.dataset_materials.material_dataclass_manipulating import (DefaultChronoMaterial,
+                                                                     struct_material2object_material)
 from utils.transform_srtucture import FrameTransform
 from enum import Enum
 from abc import ABC
@@ -70,7 +71,7 @@ class BlockBody(Block, ABC):
 
 
 class ChronoBody(BlockBody):
-    def __init__(self, builder, length=2, width=0.2, random_color=True, mass=1, material_config = None):
+    def __init__(self, builder, length=2, width=0.2, random_color=True, mass=1, material = None):
         super().__init__(builder=builder)
 
         # Create body
@@ -82,7 +83,7 @@ class ChronoBody(BlockBody):
         box_asset = chrono.ChBoxShape()
         box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width/2, length/2, width/2)
         
-        self.__build_material(material_config, width, length)
+        self.__build_material(material, width, length)
         self.body.AddVisualShape(box_asset)
         self.builder.Add(self.body)
 
@@ -155,26 +156,14 @@ class ChronoBody(BlockBody):
         def get_list_n_forces(self):
             return self.__list_normal_forces
 
-    def __build_material(self, material_config, width, length):
-        if material_config:
-            if len(material_config) == 3:
-                material = create_chrono_material(material_config[0],material_config[1], material_config[2])
-            else:
-                material = create_chrono_material(material_config[0],material_config[1])
-                
-            self.body.GetCollisionModel().ClearModel()
-            self.body.GetCollisionModel().AddBox(material,width/2,length/2,width/2)
-            self.body.GetCollisionModel().BuildModel()
+    def __build_material(self, struct_material, width, length):
+        if struct_material:
+            chrono_object_material = struct_material2object_material(struct_material)                
         else:
-            str_xml_material = """
-                                <ChMaterialSurfaceNSC>
-                                    <SetFriction>0.5</SetFriction>
-                                    <SetDampingF>0.1</SetDampingF>
-                                </ChMaterialSurfaceNSC>
-                                """
-        material = string_xml2ChMaterial(str_xml_material)
+            chrono_object_material = struct_material2object_material(DefaultChronoMaterial())
+            
         self.body.GetCollisionModel().ClearModel()
-        self.body.GetCollisionModel().AddBox(material,width/2,length/2,width/2)
+        self.body.GetCollisionModel().AddBox(chrono_object_material,width/2,length/2,width/2)
         self.body.GetCollisionModel().BuildModel()
 
     def move_to_out_frame(self, in_block: Block):

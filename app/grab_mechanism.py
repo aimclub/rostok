@@ -14,7 +14,7 @@ from engine.node import ROOT, BlockWrapper, GraphGrammar, Node, Rule
 from engine.node_render import ChronoBody, ChronoRevolveJoint, ChronoTransform
 from utils.blocks_utils import CollisionGroup, make_collide
 from utils.flags_simualtions import FlagMaxTime
-from utils.load_save_materials import string_xml2ChMaterial
+from utils.dataset_materials.material_dataclass_manipulating import create_struct_material_from_file
 from utils.transform_srtucture import FrameTransform
 
 # Define block types
@@ -22,10 +22,11 @@ mat = chrono.ChMaterialSurfaceNSC()
 mat.SetFriction(0.5)
 mat.SetDampingF(0.1)
 
-mat_r = ("polyactide", "./src/utils/material.xml", "ChMaterialSurfaceNSC")
+mat_r = ("polyactide", "./src/utils/dataset_materials/material.xml", "ChMaterialSurfaceNSC")
+polyactide_material_struct = create_struct_material_from_file(*mat_r)
 # Bodies
-link1 = BlockWrapper(ChronoBody, length=0.6, material_config = mat_r)
-link2 = BlockWrapper(ChronoBody, length=0.4, material_config = mat_r)
+link1 = BlockWrapper(ChronoBody, length=0.6, material = polyactide_material_struct)
+link2 = BlockWrapper(ChronoBody, length=0.4, material = polyactide_material_struct)
 
 flat1 = BlockWrapper(ChronoBody, width=0.8, length=0.2)
 flat2 = BlockWrapper(ChronoBody, width=1.4, length=0.2)
