@@ -71,7 +71,7 @@ class BlockBody(Block, ABC):
 
 
 class ChronoBody(BlockBody):
-    def __init__(self, builder, length=2, width=0.2, random_color=True, mass=1, material = None):
+    def __init__(self, builder, length=2, width=0.2, random_color=True, mass=1, material = DefaultChronoMaterial):
         super().__init__(builder=builder)
 
         # Create body
@@ -157,11 +157,8 @@ class ChronoBody(BlockBody):
             return self.__list_normal_forces
 
     def __build_material(self, struct_material, width, length):
-        if struct_material:
-            chrono_object_material = struct_material2object_material(struct_material)                
-        else:
-            chrono_object_material = struct_material2object_material(DefaultChronoMaterial())
-            
+        chrono_object_material = struct_material2object_material(struct_material)                
+
         self.body.GetCollisionModel().ClearModel()
         self.body.GetCollisionModel().AddBox(chrono_object_material,width/2,length/2,width/2)
         self.body.GetCollisionModel().BuildModel()
