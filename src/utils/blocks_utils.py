@@ -11,7 +11,7 @@ class CollisionGroup(int, Enum):
     RIGHT_SIDE_PALM = 4
     LEFT_SIDE_PALM = 5
 
-def make_collide(body_list: list[ChronoBody], group_id: CollisionGroup, disable_gproup: list[CollisionGroup], self_colide=False):
+def make_collide(body_list: list[ChronoBody], group_id: CollisionGroup, disable_gproup: list[CollisionGroup] = None, self_colide=False):
     
     if type(group_id) is  not CollisionGroup:
         raise Exception("group_id must be CollisionGroup. Instead {wrong_type}".format(wrong_type=type(group_id)))
@@ -22,7 +22,8 @@ def make_collide(body_list: list[ChronoBody], group_id: CollisionGroup, disable_
         if not self_colide:
             colision_model.SetFamilyMaskNoCollisionWithFamily(group_id)
         
-        for items in disable_gproup: colision_model.SetFamilyMaskNoCollisionWithFamily(items)
+        #Uncomment if wanr selfcollision btwn fingers
+        # for items in disable_gproup: colision_model.SetFamilyMaskNoCollisionWithFamily(items)
         body.body.SetCollide(True)
 
 class NodeFeatures:
