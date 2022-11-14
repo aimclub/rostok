@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from engine.node import Node, GraphGrammar
+from engine.node_vocabulary import NodeVocabulary
 
 # The deeper the node, the greater the reward
-def get_graph_sum_complex_reward(graph: GraphGrammar, reward_map: dict[Node, float]) -> float:
+def get_graph_sum_complex_reward(graph: GraphGrammar, reward_map: dict[str, float], node_vocab: NodeVocabulary) -> float:
     dfs = graph.graph_partition_dfs()
     sum = 0
     for branch in dfs:
@@ -10,7 +11,7 @@ def get_graph_sum_complex_reward(graph: GraphGrammar, reward_map: dict[Node, flo
         for number, nodes_id in enumerate(branch):
             node = graph.nodes.get(nodes_id)["Node"]
             try:
-                node_reward = reward_map[node]
+                node_reward = reward_map[node.label]
             except KeyError:
                 raise Exception(
                     "There is no node labeled : {label} in reward_map".format(label=node.label))
@@ -20,7 +21,7 @@ def get_graph_sum_complex_reward(graph: GraphGrammar, reward_map: dict[Node, flo
     return sum
 
 
-def get_graph_mul_reward(graph: GraphGrammar, reward_map: dict[Node, float]) -> float:
+def get_graph_mul_reward(graph: GraphGrammar, reward_map: dict[str, float]) -> float:
     dfs = graph.graph_partition_dfs()
     mul = 1
     for branch in dfs:

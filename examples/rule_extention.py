@@ -1,11 +1,14 @@
 from ast import Break
 from time import sleep
 import context
+import mcts
 
 from engine.node  import BlockWrapper, Node, Rule, GraphGrammar, ROOT
 from engine import node_vocabulary, rule_vocabulary
 from utils.blocks_utils import make_collide, CollisionGroup   
 from engine.node_render import *
+from stubs.graph_reward import Reward
+import stubs.graph_environment as env_graph
 #from nodes_division import *
 #from sort_left_right import *
 # from find_traj_fun import *
@@ -207,7 +210,7 @@ list_LM = node_vocab.get_list_of_nodes(["TL1", "TL2", "TL3","TLP1", "TLP2", "TLP
 list_B = node_vocab.get_list_of_nodes(["L1", "L2", "L3", "F1", "F2", "F3"])
 
 G = GraphGrammar()
-
+"""
 from utils.make_random_graph import make_random_graph
 
 G = make_random_graph(20, rule_vocab, False)
@@ -324,3 +327,36 @@ while vis.Run():
     vis.Render()
     cont.clear()
     vis.EndScene()
+"""
+
+
+max_numbers_rules = 20
+
+# Create graph envirenments for algorithm (not gym)
+env = env_graph.GraphEnvironment(G, rule_vocab, node_vocab,max_numbers_rules)
+
+# Hyperparameters: increasing: > error reward, < search time
+time_limit = 10000
+iteration_limit = 20000
+
+# Initilize MCTS
+searcher = mcts.mcts(timeLimit=time_limit)
+finish = False
+
+
+reward_map_2 = {"J1": 1, "L1": 2,"L2": 2, "L3": 2 , "F1": 1, "F2": 1, "F3": 1, "U1": 1, "TR1": 4, "TR2": 4, "TR3": 4, "TRP1": 4, "TRP2": 4, 
+"TRP3": 4, "TRM1": 4, "TRM2": 4, "TRM3": 4, "TL1": 4, "TL2": 4, "TL3": 4, "TLP1": 4, "TLP2": 4, "TLP3": 4, "TLM1": 4, "TLM2": 4, "TLM3": 4}
+env.set_node_rewards(reward_map_2, Reward.complex)
+
+# Search until finding terminal mechanism with desired reward
+while not finish:
+    print("---")
+    action = searcher.search(initialState=env)
+    finish, final_graph = env.step(action)
+
+# Plot final graph
+plt.figure()
+nx.draw_networkx(final_graph, pos=nx.kamada_kawai_layout(final_graph, dim=2), node_size=800,
+                 labels={n: final_graph.nodes[n]["Node"].label for n in final_graph})
+
+plt.show()

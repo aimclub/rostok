@@ -1,6 +1,7 @@
 from copy import deepcopy
 from engine.node import *
 from stubs.graph_reward import Reward
+from engine.rule_vocabulary import RuleVocabulary
 
 # Function finding non terminal rules 
 def rule_is_terminal(rule: Rule):
@@ -30,15 +31,16 @@ class RuleAction:
 # Class "environment" graph
 
 class GraphEnvironment():
-    def __init__(self, initilize_graph, rules, max_numbers_rules_non_terminal = 20):
+    def __init__(self, initilize_graph, rule_vocab: RuleVocabulary, node_vocab, max_numbers_rules_non_terminal = 20):
         self.init_graph = initilize_graph
         self.graph = initilize_graph
-        self.__actions = [RuleAction(r) for r in rules]
+        self.__actions = [RuleAction(rule_vocab.rule_dict[r]) for r in rule_vocab.rule_dict.keys()]
         self.max_actions_not_terminal = max_numbers_rules_non_terminal
         self.map_nodes_reward = {}
         self.current_player = 1
         self.reward = 0
         self.counter_action = 0
+        self.node_vocab = node_vocab
         
     # Need override for mcts libary
     
@@ -87,7 +89,7 @@ class GraphEnvironment():
     def getReward(self): # Add calculate reward
         # Reward in number (3) of nodes graph mechanism
         if self.map_nodes_reward:
-            reward = self.function_reward(self.graph,self.map_nodes_reward)
+            reward = self.function_reward(self.graph, self.map_nodes_reward, self.node_vocab)
             self.reward = reward
         else:
             nodes = [node[1]["Node"] for node in self.graph.nodes.items()]
