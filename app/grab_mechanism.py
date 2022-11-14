@@ -211,15 +211,23 @@ rule_action = np.r_[rule_action_non_terminal, rule_action_terminal]
 for i in list(rule_action):
     G.apply_rule(i)
 
+
 mysystem = chrono.ChSystemNSC()
+mysystem.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
+mysystem.SetSolverMaxIterations(100)
+mysystem.SetSolverForceTolerance(1e-6)
+mysystem.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
+
 mysystem.Set_G_acc(chrono.ChVectorD(0, 0, 0))
 
 grab_robot = robot.Robot(G, mysystem)
 joint_blocks = grab_robot.get_joints
 
-obj = chrono.ChBodyEasyBox(0.2, 0.2, 0.6, 1000, True, True, mat)
+obj = chrono.ChBodyEasyBox(0.2, 0.2, 0.6, 2700, True, True, mat)
 obj.SetCollide(True)
 obj.SetPos(chrono.ChVectorD(0, 1.2, 0))
+obj.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
+obj.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
 mysystem.Add(obj)
 
 base_id = grab_robot.get_block_graph().find_nodes(F1)[0]
