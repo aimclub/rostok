@@ -45,20 +45,12 @@ def plot_graph(graph):
 
 
 # Define block types
-# mat = chrono.ChMaterialSurfaceSMC()
-# mat.SetFriction(0.4)
-# mat.SetYoungModulus(100e5)
-# mat.SetPoissonRatio(0.33)
-# mat.SetKn(10)
-# mat.SetGn(0.1)
-# mat.SetRollingFriction(1e-3)
-# mat.SetSpinningFriction(1e-3)
-# mat.SetRestitution(0.01) #Coef. of restitution in range [0;1] where 1 is perfectly elastic collision; 0 is inelastic collision
-
-mat = chrono.ChMaterialSurfaceNSC()
-mat.SetFriction(0.5)
-mat.SetDampingF(0.1)
-
+mat = chrono.ChMaterialSurfaceSMC()
+mat.SetFriction(0.8)
+mat.SetKn(2e8)
+mat.SetGn(1e6)
+mat.SetKn(2e8)
+mat.SetGt(0.5e6)
 
 # Bodies
 link1 = BlockWrapper(ChronoBody, length=0.5, material=mat)
@@ -264,8 +256,10 @@ chrono_system = chrono.ChSystemNSC()
 grab_robot = robot.Robot(G, chrono_system)
 
 
-obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,1000,True,True,mat)
+obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,2700,True,True,mat)
 obj.SetCollide(True)
+obj.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
+obj.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
 obj.SetPos(chrono.ChVectorD(0,0.5,0))
 # obj.SetBodyFixed(True)
 
