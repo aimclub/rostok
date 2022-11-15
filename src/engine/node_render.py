@@ -1,5 +1,7 @@
 import pychrono.core as chrono
-import pychrono.irrlicht as chronoirr
+from utils.dataset_materials.material_dataclass_manipulating import (DefaultChronoMaterial,
+                                                                     struct_material2object_material)
+from utils.transform_srtucture import FrameTransform
 from enum import Enum
 from abc import ABC
 from typing import Optional
@@ -69,7 +71,7 @@ class BlockBody(Block, ABC):
 
 
 class ChronoBody(BlockBody):
-    def __init__(self, builder, length=1, width=0.1, random_color=True, mass=1):
+    def __init__(self, builder, length=2, width=0.2, random_color=True, mass=1, material = DefaultChronoMaterial()):
         super().__init__(builder=builder)
 
         # Create body
@@ -77,10 +79,11 @@ class ChronoBody(BlockBody):
         self.body.SetMass(mass)
 
         # Create shape
-        # TODO setter for shape
+        # TODO: setter for shape
         box_asset = chrono.ChBoxShape()
-        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width, length, width)
-
+        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width/2, length/2, width/2)
+        
+        self.__build_collision_model(material, width, length)
         self.body.AddVisualShape(box_asset)
         self.builder.Add(self.body)
 
@@ -98,8 +101,8 @@ class ChronoBody(BlockBody):
         self.body.AddMarker(out_marker)
         self.body.AddMarker(transformed_out_marker)
 
-        input_marker.SetPos(chrono.ChVectorD(0, -length, 0))
-        out_marker.SetPos(chrono.ChVectorD(0, length, 0))
+        input_marker.SetPos(chrono.ChVectorD(0, -length/2, 0))
+        out_marker.SetPos(chrono.ChVectorD(0, length/2, 0))
 
         # Calc SetPos
         transformed_out_marker.SetCoord(out_marker.GetCoord())
@@ -108,10 +111,69 @@ class ChronoBody(BlockBody):
         self._ref_frame_out = out_marker
         self.transformed_frame_out = transformed_out_marker
 
+        # Normal Forces
+        self.__contact_reporter = self.ContactReporter(self.body)
+        
         if random_color:
             rgb = [random.random(), random.random(), random.random()]
             rgb[int(random.random() * 2)] *= 0.2
             self.body.GetVisualShape(0).SetColor(chrono.ChColor(*rgb))
+
+            
+    class ContactReporter (chrono.ReportContactCallback):
+        def __init__(self, chrono_body):
+            """Create a reporter normal contact forces for the body
+
+            Args:
+                chrono_body (ChBody): Repoter's body
+            """
+            self._body = chrono_body
+            self.__current_normal_forces = None
+            self.__list_normal_forces: list = []
+            super().__init__()
+
+        def OnReportContact(self,
+                            pA, # contact pA 
+                            pB, # contact pB 
+                            plane_coord, # contact plane coordsystem (A column 'X' is contact normal) 
+                            distance, # contact distance 
+                            eff_radius, # effective radius of curvature at contact 
+                            cforce, # react.forces (if already computed). In coordsystem 'plane_coord' 
+                            ctorque, # react.torques, if rolling friction (if already computed). 
+                            modA, # model A (note: some containers may not support it and could be nullptr) 
+                            modB): # model B (note: some containers may not support it and could be nullptr) 
+            bodyA = chrono.CastToChBody(modA)
+            bodyB = chrono.CastToChBody(modB)
+            if (bodyA == self._body) or (bodyB == self._body):
+                self.__current_normal_forces = cforce.x
+                self.__list_normal_forces.append(cforce.x)
+            return True
+        
+        def is_empty(self):
+            return len(self.__list_normal_forces) == 0
+        
+        def list_clear(self):
+            self.__list_normal_forces.clear()
+        
+        def get_normal_forces(self):
+            return self.__current_normal_forces
+        
+        def get_list_n_forces(self):
+            return self.__list_normal_forces
+
+    def __build_collision_model(self, struct_material, width, length):
+        """Build collision model of the block on material width and length
+
+        Args:
+            struct_material (Material): Dataclass of material body
+            width (flaot): Width of the box
+            length (float): Length of the box
+        """
+        chrono_object_material = struct_material2object_material(struct_material)                
+
+        self.body.GetCollisionModel().ClearModel()
+        self.body.GetCollisionModel().AddBox(chrono_object_material,width/2,length/2,width/2)
+        self.body.GetCollisionModel().BuildModel()
 
     def move_to_out_frame(self, in_block: Block):
         self.builder.Update()
@@ -142,6 +204,21 @@ class ChronoBody(BlockBody):
     @property
     def ref_frame_in(self):
         return self._ref_frame_in
+    
+    @property
+    def normal_force(self):
+        self.builder.GetContactContainer().ReportAllContacts(self.__contact_reporter)
+        return self.__contact_reporter.get_normal_forces()
+    
+    @property
+    def list_n_forces(self):
+        container = self.builder.GetContactContainer()
+        contacts = container.GetNcontacts()
+        if contacts:
+            self.__contact_reporter.list_clear()
+            container.ReportAllContacts(self.__contact_reporter)
+        return self.__contact_reporter.get_list_n_forces()
+
 
 
 class ChronoRevolveJoint(BlockBridge):
@@ -203,9 +280,15 @@ class ChronoRevolveJoint(BlockBridge):
 
 
 class ChronoTransform(BlockTransform):
-    def __init__(self, builder, transform: chrono.ChCoordsysD):
+    def __init__(self, builder: chrono.ChSystem, transform):
         super().__init__(builder=builder)
-        self.transform = transform
+        if isinstance(transform,chrono.ChCoordsysD):
+            self.transform = transform
+        elif type(transform) is FrameTransform:
+            coordsys_transform = chrono.ChCoordsysD(
+            chrono.ChVectorD(transform.position[0],transform.position[1],transform.position[2]),
+            chrono.ChQuaternionD(transform.rotation[0],transform.rotation[1],transform.rotation[2],transform.rotation[3]))
+            self.transform = coordsys_transform
 
 
 def find_body_from_two_previous_blocks(sequence: list[Block], it: int) -> Optional[Block]:

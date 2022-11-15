@@ -1,51 +1,52 @@
-from node import BlockWrapper, Node, Rule, Grammar
-from node_render import *
+import context
+import pychrono as chrono
+import networkx as nx
+import numpy as np
+
+from engine.node import BlockWrapper, Node, Rule, GraphGrammar, ROOT
+from engine.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint
+
+from utils.blocks_utils import make_collide, CollisionGroup
+from utils.transform_srtucture import FrameTransform
 from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
 from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
     Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
     Q_ROTATE_X_TO_Y, Q_ROTATE_X_TO_Z
-import networkx as nx
-import matplotlib.pyplot as plt
-import pychrono as chrono
-import control as ctrl
-import numpy as np
+
 
 # Define block types
+mat = chrono.ChMaterialSurfaceNSC()
+mat.SetFriction(0.5)
+mat.SetDampingF(0.1)
 
 # Bodies
-link1 = BlockWrapper(ChronoBody, length=0.3)
-link2 = BlockWrapper(ChronoBody, length=0.2)
+link1 = BlockWrapper(ChronoBody, length=0.6)
+link2 = BlockWrapper(ChronoBody, length=0.4)
 
-flat1 = BlockWrapper(ChronoBody, width=0.4, length=0.1)
-flat2 = BlockWrapper(ChronoBody, width=0.7, length=0.1)
+flat1 = BlockWrapper(ChronoBody, width=0.8, length=0.2)
+flat2 = BlockWrapper(ChronoBody, width=1.4, length=0.2)
 
-u1 = BlockWrapper(ChronoBody, width=0.1, length=0.1)
+u1 = BlockWrapper(ChronoBody, width=0.2, length=0.2)
 
 # Transforms
-RZX = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_X)
-RZY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_Y)
-RXY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_X_TO_Y)
+MOVE_ZX_PLUS = FrameTransform([0.3,0,0.3],[1,0,0,0])
+MOVE_ZX_MINUS = FrameTransform([-0.3,0,-0.3],[1,0,0,0])
 
-MOVE_ZX_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
-MOVE_ZX_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, -0.3), ChQuaternionD(1, 0, 0, 0))
+MOVE_X_PLUS = FrameTransform([0.3,0,0.],[1,0,0,0])
+MOVE_Z_PLUS_X_MINUS = FrameTransform([-0.3,0,0.3],[1,0,0,0])
 
-MOVE_X_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0), ChQuaternionD(1, 0, 0, 0))
-MOVE_Z_PLUS_X_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
-
-transform_rzx = BlockWrapper(ChronoTransform, RZX)
-transform_rzy = BlockWrapper(ChronoTransform, RZY)
-transform_rxy = BlockWrapper(ChronoTransform, RXY)
 transform_mzx_plus = BlockWrapper(ChronoTransform, MOVE_ZX_PLUS)
 transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
 transform_mx_plus = BlockWrapper(ChronoTransform, MOVE_X_PLUS)
 transform_mz_plus_x_minus = BlockWrapper(ChronoTransform, MOVE_Z_PLUS_X_MINUS)
 
-type_of_input = ChronoRevolveJoint.InputType.Torque
 # Joints
-revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input, stiffness = 11**-3, damping = 10)
+
+type_of_input = ChronoRevolveJoint.InputType.Torque
+revolve1 = BlockWrapper(
+    ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
 
 # Nodes
-ROOT = Node("ROOT")
 
 J1 = Node(label="J1", is_terminal=True, block_wrapper=revolve1)
 L1 = Node(label="L1", is_terminal=True, block_wrapper=link1)
@@ -59,7 +60,6 @@ T3 = Node(label="T3", is_terminal=True, block_wrapper=transform_mzx_plus)
 T4 = Node(label="T4", is_terminal=True, block_wrapper=transform_mzx_minus)
 
 
-
 J = Node("J")
 L = Node("L")
 F = Node("F")
@@ -67,11 +67,13 @@ M = Node("M")
 EF = Node("EF")
 EM = Node("EM")
 
+J_NODES = [J, J1]
+B_NODES = [L, L1, L2, F1, F2]
+T_EXAMPLE = [T1, T2]
+
 # Defines rules
 
 # Non terminal
-
-# Simple replace
 FlatCreate = Rule()
 rule_graph = nx.DiGraph()
 rule_graph.add_node(0, Node=F)
@@ -188,97 +190,56 @@ TerminalJoint.graph_insert = rule_graph
 TerminalJoint.replaced_node = J
 
 
-G = Grammar()
-
-rule_action_non_terminal = np.asarray([FlatCreate, Mount, Mount, Mount,
-                                       FingerUpper, FingerUpper, FingerUpper, FingerUpper,  FingerUpper, FingerUpper])
-rule_action_terminal = np.asarray([TerminalFlat,
-                         TerminalL1, TerminalL1, TerminalL1, TerminalL2, TerminalL2, TerminalL2,
-                         TerminalTransformL, TerminalTransformLZ, TerminalTransformRX,
-                         TerminalEndLimb, TerminalEndLimb, TerminalEndLimb,
-                         TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint])
-rule_action = np.r_[rule_action_non_terminal, rule_action_terminal]
-for i in list(rule_action):
-    G.apply_rule(i)
-
-mysystem = chrono.ChSystemNSC()
-mysystem.Set_G_acc(chrono.ChVectorD(0,-9.8,0))
-wrapper_array = G.build_wrapper_array()
+rule_action_non_terminal_three_finger = np.asarray([FlatCreate, Mount, Mount, Mount,
+                                       FingerUpper, FingerUpper, FingerUpper,
+                                       FingerUpper,  FingerUpper, FingerUpper])
+rule_action_terminal_three_finger = np.asarray([TerminalFlat,
+                                   TerminalL1, TerminalL1, TerminalL1,
+                                   TerminalL2, TerminalL2, TerminalL2,
+                                   TerminalTransformL, TerminalTransformLZ,
+                                   TerminalTransformRX,
+                                   TerminalEndLimb, TerminalEndLimb,
+                                   TerminalEndLimb,
+                                   TerminalJoint, TerminalJoint, TerminalJoint,
+                                   TerminalJoint, TerminalJoint, TerminalJoint])
+rule_action_three_finger = np.r_[rule_action_non_terminal_three_finger, rule_action_terminal_three_finger]
 
 
-blocks = []
-uniq_blocks = {}
-for wrap in wrapper_array:
-    block_line = []
-    for id, wrapper in wrap:
-        if not (id in uniq_blocks.keys()):
-            wrapper.builder = mysystem
-            block_buf = wrapper.create_block()
-            block_line.append(block_buf)
-            uniq_blocks[id] = block_buf
-        else:
-            block_buf = uniq_blocks[id]
-            block_line.append(block_buf)
-    blocks.append(block_line)
 
-for line in blocks:
-    build_branch(line)
-blocks[0][0].body.SetBodyFixed(True)
+rule_action_non_terminal_two_finger = np.asarray([FlatCreate, Mount, Mount,
+                                       FingerUpper, FingerUpper, FingerUpper, FingerUpper,  FingerUpper])
+
+rule_action_terminal_two_finger = np.asarray([TerminalFlat,
+                         TerminalL1, TerminalL1, TerminalL1, TerminalL2, TerminalL2,
+                         TerminalTransformL, TerminalTransformLZ,
+                         TerminalEndLimb, TerminalEndLimb,
+                         TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint])
+rule_action_two_finger = np.r_[rule_action_non_terminal_two_finger, rule_action_terminal_two_finger]
 
 
-rev_joint = ctrl.get_controllable_joints(blocks)
-def sine(x, amp, omg, off = 0):
-    return amp*np.sin(omg*x + off)
-# Create simulation loop
-# des_points_1 = np.array([0, -0.3, 0.3, -0.2, 0.4])
-des_points_1 = np.array([0, 0.1, 0.2, 0.3, 0.4])
-des_points_1_1 = - des_points_1
-des_points_2 = np.array([-0.5, -0.6, -0.6, -0.7, -0.8])
-time_pos = np.array([[0.5, 1, 1.25, 1.5, 2],
-                    [0, -0.3, 0.3, -0.2, 0.4]])
+rule_action_non_terminal_ladoshaka = np.asarray([FlatCreate,Mount])
 
-pid_track = []
-for idx, finger in enumerate(rev_joint):
-    for joint in finger:
-        if idx != 2:
-            pid_track.append(ctrl.ChControllerPID(joint ,80.,5.,1.))
-            pid_track[-1].set_des_positions_interval(des_points_1,(0.1,2))
-        else:
-            pid_track.append(ctrl.ChControllerPID(joint ,80.,5.,1.))
-            pid_track[-1].set_des_positions_interval(des_points_1_1,(0.1,2))
-        print(idx)
-        
-#pid_track = ctrl.ChControllerPID(blocks[0][2] ,50.,5.,1.)
-#pid_track.set_des_positions_interval(des_points_1,(0.5,2))
-#pid_track.set_des_time_positions(time_pos)
-#pid_track.set_function_trajectory(sine, amp=0.1, omg = 10)
+rule_action_terminal_ladoshaka = np.asarray([TerminalFlat,TerminalTransformL,TerminalEndLimb])
 
-# print(list(ctrl.get_controllable_joints(blocks)))
-
-vis = chronoirr.ChVisualSystemIrrlicht()
-vis.AttachSystem(mysystem)
-vis.SetWindowSize(1024,768)
-vis.SetWindowTitle('Custom contact demo')
-vis.Initialize()
-vis.AddCamera(chrono.ChVectorD(8, 8, -6))
-vis.AddTypicalLights()
+rule_action_ladoshaka = np.r_[rule_action_non_terminal_ladoshaka, rule_action_terminal_ladoshaka]
 
 
-plt.figure()
-nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
-                 labels={n: G.nodes[n]["Node"].label for n in G})
-plt.figure()
-nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
-plt.show()
 
 
-while vis.Run():
-    mysystem.Update()
-    mysystem.DoStepDynamics(5e-3)
-    vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
-    vis.Render()
+def get_terminal_graph_three_finger():
+    G = GraphGrammar()
+    for i in list(rule_action_three_finger):
+        G.apply_rule(i)
+    return G
 
-    # if mysystem.GetChTime() > 6:
-    #     pid_track.set_des_positions_interval(des_points_2,(6,10))
-    
-    vis.EndScene()
+def get_terminal_graph_ladoshaka():
+    G = GraphGrammar()
+    for i in list(rule_action_ladoshaka):
+        G.apply_rule(i)
+    return G
+
+def get_terminal_graph_two_finger():
+    G = GraphGrammar()
+    for i in list(rule_action_two_finger):
+        G.apply_rule(i)
+    return G

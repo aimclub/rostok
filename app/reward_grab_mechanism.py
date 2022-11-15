@@ -1,20 +1,68 @@
-from node import BlockWrapper, Node, Rule, Grammar
-from node_render import *
+from time import sleep,time
+import context
+import sys
+
+from engine.node  import BlockWrapper, Node, Rule, GraphGrammar, ROOT
+from engine.node_render import *
+from utils.flags_simualtions import FlagSlipout, FlagNotContact, FlagMaxTime
+from utils.blocks_utils import make_collide, CollisionGroup
+from utils.auxilarity_sensors import RobotSensor   
 from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
 from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
     Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
     Q_ROTATE_X_TO_Y, Q_ROTATE_X_TO_Z
+from utils.nodes_division import *
+from utils.criterion_calc import *
+from scipy.spatial import distance
+import pychrono as chrono
 import networkx as nx
 import matplotlib.pyplot as plt
-import pychrono as chrono
-import control as ctrl
 import numpy as np
+import utils.simulation_step as simulation_step
+import engine.robot as robot
+import engine.control as control
+from numpy import arange
+from utils.blocks_utils import NodeFeatures
+
+
+def is_body(node: Node): return node in list_B
+
+
+def plot_graph(graph):
+    plt.figure()
+    nx.draw_networkx(graph, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
+                    labels={n: G.nodes[n]["Node"].label for n in G})
+    plt.figure()
+    nx.draw_networkx(graph, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
+
+    fig = plt.figure()
+    ax = fig.add_subplot()
+    ax.axis([0, 10, 0, 10])
+    ax.text(2, 8, 'Close all matplotlib for start simlation', style='italic', fontsize=15,
+            bbox={'facecolor': 'red', 'alpha': 0.5, 'pad': 10})
+
+    plt.show()
+
 
 # Define block types
+# mat = chrono.ChMaterialSurfaceSMC()
+# mat.SetFriction(0.4)
+# mat.SetYoungModulus(100e5)
+# mat.SetPoissonRatio(0.33)
+# mat.SetKn(10)
+# mat.SetGn(0.1)
+# mat.SetRollingFriction(1e-3)
+# mat.SetSpinningFriction(1e-3)
+# mat.SetRestitution(0.01) #Coef. of restitution in range [0;1] where 1 is perfectly elastic collision; 0 is inelastic collision
+
+mat = chrono.ChMaterialSurfaceNSC()
+mat.SetFriction(0.5)
+mat.SetDampingF(0.1)
+
 
 # Bodies
-link1 = BlockWrapper(ChronoBody, length=0.3)
-link2 = BlockWrapper(ChronoBody, length=0.2)
+link1 = BlockWrapper(ChronoBody, length=0.5)
+link2 = BlockWrapper(ChronoBody, length=0.5)
 
 flat1 = BlockWrapper(ChronoBody, width=0.4, length=0.1)
 flat2 = BlockWrapper(ChronoBody, width=0.7, length=0.1)
@@ -26,11 +74,11 @@ RZX = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_X)
 RZY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_Y)
 RXY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_X_TO_Y)
 
-MOVE_ZX_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
-MOVE_ZX_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, -0.3), ChQuaternionD(1, 0, 0, 0))
+MOVE_ZX_PLUS = FrameTransform([0.3,0,0.3],[1,0,0,0])
+MOVE_ZX_MINUS = FrameTransform([-0.3,0,-0.3],[1,0,0,0])
 
-MOVE_X_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0), ChQuaternionD(1, 0, 0, 0))
-MOVE_Z_PLUS_X_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
+MOVE_X_PLUS = FrameTransform([0.3,0,0.],[1,0,0,0])
+MOVE_Z_PLUS_X_MINUS = FrameTransform([-0.3,0,0.3],[1,0,0,0])
 
 transform_rzx = BlockWrapper(ChronoTransform, RZX)
 transform_rzy = BlockWrapper(ChronoTransform, RZY)
@@ -40,12 +88,12 @@ transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
 transform_mx_plus = BlockWrapper(ChronoTransform, MOVE_X_PLUS)
 transform_mz_plus_x_minus = BlockWrapper(ChronoTransform, MOVE_Z_PLUS_X_MINUS)
 
-type_of_input = ChronoRevolveJoint.InputType.Torque
 # Joints
-revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input, stiffness = 11**-3, damping = 10)
+
+type_of_input = ChronoRevolveJoint.InputType.Torque
+revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
 
 # Nodes
-ROOT = Node("ROOT")
 
 J1 = Node(label="J1", is_terminal=True, block_wrapper=revolve1)
 L1 = Node(label="L1", is_terminal=True, block_wrapper=link1)
@@ -59,7 +107,6 @@ T3 = Node(label="T3", is_terminal=True, block_wrapper=transform_mzx_plus)
 T4 = Node(label="T4", is_terminal=True, block_wrapper=transform_mzx_minus)
 
 
-
 J = Node("J")
 L = Node("L")
 F = Node("F")
@@ -67,11 +114,16 @@ M = Node("M")
 EF = Node("EF")
 EM = Node("EM")
 
+#Lists of possible nodes
+list_J = [J1]
+list_RM = [T1, T3]
+list_LM = [T2, T4]
+list_B = [L1, L2, F1, F2, U1]
+list_Palm = [F1]
+
 # Defines rules
 
 # Non terminal
-
-# Simple replace
 FlatCreate = Rule()
 rule_graph = nx.DiGraph()
 rule_graph.add_node(0, Node=F)
@@ -188,7 +240,7 @@ TerminalJoint.graph_insert = rule_graph
 TerminalJoint.replaced_node = J
 
 
-G = Grammar()
+G = GraphGrammar()
 
 rule_action_non_terminal = np.asarray([FlatCreate, Mount, Mount, Mount,
                                        FingerUpper, FingerUpper, FingerUpper, FingerUpper,  FingerUpper, FingerUpper])
@@ -198,87 +250,97 @@ rule_action_terminal = np.asarray([TerminalFlat,
                          TerminalEndLimb, TerminalEndLimb, TerminalEndLimb,
                          TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint])
 rule_action = np.r_[rule_action_non_terminal, rule_action_terminal]
+
+
 for i in list(rule_action):
     G.apply_rule(i)
 
-mysystem = chrono.ChSystemNSC()
-mysystem.Set_G_acc(chrono.ChVectorD(0,-9.8,0))
-wrapper_array = G.build_wrapper_array()
+
+#Set type of system 
+
+chrono_system = chrono.ChSystemNSC()
+# chrono_system = chrono.ChSystemSMC()
+
+grab_robot = robot.Robot(G, chrono_system)
 
 
-blocks = []
-uniq_blocks = {}
-for wrap in wrapper_array:
-    block_line = []
-    for id, wrapper in wrap:
-        if not (id in uniq_blocks.keys()):
-            wrapper.builder = mysystem
-            block_buf = wrapper.create_block()
-            block_line.append(block_buf)
-            uniq_blocks[id] = block_buf
-        else:
-            block_buf = uniq_blocks[id]
-            block_line.append(block_buf)
-    blocks.append(block_line)
+obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,1000,True,True,mat)
+obj.SetCollide(True)
+obj.SetPos(chrono.ChVectorD(0,0.5,0))
+# obj.SetBodyFixed(True)
 
-for line in blocks:
-    build_branch(line)
-blocks[0][0].body.SetBodyFixed(True)
+node_list_plain = list(map(G.get_node_by_id,
+                      G.get_ids_in_dfs_order()))
+
+config_sys = {"Set_G_acc":chrono.ChVectorD(0,-10,0)}
 
 
-rev_joint = ctrl.get_controllable_joints(blocks)
-def sine(x, amp, omg, off = 0):
-    return amp*np.sin(omg*x + off)
-# Create simulation loop
-# des_points_1 = np.array([0, -0.3, 0.3, -0.2, 0.4])
-des_points_1 = np.array([0, 0.1, 0.2, 0.3, 0.4])
-des_points_1_1 = - des_points_1
-des_points_2 = np.array([-0.5, -0.6, -0.6, -0.7, -0.8])
-time_pos = np.array([[0.5, 1, 1.25, 1.5, 2],
-                    [0, -0.3, 0.3, -0.2, 0.4]])
-
-pid_track = []
-for idx, finger in enumerate(rev_joint):
-    for joint in finger:
-        if idx != 2:
-            pid_track.append(ctrl.ChControllerPID(joint ,80.,5.,1.))
-            pid_track[-1].set_des_positions_interval(des_points_1,(0.1,2))
-        else:
-            pid_track.append(ctrl.ChControllerPID(joint ,80.,5.,1.))
-            pid_track[-1].set_des_positions_interval(des_points_1_1,(0.1,2))
-        print(idx)
-        
-#pid_track = ctrl.ChControllerPID(blocks[0][2] ,50.,5.,1.)
-#pid_track.set_des_positions_interval(des_points_1,(0.5,2))
-#pid_track.set_des_time_positions(time_pos)
-#pid_track.set_function_trajectory(sine, amp=0.1, omg = 10)
-
-# print(list(ctrl.get_controllable_joints(blocks)))
-
-vis = chronoirr.ChVisualSystemIrrlicht()
-vis.AttachSystem(mysystem)
-vis.SetWindowSize(1024,768)
-vis.SetWindowTitle('Custom contact demo')
-vis.Initialize()
-vis.AddCamera(chrono.ChVectorD(8, 8, -6))
-vis.AddTypicalLights()
+def create_const_traj(torque_value, stop_time: float, time_step: float):
+    timeseries_traj = []
+    timeseries = list(arange(0, stop_time, time_step))
+    traj = [torque_value for _ in timeseries]
+    timeseries_traj.append(timeseries)
+    timeseries_traj.append(traj)
+    return timeseries_traj
 
 
-plt.figure()
-nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
-                 labels={n: G.nodes[n]["Node"].label for n in G})
-plt.figure()
-nx.draw_networkx(G, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
-plt.show()
+def create_torque_traj_from_x(joint_dfs, x: list[float], stop_time: float, time_step: float):
+    x_iter = iter(x)
+    torque_traj = []
+    for branch in joint_dfs:
+        control_one_branch = []
+        for block in branch:
+            one_torque = next(x_iter)
+            control_one_branch.append(create_const_traj(
+                one_torque, stop_time, time_step))
+        torque_traj.append(np.array(control_one_branch))
+
+    return torque_traj
 
 
-while vis.Run():
-    mysystem.Update()
-    mysystem.DoStepDynamics(5e-3)
-    vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
-    vis.Render()
 
-    # if mysystem.GetChTime() > 6:
-    #     pid_track.set_des_positions_interval(des_points_2,(6,10))
-    
-    vis.EndScene()
+dfs_patrion_ids = G.graph_partition_dfs()
+def get_node(node_id): return G.get_node_by_id(node_id)
+
+dfs_patrion_node = [[get_node(node_id) for node_id in branch]
+                    for branch in dfs_patrion_ids]
+dfs_j = []
+number_trq = 0
+for branch in dfs_patrion_node:
+    joint_branch = list(filter(NodeFeatures.is_joint, branch))
+    len_joints = len(joint_branch)
+    number_trq += len_joints
+    if len_joints != 0:
+        dfs_j.append(joint_branch)
+
+const_torque_koef = [random.random() for _ in range(number_trq)]
+arr_trj = create_torque_traj_from_x(dfs_j, const_torque_koef, 10, 0.1)
+
+
+time_model = time()
+time_to_contact = 2
+time_without_contact = 0.2
+max_time = 10
+flags = [FlagSlipout(time_to_contact,time_without_contact),
+         FlagNotContact(time_to_contact), FlagMaxTime(max_time)]
+
+times_step = 1e-3
+
+WEIGHTS = [5, 1, 1, 5]
+GAIT_PERIOD = 2.5
+
+# if __name__ == '__main__':
+sim = simulation_step.SimulationStepOptimization(arr_trj, G, obj)
+J_NODES_NEW = nodes_division(sim.grab_robot, list_J)
+B_NODES_NEW = nodes_division(sim.grab_robot, list_B)
+RB_NODES_NEW = sort_left_right(sim.grab_robot, list_RM, list_B)
+LB_NODES_NEW = sort_left_right(sim.grab_robot, list_LM, list_B)
+RJ_NODES_NEW = sort_left_right(sim.grab_robot, list_RM, list_J)
+LJ_NODES_NEW = sort_left_right(sim.grab_robot, list_LM, list_J)
+sim.set_flags_stop_simulation(flags)
+sim.change_config_system(config_sys)
+sim_output = sim.simulate_system(times_step, True)
+
+reward = criterion_calc(sim_output, B_NODES_NEW, J_NODES_NEW, LB_NODES_NEW, RB_NODES_NEW, WEIGHTS, GAIT_PERIOD)
+print(reward)
+print(None)

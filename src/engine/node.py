@@ -1,20 +1,19 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+import pychrono as chrono
+from copy import deepcopy
 from dataclasses import dataclass
-from collections import namedtuple
+from networkx.algorithms.traversal import dfs_preorder_nodes
 
 
 class BlockWrapper:
     def __init__(self, block_cls, *args, **kwargs):
-        self.builder = None
         self.block_cls = block_cls
         self.args = args
         self.kwargs = kwargs
 
-    def create_block(self):
-        if self.builder is None:
-            raise Exception('Set builder first')
-        return self.block_cls(self.builder, *self.args, **self.kwargs)
+    def create_block(self, builder):
+        return self.block_cls(builder, *self.args, **self.kwargs)
 
 
 @dataclass
@@ -25,14 +24,42 @@ class Node:
     # None for non-terminal nodes
     block_wrapper: BlockWrapper = None
 
+    def __hash__(self) -> int:
+        return hash(str(self.label) + str(self.is_terminal))
 
-@dataclass
+    def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, self.__class__):
+            raise Exception(
+                "Wrong type of comparable object. Must be Node instead {wrong_type}".format(wrong_type=type(__o)))
+        return self.label == __o.label
+
+
 class Rule:
-    graph_insert: nx.DiGraph = nx.DiGraph()
+    _graph_insert: nx.DiGraph = nx.DiGraph()
     replaced_node: Node = Node()
     # In local is system!
     id_node_connect_child = -1
     id_node_connect_parent = -1
+    _is_terminal: bool = None
+
+    @property
+    def graph_insert(self):
+        return self._graph_insert
+
+    @graph_insert.setter
+    def graph_insert(self, graph: nx.DiGraph):
+        self._is_terminal = all(
+            [raw_node["Node"].is_terminal
+             for _, raw_node in graph.nodes(data=True)]
+        )
+        self._graph_insert = graph
+
+    @property
+    def is_terminal(self):
+        return self._is_terminal
+
+    def __hash__(self):
+        return hash(str(self.graph_insert) + str(self.replaced_node))
 
 
 @dataclass
@@ -70,11 +97,14 @@ class GraphGrammar(nx.DiGraph):
         out_edges = [list(edge) for edge in self.out_edges(node_id)]
 
         id_node_connect_child_graph = self._get_uniq_id()
-        id_node_connect_parent_graph = self._get_uniq_id() \
-            if rule.id_node_connect_parent != rule.id_node_connect_child else id_node_connect_child_graph
 
-        relabel_in_rule = {rule.id_node_connect_child: id_node_connect_child_graph,
-                           rule.id_node_connect_parent: id_node_connect_parent_graph}
+        is_equal_id = rule.id_node_connect_parent != rule.id_node_connect_child
+        id_node_connect_parent_graph = self._get_uniq_id(
+        ) if is_equal_id else id_node_connect_child_graph
+
+        relabel_in_rule = \
+            {rule.id_node_connect_child: id_node_connect_child_graph,
+             rule.id_node_connect_parent: id_node_connect_parent_graph}
 
         for raw_nodes in rule.graph_insert.nodes.items():
             raw_node_id = raw_nodes[0]
@@ -99,10 +129,7 @@ class GraphGrammar(nx.DiGraph):
         self.add_edges_from(out_edges)
 
     def closest_node_to_root(self, list_ids):
-        for raw_node in self.nodes.items():
-            raw_node_id = raw_node[0]
-            if self.in_degree(raw_node_id) == 0:
-                root_id = raw_node_id
+        root_id = self.get_root_id()
 
         def sort_by_root_distance(node_id):
             return len(nx.shortest_path(self, root_id, node_id))
@@ -110,16 +137,74 @@ class GraphGrammar(nx.DiGraph):
         sorta = sorted(list_ids, key=sort_by_root_distance)
         return sorta[0]
 
+    def get_root_id(self):
+        for raw_node in self.nodes.items():
+            raw_node_id = raw_node[0]
+            if self.in_degree(raw_node_id) == 0:
+                root_id = raw_node_id
+        return root_id
+
     def apply_rule(self, rule: Rule):
         ids = self.find_nodes(rule.replaced_node)
+        edge_list = list(self.edges)
         id_closest = self.closest_node_to_root(ids)
-        self._replace_node(id_closest, rule)
+        if rule.graph_insert.order() == 0:
+            # Stub removing leaf node if input rule is empty
+            out_edges_ids_node = list(
+                filter(lambda x: x[0] == id_closest, edge_list))
+            if out_edges_ids_node:
+                raise Exception("Trying delete not leaf node")
+            self.remove_node(id_closest)
+        else:
+            self._replace_node(id_closest, rule)
 
-    def graph_partition_dfs(self):
+    def node_levels_bfs(self):
+        """Devide nodes into levels.
+        
+        Return a list of lists of nodes where each inner list is a 
+        level in respect to the \'root\', which is the node with no in edges. 
+        This function should be reviewed once we start to use graphs with cycles and not just trees"""
+        levels = []
+        # Get the root node that has no in_edges. Currently, we assume that where is only one node without in_edges 
+        for raw_node in self.nodes.items():
+            raw_node_id = raw_node[0]
+            if self.in_degree(raw_node_id) == 0:
+                root_id = raw_node_id
+
+        current_level = [root_id]
+        next_level = []
+        # The list of edges that is built on the bases of the range to the source
+        bfs_edges_list = list(nx.bfs_edges(self, source=root_id))  
+        for edge in bfs_edges_list:
+            # If the edge starts in current level, the end of the edge appends to the next level 
+            if edge[0] in current_level:
+                next_level.append(edge[1])
+                #print(next_level)
+            # Else, the current level is finished and appended to the levels. next_level becomes current_level and the end of the edge goes to the new  next_level
+            else:
+                levels.append(current_level)
+                current_level = next_level
+                next_level = [edge[1]]
+        
+        # Finish the levels by appending current and next_level. In the cycle the appending occurs, when the edge of the next level is found.
+        levels.append(current_level)
+        levels.append(next_level)
+        return levels
+
+    def graph_partition_dfs(self) -> list[list[int]]:
+        """
+        Returns
+        -------
+        list[list[int]]
+            2D list
+            Row is branch of graph
+            Collum is id node
+        """
         paths = []
         path = []
 
-        dfs_edges = nx.dfs_edges(self)
+        root_id = self.get_root_id()
+        dfs_edges = nx.dfs_edges(self, root_id)
         dfs_edges_list = list(dfs_edges)
 
         for edge in dfs_edges_list:
@@ -142,7 +227,7 @@ class GraphGrammar(nx.DiGraph):
         for path in paths:
             wrapper = []
             for node_id in path:
-                node: Node = self.nodes[node_id]["Node"]
+                node: Node = self.get_node_by_id(node_id)
                 if node.is_terminal:
                     buf = WrapperTuple(node_id, node.block_wrapper)
                     wrapper.append(buf)
@@ -151,3 +236,18 @@ class GraphGrammar(nx.DiGraph):
             wrapper_array.append(wrapper.copy())
 
         return wrapper_array
+
+    def get_node_by_id(self, node_id: int) -> Node:
+        return self.nodes[node_id]["Node"]
+
+    def get_ids_in_dfs_order(self) -> list[int]:
+        """ 
+        Iterate in deep first order over node ids
+        One of the options to present the graph in a flat form
+
+        Returns
+        -------
+        list[int]
+            List ids 
+        """
+        return list(dfs_preorder_nodes(self, self.get_root_id()))
