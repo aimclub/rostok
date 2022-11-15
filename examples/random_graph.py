@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 from time import sleep
 # chrono imports
 import pychrono as chrono
+import pychrono.irrlicht as chronoirr
 from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
 from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
     Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
@@ -28,7 +29,6 @@ def plot_graph(graph:GraphGrammar):
                     labels={n: graph.nodes[n]["Node"].label for n in graph})
     plt.show()
 
-# Define materials
 # Define block types
 mat = chrono.ChMaterialSurfaceNSC()
 mat.SetFriction(0.5)
@@ -41,18 +41,18 @@ link2 = BlockWrapper(ChronoBody, length=0.2)
 flat1 = BlockWrapper(ChronoBody, width=0.4, length=0.1)
 flat2 = BlockWrapper(ChronoBody, width=0.7, length=0.1)
 
-u1 = BlockWrapper(ChronoBody, width=0.1, length=0.1, material=mat)
+u1 = BlockWrapper(ChronoBody, width=0.1, length=0.1)
 
 # Transforms
 RZX = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_X)
 RZY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_Y)
 RXY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_X_TO_Y)
 
-MOVE_ZX_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
-MOVE_ZX_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, -0.3), ChQuaternionD(1, 0, 0, 0))
+MOVE_ZX_PLUS = FrameTransform([0.3,0,0.3],[1,0,0,0])
+MOVE_ZX_MINUS = FrameTransform([-0.3,0,-0.3],[1,0,0,0])
 
-MOVE_X_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0), ChQuaternionD(1, 0, 0, 0))
-MOVE_Z_PLUS_X_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
+MOVE_X_PLUS = FrameTransform([0.3,0,0.],[1,0,0,0])
+MOVE_Z_PLUS_X_MINUS = FrameTransform([-0.3,0,0.3],[1,0,0,0])
 
 transform_rzx = BlockWrapper(ChronoTransform, RZX)
 transform_rzy = BlockWrapper(ChronoTransform, RZY)
