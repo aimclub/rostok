@@ -15,17 +15,39 @@ import engine.control as control
 # Immutable classes with output simulation data for robot block
 @dataclass(frozen=True)
 class SimulationDataBlock:
+    """Immutable class with output simulation data for robot block.
+
+        Attr:
+            id_block (int): id of robot block
+            time (list[float]): list of time of simulation 
+    """
     id_block: int
     time: list[float]
 
 
 @dataclass(frozen=True)
 class DataJointBlock(SimulationDataBlock):
+    """Immutable class with output simulation data for robot joint block.
+
+        Attr:
+            id_block (int): id of robot block
+            time (list[float]): list of time of simulation
+            angle_list (list[float]): list of angle of robot joint block
+    """
     angle_list: list[float]
 
 
 @dataclass(frozen=True)
 class DataBodyBlock(SimulationDataBlock):
+    """Immutable class with output simulation data for robot body block.
+
+        Attr:
+            id_block (int): id of robot block
+            time (list[float]): list of time of simulation
+            sum_contact_forces (list[float]): list of contact forces sum
+            abs_coord_COG (list[float]): list of absolute coordinates of block
+            amount_contact_surfaces (list[int]): list of number of contact surfaces
+    """
     sum_contact_forces: list[float]
     abs_coord_COG: list [list[float]]
     amount_contact_surfaces: list[int]
@@ -47,6 +69,27 @@ class SimulationStepOptimization:
 
         # Create instance of chrono system and robot: grab mechanism
         self.chrono_system = chrono.ChSystemNSC()
+        self.chrono_system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
+        self.chrono_system.SetSolverMaxIterations(100)
+        self.chrono_system.SetSolverForceTolerance(1e-6)
+        self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
+        
+      
+
+        # self.chrono_system = chrono.ChSystemSMC()
+        # self.chrono_system.SetSolverType(chrono.ChSolver.Type_MINRES)
+        # self.chrono_system.SetSolverForceTolerance(1e-10)
+        # self.chrono_system.SetSolverMaxIterations(100)
+        # timestepper = chrono.ChTimestepperHHT(self.chrono_system)
+        # self.chrono_system.SetTimestepper(timestepper)
+        # timestepper.SetAbsTolerances(1e-5)
+        # timestepper.SetScaling(True)
+        # timestepper.SetStepControl(True)
+        # timestepper.SetMinStepSize(1e-4)
+        # timestepper.SetAlpha(-0.2)
+        # timestepper.SetMaxiters(5)
+
+    
         self.grab_robot = Robot(self.graph_mechanism, self.chrono_system)
 
     

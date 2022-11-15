@@ -7,6 +7,7 @@ from engine.node import BlockWrapper, Node, Rule, GraphGrammar, ROOT
 from engine.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint
 
 from utils.blocks_utils import make_collide, CollisionGroup
+from utils.transform_srtucture import FrameTransform
 from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
 from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
     Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
@@ -28,11 +29,11 @@ flat2 = BlockWrapper(ChronoBody, width=1.4, length=0.2)
 u1 = BlockWrapper(ChronoBody, width=0.2, length=0.2)
 
 # Transforms
-MOVE_ZX_PLUS = {"pos":[0.3,0,0.3],"rot":[1,0,0,0]}
-MOVE_ZX_MINUS = {"pos":[-0.3,0,-0.3],"rot":[1,0,0,0]}
+MOVE_ZX_PLUS = FrameTransform([0.3,0,0.3],[1,0,0,0])
+MOVE_ZX_MINUS = FrameTransform([-0.3,0,-0.3],[1,0,0,0])
 
-MOVE_X_PLUS = {"pos":[0.3,0,0.],"rot":[1,0,0,0]}
-MOVE_Z_PLUS_X_MINUS = {"pos":[-0.3,0,0.3],"rot":[1,0,0,0]}
+MOVE_X_PLUS = FrameTransform([0.3,0,0.],[1,0,0,0])
+MOVE_Z_PLUS_X_MINUS = FrameTransform([-0.3,0,0.3],[1,0,0,0])
 
 transform_mzx_plus = BlockWrapper(ChronoTransform, MOVE_ZX_PLUS)
 transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)

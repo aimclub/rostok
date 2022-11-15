@@ -1,6 +1,7 @@
 import pychrono.core as chrono
-import pychrono.irrlicht as chronoirr
-from utils.load_save_materials import create_chrono_material
+from utils.dataset_materials.material_dataclass_manipulating import (DefaultChronoMaterial,
+                                                                     struct_material2object_material)
+from utils.transform_srtucture import FrameTransform
 from enum import Enum
 from abc import ABC
 from typing import Optional
@@ -70,7 +71,7 @@ class BlockBody(Block, ABC):
 
 
 class ChronoBody(BlockBody):
-    def __init__(self, builder, length=2, width=0.2, random_color=True, mass=1, material_config = ("rubber", "./src/utils/material.xml") ):
+    def __init__(self, builder, length=2, width=0.2, random_color=True, mass=1, material = DefaultChronoMaterial()):
         super().__init__(builder=builder)
 
         # Create body
@@ -81,17 +82,8 @@ class ChronoBody(BlockBody):
         # TODO: setter for shape
         box_asset = chrono.ChBoxShape()
         box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width/2, length/2, width/2)
-
-        if material_config:
-            if len(material_config) == 3:
-                material = create_chrono_material(material_config[0],material_config[1], material_config[2])
-            else:
-                material = create_chrono_material(material_config[0],material_config[1])
-                
-            self.body.GetCollisionModel().ClearModel()
-            self.body.GetCollisionModel().AddBox(material,width/2,length/2,width/2)
-            self.body.GetCollisionModel().BuildModel()
-
+        
+        self.__build_collision_model(material, width, length)
         self.body.AddVisualShape(box_asset)
         self.builder.Add(self.body)
 
@@ -129,7 +121,12 @@ class ChronoBody(BlockBody):
 
             
     class ContactReporter (chrono.ReportContactCallback):
-        def __init__(self, chrono_body) : 
+        def __init__(self, chrono_body):
+            """Create a reporter normal contact forces for the body
+
+            Args:
+                chrono_body (ChBody): Repoter's body
+            """
             self._body = chrono_body
             self.__current_normal_forces = None
             self.__list_normal_forces: list = []
@@ -164,7 +161,19 @@ class ChronoBody(BlockBody):
         def get_list_n_forces(self):
             return self.__list_normal_forces
 
-    
+    def __build_collision_model(self, struct_material, width, length):
+        """Build collision model of the block on material width and length
+
+        Args:
+            struct_material (Material): Dataclass of material body
+            width (flaot): Width of the box
+            length (float): Length of the box
+        """
+        chrono_object_material = struct_material2object_material(struct_material)                
+
+        self.body.GetCollisionModel().ClearModel()
+        self.body.GetCollisionModel().AddBox(chrono_object_material,width/2,length/2,width/2)
+        self.body.GetCollisionModel().BuildModel()
 
     def move_to_out_frame(self, in_block: Block):
         self.builder.Update()
@@ -271,16 +280,15 @@ class ChronoRevolveJoint(BlockBridge):
 
 
 class ChronoTransform(BlockTransform):
-    def __init__(self, builder:chrono.ChSystem, transform):
+    def __init__(self, builder: chrono.ChSystem, transform):
         super().__init__(builder=builder)
         if isinstance(transform,chrono.ChCoordsysD):
             self.transform = transform
-        elif type(transform) is dict:
+        elif type(transform) is FrameTransform:
             coordsys_transform = chrono.ChCoordsysD(
-            chrono.ChVectorD(transform["pos"][0],transform["pos"][1],transform["pos"][2]),
-            chrono.ChQuaternionD(transform["rot"][0],transform["rot"][1],transform["rot"][2],transform["rot"][3]))
+            chrono.ChVectorD(transform.position[0],transform.position[1],transform.position[2]),
+            chrono.ChQuaternionD(transform.rotation[0],transform.rotation[1],transform.rotation[2],transform.rotation[3]))
             self.transform = coordsys_transform
-        None
 
 
 def find_body_from_two_previous_blocks(sequence: list[Block], it: int) -> Optional[Block]:
