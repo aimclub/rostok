@@ -157,7 +157,7 @@ searcher = mcts.mcts(timeLimit=time_limit)
 finish = False
 
 
-reward_map_2 = {J1: 1, L1: 2, P1: 1, U1: 1, M1: 4, EF1: -2, EM1: -5}
+reward_map_2 = {J1: 1, L1: 2, P1: 1, U1: 1, M1: 4, EF1: 2, EM1: 5}
 env.set_node_rewards(reward_map_2, Reward.complex)
 
 # Search until finding terminal mechanism with desired reward
