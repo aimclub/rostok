@@ -1,23 +1,15 @@
 import context
 import app_vocabulary
-from scipy.optimize import differential_evolution
-from engine.node import GraphGrammar
-import pychrono as chrono
-from numpy import arange
-import numpy as np
-from utils.blocks_utils import NodeFeatures
-from utils.simulation_step import SimulationStepOptimization,  SimulationDataBlock
-from engine.node import Node
-from typing import Union
-import utils.criterion_calc as criterion
-from utils.flags_simualtions import FlagSlipout, FlagNotContact, FlagMaxTime
-from scipy.optimize import shgo, dual_annealing, direct
-import random
-from copy import deepcopy
 
+from engine.node import GraphGrammar
+from engine.node import Node
+from utils.simulation_step import SimOut
+import utils.criterion_calc as criterion
+from utils.flags_simualtions import FlagMaxTime
 from utils.control_optimizer import ConfigRewardFunction, ControlOptimizer
 from utils.trajectory_generator import create_torque_traj_from_x
 
+import pychrono as chrono
 
 def get_object_to_grasp():
     grab_obj_mat = chrono.ChMaterialSurfaceNSC()
@@ -29,7 +21,7 @@ def get_object_to_grasp():
     return obj
 
 
-def grab_crtitrion(sim_output: dict[int, SimulationDataBlock], grab_robot, node_feature: list[list[Node]]):
+def grab_crtitrion(sim_output: dict[int, SimOut], grab_robot, node_feature: list[list[Node]]):
     gait = 2.5
     weight = [1, 1, 1, 1]
     j_nodes = criterion.nodes_division(
@@ -47,7 +39,7 @@ def grab_crtitrion(sim_output: dict[int, SimulationDataBlock], grab_robot, node_
 def create_grab_criterion_fun(node_features):
     def fun(sim_output, grab_robot):
         return grab_crtitrion(sim_output, grab_robot, node_features)
-    
+
     return fun
 
 
