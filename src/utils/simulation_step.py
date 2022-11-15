@@ -52,6 +52,10 @@ class DataBodyBlock(SimulationDataBlock):
     abs_coord_COG: list [list[float]]
     amount_contact_surfaces: list[int]
 
+
+"""Type for output simulation. Store trajectory and block id"""
+SimOut = dict[int, SimulationDataBlock]
+
 # Class for simulation system in loop optimization control
 
 # TODO: Bind traj into separate method
@@ -144,7 +148,7 @@ class SimulationStepOptimization:
                     "Chrono system don't have method {0}".format(str_method))
 
     # Run simulation
-    def simulate_system(self, time_step, visualize=False) -> dict[int, SimulationDataBlock]:
+    def simulate_system(self, time_step, visualize=False) -> SimOut:
         # Function appending arraies in map
         def append_arr_in_dict(x, y):
             if x[0] == y[0]:
