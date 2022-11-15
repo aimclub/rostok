@@ -1,11 +1,14 @@
 import context
+from engine.node_render import ChronoBody, ChronoRevolveJoint, ChronoTransform
 import stubs.graph_environment as env_graph
 import mcts
 import networkx as nx
 import matplotlib.pyplot as plt
 
-from engine.node import Node, Rule, GraphGrammar, ROOT
+from engine.node import BlockWrapper, Node, Rule, GraphGrammar, ROOT
 from stubs.graph_reward import Reward
+from utils.dataset_materials.material_dataclass_manipulating import create_struct_material_from_file
+from utils.transform_srtucture import FrameTransform
 
 
 J = Node("J")
@@ -69,13 +72,43 @@ FingerUpper.replaced_node = EF
 
 # Terminal nodes
 
-J1 = Node("J1", is_terminal=True)
-M1 = Node("M1", is_terminal=True)
-U1 = Node("U1", is_terminal=True)
-L1 = Node("L1", is_terminal=True)
-P1 = Node("P1", is_terminal=True)
-EM1 = Node("EM1", is_terminal=True)
-EF1 = Node("EF1", is_terminal=True)
+mat_r = ("polyactide", "./src/utils/dataset_materials/material.xml", "ChMaterialSurfaceNSC")
+polyactide_material_struct = create_struct_material_from_file(*mat_r)
+
+# Bodies
+link1 = BlockWrapper(ChronoBody, length=0.6, material = polyactide_material_struct)
+link2 = BlockWrapper(ChronoBody, length=0.4, material = polyactide_material_struct)
+
+flat1 = BlockWrapper(ChronoBody, width=0.8, length=0.2)
+flat2 = BlockWrapper(ChronoBody, width=1.4, length=0.2)
+
+u1 = BlockWrapper(ChronoBody, width=0.2, length=0.2)
+
+# Transforms
+
+MOVE_ZX_PLUS = FrameTransform([0.3,0,0.3],[1,0,0,0])
+MOVE_ZX_MINUS = FrameTransform([-0.3,0,-0.3],[1,0,0,0])
+
+MOVE_X_PLUS = FrameTransform([0.3,0,0.],[1,0,0,0])
+MOVE_Z_PLUS_X_MINUS = FrameTransform([-0.3,0,0.3],[1,0,0,0])
+
+transform_mzx_plus = BlockWrapper(ChronoTransform, MOVE_ZX_PLUS)
+transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
+transform_mx_plus = BlockWrapper(ChronoTransform, MOVE_X_PLUS)
+transform_mz_plus_x_minus = BlockWrapper(ChronoTransform, MOVE_Z_PLUS_X_MINUS)
+
+type_of_input = ChronoRevolveJoint.InputType.Torque
+# Joints
+revolve1 = BlockWrapper(
+    ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
+
+J1 = Node("J1", is_terminal=True, block_wrapper=revolve1)
+M1 = Node("M1", is_terminal=True, block_wrapper=transform_mz_plus_x_minus)
+U1 = Node("U1", is_terminal=True, block_wrapper=u1)
+L1 = Node("L1", is_terminal=True, block_wrapper=link1)
+P1 = Node("P1", is_terminal=True, block_wrapper=flat1)
+EM1 = Node("EM1", is_terminal=True, block_wrapper=u1)
+EF1 = Node("EF1", is_terminal=True, block_wrapper=u1)
 
 TerminalJ1 = Rule()
 rule_graph = nx.DiGraph()
@@ -146,7 +179,7 @@ rule_action = [PalmCreate, Mount, MountAdd, MountUpper, FingerUpper, DeliteEndMo
 max_numbers_rules = 10
 
 # Create graph envirenments for algorithm (not gym)
-env = env_graph.GraphEnvironment(G, rule_action, max_numbers_rules)
+env = env_graph.GraphStubsEnvironment(G, rule_action, max_numbers_rules)
 
 # Hyperparameters: increasing: > error reward, < search time
 time_limit = 1000
@@ -157,7 +190,7 @@ searcher = mcts.mcts(timeLimit=time_limit)
 finish = False
 
 
-reward_map_2 = {J1: 1, L1: 2, P1: 1, U1: 1, M1: 4, EF1: -2, EM1: -5}
+reward_map_2 = {J1: 1, L1: 2, P1: 1, U1: 1, M1: 4, EF1: 2, EM1: 5}
 env.set_node_rewards(reward_map_2, Reward.complex)
 
 # Search until finding terminal mechanism with desired reward
