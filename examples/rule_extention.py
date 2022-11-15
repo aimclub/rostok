@@ -56,13 +56,6 @@ link = list(map(lambda x: BlockWrapper(ChronoBody, length=x),
 
 u1 = BlockWrapper(ChronoBody, width=0.1, length=0.0)
 
-
-# %% Transforms
-RZX = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_X)
-RZY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_Y)
-RXY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_X_TO_Y)
-
-
 # %% Tranform for extansions rules 
 
 # MOVE_TO_RIGHT_SIDE = map(lambda x: ChCoordsysD(ChVectorD(x, 0, 0), chrono.Q_FLIP_AROUND_Y),
