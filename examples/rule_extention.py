@@ -13,7 +13,7 @@ import stubs.graph_environment as env_graph
 #from sort_left_right import *
 # from find_traj_fun import *
 import engine.robot as robot
-import engine.control as ctrl
+#import engine.control as ctrl
 
 
 from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
@@ -342,7 +342,6 @@ iteration_limit = 20000
 # Initilize MCTS
 searcher = mcts.mcts(timeLimit=time_limit)
 finish = False
-
 
 reward_map_2 = {"J1": 1, "L1": 2,"L2": 2, "L3": 2 , "F1": 1, "F2": 1, "F3": 1, "U1": 1, "TR1": 4, "TR2": 4, "TR3": 4, "TRP1": 4, "TRP2": 4, 
 "TRP3": 4, "TRM1": 4, "TRM2": 4, "TRM3": 4, "TL1": 4, "TL2": 4, "TL3": 4, "TLP1": 4, "TLP2": 4, "TLP3": 4, "TLM1": 4, "TLM2": 4, "TLM3": 4}

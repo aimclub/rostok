@@ -42,7 +42,7 @@ class RuleAction:
 
 class GraphEnvironment():
     def __init__(self, initilize_graph, rule_vocab: RuleVocabulary, node_vocab, max_numbers_rules_non_terminal = 20):
-                """Class of "environment" of graph grammar 
+        """Class of "environment" of graph grammar 
 
         Args:
             initilize_graph (GraphGrammar): Initial state of the graph
@@ -51,8 +51,7 @@ class GraphEnvironment():
         """  
         self.init_graph = initilize_graph
         self.graph = initilize_graph
-        self.__actions = [RuleAction(rule_vocab.rule_dict[r]) for r in rule_vocab.rule_dict.keys()]
-
+        self._actions = [RuleAction(rule_vocab.rule_dict[r]) for r in rule_vocab.rule_dict.keys()]
         self.max_actions_not_terminal = max_numbers_rules_non_terminal
         self.map_nodes_reward = {}
         self.current_player = 1
