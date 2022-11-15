@@ -61,24 +61,24 @@ mat.SetDampingF(0.1)
 
 
 # Bodies
-link1 = BlockWrapper(ChronoBody, length=0.5, material=mat)
-link2 = BlockWrapper(ChronoBody, length=0.5, material=mat)
+link1 = BlockWrapper(ChronoBody, length=0.5)
+link2 = BlockWrapper(ChronoBody, length=0.5)
 
-flat1 = BlockWrapper(ChronoBody, width=0.4, length=0.1, material=mat)
-flat2 = BlockWrapper(ChronoBody, width=0.7, length=0.1, material=mat)
+flat1 = BlockWrapper(ChronoBody, width=0.4, length=0.1)
+flat2 = BlockWrapper(ChronoBody, width=0.7, length=0.1)
 
-u1 = BlockWrapper(ChronoBody, width=0.1, length=0.1, material=mat)
+u1 = BlockWrapper(ChronoBody, width=0.1, length=0.1)
 
 # Transforms
 RZX = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_X)
 RZY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_Y)
 RXY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_X_TO_Y)
 
-MOVE_ZX_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
-MOVE_ZX_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, -0.3), ChQuaternionD(1, 0, 0, 0))
+MOVE_ZX_PLUS = FrameTransform([0.3,0,0.3],[1,0,0,0])
+MOVE_ZX_MINUS = FrameTransform([-0.3,0,-0.3],[1,0,0,0])
 
-MOVE_X_PLUS = ChCoordsysD(ChVectorD(0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
-MOVE_Z_PLUS_X_MINUS = ChCoordsysD(ChVectorD(-0.3, 0, 0.3), ChQuaternionD(1, 0, 0, 0))
+MOVE_X_PLUS = FrameTransform([0.3,0,0.],[1,0,0,0])
+MOVE_Z_PLUS_X_MINUS = FrameTransform([-0.3,0,0.3],[1,0,0,0])
 
 transform_rzx = BlockWrapper(ChronoTransform, RZX)
 transform_rzy = BlockWrapper(ChronoTransform, RZY)
