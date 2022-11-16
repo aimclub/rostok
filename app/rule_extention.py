@@ -94,7 +94,7 @@ def init_extension_rules():
 
 
     # %%
-    type_of_input = ChronoRevolveJoint.InputType.Position
+    type_of_input = ChronoRevolveJoint.InputType.Torque
 
     # Joints
     revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
@@ -195,4 +195,6 @@ def init_extension_rules():
     list_RM = node_vocab.get_list_of_nodes(["TR1", "TR2", "TR3","TRP1", "TRP2", "TRP3","TRM1", "TRM2", "TRM3"])
     list_LM = node_vocab.get_list_of_nodes(["TL1", "TL2", "TL3","TLP1", "TLP2", "TLP3","TLM1", "TLM2", "TLM3"])
     list_B = node_vocab.get_list_of_nodes(["L1", "L2", "L3", "F1", "F2", "F3"])
-    return rule_vocab
+    # Required for criteria calc
+    node_features = [list_B, list_J, list_LM, list_RM]
+    return rule_vocab, node_features
