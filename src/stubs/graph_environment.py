@@ -186,15 +186,13 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         return possible_actions
      
     def getReward(self):
-        try:
-            result_optimizer = self.optimizer.start_optimisation(self.graph)
-            self.reward = - result_optimizer[0]
-            self.movments_trajectory = result_optimizer[1]
-            func_reward = self.optimizer.create_reward_function(self.graph)
-            func_reward(self.movments_trajectory, True)
-        except Exception as e:
-            self.reward = -10
-            print(e)
+        #try:
+        result_optimizer = self.optimizer.start_optimisation(self.graph)
+        self.reward = - result_optimizer[0]
+        self.movments_trajectory = result_optimizer[1]
+        func_reward = self.optimizer.create_reward_function(self.graph)
+        func_reward(self.movments_trajectory, True)
+         
         print(self.reward)
         return self.reward
     
