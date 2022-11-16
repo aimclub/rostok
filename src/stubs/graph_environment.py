@@ -2,6 +2,7 @@ from copy import deepcopy
 from engine.node import *
 from engine.rule_vocabulary import RuleVocabulary
 from stubs.graph_reward import Reward
+from utils.control_optimizer import ControlOptimizer
 
 def rule_is_terminal(rule: Rule):
     """Function finding non terminal rules 
@@ -184,10 +185,14 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         return possible_actions
      
     def getReward(self):
-        """
-            Put simulation robot and optimizing controller
-        """
+        try:
+            self.reward, self.movments_trajectory = -self.optimizer.start_optimisation(self.graph)
+        except Exception:
+            self.reward = -10
         return self.reward
+    
+    def set_control_optimizer(self, control_optimizer: ControlOptimizer):
+        self.optimizer = control_optimizer
     
 class GraphStubsEnvironment(GraphEnvironment):
     def __init__(self, initilize_graph, rules, max_numbers_rules_non_terminal=20):
