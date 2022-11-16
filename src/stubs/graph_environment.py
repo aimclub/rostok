@@ -171,6 +171,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         """     
         super().__init__(initilize_graph, None, max_numbers_rules_non_terminal)
         self._actions = rule_vocabulary
+        self.movments_trajectory = None
     
     def getPossibleActions(self):
         """Getter possible actions for current state
@@ -186,13 +187,69 @@ class GraphVocabularyEnvironment(GraphEnvironment):
      
     def getReward(self):
         try:
-            self.reward, self.movments_trajectory = -self.optimizer.start_optimisation(self.graph)
-        except Exception:
+            result_optimizer = self.optimizer.start_optimisation(self.graph)
+            self.reward = - result_optimizer[0]
+            self.movments_trajectory = result_optimizer[1]
+            func_reward = self.optimizer.create_reward_function(self.graph)
+            func_reward(self.movments_trajectory, True)
+        except Exception as e:
             self.reward = -10
+            print(e)
+        print(self.reward)
         return self.reward
+    
+    def takeAction(self, action):
+        """Take action and return new state environment
+
+        Args:
+            action (RuleAction): Action to take
+
+        Returns:
+            GraphEnvironment: New state environment after action taken
+        """
+        rule_action = action.get_rule
+        new_state = deepcopy(self)
+        new_state.graph.apply_rule(rule_action)
+        new_state.optimizer = self.optimizer
+        if not action.is_terminal():
+            new_state.counter_action += 1
+        return new_state
     
     def set_control_optimizer(self, control_optimizer: ControlOptimizer):
         self.optimizer = control_optimizer
+        
+    def step(self, action: RuleAction, render = False):
+        """Move current environment to new state
+
+        Args:
+            action (RuleAction): Action is take
+            render (bool): Turn on render each step. Defaults to False.
+
+        Returns:
+            bool, GraphGrammar: Return state of graph. If it is terminal then finish generate graph and new state graph.
+        """
+        new_state = self.takeAction(action)
+        self.graph = new_state.graph
+        self.reward = new_state.reward
+        self.counter_action = new_state.counter_action
+        self.movments_trajectory = new_state.movments_trajectory
+        done = new_state.isTerminal()
+    
+        if render:
+            plt.figure()
+            nx.draw_networkx(self.graph, pos=nx.kamada_kawai_layout(self.graph, dim=2), node_size=800,
+                 labels={n: self.graph.nodes[n]["Node"].label for n in self.graph})
+            plt.show()
+        return done, self.graph, self.movments_trajectory
+    
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            if k != "optimizer":
+                setattr(result, k, deepcopy(v, memo))
+        return result
     
 class GraphStubsEnvironment(GraphEnvironment):
     def __init__(self, initilize_graph, rules, max_numbers_rules_non_terminal=20):
