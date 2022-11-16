@@ -64,8 +64,8 @@ criterion_callback = create_grab_criterion_fun(app_vocabulary.node_features)
 traj_generator_fun = create_traj_fun(cfg.time_sim, cfg.time_step)
 
 cfg.criterion_callback = criterion_callback
-cfg.get_rgab_object = get_object_to_grasp
-cfg.params_to_timesiries_array = traj_generator_fun
+cfg.get_rgab_object_callback = get_object_to_grasp
+cfg.params_to_timesiries_callback = traj_generator_fun
 
 control_optimizer = ControlOptimizer(cfg)
 graph = app_vocabulary.get_three_finger_graph()
