@@ -41,10 +41,6 @@ flat2 = BlockWrapper(ChronoBody, width=0.4, length=0.2)
 u1 = BlockWrapper(ChronoBody, width=0.2, length=0.2)
 
 # Transforms
-RZX = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_X)
-RZY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_Y)
-RXY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_X_TO_Y)
-
 MOVE_ZX_PLUS = FrameTransform([0.3, 0, 0.3], [1, 0, 0, 0])
 MOVE_ZX_MINUS = FrameTransform([-0.3, 0, -0.3], [1, 0, 0, 0])
 
