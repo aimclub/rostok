@@ -251,3 +251,11 @@ class GraphGrammar(nx.DiGraph):
             List ids 
         """
         return list(dfs_preorder_nodes(self, self.get_root_id()))
+    
+    
+    def __eq__(self, __o) -> bool:
+        if isinstance(__o, GraphGrammar):
+            is_node_eq = __o.nodes == self.nodes
+            is_edge_eq = __o.edges == self.edges
+            return is_edge_eq and is_node_eq
+        return False
