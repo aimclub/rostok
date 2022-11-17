@@ -1,4 +1,5 @@
 from abc import ABC
+from copy import deepcopy
 from functools import reduce
 import engine.robot as robot
 import pychrono as chrono
@@ -112,7 +113,6 @@ class FlagSlipout(FlagWithContact):
         self.time_to_contact = time_to_contact
         self.time_out_contact = time_without_contact
         
-        self.curr_delta_center: chrono.ChVectorD = chrono.ChVectorD(0,0,0)
         self.curr_time = 0.
         self.time_last_contact = float("inf")
         
@@ -144,7 +144,6 @@ class FlagNotContact(FlagWithContact):
         
         self.time_to_contact = time_to_contact
         
-        self.curr_delta_center: chrono.ChVectorD = chrono.ChVectorD(0,0,0)
         self.curr_time = 0.
         self.time_last_contact = float("inf")
         self.time_first_contact = float("inf")
@@ -177,7 +176,7 @@ class ConditionStopSimulation:
         self.chrono_system = chrono_system
         self.in_robot = in_robot
         self.obj = obj
-        self.flags = flags
+        self.flags = deepcopy(flags)
         
         for flag in self.flags:
             flag.build(self.chrono_system, self.in_robot, self.obj)

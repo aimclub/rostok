@@ -71,11 +71,7 @@ def criterion_calc(sim_output, B, J, LB, RB, W, gait) -> float:
     for i in range(len(B_NODES_NEW)):
         if sum(B_NODES_NEW[i]['sum_contact_forces'])>0:
             cont.append(np.mean(B_NODES_NEW[i]['sum_contact_forces'])) #All mean values of contact forces (for each body) 
-<<<<<<< HEAD
-    if sum(cont) == 0 or len(cont) < 2:
-=======
     if sum(cont) == 0 or len(cont)<2:
->>>>>>> fb1bebc9c834c7628e208242c034441c5616a524
         f1 = 0
     else:
         delta_u = np.std(cont)
@@ -156,14 +152,8 @@ def criterion_calc(sim_output, B, J, LB, RB, W, gait) -> float:
     #f4
     if np.size(J_NODES_NEW) > 0:
         f4 = J_NODES_NEW[0]['time'][-1]/gait
-<<<<<<< HEAD
-    else: 
-        f4 = 0
-
-=======
     else:
         f4 = 0
->>>>>>> fb1bebc9c834c7628e208242c034441c5616a524
     
     return -W[0]*f1 - W[1]*f2 - W[2]*f3 - W[3]*f4
     
