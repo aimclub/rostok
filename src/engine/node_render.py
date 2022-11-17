@@ -71,12 +71,12 @@ class BlockBody(Block, ABC):
 
 
 class ChronoBody(BlockBody):
-    def __init__(self, builder, length=2, width=0.2, random_color=True, mass=1, material = DefaultChronoMaterial()):
+    def __init__(self, builder, length=2, width=0.2, random_color=True, density=2500, material = DefaultChronoMaterial()):
         super().__init__(builder=builder)
 
         # Create body
         self.body = chrono.ChBody()
-        self.body.SetMass(mass)
+        self.body.SetDensity(2500)
 
         # Create shape
         # TODO: setter for shape
@@ -100,6 +100,8 @@ class ChronoBody(BlockBody):
         self.body.AddMarker(input_marker)
         self.body.AddMarker(out_marker)
         self.body.AddMarker(transformed_out_marker)
+        self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
+        self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
 
         input_marker.SetPos(chrono.ChVectorD(0, -length/2, 0))
         out_marker.SetPos(chrono.ChVectorD(0, length/2, 0))
