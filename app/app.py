@@ -44,7 +44,7 @@ cfg.iters = 10
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
 cfg.time_step = 0.0015
 cfg.time_sim = 3
-cfg.flags = [FlagMaxTime(3), FlagNotContact(1.5)]
+cfg.flags = [FlagMaxTime(3), FlagNotContact(1), FlagSlipout(1, 0.5)]
 
 """Wraps function call"""
 
