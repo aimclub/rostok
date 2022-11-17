@@ -179,7 +179,7 @@ class ConditionStopSimulation:
         self.obj = obj
         self.flags = flags
         
-        for flag in flags:
+        for flag in self.flags:
             flag.build(self.chrono_system, self.in_robot, self.obj)
         
     def flag_stop_simulation(self):

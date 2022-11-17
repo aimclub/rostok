@@ -1,7 +1,7 @@
 import numpy as np
 from engine.node import GraphGrammar, Node
 from utils.blocks_utils import NodeFeatures
-
+from collections.abc import Iterable
 
 def create_const_traj(torque_value, stop_time: float, time_step: float):
     timeseries_traj = []
@@ -28,12 +28,15 @@ def create_dfs_joint(graph: GraphGrammar) -> list[list[Node]]:
         number_trq += len_joints
         if len_joints != 0:
             dfs_j.append(joint_branch)
-
+    dfs_j.sort(key=len)
     return dfs_j
 
 
 def create_torque_traj_from_x(graph: GraphGrammar, x: list[float], stop_time: float, time_step: float):
+    if not isinstance(x, Iterable):
+        x = [x]
     x_iter = iter(x)
+        
     torque_traj = []
     joint_dfs = create_dfs_joint(graph)
     for branch in joint_dfs:
