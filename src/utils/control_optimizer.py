@@ -72,11 +72,11 @@ class ControlOptimizer():
             Callable[[list[float]], float]: Function of virtual experemnt that 
             returns reward based on criterion_callback
         """
-        object_to_grab = self.cfg.get_rgab_object_callback()
-        init_pos = chrono.ChCoordsysD(object_to_grab.GetCoord())
 
         def reward(x, is_vis=False):
             # Init object state
+            object_to_grab = self.cfg.get_rgab_object_callback()
+            init_pos = chrono.ChCoordsysD(object_to_grab.GetCoord())
             object_to_grab.SetNoSpeedNoAcceleration()
             object_to_grab.SetCoord(init_pos)
 
@@ -87,9 +87,6 @@ class ControlOptimizer():
             sim.change_config_system(self.cfg.sim_config)
             sim_output = sim.simulate_system(self.cfg.time_step, is_vis)
             rew = self.cfg.criterion_callback(sim_output, sim.grab_robot)
-
-            object_to_grab.SetNoSpeedNoAcceleration()
-            object_to_grab.SetCoord(init_pos)
 
             return rew
 
