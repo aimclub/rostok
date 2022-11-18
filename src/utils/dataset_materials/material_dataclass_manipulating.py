@@ -7,12 +7,8 @@ class Material:
     """Dataclass for materials
     """
     name: str
-    type_class: str = "ChMaterialSurfaceSMC"
-    Friction = 0.5
-    Kn = 2e8
-    Gn = 1e6
-    Kt = 2e8
-    Gt = 0.5e6
+    type_class: str 
+
 
     
 @dataclass
