@@ -40,6 +40,11 @@ class RuleAction:
     
     def __hash__(self):
         return hash(self.__rule)
+    
+    def __eq__(self, __o) -> bool:
+        if isinstance(__o,RuleAction):
+            return self.__rule == __o.get_rule
+        return False
 
 class GraphEnvironment():
     def __init__(self, initilize_graph, rules, max_numbers_rules_non_terminal = 20):
@@ -158,6 +163,12 @@ class GraphEnvironment():
         self.counter_action = 0
         if new_rules:
             self._actions = [RuleAction(r) for r in new_rules]
+            
+    def __eq__(self, __o) -> bool:
+        if isinstance(__o,GraphEnvironment):
+            is_graph_eq = __o.graph == self.graph
+            return is_graph_eq
+        return False
         
     
 class GraphVocabularyEnvironment(GraphEnvironment):
