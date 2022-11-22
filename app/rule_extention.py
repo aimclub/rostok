@@ -7,32 +7,20 @@ from engine.node  import BlockWrapper, Node, Rule, GraphGrammar, ROOT
 from engine import node_vocabulary, rule_vocabulary
 from utils.blocks_utils import make_collide, CollisionGroup   
 from engine.node_render import *
-from stubs.graph_reward import Reward
-import stubs.graph_environment as env_graph
-#from nodes_division import *
-#from sort_left_right import *
-# from find_traj_fun import *
-import engine.robot as robot
-#import engine.control as ctrl
 
-
-from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
-from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
-    Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
-    Q_ROTATE_X_TO_Y, Q_ROTATE_X_TO_Z
 import pychrono as chrono
 
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
 
-from utils.control_optimizer import ConfigRewardFunction
+
 
 
 def plot_graph(graph):
     plt.figure()
-    nx.draw_networkx(graph, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
-                    labels={n: G.nodes[n]["Node"].label for n in G})
+    nx.draw_networkx(graph, pos=nx.kamada_kawai_layout(graph, dim=2), node_size=800,
+                    labels={n: graph.nodes[n]["Node"].label for n in G})
     #plt.figure()
     #nx.draw_networkx(graph, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
     plt.show()
