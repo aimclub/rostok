@@ -48,8 +48,8 @@ class GraphEnvironment():
             rules (list[Rule]): List of rules 
             max_numbers_rules_non_terminal (int): Max amount of non-terminal rules. Defaults to 20.
         """        
-        self.init_graph = initilize_graph
-        self.graph = initilize_graph
+        self.init_graph = deepcopy(initilize_graph)
+        self.graph = deepcopy(initilize_graph)
         self._actions = [RuleAction(r) for r in rules]
         self.max_actions_not_terminal = max_numbers_rules_non_terminal
         self.map_nodes_reward = {}

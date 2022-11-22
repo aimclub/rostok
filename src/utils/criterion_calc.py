@@ -38,7 +38,7 @@ def appV2L(final: list, val: list ):
         final[i].append(it)
     return final
 
-def criterion_calc(sim_output, B, J, LB, RB, W, gait):
+def criterion_calc(sim_output, B, J, LB, RB, W, gait) -> float:
 
 
     [B_NODES_NEW, J_NODES_NEW, LB_NODES_NEW, RB_NODES_NEW]  = traj_to_list(B, J, LB, RB, sim_output)
