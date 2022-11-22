@@ -7,7 +7,9 @@ class Material:
     """Dataclass for materials
     """
     name: str
-    type_class: str
+    type_class: str 
+
+
     
 @dataclass
 class DefaultChronoMaterial(Material):
@@ -17,6 +19,7 @@ class DefaultChronoMaterial(Material):
     type_class: str = "ChMaterialSurfaceNSC"
     Friction = 0.5
     DampingF = 0.1
+
     
 def struct_material2object_material(struct_material: Material, prefix_setter: str = "Set"):
     """Convert dataclass Materal from struct_material to some object material

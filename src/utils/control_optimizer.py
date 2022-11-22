@@ -72,11 +72,11 @@ class ControlOptimizer():
             Callable[[list[float]], float]: Function of virtual experemnt that 
             returns reward based on criterion_callback
         """
-        object_to_grab = self.cfg.get_rgab_object_callback()
-        init_pos = chrono.ChCoordsysD(object_to_grab.GetCoord())
 
         def reward(x, is_vis=False):
             # Init object state
+            object_to_grab = self.cfg.get_rgab_object_callback()
+            init_pos = chrono.ChCoordsysD(object_to_grab.GetCoord())
             object_to_grab.SetNoSpeedNoAcceleration()
             object_to_grab.SetCoord(init_pos)
 
@@ -88,16 +88,16 @@ class ControlOptimizer():
             sim_output = sim.simulate_system(self.cfg.time_step, is_vis)
             rew = self.cfg.criterion_callback(sim_output, sim.grab_robot)
 
-            object_to_grab.SetNoSpeedNoAcceleration()
-            object_to_grab.SetCoord(init_pos)
-
             return rew
 
         return reward
 
     def start_optimisation(self, generated_graph: GraphGrammar) -> tuple[float, float]:
+
         reward_fun = self.create_reward_function(generated_graph)
         multi_bound = create_multidimensional_bounds(
             generated_graph, self.cfg.bound)
+        if len(multi_bound) == 0:
+            return (10, 0)
         result = direct(reward_fun, multi_bound, maxiter=self.cfg.iters)
         return (result.fun, result.x)
