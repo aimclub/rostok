@@ -10,6 +10,8 @@ from utils.flags_simualtions import FlagSlipout, FlagNotContact, FlagMaxTime
 from example_ruleset import get_terminal_graph_ladoshaka, get_terminal_graph_two_finger, get_terminal_graph_three_finger
 from utils.blocks_utils import NodeFeatures
 from numpy import arange
+from utils.control_optimizer import num_joints
+from utils.trajectory_generator import create_dfs_joint
 
 """
     Example generate random constant torque
@@ -52,17 +54,9 @@ for get_graph in mechs:
 
     dfs_patrion_node = [[get_node(node_id) for node_id in branch]
                         for branch in dfs_patrion_ids]
-    dfs_j = []
-    number_trq = 0
-    for branch in dfs_patrion_node:
-        joint_branch = list(filter(NodeFeatures.is_joint, branch))
-        # Strange things, for dect empty list
-        # len([[]]) is 1
-        len_joints = len(joint_branch)
-        number_trq += len_joints
-        if len_joints != 0:
-            dfs_j.append(joint_branch)
-
+    dfs_j = create_dfs_joint(G)
+    number_trq = num_joints(G)
+    
     const_torque_koef = [random.random() for _ in range(number_trq)]
     arr_trj = create_torque_traj_from_x(dfs_j, const_torque_koef, 10, 0.1)
 
