@@ -71,12 +71,12 @@ class BlockBody(Block, ABC):
 
 
 class ChronoBody(BlockBody):
-    def __init__(self, builder, length=2, width=0.2, random_color=True, density=2500, material = DefaultChronoMaterial()):
+    def __init__(self, builder, length=2, width=0.2, random_color=True, mass=1, material = DefaultChronoMaterial()):
         super().__init__(builder=builder)
 
         # Create body
         self.body = chrono.ChBody()
-        self.body.SetDensity(2500)
+        self.body.SetMass(mass)
 
         # Create shape
         # TODO: setter for shape
