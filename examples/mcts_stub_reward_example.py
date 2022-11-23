@@ -1,14 +1,14 @@
-import context
-from engine.node_render import ChronoBody, ChronoRevolveJoint, ChronoTransform
-import stubs.graph_environment as env_graph
+
+from rostok.block_builder.node_render import ChronoBody, ChronoRevolveJoint, ChronoTransform
+import rostok.graph_generators.graph_environment as env_graph
 import mcts
 import networkx as nx
 import matplotlib.pyplot as plt
 
-from engine.node import BlockWrapper, Node, Rule, GraphGrammar, ROOT
-from stubs.graph_reward import Reward
-from utils.dataset_materials.material_dataclass_manipulating import create_struct_material_from_file
-from utils.transform_srtucture import FrameTransform
+from rostok.graph_grammar.node import BlockWrapper, Node, Rule, GraphGrammar, ROOT
+from rostok.graph_generators.graph_reward import Reward
+from rostok.utils.dataset_materials.material_dataclass_manipulating import create_struct_material_from_file
+from rostok.block_builder.transform_srtucture import FrameTransform
 
 
 J = Node("J")
@@ -72,7 +72,7 @@ FingerUpper.replaced_node = EF
 
 # Terminal nodes
 
-mat_r = ("polyactide", "./src/utils/dataset_materials/material.xml", "ChMaterialSurfaceNSC")
+mat_r = ("polyactide", "./rostok/utils/dataset_materials/material.xml", "ChMaterialSurfaceNSC")
 polyactide_material_struct = create_struct_material_from_file(*mat_r)
 
 # Bodies

@@ -1,8 +1,7 @@
-import context
 import networkx as nx
 import matplotlib.pyplot as plt
 
-from engine.node import Rule, Node, GraphGrammar
+from rostok.graph_grammar.node import Rule, Node, GraphGrammar
 from example_ruleset import FlatCreate, Mount, MountAdd, FingerUpper
 
 

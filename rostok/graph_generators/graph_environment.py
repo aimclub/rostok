@@ -1,8 +1,7 @@
-from copy import deepcopy
-from engine.node import *
-from engine.rule_vocabulary import RuleVocabulary
-from stubs.graph_reward import Reward
-from utils.control_optimizer import ControlOptimizer
+from rostok.graph_grammar.node import *
+from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
+from rostok.graph_generators.graph_reward import Reward
+from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
 
 def rule_is_terminal(rule: Rule):
     """Function finding non terminal rules 

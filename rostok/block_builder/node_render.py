@@ -1,7 +1,7 @@
 import pychrono.core as chrono
-from utils.dataset_materials.material_dataclass_manipulating import (DefaultChronoMaterial,
+from rostok.utils.dataset_materials.material_dataclass_manipulating import (DefaultChronoMaterial,
                                                                      struct_material2object_material)
-from utils.transform_srtucture import FrameTransform
+from rostok.block_builder.transform_srtucture import FrameTransform
 from enum import Enum
 from abc import ABC
 from typing import Optional

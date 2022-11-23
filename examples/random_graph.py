@@ -1,12 +1,10 @@
-# imports from our code
-import context
-from engine import rule_vocabulary
-from engine import node_vocabulary
-from engine.node import ROOT, GraphGrammar, BlockWrapper
-import engine.robot as robot
-import engine.control as ctrl
-from engine.node_render import *
-from utils.blocks_utils import make_collide, CollisionGroup   
+from rostok.graph_grammar import rule_vocabulary
+from rostok.graph_grammar import node_vocabulary
+from rostok.graph_grammar.node import ROOT, GraphGrammar, BlockWrapper
+import rostok.virtual_experiment.robot as robot
+import rostok.block_builder.control as ctrl
+from rostok.block_builder.node_render import *
+from rostok.block_builder.blocks_utils import make_collide, CollisionGroup   
 
 # imports from standard libs
 import networkx as nx

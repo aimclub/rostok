@@ -1,11 +1,9 @@
-import context
-
-from engine.node import GraphGrammar
+from rostok.graph_grammar.node import GraphGrammar
 import pychrono as chrono
-from engine.robot import Robot
-from utils.blocks_utils import NodeFeatures
-from utils.simulation_step import SimulationStepOptimization, SimulationDataBlock, SimOut
-from scipy.optimize import shgo, dual_annealing, direct
+from rostok.virtual_experiment.robot import Robot
+from rostok.block_builder.blocks_utils import NodeFeatures
+from rostok.virtual_experiment.simulation_step import SimulationStepOptimization, SimOut
+from scipy.optimize import direct
 from typing import Callable
 from dataclasses import dataclass
 from dataclasses import field
