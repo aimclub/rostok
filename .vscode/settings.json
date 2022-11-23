@@ -1,5 +1,19 @@
 {
     "python.analysis.extraPaths": [
         "./src"
+    ],
+    "python.formatting.provider": "yapf",
+    "python.formatting.yapfArgs": [
+        "--style={based_on_style: google, column_limit: 100, indent_width: 4}"
+    ],
+    "python.linting.mypyEnabled": true,
+ 
+    "python.linting.mypyCategorySeverity.note": "Error",
+ 
+    "python.linting.pylintEnabled": true,
+    "python.linting.pylintArgs": [
+        "max-line-length=100",
+        "--disable=C0114, C0115, C0116"
     ]
+    
 }
