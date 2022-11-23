@@ -10,7 +10,7 @@
   * Установить Pychono из архива `conda install pychrono-7.0.0-py39_2112.tar.bz2`
 * Установка движка способ 2
   * `conda install -c projectchrono pychrono`
-  
+* Установить пакет в режими разработки `pip3 install -e .`  
 # Прокидываем дисплей через Docker
 
 * Установить Х сервер для Windows https://sourceforge.net/projects/vcxsrv/
