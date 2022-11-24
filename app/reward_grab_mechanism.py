@@ -1,28 +1,21 @@
-from time import sleep,time
-import context
-import sys
+from time import time
 
-from engine.node  import BlockWrapper, Node, Rule, GraphGrammar, ROOT
-from engine.node_render import *
-from utils.flags_simualtions import FlagSlipout, FlagNotContact, FlagMaxTime
-from utils.blocks_utils import make_collide, CollisionGroup
-from utils.auxilarity_sensors import RobotSensor   
-from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
+from rostok.graph_grammar.node  import BlockWrapper, Node, Rule, GraphGrammar, ROOT
+from rostok.block_builder.node_render import *
+from rostok.criterion.flags_simualtions import FlagSlipout, FlagNotContact, FlagMaxTime
+from pychrono import ChCoordsysD, ChVectorD
 from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
-    Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
-    Q_ROTATE_X_TO_Y, Q_ROTATE_X_TO_Z
-from utils.nodes_division import *
-from utils.criterion_calc import *
-from scipy.spatial import distance
+    Q_ROTATE_X_TO_Y
+from rostok.graph_grammar.nodes_division import *
+from rostok.criterion.criterion_calc import *
 import pychrono as chrono
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
-import utils.simulation_step as simulation_step
-import engine.robot as robot
-import engine.control as control
+import rostok.virtual_experiment.simulation_step as simulation_step
+import rostok.virtual_experiment.robot as robot
 from numpy import arange
-from utils.blocks_utils import NodeFeatures
+from rostok.block_builder.blocks_utils import NodeFeatures
 
 
 def is_body(node: Node): return node in list_B

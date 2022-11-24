@@ -1,17 +1,15 @@
-import context
-
 import numpy as np
-import utils.simulation_step as step
-import engine.robot as robot
+import rostok.virtual_experiment.simulation_step as step
+import rostok.virtual_experiment.robot as robot
 import pychrono as chrono
 import random
 
-from utils.flags_simualtions import FlagSlipout, FlagNotContact, FlagMaxTime
+from rostok.criterion.flags_simualtions import FlagSlipout, FlagNotContact, FlagMaxTime
 from example_ruleset import get_terminal_graph_ladoshaka, get_terminal_graph_two_finger, get_terminal_graph_three_finger
-from utils.blocks_utils import NodeFeatures
+from rostok.block_builder.blocks_utils import NodeFeatures
 from numpy import arange
-from utils.control_optimizer import num_joints
-from utils.trajectory_generator import create_dfs_joint
+from rostok.trajectory_optimizer.control_optimizer import num_joints
+from rostok.trajectory_optimizer.trajectory_generator import create_dfs_joint
 
 """
     Example generate random constant torque

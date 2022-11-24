@@ -1,10 +1,7 @@
-# imports from our code
-import context
-from engine import rule_vocabulary
-from engine import node_vocabulary
-from engine.node import ROOT, GraphGrammar, BlockWrapper
-from engine.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint
-from utils.transform_srtucture import FrameTransform
+from rostok.graph_grammar import node_vocabulary, rule_vocabulary
+from rostok.graph_grammar.node import ROOT, GraphGrammar, BlockWrapper
+from rostok.block_builder.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint
+from rostok.block_builder.transform_srtucture import FrameTransform
 
 # imports from standard libs
 import networkx as nx
@@ -13,10 +10,6 @@ import matplotlib.pyplot as plt
 
 # chrono imports
 import pychrono as chrono
-from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
-from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
-    Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
-    Q_ROTATE_X_TO_Y, Q_ROTATE_X_TO_Z
 
 
 def plot_graph(graph: GraphGrammar):

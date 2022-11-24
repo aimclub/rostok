@@ -1,9 +1,9 @@
 from copy import deepcopy
-from engine.node import Node, BlockWrapper, WrapperTuple, GraphGrammar
-from engine.node_render import Block, connect_blocks, ChronoRevolveJoint
+from rostok.graph_grammar.node import Node, WrapperTuple, GraphGrammar
+from rostok.block_builder.node_render import Block, connect_blocks, ChronoRevolveJoint
 from dataclasses import dataclass
 import networkx as nx
-from utils.trajectory_generator import create_dfs_joint
+
 
 @dataclass
 class RobotNode:

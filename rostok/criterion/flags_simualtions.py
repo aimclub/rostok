@@ -1,9 +1,9 @@
 from abc import ABC
 from copy import deepcopy
 from functools import reduce
-import engine.robot as robot
+import rostok.virtual_experiment.robot as robot
 import pychrono as chrono
-from engine.node_render import ChronoBody
+from rostok.block_builder.node_render import ChronoBody
 
 class BuilderNotInitializedError(Exception):
     def __init__(self, *args):

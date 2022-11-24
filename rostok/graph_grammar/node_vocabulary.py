@@ -1,6 +1,5 @@
 """Class NodeVocabulary"""
-import context 
-from engine.node import Node, BlockWrapper, ROOT
+from rostok.graph_grammar.node import Node, BlockWrapper, ROOT
 
 
 class NodeVocabulary():

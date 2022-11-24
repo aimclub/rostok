@@ -1,5 +1,4 @@
-from engine.node import BlockWrapper
-from engine.node_render import ChronoRevolveJoint, Block
+from rostok.block_builder.node_render import ChronoRevolveJoint, Block
 
 from copy import deepcopy
 import pychrono as chrono

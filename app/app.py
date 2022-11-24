@@ -1,13 +1,10 @@
-# imports from our code
-import context
 from control_optimisation import create_grab_criterion_fun, create_traj_fun, get_object_to_grasp
-from engine.node import ROOT, BlockWrapper, GraphGrammar
-from utils.control_optimizer import ConfigRewardFunction, ControlOptimizer
-from utils.flags_simualtions import FlagMaxTime, FlagSlipout, FlagNotContact
-from utils.transform_srtucture import FrameTransform
+from rostok.graph_grammar.node import GraphGrammar
+from rostok.trajectory_optimizer.control_optimizer import ConfigRewardFunction, ControlOptimizer
+from rostok.criterion.flags_simualtions import FlagMaxTime, FlagSlipout, FlagNotContact
 import rule_extention
 import mcts
-import stubs.graph_environment as env
+import rostok.graph_generators.graph_environment as env
 import matplotlib.pyplot as plt
 
 # imports from standard libs

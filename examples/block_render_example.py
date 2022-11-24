@@ -1,7 +1,6 @@
-import context
-from engine.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint, connect_blocks
+from rostok.block_builder.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint, connect_blocks
 import pychrono.core as chrono
-from utils.transform_srtucture import FrameTransform
+from rostok.block_builder.transform_srtucture import FrameTransform
 import pychrono.irrlicht as chronoirr
 
 mysystem = chrono.ChSystemNSC()

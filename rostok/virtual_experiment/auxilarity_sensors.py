@@ -1,6 +1,6 @@
-from engine.robot import Robot
+from rostok.virtual_experiment.robot import Robot
 import pychrono as chrono
-from engine.node_render import ChronoBody, ChronoRevolveJoint
+from rostok.block_builder.node_render import ChronoBody, ChronoRevolveJoint
 class RobotSensor:
     """Sensor based on a robot (for chrono simulation)
 

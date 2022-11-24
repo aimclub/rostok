@@ -1,5 +1,5 @@
-from engine.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint
-from engine.node import Node
+from rostok.block_builder.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint
+from rostok.graph_grammar.node import Node
 from enum import Enum
 
 

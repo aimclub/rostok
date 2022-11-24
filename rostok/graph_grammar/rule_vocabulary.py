@@ -1,7 +1,7 @@
 """Class RuleVocabulary."""
-import context 
-from engine.node_vocabulary import NodeVocabulary
-from engine.node import Rule, GraphGrammar, ROOT
+
+from rostok.graph_grammar.node_vocabulary import NodeVocabulary
+from rostok.graph_grammar.node import Rule, GraphGrammar, ROOT
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt

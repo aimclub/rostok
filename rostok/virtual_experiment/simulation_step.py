@@ -1,14 +1,13 @@
-from copy import deepcopy
 from dataclasses import dataclass
-from engine.node import GraphGrammar
-from engine.node_render import ChronoBody, ChronoRevolveJoint
-from utils.auxilarity_sensors import RobotSensor
-from utils.blocks_utils import make_collide, CollisionGroup
-from utils.flags_simualtions import ConditionStopSimulation, FlagStopSimualtions
+from rostok.graph_grammar.node import GraphGrammar
+from rostok.block_builder.node_render import ChronoBody, ChronoRevolveJoint
+from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
+from rostok.block_builder.blocks_utils import make_collide, CollisionGroup
+from rostok.criterion.flags_simualtions import ConditionStopSimulation, FlagStopSimualtions
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
-from engine.robot import Robot
-import engine.control as control
+from rostok.virtual_experiment.robot import Robot
+import rostok.block_builder.control as control
 
 
 

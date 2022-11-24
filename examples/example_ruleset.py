@@ -1,17 +1,12 @@
-import context
 import pychrono as chrono
 import networkx as nx
 import numpy as np
 
-from engine.node import BlockWrapper, Node, Rule, GraphGrammar, ROOT
-from engine.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint
+from rostok.graph_grammar.node import BlockWrapper, Node, Rule, GraphGrammar, ROOT
+from rostok.block_builder.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint
 
-from utils.blocks_utils import make_collide, CollisionGroup
-from utils.transform_srtucture import FrameTransform
-from pychrono import ChCoordsysD, ChVectorD, ChQuaternionD
-from pychrono import Q_ROTATE_Z_TO_Y, Q_ROTATE_Z_TO_X, \
-    Q_ROTATE_Y_TO_X, Q_ROTATE_Y_TO_Z, \
-    Q_ROTATE_X_TO_Y, Q_ROTATE_X_TO_Z
+from rostok.block_builder.blocks_utils import make_collide, CollisionGroup
+from rostok.block_builder.transform_srtucture import FrameTransform
 
 
 # Define block types
@@ -241,5 +236,11 @@ def get_terminal_graph_ladoshaka():
 def get_terminal_graph_two_finger():
     G = GraphGrammar()
     for i in list(rule_action_two_finger):
+        G.apply_rule(i)
+    return G
+
+def get_nonterminal_graph_two_finger():
+    G = GraphGrammar()
+    for i in list(rule_action_non_terminal_two_finger):
         G.apply_rule(i)
     return G

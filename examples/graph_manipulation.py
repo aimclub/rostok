@@ -1,10 +1,9 @@
-import context
-from example_ruleset import get_terminal_graph_three_finger, J_NODES, B_NODES, T_EXAMPLE
-from engine.robot import Robot
-from engine.node import Node
+from example_ruleset import get_terminal_graph_three_finger, get_nonterminal_graph_two_finger, get_terminal_graph_two_finger, J_NODES, B_NODES, T_EXAMPLE
+from rostok.graph_grammar.node import Node
+
 
 graph_grab_torque_robot = get_terminal_graph_three_finger()
-
+ 
 # Iterate over id and get Node object
 node_list_plain = map(graph_grab_torque_robot.get_node_by_id,
                       graph_grab_torque_robot.get_ids_in_dfs_order())
@@ -36,4 +35,3 @@ dfs_patrion_node = [[get_node(node_id) for node_id in branch]
 
 # Iterate over dfs_patrion_node and form massive from suitable branch
 branchs_with_special_t = list(filter(branch_filter, dfs_patrion_node))
-print(branchs_with_special_t)
