@@ -1,4 +1,4 @@
-name: lic_ai2
+name: lic_ai
 channels:
   - https://conda.anaconda.org/intel
   - https://conda.anaconda.org/conda-forge
