@@ -6,9 +6,8 @@ from engine.node import GraphGrammar
 
 from engine.rule_vocabulary import RuleVocabulary, NodeVocabulary
 
-def networkx_2_gym_digraph(nx_graph: nx.DiGraph, table_nodes_id: dict[str, int]):
-    nx_
-    pass
+def networkx_2_gym_digraph(nx_graph: nx.DiGraph, table_nodes_id: dict[int, str]):
+    pass    
 
 
 class GraphGrammarEnv(gym.Env):
@@ -26,7 +25,6 @@ class GraphGrammarEnv(gym.Env):
         amount_nodes = len(dict_nodes.keys())
         node_space = spaces.Discrete(amount_nodes)
         self.table_nodes = dict(map(lambda x, y: (x, y), range(amount_nodes), dict_nodes.keys()))
-        self.__auxiliraty_table_nodes = dict(map(lambda x, y: (x, y), dict_nodes.keys(), range(amount_nodes)))
         
         edges = spaces.Discrete(1, start=1)
         #FIXME: Change observation space

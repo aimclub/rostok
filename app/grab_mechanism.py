@@ -1,28 +1,24 @@
 
-import context
 import networkx as nx
 import numpy as np
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
-from pychrono import (Q_ROTATE_X_TO_Y, Q_ROTATE_X_TO_Z, Q_ROTATE_Y_TO_X,
-                      Q_ROTATE_Y_TO_Z, Q_ROTATE_Z_TO_X, Q_ROTATE_Z_TO_Y,
-                      ChCoordsysD, ChQuaternionD, ChVectorD)
 
-import engine.control as ctrl
-import engine.robot as robot
-from engine.node import ROOT, BlockWrapper, GraphGrammar, Node, Rule
-from engine.node_render import ChronoBody, ChronoRevolveJoint, ChronoTransform
-from utils.blocks_utils import CollisionGroup, make_collide
-from utils.flags_simualtions import FlagMaxTime
-from utils.dataset_materials.material_dataclass_manipulating import create_struct_material_from_file
-from utils.transform_srtucture import FrameTransform
+import rostok.block_builder.control as ctrl
+import rostok.virtual_experiment.robot as robot
+from rostok.graph_grammar.node import ROOT, BlockWrapper, GraphGrammar, Node, Rule
+from rostok.block_builder.node_render import ChronoBody, ChronoRevolveJoint, ChronoTransform
+from rostok.block_builder.blocks_utils import CollisionGroup, make_collide
+from rostok.criterion.flags_simualtions import FlagMaxTime
+from rostok.utils.dataset_materials.material_dataclass_manipulating import create_struct_material_from_file
+from rostok.block_builder.transform_srtucture import FrameTransform
 
 # Define block types
 mat = chrono.ChMaterialSurfaceNSC()
 mat.SetFriction(0.5)
 mat.SetDampingF(0.1)
 
-mat_r = ("polyactide", "./src/utils/dataset_materials/material.xml", "ChMaterialSurfaceNSC")
+mat_r = ("polyactide", "./rostok/utils/dataset_materials/material.xml", "ChMaterialSurfaceNSC")
 polyactide_material_struct = create_struct_material_from_file(*mat_r)
 # Bodies
 link1 = BlockWrapper(ChronoBody, length=0.6, material = polyactide_material_struct)

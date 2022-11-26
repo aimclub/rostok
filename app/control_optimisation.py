@@ -1,13 +1,12 @@
-import context
 import app_vocabulary
 
-from engine.node import GraphGrammar
-from engine.node import Node
-from utils.simulation_step import SimOut
-import utils.criterion_calc as criterion
-from utils.flags_simualtions import FlagMaxTime
-from utils.control_optimizer import ConfigRewardFunction, ControlOptimizer
-from utils.trajectory_generator import create_torque_traj_from_x
+from rostok.graph_grammar.node import GraphGrammar
+from rostok.graph_grammar.node import Node
+from rostok.virtual_experiment.simulation_step import SimOut
+import rostok.criterion.criterion_calc as criterion
+from rostok.criterion.flags_simualtions import FlagMaxTime
+from rostok.trajectory_optimizer.control_optimizer import ConfigRewardFunction, ControlOptimizer
+from rostok.trajectory_optimizer.trajectory_generator import create_torque_traj_from_x
 
 import pychrono as chrono
 

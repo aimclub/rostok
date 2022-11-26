@@ -1,14 +1,13 @@
-from copy import deepcopy
 from dataclasses import dataclass
-from engine.node import GraphGrammar
-from engine.node_render import ChronoBody, ChronoRevolveJoint
-from utils.auxilarity_sensors import RobotSensor
-from utils.blocks_utils import make_collide, CollisionGroup
-from utils.flags_simualtions import ConditionStopSimulation, FlagStopSimualtions
+from rostok.graph_grammar.node import GraphGrammar
+from rostok.block_builder.node_render import ChronoBody, ChronoRevolveJoint
+from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
+from rostok.block_builder.blocks_utils import make_collide, CollisionGroup
+from rostok.criterion.flags_simualtions import ConditionStopSimulation, FlagStopSimualtions
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
-from engine.robot import Robot
-import engine.control as control
+from rostok.virtual_experiment.robot import Robot
+import rostok.block_builder.control as control
 
 
 
@@ -79,18 +78,23 @@ class SimulationStepOptimization:
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
         
       
-
+        # Create instance of chrono system and robot: grab mechanism
         # self.chrono_system = chrono.ChSystemSMC()
+        # self.chrono_system.UseMaterialProperties(False)
         # self.chrono_system.SetSolverType(chrono.ChSolver.Type_MINRES)
-        # self.chrono_system.SetSolverForceTolerance(1e-10)
+        # self.chrono_system.SetContactForceModel(chrono.ChSystemSMC.Hertz)
+        # self.chrono_system.SetSolverForceTolerance(1e-6)
         # self.chrono_system.SetSolverMaxIterations(100)
-        # timestepper = chrono.ChTimestepperHHT(self.chrono_system)
+        # timestepper = chrono.ChTimestepperHHT(self.chrono_system) #Hilber, Hughes and Taylor method 
+        # # timestepper = chrono.ChTimestepperRungeKuttaExpl(self.chrono_system) #Runge Kutta method
         # self.chrono_system.SetTimestepper(timestepper)
+        
+        # # For HHT timestepper only:
         # timestepper.SetAbsTolerances(1e-5)
         # timestepper.SetScaling(True)
         # timestepper.SetStepControl(True)
         # timestepper.SetMinStepSize(1e-4)
-        # timestepper.SetAlpha(-0.2)
+        # timestepper.SetAlpha(-0.2) # timestepper numerical damping parameter [-1/3; 0]; a = 0 there is no damping
         # timestepper.SetMaxiters(5)
 
     

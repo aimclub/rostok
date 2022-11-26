@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-from engine.node import Node, GraphGrammar
+from rostok.graph_grammar.node import Node, GraphGrammar
 
 # The deeper the node, the greater the reward
 def get_graph_sum_complex_reward(graph: GraphGrammar, reward_map: dict[Node, float]) -> float:

@@ -1,7 +1,7 @@
 import pychrono.core as chrono
-from utils.dataset_materials.material_dataclass_manipulating import (DefaultChronoMaterial,
+from rostok.utils.dataset_materials.material_dataclass_manipulating import (DefaultChronoMaterial,
                                                                      struct_material2object_material)
-from utils.transform_srtucture import FrameTransform
+from rostok.block_builder.transform_srtucture import FrameTransform
 from enum import Enum
 from abc import ABC
 from typing import Optional
@@ -100,6 +100,8 @@ class ChronoBody(BlockBody):
         self.body.AddMarker(input_marker)
         self.body.AddMarker(out_marker)
         self.body.AddMarker(transformed_out_marker)
+        self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
+        self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
 
         input_marker.SetPos(chrono.ChVectorD(0, -length/2, 0))
         out_marker.SetPos(chrono.ChVectorD(0, length/2, 0))

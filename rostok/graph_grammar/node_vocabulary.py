@@ -1,6 +1,5 @@
 """Class NodeVocabulary"""
-import context 
-from engine.node import Node, BlockWrapper, ROOT
+from rostok.graph_grammar.node import Node, BlockWrapper, ROOT
 
 
 class NodeVocabulary():
@@ -112,6 +111,12 @@ class NodeVocabulary():
     def __str__(self):
         """Return the list of the labels in the vocabulary."""
         return str(self.node_dict.keys())
+
+    def get_list_of_nodes(self, nodes:list[str]) -> list[Node]:
+        result = []
+        for node in nodes:
+            result.append(self.get_node(node))
+        return result
 
 
 if __name__ == '__main__':

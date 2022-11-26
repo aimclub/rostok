@@ -1,5 +1,5 @@
-from engine.node import GraphGrammar
-from engine import rule_vocabulary
+from rostok.graph_grammar.node import GraphGrammar
+from rostok.graph_grammar import rule_vocabulary
 import numpy as np
 
 

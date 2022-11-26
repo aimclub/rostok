@@ -1,4 +1,4 @@
-from engine.node import GraphGrammar, Node
+from rostok.graph_grammar.node import GraphGrammar, Node
 
 def replace_nodes(graph: GraphGrammar, mapping: dict[Node: Node]):
     graph_dict = dict(graph.nodes.items())

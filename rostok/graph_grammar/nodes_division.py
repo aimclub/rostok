@@ -1,4 +1,4 @@
-import engine.robot as robot
+import rostok.virtual_experiment.robot as robot
 from itertools import product 
 
 def nodes_division(rob: robot, list_N):
