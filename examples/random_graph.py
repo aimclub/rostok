@@ -26,7 +26,6 @@ def plot_graph(graph:GraphGrammar):
     nx.draw_networkx(graph, pos=nx.kamada_kawai_layout(graph, dim=2), node_size=800,
                     labels={n: graph.nodes[n]["Node"].label for n in graph})
     plt.show()
-
 # Define block types
 mat = chrono.ChMaterialSurfaceNSC()
 mat.SetFriction(0.5)

@@ -7,6 +7,7 @@ from networkx.algorithms.traversal import dfs_preorder_nodes
 
 
 class BlockWrapper:
+
     def __init__(self, block_cls, *args, **kwargs):
         self.block_cls = block_cls
         self.args = args
@@ -30,7 +31,8 @@ class Node:
     def __eq__(self, __o: object) -> bool:
         if not isinstance(__o, self.__class__):
             raise Exception(
-                "Wrong type of comparable object. Must be Node instead {wrong_type}".format(wrong_type=type(__o)))
+                "Wrong type of comparable object. Must be Node instead {wrong_type}".format(
+                    wrong_type=type(__o)))
         return self.label == __o.label
 
 
@@ -49,9 +51,7 @@ class Rule:
     @graph_insert.setter
     def graph_insert(self, graph: nx.DiGraph):
         self._is_terminal = all(
-            [raw_node["Node"].is_terminal
-             for _, raw_node in graph.nodes(data=True)]
-        )
+            [raw_node["Node"].is_terminal for _, raw_node in graph.nodes(data=True)])
         self._graph_insert = graph
 
     @property
@@ -72,6 +72,7 @@ ROOT = Node("ROOT")
 
 
 class GraphGrammar(nx.DiGraph):
+
     def __init__(self, **attr):
         super().__init__(**attr)
         self.__uniq_id_counter = -1
@@ -118,8 +119,7 @@ class GraphGrammar(nx.DiGraph):
             edge[0] = id_node_connect_child_graph
 
         # Convert ids in rule to graph ids system
-        rule_graph_relabeled = nx.relabel_nodes(
-            rule.graph_insert, relabel_in_rule)
+        rule_graph_relabeled = nx.relabel_nodes(rule.graph_insert, relabel_in_rule)
 
         # Push changes into graph
         self.remove_node(node_id)
@@ -150,8 +150,7 @@ class GraphGrammar(nx.DiGraph):
         id_closest = self.closest_node_to_root(ids)
         if rule.graph_insert.order() == 0:
             # Stub removing leaf node if input rule is empty
-            out_edges_ids_node = list(
-                filter(lambda x: x[0] == id_closest, edge_list))
+            out_edges_ids_node = list(filter(lambda x: x[0] == id_closest, edge_list))
             if out_edges_ids_node:
                 raise Exception("Trying delete not leaf node")
             self.remove_node(id_closest)
@@ -165,7 +164,7 @@ class GraphGrammar(nx.DiGraph):
         level in respect to the \'root\', which is the node with no in edges. 
         This function should be reviewed once we start to use graphs with cycles and not just trees"""
         levels = []
-        # Get the root node that has no in_edges. Currently, we assume that where is only one node without in_edges 
+        # Get the root node that has no in_edges. Currently, we assume that where is only one node without in_edges
         for raw_node in self.nodes.items():
             raw_node_id = raw_node[0]
             if self.in_degree(raw_node_id) == 0:
@@ -174,9 +173,9 @@ class GraphGrammar(nx.DiGraph):
         current_level = [root_id]
         next_level = []
         # The list of edges that is built on the bases of the range to the source
-        bfs_edges_list = list(nx.bfs_edges(self, source=root_id))  
+        bfs_edges_list = list(nx.bfs_edges(self, source=root_id))
         for edge in bfs_edges_list:
-            # If the edge starts in current level, the end of the edge appends to the next level 
+            # If the edge starts in current level, the end of the edge appends to the next level
             if edge[0] in current_level:
                 next_level.append(edge[1])
                 #print(next_level)
@@ -185,8 +184,10 @@ class GraphGrammar(nx.DiGraph):
                 levels.append(current_level)
                 current_level = next_level
                 next_level = [edge[1]]
-        
-        # Finish the levels by appending current and next_level. In the cycle the appending occurs, when the edge of the next level is found.
+
+        # Finish the levels by appending current and next_level. 
+        # In the cycle the appending occurs,
+        # when the edge of the next level is found.
         levels.append(current_level)
         levels.append(next_level)
         return levels
@@ -241,18 +242,17 @@ class GraphGrammar(nx.DiGraph):
         return self.nodes[node_id]["Node"]
 
     def get_ids_in_dfs_order(self) -> list[int]:
-        """ 
+        """
         Iterate in deep first order over node ids
         One of the options to present the graph in a flat form
 
         Returns
         -------
         list[int]
-            List ids 
+            List ids
         """
         return list(dfs_preorder_nodes(self, self.get_root_id()))
-    
-    
+
     def __eq__(self, __o) -> bool:
         if isinstance(__o, GraphGrammar):
             is_node_eq = __o.nodes == self.nodes
