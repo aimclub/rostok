@@ -1,6 +1,9 @@
 # chrono imports
 import pychrono as chrono
 
+import gymnasium as gym
+import rostok.gym_rostok
+
 from app.control_optimisation import create_grab_criterion_fun, create_traj_fun, get_object_to_grasp
 import app.rule_extention as rule_extention
 
@@ -41,8 +44,7 @@ graph_env = env.GGrammarControlOpimizingEnv(rule_vocabul,
 
 # %% Run first algorithm
 
-
-# action = [1, 4, 4, 4, 4, 5, 20, 11, 29, 29, 30, 30, 8, 9]
+action = [1, 4, 4, 4, 4, 5, 20, 11, 29, 29, 30, 30, 8, 9]
 action = [0, 4, 4, 5, 20, 11, 29, 29, 30, 30, 8, 9]
 for k, a in enumerate(action):
     s, r, done, w, info = graph_env.step(a)
@@ -58,3 +60,12 @@ for id in range(10):
 
         print(f"{a=:2}: {r=:0.2f}, {done=}, {info=}")
     graph_env.reset()
+
+# %%  Testing module gym
+
+#FIXME: The not found `gym_rostok` module
+# env = gym.make("gym_rostok/GGrammarControlOpimizingEnv-v0")
+# action = [0, 4, 4, 5, 20, 11, 29, 29, 30, 30, 8, 9]
+# for k, a in enumerate(action):
+#     s, r, done, w, info = env.step(a)
+#     print(k, a)
