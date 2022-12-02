@@ -1,8 +1,8 @@
 # chrono imports
 import pychrono as chrono
 
-from control_optimisation import create_grab_criterion_fun, create_traj_fun, get_object_to_grasp
-import rule_extention
+from app.control_optimisation import create_grab_criterion_fun, create_traj_fun, get_object_to_grasp
+import app.rule_extention as rule_extention
 
 # imports from standard libs
 import rostok.gym_rostok.envs as env
@@ -37,19 +37,24 @@ control_optimizer = ControlOptimizer(cfg)
 # Create gym for algorithm
 graph_env = env.GGrammarControlOpimizingEnv(rule_vocabul,
                                             control_optimizer,
-                                            render_mode="grammar&simulation")
+                                            render_mode="grammar")
 
 # %% Run first algorithm
+
+
+# action = [1, 4, 4, 4, 4, 5, 20, 11, 29, 29, 30, 30, 8, 9]
 action = [0, 4, 4, 5, 20, 11, 29, 29, 30, 30, 8, 9]
-for i, a in enumerate(action):
-    #graph_env.action_space.sample()
-    graph_env.step(a)
+for k, a in enumerate(action):
+    s, r, done, w, info = graph_env.step(a)
+    print(k, a)
+graph_env.set_max_number_nonterminal_rules(4)
+for id in range(10):
+    print(f"___{id}___")
+    done_iteration = False
+    while not done_iteration:
+        mask = graph_env.get_mask_possible_actions()
+        a = graph_env.action_space.sample(mask)
+        s, r, done_iteration, w, info = graph_env.step(a)
 
-    print(i, a)
-graph_env.reset()
-action = [1, 4, 4, 4, 4, 5, 20, 11, 29, 29, 30, 30, 8, 9]
-for i, a in enumerate(action):
-    #graph_env.action_space.sample()
-    graph_env.step(a)
-
-    print(i, a)
+        print(f"{a=:2}: {r=:0.2f}, {done=}, {info=}")
+    graph_env.reset()
