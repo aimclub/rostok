@@ -23,16 +23,15 @@ class GGrammarControlOpimizingEnv(GraphGrammarEnv):
 
     def render(self, terminated, movment_trajectory=None):
         if self.render_mode in ("grammar", "grammar&simulation"):
-            self._grammar_render[0].show()
             self._grammar_render[1].clear()
             nx.draw_networkx(
                 self.graph_grammar,
                 pos=nx.kamada_kawai_layout(self.graph_grammar, dim=2),
                 node_size=800,
                 labels={n: self.graph_grammar.nodes[n]["Node"].label for n in self.graph_grammar})
-            plt.pause(0.5)
+            plt.pause(0.1)
         if self.render_mode in ("simulation", "grammar&simulation") and terminated is True:
-            self.close()
+            # self.close()
             func_reward = self.controller.create_reward_function(self.graph_grammar)
             if movment_trajectory is None:
                 raise Exception("To set movment trajectory ror simulation render")
@@ -40,10 +39,15 @@ class GGrammarControlOpimizingEnv(GraphGrammarEnv):
 
     def step(self, action):
 
-        mask = self.get_mask_possible_actions()
+        mask = list(map(lambda x: bool(x), self.get_mask_possible_actions()))
         actions = np.asarray(list(self.table_rules.keys()))
         if action in actions[mask]:
             str_rule = self.table_rules[action]
+            if str_rule in self.rule_vocabulary.get_list_of_applicable_nonterminal_rules(
+                    self.graph_grammar):
+                self._number_nonterminal_rules += 1
+            else:
+                self._number_terminal_rules += 1
             self.graph_grammar.apply_rule(self.rule_vocabulary.get_rule(str_rule))
 
         trajectory = None

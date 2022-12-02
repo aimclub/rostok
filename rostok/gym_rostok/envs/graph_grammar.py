@@ -48,7 +48,7 @@ class GraphGrammarEnv(gym.Env, ABC):
             map(lambda x, y: (x, y), dict_nodes.keys(), range(amount_nodes)))
 
         edges = spaces.Discrete(1, start=1)
-        
+
         self.observation_space = spaces.Graph(node_space, edges)
 
         amount_rules = len(dict_rules.keys())
@@ -57,11 +57,17 @@ class GraphGrammarEnv(gym.Env, ABC):
 
         self.controller = controller
 
+        self.max_number_nonterminal_rules = float("inf")
+        self._number_nonterminal_rules = 0
+        self._number_terminal_rules = 0
+
         assert render_mode is None or render_mode in self.metadata["render_modes"]
         self.render_mode = render_mode
 
         if render_mode in ("grammar", "grammar&simulation"):
             self._grammar_render = plt.subplots()
+            self._grammar_render[0].show()
+            self._grammar_render[1].axis("off")
 
     def _get_initial_obs(self):
         observation = spaces.GraphInstance([0], None, None)
@@ -89,28 +95,29 @@ class GraphGrammarEnv(gym.Env, ABC):
                         self.rule_vocabulary.get_list_of_applicable_terminal_rules(
                             self.graph_grammar))
             },
-            #"num_aplied_rules": {"nonterminal": self.rule_vocabulary}
+            "num_aplied_rules": {"nonterminal": self._number_nonterminal_rules,
+                                 "terminal": self._number_terminal_rules}
         }
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
 
         self.graph_grammar = GraphGrammar()
-
+        self._number_nonterminal_rules = 0
+        self._number_terminal_rules = 0
         observation = self._get_initial_obs()
         info = self._get_info()
         return observation, info
 
     def render(self, terminated):
         if self.render_mode in ("grammar", "grammar&simulation"):
-            self._grammar_render[0].show()
             self._grammar_render[1].clear()
             nx.draw_networkx(
                 self.graph_grammar,
                 pos=nx.kamada_kawai_layout(self.graph_grammar, dim=2),
                 node_size=800,
                 labels={n: self.graph_grammar.nodes[n]["Node"].label for n in self.graph_grammar})
-            plt.pause(0.5)
+            plt.pause(0.1)
         if self.render_mode in ("simulation", "grammar&simulation") and terminated is True:
             #TODO: Add method to visualizer
             pass
@@ -119,14 +126,18 @@ class GraphGrammarEnv(gym.Env, ABC):
         if self.render_mode in ("grammar", "grammar&simulation"):
             plt.close(self._grammar_render[0])
             self._grammar_render = plt.subplots()
-        
 
     def step(self, action):
 
-        mask = self.get_mask_possible_actions()
+        mask = list(map(lambda x: bool(x), self.get_mask_possible_actions()))
         actions = np.asarray(list(self.table_rules.keys()))
         if action in actions[mask]:
             str_rule = self.table_rules[action]
+            if str_rule in self.rule_vocabulary.get_list_of_applicable_nonterminal_rules(
+                    self.graph_grammar):
+                self._number_nonterminal_rules += 1
+            else:
+                self._number_terminal_rules += 1
             self.graph_grammar.apply_rule(self.rule_vocabulary.get_rule(str_rule))
 
         info = self._get_info()
@@ -145,7 +156,14 @@ class GraphGrammarEnv(gym.Env, ABC):
         return observation, reward, terminated, False, info
 
     def get_mask_possible_actions(self):
-        applicable_rules = self.rule_vocabulary.get_list_of_applicable_rules(self.graph_grammar)
+        is_num_rules_more_max = self._number_nonterminal_rules > self.max_number_nonterminal_rules
+        if not is_num_rules_more_max:
+            applicable_rules = self.rule_vocabulary.get_list_of_applicable_rules(self.graph_grammar)
+        else:
+            applicable_rules = self.rule_vocabulary.get_list_of_applicable_terminal_rules(self.graph_grammar)
         mask_applicable_rules = map(lambda x: x in applicable_rules, self.table_rules.values())
-        mask_applicable_rules = np.asarray(list(mask_applicable_rules))
+        mask_applicable_rules = np.asarray(list(mask_applicable_rules), dtype=np.int8)
         return mask_applicable_rules
+
+    def set_max_number_nonterminal_rules(self, max_number: int):
+        self.max_number_nonterminal_rules = max_number
