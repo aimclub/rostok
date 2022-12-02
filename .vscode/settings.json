@@ -1,6 +1,7 @@
 {
     "python.analysis.extraPaths": [
-        "./src"
+        "./src",
+        "./app"
     ],
     "python.formatting.provider": "yapf",
     "python.formatting.yapfArgs": [
@@ -12,7 +13,7 @@
  
     "python.linting.pylintEnabled": true,
     "python.linting.pylintArgs": [
-        "max-line-length=100",
+        "--max-line-length=100",
         "--disable=C0114, C0115, C0116"
     ]
     
