@@ -8,7 +8,24 @@ from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
 
 
 class GGrammarControlOpimizingEnv(GraphGrammarEnv):
+    r"""Class gym graph grammar environment. Instead using controller, aplies control optimization.
+    
+    The auxiliraty methods for specific graph grammar environments that users of this class need to know are:
 
+    - :meth:`get_mask_possible_actions` - Return mask of possible actions for the current observation state,
+    - :meth:`set_max_number_nonterminal_rules` - You can set max number nonterminal rules for finite optimization.
+
+    Environments have additional attributes for users to understand the implementation
+
+    - :attr:`rule_vocabulary` - Main class for manipulate with graph.
+    - :attr:`graph_grammar` - GraphGrammar object in current state.
+    - :attr:`table_nodes` - A dictionary name nodes and it id in gym graph representation.
+    - :attr:`table_rules` - A dictionary name rules and it id in gym discrete actions representation.
+    - :attr:`controller` - Instance of the control optimization for robot, made up of the graph.  
+    - :attr:`max_number_nonterminal_rules` - Max number of nonterminal rules. 
+        It is setted :meth:`set_max_number_nonterminal_rules`. 
+        Default by infity.
+    """
     def __init__(self,
                  rule_vocabulary: RuleVocabulary,
                  controller: ControlOptimizer,
