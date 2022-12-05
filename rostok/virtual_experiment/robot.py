@@ -1,6 +1,8 @@
 from copy import deepcopy
 from rostok.graph_grammar.node import Node, WrapperTuple, GraphGrammar
 from rostok.block_builder.node_render import Block, connect_blocks, ChronoRevolveJoint
+from rostok.trajectory_optimizer.trajectory_generator import create_dfs_joint
+from rostok.block_builder.blocks_utils import NodeFeatures
 from dataclasses import dataclass
 import networkx as nx
 
@@ -15,7 +17,6 @@ class RobotNode:
 class Robot:
     def __init__(self, robot_graph: GraphGrammar, simulation):
         self.__graph = deepcopy(robot_graph)
-        self.__joint_graph = nx.DiGraph()
         wrapper_tuple_array = self.__graph.build_terminal_wrapper_array()
         # Map { id from graph : block }
         self.block_map = self.__build_robot(simulation, wrapper_tuple_array)
@@ -57,33 +58,19 @@ class Robot:
             partition graph, second index is the number of joint + create graph joint of robot
 
         """
-        def is_joint(node: Node):
-            if node.block_wrapper.block_cls == ChronoRevolveJoint:
-                return True
-            else:
-                return False
 
-        self.__joint_graph: nx.DiGraph = nx.DiGraph(self.__graph)
-        not_joints = []
-        for raw_node in self.__joint_graph.nodes.items():
-            node: Node = raw_node[1]["Node"]
-            node_id = raw_node[0]
-            in_edges = list(self.__joint_graph.in_edges(node_id))
-            out_edges = list(self.__joint_graph.out_edges(node_id))
-            if not is_joint(node):
-                not_joints.append(node_id)
-                if in_edges and out_edges:
-                    for in_edge in in_edges:
-                        for out_edge in out_edges:
-                            self.__joint_graph.add_edge(
-                                in_edge[0],out_edge[1])
-        self.__joint_graph.remove_nodes_from(not_joints)
-        underected_graph_joint = nx.to_undirected(self.__joint_graph)
-        joints_out = []
-        for c in nx.connected_components(underected_graph_joint):
-            joints_out.append([self.block_map[node_id] for node_id in c])     
-        joints_out.sort(key=len)
-        return joints_out
+        def is_joint(rbnode: RobotNode):
+            return NodeFeatures.is_joint(rbnode.node)
+
+        dfs_j = []
+        dfs_rbnode = self.get_dfs_partiton()
+        for branch in dfs_rbnode:
+            branch_rb = list(filter(is_joint, branch))
+            branch_block = list(map(lambda x: x.block, branch_rb))
+            dfs_j.append(branch_block)
+
+        dfs_j.sort(key=len)
+        return dfs_j
 
     def get_block_graph(self):
         return self.__graph
@@ -91,11 +78,11 @@ class Robot:
     def get_dfs_partiton(self) -> list[list[RobotNode]]:
         partition = self.__graph.graph_partition_dfs()
 
-        def covert_to_robot_node(x): 
-            return RobotNode(x, 
-            self.__graph.nodes()[x]["Block"], 
+        def covert_to_robot_node(x):
+            return RobotNode(x,
+            self.__graph.nodes()[x]["Block"],
             self.__graph.nodes()[x]["Node"])
-        
+
         partiton_graph = [list(map(covert_to_robot_node, x))
                                                 for x in partition]
 
