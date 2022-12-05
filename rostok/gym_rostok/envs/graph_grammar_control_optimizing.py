@@ -27,8 +27,8 @@ class GGrammarControlOpimizingEnv(GraphGrammarEnv):
         Default by infity.
     """
     def __init__(self,
-                 rule_vocabulary: RuleVocabulary,
-                 controller: ControlOptimizer,
+                 rule_vocabulary: RuleVocabulary=None,
+                 controller: ControlOptimizer=None,
                  render_mode=None):
         """Class gym graph grammar environment. Instead using controller, aplies control optimization.
 
