@@ -1,5 +1,6 @@
 
-from rostok.block_builder.node_render import ChronoBody, ChronoRevolveJoint, ChronoTransform
+from rostok.block_builder.node_render import (BasicChronoBody, FlatChronoBody, MountChronoBody,
+                                              ChronoRevolveJoint, ChronoTransform)
 import rostok.graph_generators.graph_environment as env_graph
 import mcts
 import networkx as nx
@@ -76,13 +77,13 @@ mat_r = ("polyactide", "./rostok/utils/dataset_materials/material.xml", "ChMater
 polyactide_material_struct = create_struct_material_from_file(*mat_r)
 
 # Bodies
-link1 = BlockWrapper(ChronoBody, length=0.6, material = polyactide_material_struct)
-link2 = BlockWrapper(ChronoBody, length=0.4, material = polyactide_material_struct)
+link1 = BlockWrapper(BasicChronoBody, length=0.6, material = polyactide_material_struct)
+link2 = BlockWrapper(BasicChronoBody, length=0.4, material = polyactide_material_struct)
 
-flat1 = BlockWrapper(ChronoBody, width=0.8, length=0.2)
-flat2 = BlockWrapper(ChronoBody, width=1.4, length=0.2)
+flat1 = BlockWrapper(FlatChronoBody, width=0.8, length=0.2)
+flat2 = BlockWrapper(FlatChronoBody, width=1.4, length=0.2)
 
-u1 = BlockWrapper(ChronoBody, width=0.2, length=0.2)
+u1 = BlockWrapper(MountChronoBody, width=0.2, length=0.2)
 
 # Transforms
 

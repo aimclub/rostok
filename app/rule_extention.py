@@ -32,14 +32,14 @@ def init_extension_rules():
     alpha = 45
     length_link = [0.4, 0.8, 1.]
 
-    flat = list(map(lambda x: BlockWrapper(ChronoBody, width=x, length=0.05),
+    flat = list(map(lambda x: BlockWrapper(FlatChronoBody, width=x, length=0.05),
                     width))
 
-    link = list(map(lambda x: BlockWrapper(ChronoBody, length=x),
+    link = list(map(lambda x: BlockWrapper(BasicChronoBody, length=x),
                     length_link))
 
 
-    u1 = BlockWrapper(ChronoBody, width=0.1, length=0.0)
+    u1 = BlockWrapper(MountChronoBody, width=0.1, length=0.0)
 
     # %% Tranform for extansions rules 
 

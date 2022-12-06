@@ -3,9 +3,9 @@ import networkx as nx
 import numpy as np
 
 from rostok.graph_grammar.node import BlockWrapper, Node, Rule, GraphGrammar, ROOT
-from rostok.block_builder.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint
+from rostok.block_builder.node_render import (BasicChronoBody, FlatChronoBody, MountChronoBody,
+                                              ChronoTransform, ChronoRevolveJoint)
 
-from rostok.block_builder.blocks_utils import make_collide, CollisionGroup
 from rostok.block_builder.transform_srtucture import FrameTransform
 
 
@@ -15,13 +15,13 @@ mat.SetFriction(0.5)
 mat.SetDampingF(0.1)
 
 # Bodies
-link1 = BlockWrapper(ChronoBody, length=0.6)
-link2 = BlockWrapper(ChronoBody, length=0.4)
+link1 = BlockWrapper(BasicChronoBody, length=0.6)
+link2 = BlockWrapper(BasicChronoBody, length=0.4)
 
-flat1 = BlockWrapper(ChronoBody, width=0.8, length=0.2)
-flat2 = BlockWrapper(ChronoBody, width=1.4, length=0.2)
+flat1 = BlockWrapper(FlatChronoBody, width=0.8, length=0.2)
+flat2 = BlockWrapper(FlatChronoBody, width=1.4, length=0.2)
 
-u1 = BlockWrapper(ChronoBody, width=0.2, length=0.2)
+u1 = BlockWrapper(MountChronoBody, width=0.1, length=0.1)
 
 # Transforms
 MOVE_ZX_PLUS = FrameTransform([0.3,0,0.3],[1,0,0,0])

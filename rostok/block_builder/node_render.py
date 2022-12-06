@@ -175,7 +175,7 @@ class ChronoBody(BlockBody, ABC):
         def get_list_n_forces(self):
             return self.__list_normal_forces
 
-    def __build_collision_model(self, struct_material, width, length):
+    def _build_collision_model(self, struct_material, width, length):
         """Build collision model of the block on material width and length
 
         Args:

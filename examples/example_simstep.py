@@ -1,4 +1,7 @@
 import numpy as np
+from rostok.block_builder.node_render import ChronoBodyEnv
+from rostok.block_builder.transform_srtucture import FrameTransform
+from rostok.graph_grammar.node import BlockWrapper
 import rostok.virtual_experiment.simulation_step as step
 import rostok.virtual_experiment.robot as robot
 import pychrono as chrono
@@ -76,9 +79,8 @@ for get_graph in mechs:
     grab_obj_mat = chrono.ChMaterialSurfaceNSC()
     grab_obj_mat.SetFriction(0.5)
     grab_obj_mat.SetDampingF(0.1)
-    obj = chrono.ChBodyEasyBox(0.2, 0.2, 0.6, 1000, True, True, grab_obj_mat)
-    obj.SetCollide(True)
-    obj.SetPos(chrono.ChVectorD(0, 1.2, 0))
+    obj = BlockWrapper(ChronoBodyEnv, width = 0.3, depth = 0.6, length = 0.3, 
+                       pos=FrameTransform([0.,0.8,0.],[1,0,0,0]))
 
     sim = step.SimulationStepOptimization(arr_trj, G, obj)
     sim.set_flags_stop_simulation(flags)

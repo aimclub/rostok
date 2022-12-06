@@ -1,6 +1,7 @@
 from rostok.virtual_experiment.robot import Robot
 import pychrono as chrono
-from rostok.block_builder.node_render import ChronoBody, ChronoRevolveJoint
+from rostok.block_builder.node_render import RobotBody, ChronoRevolveJoint
+import numpy as np
 class RobotSensor:
     """Sensor based on a robot (for chrono simulation)
 
@@ -20,7 +21,7 @@ class RobotSensor:
             chrono.ChVectorD: Coordinate of the center of the robot
         """
         blocks = in_robot.block_map.values()
-        body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
+        body_block = filter(lambda x: isinstance(x,RobotBody),blocks)
         sum_cog_coord = chrono.ChVectorD(0,0,0) 
         bodies = list(body_block)
         for body in bodies:
@@ -39,7 +40,7 @@ class RobotSensor:
             dict[int, float]: Dictionary which keys are id blocks of robot bodies and values are sum of contact forces
         """
         blocks = in_robot.block_map
-        body_block = filter(lambda x: isinstance(x[1],ChronoBody),blocks.items())
+        body_block = filter(lambda x: isinstance(x[1],RobotBody),blocks.items())
         contact_force_blocks = map(lambda x: (x[0], sum(x[1].list_n_forces)), body_block)
         return dict(contact_force_blocks)
     
@@ -54,7 +55,7 @@ class RobotSensor:
             dict[int, chrono.ChVectorD]: Dictionary which keys are id blocks of robot boides and values are coordinates COG
         """
         blocks = in_robot.block_map
-        body_block = filter(lambda x: isinstance(x[1],ChronoBody),blocks.items())
+        body_block = filter(lambda x: isinstance(x[1],RobotBody),blocks.items())
         def cog_from_tuple(tupled): pos = tupled[1].body.GetPos(); return(tupled[0], [pos.x, pos.y, pos.z])
         coord_COG_blocks = map(cog_from_tuple, body_block)
         return dict(coord_COG_blocks)
@@ -71,7 +72,7 @@ class RobotSensor:
             dict[int, int]: Dictionary which keys are id blocks of robot bodies and values are number of contact surfaces
         """
         blocks = in_robot.block_map
-        body_block = filter(lambda x: isinstance(x[1],ChronoBody),
+        body_block = filter(lambda x: isinstance(x[1],RobotBody),
                             blocks.items())
         
         num_contact_surfaces = map(lambda x: (x[0], int(not (sum(x[1].list_n_forces) == 0))),
@@ -93,3 +94,20 @@ class RobotSensor:
         joint_blocks = filter(lambda x: isinstance(x[1],ChronoRevolveJoint),blocks.items())
         joints_angle_block = map(lambda x: (x[0], x[1].joint.GetMotorRot()), joint_blocks)
         return dict(joints_angle_block)
+
+    @staticmethod
+    def std_contact_forces_object(obj):
+        """Sensor of sum contact forces blocks of robot
+
+        Args:
+            in_robot (Robot): Robot to measure sum of contact forces
+
+        Returns:
+            dict[int, float]: Dictionary which keys are id blocks of robot bodies and values are sum of contact forces
+        """
+        # obj = object.GraspObj()
+        if np.size(obj.list_n_forces)>0:
+            contact_force_obj = np.std(obj.list_n_forces)
+            return dict([(999, contact_force_obj)])
+        else:
+            return None
