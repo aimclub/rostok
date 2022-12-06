@@ -21,7 +21,8 @@ def plot_graph(graph: GraphGrammar):
                      labels={n: graph.nodes[n]["Node"].label for n in graph})
     plt.show()
 
-# %% Create extension rule vocabularyhyper = [6]
+# %% Create extension rule vocabulary
+hyper = [6]
 for i in hyper:
     try:
         # %% Create extension rule vocabulary
@@ -35,7 +36,7 @@ for i in hyper:
 
         cfg = ConfigRewardFunction()
         cfg.bound = (0, 10)
-        cfg.iters = 25
+        cfg.iters =2
         cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
         cfg.time_step = 0.001
         cfg.time_sim = 3
