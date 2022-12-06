@@ -133,11 +133,13 @@ class SimulationStepOptimization:
         # Create the controller joint from the control trajectory
         try:
             for id_finger, finger in enumerate(self.grab_robot.get_joints):
+                finger_controller = []
                 for id_joint, joint in enumerate(finger):
-                    self.controller_joints.append(
+                    finger_controller.append(
                         control.TrackingControl(joint))
-                    self.controller_joints[-1].set_des_positions(
+                    finger_controller[-1].set_des_positions(
                         control_trajectory[id_finger][id_joint])
+                self.controller_joints.append(finger_controller)
         except IndexError:
             raise IndexError("Arries control and joints aren't same shape")
 
