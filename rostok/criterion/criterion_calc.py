@@ -47,19 +47,24 @@ def criterion_calc(sim_output, B, J, LB, RB, W, gait) -> float:
         reward (float): Reward for grasping device
     """
     
-    cont = []
+    
+    #Alternative f1
+    if np.size(sim_output[999].obj_contact_forces) == 0 or np.median(sim_output[999].obj_amount_surf_forces)<6:
+        f1 = 0
+    else:
+        f1 = 1/(1+np.mean(sim_output[999].obj_contact_forces))
 
 
     #f1
-    for i in range(len(B_NODES_NEW)):
-        if sum(B_NODES_NEW[i]['sum_contact_forces'])>0:
-            cont.append(np.mean(B_NODES_NEW[i]['sum_contact_forces'])) #All mean values of contact forces (for each body) 
-    if sum(cont) == 0 or len(cont)<2:
-        f1 = 0
-    else:
-        delta_u = np.std(cont)
-        f1 = 1/(1+delta_u)
-    
+    # cont = []
+    # for i in range(len(B_NODES_NEW)):
+    #     if sum(B_NODES_NEW[i]['sum_contact_forces'])>0:
+    #         cont.append(np.mean(B_NODES_NEW[i]['sum_contact_forces'])) #All mean values of contact forces (for each body) 
+    # if sum(cont) == 0 or len(cont)<2:
+    #     f1 = 0
+    # else:
+    #     delta_u = np.std(cont)
+    #     f1 = 1/(1+delta_u)    
 
     #f2
     if np.size(B_NODES_NEW) > 0:
