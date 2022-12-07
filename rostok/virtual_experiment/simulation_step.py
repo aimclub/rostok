@@ -73,11 +73,6 @@ SimOut = dict[int, SimulationDataBlock]
 
 # Class for simulation system in loop optimization control
 
-# TODO: Bind traj into separate method
-# TODO: Update data container into separate method
-# TODO: Optional base fixation 
-# TODO: Move methods to utils
-
 class SimulationStepOptimization:
     def __init__(self, control_trajectory, graph_mechanism: GraphGrammar, grasp_object: chrono.ChBody):
         self.control_trajectory = control_trajectory
