@@ -192,8 +192,8 @@ class GraphVocabularyEnvironment(GraphEnvironment):
             possible_rules_name = self._actions.get_list_of_applicable_terminal_rules(self.graph)
         
         possible_rules = [self._actions.rule_dict[str_rule] for str_rule in possible_rules_name]
-        possible_actions = [RuleAction(rule) for rule in possible_rules]
-        return possible_actions
+        possible_actions = set(RuleAction(rule) for rule in possible_rules)
+        return list(possible_actions)
      
     def getReward(self):
         #try:
