@@ -1,0 +1,6 @@
+README.md
+setup.py
+rostok.egg-info/PKG-INFO
+rostok.egg-info/SOURCES.txt
+rostok.egg-info/dependency_links.txt
+rostok.egg-info/top_level.txt

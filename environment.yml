@@ -5,13 +5,16 @@ channels:
   - defaults
 dependencies:
   - python=3.9.12
-  - irrlicht=1.8.5
+  - irrlicht
   - numpy
   - yapf
   - mypy
   - pylint
+  - pip
   - pip:
     - networkx==2.8.6
     - matplotlib==3.6.0
     - scipy
     - mcts==1.0.4
+    - open3d
+    - lxml
