@@ -9,7 +9,7 @@ def genRandomPosesAroundLine(num_pose_on_layer: int,
                              min_dist: float, 
                              max_dist: float, 
                              step: float, 
-                             length: float) -> list[list[float]]:
+                             length: float):
     """Generates poses with random angular displacement and random distances on predetermined range.
     Generation is performed along a straight line with a fixed step.
 
