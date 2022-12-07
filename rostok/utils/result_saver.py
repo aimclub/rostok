@@ -34,7 +34,6 @@ class RobotState():
 class MCTSReporter():
     def __init__(self, path):
         self.path = path
-        #
         self.current_rewards = []
         self.rewards=dict()
         self.main_state = RobotState()
@@ -43,8 +42,11 @@ class MCTSReporter():
         
     def add_reward(self, state:RobotState, reward: float, control):
         self.current_rewards.append([state.rule_list, reward, control])
+
     
     def make_step(self, rule, step_number):
+        print(step_number)
+        print(self.current_rewards)
         self.rewards[step_number] = self.current_rewards
         self.current_rewards=[]
         self.main_state.add_rule(rule)
@@ -74,7 +76,7 @@ class MCTSReporter():
                 print(str(key))
                 for design in self.rewards[key]:
                     print('rules:', *design[0])
-                    if design[2]:
+                    if design[2] != None:
                         print('control:', *design[2])
                     else: 
                         print('control:', "no joints")
@@ -82,7 +84,7 @@ class MCTSReporter():
             print()
             print('main_result:')
             print('rules:', *self.main_state.rule_list)
-            if self.main_control:
+            if self.main_control != None:
                 print('control:', *self.main_control)
             else:
                 print('control:', "no joints")
