@@ -43,6 +43,7 @@ class TesteeObject(object):
         self.__parameters = PhysicsParameters()
         self.__grasping_poses_list = []
         self.__linked_obj_file = None
+        self._mesh = o3d.geometry.TriangleMesh()
 
     def loadObject3DMesh(self, file_mesh: str) -> ErrorReport:
         """Loading a volumetric mesh from a Wavefront OBJ file
@@ -309,7 +310,7 @@ class TesteeObject(object):
         """
         self.__grasping_poses_list.clear()
         
-    def rewriteGraspingPosesList(self, new_poses):
+    def setGraspingPosesList(self, new_poses):
         """Replaces an existing list of capture poses with a new one.
 
         Args:

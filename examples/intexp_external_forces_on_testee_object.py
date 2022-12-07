@@ -4,11 +4,13 @@ from rostok import intexp
 
 """ Testee object is dumbbell """
 obj_db = intexp.chrono_api.ChTesteeObject() # Create Chrono Testee Object
+# create 3D mesh and parameters (grasping poses read from file)
 obj_db.createChronoBodyMeshFromFile('./examples/models/custom/body1.obj',
-                                    './examples/models/custom/body1.xml') # create 3D mesh and parameters (grasping poses read from file)
-obj_db.setChronoBodyMeshRefFrameInPoint(chrono.ChFrameD(chrono.ChVectorD(0,0.2,0), chrono.ChQuaternionD(1,0,0,0)))
+                                    './examples/models/custom/body1.xml')
+obj_db.setChronoBodyMeshRefFrameInPoint(chrono.ChFrameD(chrono.ChVectorD(0,0.2,0),
+                                                        chrono.ChQuaternionD(1,0,0,0)))
 
-''' Impact on Testee Object'''
+""" Impact on Testee Object """
 impact = chrono.ChForce()   # Create Impact
 obj_db.chrono_body_mesh.AddForce(impact) # Attach to ChBody
 
@@ -26,8 +28,9 @@ IMPACTS_APPLICATION_POINT = [chrono.ChVectorD(0, 0, 0),
                              chrono.ChVectorD(0, 0, 0),
                              chrono.ChVectorD(0, 0, 0)]
 
+# Switch timer of impact every 2 sec
 tracking_timer = intexp.chrono_api.ImpactTimerParameters(test_bound=len(IMPACTS_DIR),
-                                                         clock_bound=2.0, step = 1e-3) # Switch timer of impact every 2 sec
+                                                         clock_bound=2.0, step = 1e-3)
 
 
 ''' Floor added for clarity '''
@@ -58,10 +61,11 @@ vis.EnableBodyFrameDrawing(True)
 
 while vis.Run():
     system.Update()
+    system.DoStepDynamics(1e-3)
     vis.BeginScene()
     vis.Render()
     vis.EndScene()
-    system.DoStepDynamics(1e-3)
-    
+    # Update timer and go through the list of impacts
     intexp.chrono_api.updateImpact(obj_db, impact, tracking_timer,
-                                   IMPACTS_APPLICATION_POINT, IMPACTS_DIR, IMPACTS_M) # Update timer and go through the list of impacts
+                                   IMPACTS_APPLICATION_POINT, IMPACTS_DIR, IMPACTS_M)
+    

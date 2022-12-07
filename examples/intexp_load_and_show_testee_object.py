@@ -9,8 +9,15 @@ error = obj_db.createChronoBodyMeshFromFile('./examples/models/custom/body1.obj'
                                             './examples/models/custom/body1.xml') # create 3D mesh and parameters (grasping poses read from file)
 print('Uploded mesh with code error:', error)
 # Uncomment the line below for generate new poses
-# obj_db.rewriteGraspingPosesList(intexp.poses_generator.genRandomPosesAroundLine(20, 0.04, 0.06, 0.015, 0.18))
-obj_db.rewriteGraspingPosesList(intexp.poses_generator.genCylindricalSurfaceFromPoses(20, 0.07, 0.015, 0.18))
+# new_gen_poses = intexp.poses_generator.genRandomPosesAroundLine(20, 0.04, 0.06, 0.015, 0.18)
+# new_gen_poses = intexp.poses_generator.genCylindricalSurfaceFromPoses(20, 0.07, 0.015, 0.18)
+# new_gen_poses = intexp.poses_generator.genRandomPosesAroundTesteeObjectAxis(obj_db, 20, 0.07, 0.02, 'y')
+new_gen_poses = intexp.poses_generator.genCylindricalSurfaceAroundTesteeObjectAxis(obj_db, 20, 0.07, 0.02, 'y')
+if new_gen_poses is not None:
+    obj_db.setGraspingPosesList(new_gen_poses)
+else:
+    print('ERROR')
+    
 obj_db.showObjectWithGraspingPoses()
 desired_poses = obj_db.getChronoGraspingPosesList() # List of all grasping poses
 hand_power_grasp_frame = chrono.ChFrameD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROTATE_Z_TO_Y)  # Power grasp point in the ABS
@@ -46,12 +53,12 @@ i = 1
 
 while vis.Run():
     system.Update()
+    system.DoStepDynamics(1e-3)
     vis.BeginScene()
     vis.Render()
     vis.EndScene()
-    system.DoStepDynamics(1e-3)
     
-    if counter > 0.5: #Demonstration all poses every 0.5 seconds
+    if counter > 0.1: #Demonstration all poses every 0.5 seconds
         obj_db.setChronoBodyMeshOnPose(desired_poses[i], hand_power_grasp_frame)
         counter = 0
         i += 1
