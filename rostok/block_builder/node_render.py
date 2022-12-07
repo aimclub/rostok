@@ -1,9 +1,10 @@
-import pychrono.core as chrono
 from enum import Enum
 from abc import ABC
 from typing import Optional
 import random
+
 import pychrono.cascade as cascade
+import pychrono.core as chrono
 
 from OCC.Core import BRepPrimAPI
 from OCC.Core import BRepAlgoAPI
@@ -12,16 +13,7 @@ from OCC.Core import gp
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
     DefaultChronoMaterial, struct_material2object_material)
 from rostok.block_builder.transform_srtucture import FrameTransform
-from enum import Enum
-from abc import ABC
-from typing import Optional
-import random
-
-
-class BlockType(str, Enum):
-    Transform = "Transform"
-    Body = "Body"
-    Bridge = "Bridge"
+from rostok.block_builder.basic_node_block import *
 
 
 class SpringTorque(chrono.TorqueFunctor):
@@ -45,51 +37,6 @@ class SpringTorque(chrono.TorqueFunctor):
         else:
             torque = -self.damping_coef * vel
         return torque
-
-
-class Block(ABC):
-
-    def __init__(self, builder):
-        self.block_type = None
-
-        self._ref_frame_in = None
-        self._ref_frame_out = None
-        self.transformed_frame_out = None
-
-        self.builder: chrono.ChSystemNSC = builder
-        self.is_build = False
-
-    def apply_transform(self, in_block):
-        pass
-
-
-class BlockBridge(Block, ABC):
-
-    def __init__(self, builder):
-        super().__init__(builder)
-        self.block_type = BlockType.Bridge
-
-
-class BlockTransform(Block, ABC):
-
-    def __init__(self, builder):
-        super().__init__(builder)
-        self.block_type = BlockType.Transform
-        self.transform = None
-
-
-class BlockBody(Block, ABC):
-
-    def __init__(self, builder):
-        super().__init__(builder)
-        self.block_type = BlockType.Body
-        self.body = None
-
-
-class RobotBody(ABC):
-
-    def __init__(self):
-        pass
 
 
 class ChronoBody(BlockBody, ABC):
@@ -126,7 +73,7 @@ class ChronoBody(BlockBody, ABC):
 
         # Normal Forces
         self.__contact_reporter = self.ContactReporter(self.body)
-        
+
         if random_color:
             rgb = [random.random(), random.random(), random.random()]
             rgb[int(random.random() * 2)] *= 0.2
@@ -162,16 +109,16 @@ class ChronoBody(BlockBody, ABC):
                 self.__current_normal_forces = cforce.x
                 self.__list_normal_forces.append(cforce.x)
             return True
-        
+
         def is_empty(self):
             return len(self.__list_normal_forces) == 0
-        
+
         def list_clear(self):
             self.__list_normal_forces.clear()
-        
+
         def get_normal_forces(self):
             return self.__current_normal_forces
-        
+
         def get_list_n_forces(self):
             return self.__list_normal_forces
 
@@ -183,7 +130,7 @@ class ChronoBody(BlockBody, ABC):
             width (flaot): Width of the box
             length (float): Length of the box
         """
-        chrono_object_material = struct_material2object_material(struct_material)                
+        chrono_object_material = struct_material2object_material(struct_material)
 
         self.body.GetCollisionModel().ClearModel()
         self.body.GetCollisionModel().AddBox(chrono_object_material, width / 2, length / 2,
@@ -219,12 +166,12 @@ class ChronoBody(BlockBody, ABC):
     @property
     def ref_frame_in(self):
         return self._ref_frame_in
-    
+
     @property
     def normal_force(self):
         self.builder.GetContactContainer().ReportAllContacts(self.__contact_reporter)
         return self.__contact_reporter.get_normal_forces()
-    
+
     @property
     def list_n_forces(self):
         container = self.builder.GetContactContainer()
@@ -359,6 +306,7 @@ class ChronoBodyEnv(ChronoBody):
     def set_coord(self, frame: FrameTransform):
         transform = ChronoTransform(self.builder, frame)
         self.body.SetCoord(transform.transform)
+
 
 class ChronoRevolveJoint(BlockBridge):
     # Variants of joint control
