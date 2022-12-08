@@ -27,9 +27,14 @@ jobs:
       run: |
         # $CONDA is an environment variable pointing to the root of the miniconda directory
         echo $CONDA/bin >> $GITHUB_PATH
+    
     - name: Install package for render
       run: |
         sudo apt-get install -y ffmpeg libsm6 libxext6 
+    
+    - name: Update conda
+      run: |
+        conda update -n base -c defaults conda
 
     - name: Install dependencies
       run: |
