@@ -87,7 +87,7 @@ class ContactReporter(chrono.ReportContactCallback):
 class ChronoBody(BlockBody, ABC):
 
     def __init__(self, builder: chrono.ChSystem, body: chrono.ChBody, in_pos_marker: chrono.ChVectorD,
-                 out_pos_marker: chrono.ChVectorD, random_color: bool):
+                 out_pos_marker: chrono.ChVectorD, random_color: bool, is_collide: bool = True):
         super().__init__(builder)
         self.body = body
         self.builder.Add(self.body)
@@ -106,10 +106,10 @@ class ChronoBody(BlockBody, ABC):
         self.body.AddMarker(transformed_out_marker)
         self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
         self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
+        self.body.SetCollide(is_collide)
 
         input_marker.SetPos(in_pos_marker)
         out_marker.SetPos(out_pos_marker)
-
         # Calc SetPos
         transformed_out_marker.SetCoord(out_marker.GetCoord())
 
@@ -194,7 +194,8 @@ class BasicChronoBody(ChronoBody, RobotBody):
                  depth=0.3,
                  random_color=True,
                  mass=1,
-                 material=DefaultChronoMaterial()):
+                 material=DefaultChronoMaterial(),
+                 is_collide: bool = True):
 
         # Create body
         material = struct_material2object_material(material)
@@ -210,7 +211,7 @@ class BasicChronoBody(ChronoBody, RobotBody):
         # TODO: setter for shape
         pos_in_marker = chrono.ChVectorD(0, -length / 2, 0)
         pos_out_marker = chrono.ChVectorD(0, length / 2 + width / 2 + 0.5 * width, 0)
-        super().__init__(builder, body, pos_in_marker, pos_out_marker, random_color)
+        super().__init__(builder, body, pos_in_marker, pos_out_marker, random_color, is_collide = is_collide)
 
 
 class FlatChronoBody(ChronoBody, RobotBody):
@@ -222,7 +223,8 @@ class FlatChronoBody(ChronoBody, RobotBody):
                  depth=0.3,
                  random_color=True,
                  mass=1,
-                 material=DefaultChronoMaterial()):
+                 material=DefaultChronoMaterial(),
+                 is_collide: bool = True):
         # Create body
 
         body = chrono.ChBody()
@@ -236,7 +238,7 @@ class FlatChronoBody(ChronoBody, RobotBody):
 
         pos_input_marker = chrono.ChVectorD(0, -length / 2, 0)
         pos_out_marker = chrono.ChVectorD(0, length / 2 + width / 16, 0)
-        super().__init__(builder, body, pos_input_marker, pos_out_marker, random_color)
+        super().__init__(builder, body, pos_input_marker, pos_out_marker, random_color, is_collide=is_collide)
 
         self._build_collision_model(material, width, length)
         # Create shape
@@ -252,7 +254,8 @@ class MountChronoBody(ChronoBody, RobotBody):
                  depth=0.3,
                  random_color=True,
                  mass=1,
-                 material=DefaultChronoMaterial()):
+                 material=DefaultChronoMaterial(),
+                 is_collide: bool = True):
         # Create body
 
         body = chrono.ChBody()
@@ -260,13 +263,12 @@ class MountChronoBody(ChronoBody, RobotBody):
         box_asset = chrono.ChBoxShape()
         box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width / 2, length / 2, depth / 2)
         body.AddVisualShape(box_asset)
-        body.SetCollide(True)
 
         body.SetMass(mass)
 
         pos_input_marker = chrono.ChVectorD(0, -length / 2 + width / 2, 0)
         pos_out_marker = chrono.ChVectorD(0, length / 2, 0)
-        super().__init__(builder, body, pos_input_marker, pos_out_marker, random_color)
+        super().__init__(builder, body, pos_input_marker, pos_out_marker, random_color, is_collide=is_collide)
 
         self._build_collision_model(material, width, length)
 
