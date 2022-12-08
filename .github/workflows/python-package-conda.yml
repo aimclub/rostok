@@ -44,6 +44,10 @@ jobs:
       run: |
         pip3 install -e .   
 
+    - name: List
+      run: |
+        conda list   
+
     - name: Test with pytest
       run: |
         pytest tests/test_simstep.py
