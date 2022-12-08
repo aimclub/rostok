@@ -1,11 +1,23 @@
 # Rostok
 Rostok is an open source Python module for co-design of grasping mechanisms. It provides an API to specify sizes of the detailes and constrcting rules for the mechanism as well as to set the object to grasp. The searching algoriphm takes the provided rules and object and search for the optimal design with the closed kinematic. The search is based on the Reinforcement Learning 
 
+# Project desription
+Our goal is to shift the generative design from static details to the domain of the dynamic systems.  
+Currently, the library contains the algorithm that searchs for the grasping mechanism with open kinematic chain.  
+
+## Project Structure
+There are three main blocks 
+* Graph grammar - build, modification and get information from the graphs that contains full information of the mechanism
+* Virtual experiment - simulate the mechanism specified by the graph and get the reward for the attempt to grasp the body
+* Search algorithm - traverse the space of the possible designs in order to achieve the better reward
+
+![project_general](docs/Algorithm_scheme.jpg)
+![project_algorithm](docs/general_scheme.jpg)
 # Prerequisites
 * Anaconda3 
 * Usage of the Docker reqires installation of Х-server for Windows https://sourceforge.net/projects/vcxsrv/
 
-![project_algorithm](docs/Algorithm_sceme.jpg)
+
 # Installation
  
 * Create the environment using `conda env create -f environment.yml`
