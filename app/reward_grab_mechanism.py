@@ -64,8 +64,8 @@ mat.SetFriction(0.5)
 mat.SetDampingF(0.1)
 
 # Bodies
-link1 = BlockWrapper(BasicChronoBody, length=0.5, mass=0.3)
-link2 = BlockWrapper(BasicChronoBody, length=0.5, mass=0.3)
+link1 = BlockWrapper(LinkChronoBody, length=0.5, mass=0.3)
+link2 = BlockWrapper(LinkChronoBody, length=0.5, mass=0.3)
 
 flat1 = BlockWrapper(FlatChronoBody, width=0.5, length=0.1, depth=0.8)
 flat2 = BlockWrapper(FlatChronoBody, width=0.5, length=0.1, depth=0.8)

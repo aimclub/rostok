@@ -37,7 +37,7 @@ def init_extension_rules():
     flat = list(map(lambda x: BlockWrapper(FlatChronoBody, width=x, length=0.05, depth=0.8),
                     width))
 
-    link = list(map(lambda x: BlockWrapper(BasicChronoBody, length=x),
+    link = list(map(lambda x: BlockWrapper(LinkChronoBody, length=x),
                     length_link))
 
 
