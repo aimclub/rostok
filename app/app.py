@@ -59,7 +59,7 @@ for i in hyper:
     # Hyperparameters mctss
     iteration_limit = i + 1
 
-    # Initilize MCTS
+    # Initialize MCTS
     searcher = mcts.mcts(iterationLimit=iteration_limit)
     finish = False
 
@@ -79,6 +79,8 @@ for i in hyper:
         print(
             f"number iteration: {iter}, counter actions: {graph_env.counter_action}, reward: {graph_env.reward}"
         )
+    
+    
 # func_reward = control_optimizer.create_reward_function(final_graph)
 # res = func_reward(opt_trajectory, True)
 # print(res)
