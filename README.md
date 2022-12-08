@@ -13,13 +13,19 @@ There are three main blocks
 
 ![project_general](docs/Algorithm_scheme.jpg)
 ![project_algorithm](docs/general_scheme.jpg)
+
+More detailed description of the [algorithms and methods](docs/Algorithm.md).
 # Prerequisites
 * Anaconda3 
 * Usage of the Docker reqires installation of Х-server for Windows https://sourceforge.net/projects/vcxsrv/
 
+# Installation 
 
-# Installation
- 
+* create new environment using yaml file  
+
+* install the library python -m pip install git+...
+
+# Development mode
 * Create the environment using `conda env create -f environment.yml`
 * activate the environment `rostok`  
 * Install the lates version of PyChrono physical engine using `conda install -c projectchrono pychrono`  
