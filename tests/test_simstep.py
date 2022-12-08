@@ -102,4 +102,4 @@ def test3():
         sim = step.SimulationStepOptimization(arr_trj, G, obj)
         sim.set_flags_stop_simulation(flags)
         sim.change_config_system(config_sys)
-        sim_output = sim.simulate_system(times_step, True)
+        sim_output = sim.simulate_system(times_step)
