@@ -37,4 +37,4 @@ jobs:
 
     - name: Test with pytest
       run: |
-        pytest tests\test_simstep.py
+        pytest tests/test_simstep.py
