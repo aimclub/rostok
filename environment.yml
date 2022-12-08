@@ -2,9 +2,11 @@ name: lic_ai
 channels:
   - https://conda.anaconda.org/intel
   - https://conda.anaconda.org/conda-forge
+  - projectchrono
   - defaults
 dependencies:
   - python=3.9.12
+  - pychrono 
   - irrlicht=1.8.5
   - numpy
   - yapf
@@ -15,3 +17,4 @@ dependencies:
     - matplotlib==3.6.0
     - scipy
     - mcts==1.0.4
+    - pytest
