@@ -1,13 +1,20 @@
 from enum import Enum
 from abc import ABC
 
+import rostok.block_builder.body_size as bs
 
+class SimpleBody(Enum):
+    BOX: bs.BoxSize = bs.BoxSize(0.1,0.2,0.3)
+    CYLINDER: bs.CylinderSize = bs.CylinderSize(0.1,2)
+    SPHERE: bs.SphereSize = bs.SphereSize(0.1)
+    ELLIPSOID: bs.EllipsoidSize = bs.EllipsoidSize(0.2,0.3,0.5)
 
 class BlockType(str, Enum):
-    Transform = "Transform"
-    Body = "Body"
-    Bridge = "Bridge"
-    
+    TRANSFORM = "Transform"
+    BODY = "Body"
+    BRIDGE = "Bridge"
+
+
 class Block(ABC):
 
     def __init__(self, builder):
@@ -28,14 +35,14 @@ class BlockBridge(Block, ABC):
 
     def __init__(self, builder):
         super().__init__(builder)
-        self.block_type = BlockType.Bridge
+        self.block_type = BlockType.BRIDGE
 
 
 class BlockTransform(Block, ABC):
 
     def __init__(self, builder):
         super().__init__(builder)
-        self.block_type = BlockType.Transform
+        self.block_type = BlockType.TRANSFORM
         self.transform = None
 
 
@@ -43,7 +50,7 @@ class BlockBody(Block, ABC):
 
     def __init__(self, builder):
         super().__init__(builder)
-        self.block_type = BlockType.Body
+        self.block_type = BlockType.BODY
         self.body = None
 
 
