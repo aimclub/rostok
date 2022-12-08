@@ -5,10 +5,7 @@ from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
 from rostok.block_builder.blocks_utils import make_collide, CollisionGroup
 from rostok.criterion.flags_simualtions import ConditionStopSimulation, FlagStopSimualtions
 import pychrono as chrono
-try:
-    import pychrono.irrlicht as chronoirr
-except:
-    pass
+import pychrono.irrlicht as chronoirr
 from rostok.virtual_experiment.robot import Robot
 import rostok.block_builder.control as control
 
