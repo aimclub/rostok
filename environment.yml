@@ -12,6 +12,7 @@ dependencies:
   - yapf
   - mypy
   - pylint
+  - tk=8.6.10
   - pip:
     - networkx==2.8.6
     - matplotlib==3.6.0
