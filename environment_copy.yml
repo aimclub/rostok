@@ -1,4 +1,4 @@
-name: lic_ai
+name: lic_ai_nvis
 channels:
   - https://conda.anaconda.org/intel
   - https://conda.anaconda.org/conda-forge
@@ -6,7 +6,8 @@ channels:
   - defaults
 dependencies:
   - python=3.9.12
-  - pychrono=7.0.0 
+  - pychrono=7.0.0
+  - irrlicht=1.8.5
   - numpy
   - yapf
   - mypy
