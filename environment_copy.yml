@@ -9,9 +9,6 @@ dependencies:
   - irrlicht
   - pychrono=7.0.0
   - numpy
-  - yapf
-  - mypy
-  - pylint
   
   - pip:
     - networkx==2.8.6

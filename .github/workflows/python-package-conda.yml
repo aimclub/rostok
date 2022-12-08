@@ -42,7 +42,12 @@ jobs:
 
     - name: Install Rostok
       run: |
-        pip3 install -e .   
+        pip3 install -e . 
+
+    - name: Install Chrono
+      run: |
+        wget https://anaconda.org/projectchrono/pychrono/7.0.0/download/linux-64/pychrono-7.0.0-py39_2226.tar.bz2
+        conda install pychrono-7.0.0-py39_2226.tar.bz2
 
     - name: List
       run: |
