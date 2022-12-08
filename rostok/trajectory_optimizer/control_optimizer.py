@@ -74,9 +74,6 @@ class ControlOptimizer():
         def reward(x, is_vis=False):
             # Init object state
             object_to_grab = self.cfg.get_rgab_object_callback()
-            # init_pos = chrono.ChCoordsysD(object_to_grab.body.GetCoord())
-            # object_to_grab.body.SetNoSpeedNoAcceleration()
-            # object_to_grab.body.SetCoord(init_pos)
 
             arr_traj = self.cfg.params_to_timesiries_callback(generated_graph, x)
             sim = SimulationStepOptimization(

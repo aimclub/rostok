@@ -17,7 +17,6 @@ from rostok.trajectory_optimizer.trajectory_generator import create_dfs_joint
 """
     Example generate random constant torque
     Calculate all info about joint from graph
-    
 """
 
 
