@@ -93,7 +93,7 @@ transform_mz_plus_x_minus = BlockWrapper(ChronoTransform, MOVE_Z_PLUS_X_MINUS)
 
 # Joints
 
-type_of_input = ChronoRevolveJoint.InputType.Torque
+type_of_input = ChronoRevolveJoint.InputType.TORQUE
 revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z, type_of_input)
 
 # Nodes
@@ -265,7 +265,9 @@ chrono_system = chrono.ChSystemNSC()
 
 grab_robot = robot.Robot(G, chrono_system)
 
-obj = BlockWrapper(ChronoBodyEnv, width=0.3, depth=0.6, length=0.3, pos = FrameTransform([0, 0.8, 0], [1, 0, 0, 0]))
+obj = BlockWrapper(ChronoBodyEnv,
+                   shape=SimpleBody.BOX,
+                   pos=FrameTransform([0, 0.8, 0], [1, 0, 0, 0]))
 
 node_list_plain = list(map(G.get_node_by_id, G.get_ids_in_dfs_order()))
 
