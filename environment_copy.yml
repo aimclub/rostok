@@ -1,0 +1,19 @@
+name: lic_ai
+channels:
+  - https://conda.anaconda.org/intel
+  - https://conda.anaconda.org/conda-forge
+  - projectchrono
+  - defaults
+dependencies:
+  - python=3.9.12
+  - pychrono 
+  - numpy
+  - yapf
+  - mypy
+  - pylint
+  - pip:
+    - networkx=2.8.6
+    - matplotlib=3.6.0
+    - scipy
+    - mcts==1.0.4
+    - pytest
