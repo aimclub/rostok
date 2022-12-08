@@ -5,16 +5,18 @@ channels:
   - projectchrono
   - defaults
 dependencies:
-  - python=3.9.12
-  - irrlicht=1.8.5
-  - pychrono=7.0.0
-  - numpy
-  - yapf
-  - mypy
-  - pylint
   - pip:
     - networkx==2.8.6
     - matplotlib==3.6.0
     - scipy
     - mcts==1.0.4
     - pytest
+    - irrlicht=1.8.5
+    
+  - python=3.9.12
+  - pychrono=7.0.0
+  - numpy
+  - yapf
+  - mypy
+  - pylint
+
