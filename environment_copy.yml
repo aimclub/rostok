@@ -12,8 +12,8 @@ dependencies:
   - mypy
   - pylint
   - pip:
-    - networkx=2.8.6
-    - matplotlib=3.6.0
+    - networkx==2.8.6
+    - matplotlib==3.6.0
     - scipy
     - mcts==1.0.4
     - pytest
