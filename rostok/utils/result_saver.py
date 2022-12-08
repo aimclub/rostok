@@ -39,14 +39,17 @@ class MCTSReporter():
         self.main_state = RobotState()
         self.main_reward = -10
         self.main_control = []
+        self.best_state = RobotState()
+        self.best_control = []
+        self.best_reward = -10
         
     def add_reward(self, state:RobotState, reward: float, control):
         self.current_rewards.append([state.rule_list, reward, control])
 
     
     def make_step(self, rule, step_number):
-        print(step_number)
-        print(self.current_rewards)
+        #print(step_number)
+        #print(self.current_rewards)
         self.rewards[step_number] = self.current_rewards
         self.current_rewards=[]
         self.main_state.add_rule(rule)
@@ -76,19 +79,28 @@ class MCTSReporter():
                 print(str(key))
                 for design in self.rewards[key]:
                     print('rules:', *design[0])
-                    if design[2] != None:
-                        print('control:', *design[2])
-                    else: 
-                        print('control:', "no joints")
+                    control = design[2]
+                    if control is None:
+                        print('control:', "no joints")           
+                    else:
+                        print('control:', control)
                     print('reward:', design[1])
             print()
             print('main_result:')
             print('rules:', *self.main_state.rule_list)
-            if self.main_control != None:
-                print('control:', *self.main_control)
+            if self.main_control is None:
+                print('control:', "no joints")   
             else:
-                print('control:', "no joints")
+                print('control:', self.main_control)
             print('reward:',self.main_reward)
+            print()
+            print('best_result:')
+            print('rules:', *self.best_state.rule_list)
+            if self.best_control is None:
+                print('control:', "no joints")
+            else:
+                print('control:', *self.best_control) 
+            print('reward:',self.best_reward)
             sys.stdout = original_stdout
 
 
