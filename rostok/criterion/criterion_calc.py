@@ -49,10 +49,10 @@ def criterion_calc(sim_output, B, J, LB, RB, W, gait) -> float:
     
     
     #Alternative f1
-    if np.size(sim_output[999].obj_contact_forces) == 0 or np.median(sim_output[999].obj_amount_surf_forces)<6:
+    if np.size(sim_output[-1].obj_contact_forces) == 0 or np.median(sim_output[-1].obj_amount_surf_forces)<6:
         f1 = 0
     else:
-        f1 = 1/(1+np.mean(sim_output[999].obj_contact_forces))
+        f1 = 1/(1+np.mean(sim_output[-1].obj_contact_forces))
 
 
     #f1

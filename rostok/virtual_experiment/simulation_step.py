@@ -191,8 +191,8 @@ class SimulationStepOptimization:
                                                              filter(lambda x: isinstance(x[1], RobotBody),
                                                                     self.grab_robot.block_map.items()))
                                                         
-        arrays_simulation_data_obj_force = [(999, [])]
-        arrays_simulation_data_amount_obj_contact_surfaces = [(999, [])]
+        arrays_simulation_data_obj_force = [(-1, [])]
+        arrays_simulation_data_amount_obj_contact_surfaces = [(-1, [])]
 
         # Loop of simulation
         while not self.condion_stop_simulation.flag_stop_simulation():
@@ -223,7 +223,7 @@ class SimulationStepOptimization:
             current_data_std_obj_force = RobotSensor.std_contact_forces_object(
                 self.grasp_object)
             
-            current_data_amount_obj_contact_surfaces = dict([(999, len([item for item in self.grasp_object.list_n_forces if item != 0]))])
+            current_data_amount_obj_contact_surfaces = dict([(-1, len([item for item in self.grasp_object.list_n_forces if item != 0]))])
             # Append current data in output arries
             arrays_simulation_data_joint_angle = list(map(append_arr_in_dict,
                                                      current_data_joint_angle.items(),
