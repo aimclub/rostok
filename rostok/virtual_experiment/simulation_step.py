@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.block_builder.node_render import RobotBody, ChronoRevolveJoint, RobotBody
+from rostok.block_builder.node_render import RobotBody, ChronoRevolveJoint, ChronoBodyEnv
 from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
-from rostok.block_builder.blocks_utils import make_collide, CollisionGroup
 from rostok.criterion.flags_simualtions import ConditionStopSimulation, FlagStopSimualtions
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
@@ -74,7 +73,7 @@ SimOut = dict[int, SimulationDataBlock]
 # Class for simulation system in loop optimization control
 
 class SimulationStepOptimization:
-    def __init__(self, control_trajectory, graph_mechanism: GraphGrammar, grasp_object: chrono.ChBody):
+    def __init__(self, control_trajectory, graph_mechanism: GraphGrammar, grasp_object: ChronoBodyEnv):
         self.control_trajectory = control_trajectory
         self.graph_mechanism = graph_mechanism
         self.controller_joints = []
