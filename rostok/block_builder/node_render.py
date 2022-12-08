@@ -84,7 +84,10 @@ class ChronoBody(BlockBody):
         box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width/2, length/2, width/2)
         
         self.__build_collision_model(material, width, length)
-        self.body.AddVisualShape(box_asset)
+        try:
+            self.body.AddVisualShape(box_asset)
+        except:
+            pass
         self.builder.Add(self.body)
 
         # Create markers aka RefFrames
