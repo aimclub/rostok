@@ -9,6 +9,7 @@ channels:
   - defaults
 dependencies:
   - python=3.9.12
+  - pythonocc-core
   - irrlicht
   - pychrono=7.0.0
   - numpy
