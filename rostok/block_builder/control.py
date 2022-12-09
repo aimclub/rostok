@@ -163,10 +163,10 @@ class ChronoControl(ABC):
             joint_block (ChMotor): Object to create the controller 
         """
         self.__joint = joint_block
-        self.type_variants = {ChronoRevolveJoint.InputType.Torque: lambda x: self.get_joint().SetTorqueFunction(x),
-                              ChronoRevolveJoint.InputType.Velocity: lambda x: self.get_joint().SetSpeedFunction(x),
-                              ChronoRevolveJoint.InputType.Position: lambda x: self.get_joint().SetAngleFunction(x),
-                              ChronoRevolveJoint.InputType.Uncontrol: None}
+        self.type_variants = {ChronoRevolveJoint.InputType.TORQUE: lambda x: self.get_joint().SetTorqueFunction(x),
+                              ChronoRevolveJoint.InputType.VELOCITY: lambda x: self.get_joint().SetSpeedFunction(x),
+                              ChronoRevolveJoint.InputType.POSITION: lambda x: self.get_joint().SetAngleFunction(x),
+                              ChronoRevolveJoint.InputType.UNCONTROL: None}
 
     def get_joint(self):
         return self.__joint.joint

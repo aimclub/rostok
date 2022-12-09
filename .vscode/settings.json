@@ -12,7 +12,7 @@
  
     "python.linting.pylintEnabled": true,
     "python.linting.pylintArgs": [
-        "max-line-length=100",
+        "--max-line-length=100",
         "--disable=C0114, C0115, C0116"
     ]
     

@@ -33,13 +33,13 @@ mat.SetFriction(0.5)
 mat.SetDampingF(0.1)
 
 # Bodies
-link1 = BlockWrapper(ChronoBody, length=0.3)
-link2 = BlockWrapper(ChronoBody, length=0.2)
+link1 = BlockWrapper(LinkChronoBody, length=0.3)
+link2 = BlockWrapper(LinkChronoBody, length=0.2)
 
-flat1 = BlockWrapper(ChronoBody, width=0.4, length=0.1)
-flat2 = BlockWrapper(ChronoBody, width=0.7, length=0.1)
+flat1 = BlockWrapper(FlatChronoBody, width=0.4, length=0.1)
+flat2 = BlockWrapper(FlatChronoBody, width=0.7, length=0.1)
 
-u1 = BlockWrapper(ChronoBody, width=0.1, length=0.1)
+u1 = BlockWrapper(MountChronoBody, width=0.1, length=0.1)
 
 # Transforms
 RZX = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_X)
@@ -60,13 +60,13 @@ transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
 transform_mx_plus = BlockWrapper(ChronoTransform, MOVE_X_PLUS)
 transform_mz_plus_x_minus = BlockWrapper(ChronoTransform, MOVE_Z_PLUS_X_MINUS)
 
-type_of_input = ChronoRevolveJoint.InputType.Torque
+type_of_input = ChronoRevolveJoint.InputType.TORQUE
 # Joints
 revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
 
 
 # %%
-type_of_input = ChronoRevolveJoint.InputType.Position
+type_of_input = ChronoRevolveJoint.InputType.POSITION
 
 # Joints
 revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
@@ -169,7 +169,7 @@ vis.Initialize()
 vis.AddCamera(chrono.ChVectorD(8, 8, -6))
 vis.AddTypicalLights()
 blocks = my_robot.block_map.values()
-body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
+body_block = filter(lambda x: isinstance(x,RobotBody),blocks)
 make_collide(body_block, CollisionGroup.Robot)
 #stopper = StopSimulation(mysystem, robot, obj, 1, 0.1)
 # Create simulation loop

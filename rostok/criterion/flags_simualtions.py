@@ -3,7 +3,7 @@ from copy import deepcopy
 from functools import reduce
 import rostok.virtual_experiment.robot as robot
 import pychrono as chrono
-from rostok.block_builder.node_render import ChronoBody
+from rostok.block_builder.node_render import RobotBody
 
 class BuilderNotInitializedError(Exception):
     def __init__(self, *args):
@@ -94,7 +94,7 @@ class FlagWithContact(FlagStopSimualtions, ABC):
             bool: True when contact is exsist
         """
         blocks = self.robot.block_map.values()
-        body_block = filter(lambda x: isinstance(x,ChronoBody),blocks)
+        body_block = filter(lambda x: isinstance(x,RobotBody),blocks)
         array_normal_forces = map(lambda x: x.list_n_forces, body_block)
         sum_contacts = reduce(lambda x, y: sum(x) if isinstance(x,list) else x + sum(y),
                               array_normal_forces)
