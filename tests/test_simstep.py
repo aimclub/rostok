@@ -31,7 +31,6 @@ def test_control_bind_and_create_sim():
 
     for get_graph in mechs:
         G = get_graph()
-        dfs_j = create_dfs_joint(G)
         number_trq = num_joints(G)
 
         config_sys = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
@@ -40,7 +39,7 @@ def test_control_bind_and_create_sim():
         times_step = 1e-3
 
         const_torque_koef = [random.random() for _ in range(number_trq)]
-        arr_trj = create_torque_traj_from_x(dfs_j, const_torque_koef, 1, 0.1)
+        arr_trj = create_torque_traj_from_x(G, const_torque_koef, 1, 0.1)
 
         grab_obj_mat = chrono.ChMaterialSurfaceNSC()
         grab_obj_mat.SetFriction(0.5)
