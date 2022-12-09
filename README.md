@@ -11,8 +11,8 @@ There are three main blocks
 * Virtual experiment - simulate the mechanism specified by the graph and get the reward for the attempt to grasp the body
 * Search algorithm - traverse the space of the possible designs in order to achieve the better reward
 
-![project_general](docs/Algorithm_scheme.jpg)
-![project_algorithm](docs/general_scheme.jpg)
+![project_general](docs/general_scheme_2.jpg)
+![project_algorithm](docs/Algorithm_shceme_3.jpg)
 
 More detailed description of the [algorithms and methods](docs/Algorithm.md).
 # Prerequisites

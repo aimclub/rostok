@@ -20,6 +20,7 @@ The input data should include two different parts:
 1) The specification of the details for the mechanism:  
 * sizes of links, size of the palm and sizes of the fingertips
 * amount of fingers (left and right) and possible angles in respect to the palm  
+
 2) The shape of the object to grasp  
 
 The output is the designed mechanism, in the graph form, the information about actuator trajectories and the obtained reward
