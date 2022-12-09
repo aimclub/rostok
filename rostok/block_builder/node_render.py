@@ -261,9 +261,9 @@ class FlatChronoBody(ChronoBody, RobotBody):
 
     def __init__(self,
                  builder,
-                 length=2,
-                 width=0.1,
-                 depth=0.3,
+                 length=0.1,
+                 width=0.3,
+                 depth=0.6,
                  random_color=True,
                  mass=1,
                  material=DefaultChronoMaterial(),

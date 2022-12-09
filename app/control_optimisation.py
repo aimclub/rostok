@@ -1,5 +1,5 @@
 
-import app_vocabulary
+import app.app_vocabulary
 
 from rostok.graph_grammar.node import GraphGrammar, BlockWrapper, Node
 from rostok.graph_grammar.node import Node

@@ -7,33 +7,29 @@ from rostok.block_builder.node_render import *
 from rostok.block_builder.transform_srtucture import rotation
 
 
-def init_extension_rules(config_rules):
+def create_extension_rules(width_flats, length_links):
     # %% Bodies for extansions rules
-    width = list(map(lambda x: float(x), config_rules["Flats"]["width"].split(",")))
-
-    length_link = list(map(lambda x: float(x), config_rules["Links"]["length"].split(",")))
-
     link = list(map(lambda x: BlockWrapper(LinkChronoBody, length=x),
-                    length_link))
+                    length_links))
 
-    link = list(map(lambda x: BlockWrapper(BasicChronoBody, length=x), length_link))
+    flat = list(map(lambda x: BlockWrapper(FlatChronoBody, width=x), width_flats))
 
     u1 = BlockWrapper(MountChronoBody, width=0.1, length=0.05)
     u2 = BlockWrapper(MountChronoBody, width=0.2, length=0.1)
 
-    MOVE_TO_RIGHT_SIDE = map(lambda x: FrameTransform([x, 0, 0], [0, 0, 1, 0]), width)
-    MOVE_TO_RIGHT_SIDE_PLUS = map(lambda x: FrameTransform([x, 0, +0.3], [0, 0, 1, 0]), width)
+    MOVE_TO_RIGHT_SIDE = map(lambda x: FrameTransform([x, 0, 0], [0, 0, 1, 0]), width_flats)
+    MOVE_TO_RIGHT_SIDE_PLUS = map(lambda x: FrameTransform([x, 0, +0.3], [0, 0, 1, 0]), width_flats)
     MOVE_TO_RIGHT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([x, 0, +0.3], rotation(150)),
-                                        width)
-    MOVE_TO_RIGHT_SIDE_MINUS = map(lambda x: FrameTransform([x, 0, -0.3], [0, 0, 1, 0]), width)
+                                        width_flats)
+    MOVE_TO_RIGHT_SIDE_MINUS = map(lambda x: FrameTransform([x, 0, -0.3], [0, 0, 1, 0]), width_flats)
     MOVE_TO_RIGHT_SIDE_MINUS_ANGLE = map(lambda x: FrameTransform([x, 0, -0.3], rotation(210)),
-                                         width)
-    MOVE_TO_LEFT_SIDE = map(lambda x: FrameTransform([-x, 0, 0], [1, 0, 0, 0]), width)
-    MOVE_TO_LEFT_SIDE_PLUS = map(lambda x: FrameTransform([-x, 0, +0.3], [1, 0, 0, 0]), width)
-    MOVE_TO_LEFT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([-x, 0, +0.3], rotation(30)), width)
-    MOVE_TO_LEFT_SIDE_MINUS = map(lambda x: FrameTransform([-x, 0, -0.3], [1, 0, 0, 0]), width)
+                                         width_flats)
+    MOVE_TO_LEFT_SIDE = map(lambda x: FrameTransform([-x, 0, 0], [1, 0, 0, 0]), width_flats)
+    MOVE_TO_LEFT_SIDE_PLUS = map(lambda x: FrameTransform([-x, 0, +0.3], [1, 0, 0, 0]), width_flats)
+    MOVE_TO_LEFT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([-x, 0, +0.3], rotation(30)), width_flats)
+    MOVE_TO_LEFT_SIDE_MINUS = map(lambda x: FrameTransform([-x, 0, -0.3], [1, 0, 0, 0]), width_flats)
     MOVE_TO_LEFT_SIDE_MINUS_ANGLE = map(lambda x: FrameTransform([-x, 0, -0.3], rotation(-30)),
-                                        width)
+                                        width_flats)
 
     transform_to_right_mount = list(
         map(lambda x: BlockWrapper(ChronoTransform, x), MOVE_TO_RIGHT_SIDE))
