@@ -1,0 +1,67 @@
+MCTS report generated at:  2022-12-08_18-9-11
+1
+rules: InitMechanism_3_R_A TerminalFlat1 FingerUpper TerminalL2 TerminalTransformLeft1 TerminalTransformRightPlusAngle2 TerminalTransformRightMinusAngle3 TerminalJoint FingerUpper TerminalL2 TerminalEndLimb2 TerminalEndLimb2 TerminalEndLimb2 TerminalJoint
+control: [8.33333333 5.        ]
+reward: 11.31253385377181
+rules: InitMechanism_3_L_A TerminalTransformRight1 TerminalTransformLeftPlusAngle2 TerminalEndLimb1 TerminalEndLimb1 TerminalFlat2 TerminalEndLimb2 TerminalTransformLeftMinusAngle3
+control: 0
+reward: 0
+2
+rules: InitMechanism_3_R_A TerminalTransformLeft1 TerminalTransformRightMinusAngle3 TerminalTransformRightPlusAngle2 TerminalFlat3 FingerUpper TerminalL3 FingerUpper TerminalEndLimb2 TerminalL2 TerminalEndLimb2 FingerUpper TerminalJoint TerminalEndLimb2 TerminalL3 TerminalJoint TerminalJoint
+control: [5.         8.33333333 5.        ]
+reward: 11.237660959414162
+rules: InitMechanism_3_R_A TerminalFlat1 TerminalTransformRightMinusAngle2 TerminalEndLimb1 TerminalEndLimb2 TerminalEndLimb1 TerminalTransformLeft1 TerminalTransformRightPlusAngle2
+control: 0
+reward: 0
+3
+rules: InitMechanism_3_R_A TerminalTransformLeft1 TerminalFlat1 TerminalTransformRightMinusAngle3 TerminalTransformRightPlusAngle2 TerminalEndLimb1 FingerUpper TerminalEndLimb1 TerminalL1 FingerUpper TerminalEndLimb2 TerminalL1 TerminalJoint TerminalJoint
+control: [5.         1.66666667]
+reward: 11.263148600718829
+rules: InitMechanism_3_R_A TerminalTransformLeft1 TerminalFlat3 TerminalTransformRightMinusAngle1 TerminalTransformRightPlusAngle1 TerminalEndLimb2 FingerUpper TerminalJoint TerminalEndLimb1 TerminalEndLimb2 TerminalL1
+control: [5.]
+reward: 11.302670560641408
+4
+rules: InitMechanism_3_R_A TerminalTransformLeft1 TerminalFlat3 TerminalEndLimb2 TerminalTransformRightMinusAngle1 FingerUpper TerminalL2 TerminalTransformRightPlusAngle1 TerminalEndLimb2 TerminalJoint TerminalEndLimb2
+control: [8.33333333]
+reward: 11.307432012938564
+rules: InitMechanism_3_R_A TerminalTransformLeft1 TerminalFlat3 TerminalTransformRightMinusAngle2 TerminalTransformRightPlusAngle1 FingerUpper TerminalEndLimb1 TerminalEndLimb2 TerminalL1 TerminalEndLimb2 TerminalJoint
+control: [8.33333333]
+reward: 11.243115471243026
+5
+rules: InitMechanism_3_R_A TerminalTransformLeft1 TerminalFlat3 TerminalEndLimb2 TerminalEndLimb2 TerminalTransformRightPlusAngle2 TerminalTransformRightMinusAngle3 TerminalEndLimb1
+control: 0
+reward: 0
+rules: InitMechanism_3_R_A TerminalTransformLeft1 TerminalFlat3 TerminalEndLimb2 TerminalTransformRightMinusAngle2 TerminalTransformRightPlusAngle1 TerminalEndLimb1 TerminalEndLimb1
+control: 0
+reward: 0
+6
+rules: InitMechanism_3_R_A TerminalTransformLeft1 TerminalFlat3 TerminalEndLimb2 TerminalEndLimb2 TerminalEndLimb2 TerminalTransformRightPlusAngle3 TerminalTransformRightMinusAngle2
+control: 0
+reward: 0
+rules: InitMechanism_3_R_A TerminalTransformLeft1 TerminalFlat3 TerminalEndLimb2 TerminalEndLimb2 TerminalTransformRightMinusAngle2 TerminalEndLimb2 TerminalTransformRightPlusAngle2
+control: 0
+reward: 0
+7
+rules: InitMechanism_3_R_A TerminalTransformLeft1 TerminalFlat3 TerminalEndLimb2 TerminalEndLimb2 TerminalEndLimb2 TerminalTransformRightMinusAngle1 TerminalTransformRightPlusAngle3
+control: 0
+reward: 0
+rules: InitMechanism_3_R_A TerminalTransformLeft1 TerminalFlat3 TerminalEndLimb2 TerminalEndLimb2 TerminalEndLimb2 TerminalTransformRightMinusAngle3 TerminalTransformRightPlusAngle1
+control: 0
+reward: 0
+8
+rules: InitMechanism_3_R_A TerminalTransformLeft1 TerminalFlat3 TerminalEndLimb2 TerminalEndLimb2 TerminalEndLimb2 TerminalTransformRightMinusAngle3 TerminalTransformRightPlusAngle2
+control: 0
+reward: 0
+rules: InitMechanism_3_R_A TerminalTransformLeft1 TerminalFlat3 TerminalEndLimb2 TerminalEndLimb2 TerminalEndLimb2 TerminalTransformRightMinusAngle3 TerminalTransformRightPlusAngle3
+control: 0
+reward: 0
+
+main_result:
+rules: InitMechanism_3_R_A TerminalTransformLeft1 TerminalFlat3 TerminalEndLimb2 TerminalEndLimb2 TerminalEndLimb2 TerminalTransformRightMinusAngle3 TerminalTransformRightPlusAngle3
+control: no joints
+reward: 0
+
+best_result:
+rules: InitMechanism_3_R_A TerminalFlat1 FingerUpper TerminalL2 TerminalTransformLeft1 TerminalTransformRightPlusAngle2 TerminalTransformRightMinusAngle3 TerminalJoint FingerUpper TerminalL2 TerminalEndLimb2 TerminalEndLimb2 TerminalEndLimb2 TerminalJoint
+control: 8.333333333333332 5.0
+reward: 11.31253385377181

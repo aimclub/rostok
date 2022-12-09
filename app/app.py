@@ -25,7 +25,7 @@ def plot_graph(graph: GraphGrammar):
 
 
 # %% Create extension rule vocabulary
-hyper = [3]
+hyper = [1]
 for i in hyper:
     # %% Create extension rule vocabulary
 
