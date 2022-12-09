@@ -1,3 +1,6 @@
+# Environment without gui-part
+
+
 name: lic_ai_nvis
 channels:
   - https://conda.anaconda.org/intel
