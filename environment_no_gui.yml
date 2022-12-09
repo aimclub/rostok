@@ -10,9 +10,9 @@ channels:
   - defaults
 dependencies:
   - python=3.9.12
-  - pythonocc-core
-  - irrlicht
   - opencascade
+  - pythonocc-core=7.4.1
+  - irrlicht
   - pychrono=7.0.0
   - numpy
   
