@@ -237,12 +237,34 @@ class LinkChronoBody(ChronoBody, RobotBody):
 
         # Create body
         material = struct_material2object_material(material)
-        box_s = BRepPrimAPI.BRepPrimAPI_MakeBox(gp.gp_Pnt(-width / 2, 0, 0), width, length - width,
-                                                depth).Shape()
-        cylinder_s = BRepPrimAPI.BRepPrimAPI_MakeCylinder(width / 2, depth).Shape()
-        shape = BRepAlgoAPI.BRepAlgoAPI_Fuse(box_s, cylinder_s).Shape()
-        vis_params = cascade.ChCascadeTriangulate(1, True, 0.5)
-        body = cascade.ChCascadeBodyEasy(shape, 1000, vis_params, True, material)
+        body = chrono.ChBody()
+        
+        # Calculate new length with gap 
+        TOLERANCE = 0.01
+        length_minus_gap = length - width - TOLERANCE
+
+        # Add box visual
+        box_asset = chrono.ChBoxShape()
+        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width / 2, length / 2,
+                                                           depth / 2)
+        body.AddVisualShape(box_asset)
+
+
+        # Add cylinder visual
+        cylinder = chrono.ChCylinder()
+        cylinder.p2 = chrono.ChVectorD(0, -length / 2, depth / 2)
+        cylinder.p1 = chrono.ChVectorD(0, -length / 2, -depth / 2)
+        cylinder.rad = width / 2
+        cylinder_asset = chrono.ChCylinderShape(cylinder)
+        body.AddVisualShape(cylinder_asset)
+        
+
+        # Add collision box 
+        body.GetCollisionModel().ClearModel()
+        body.GetCollisionModel().AddBox(material, width / 2, length_minus_gap / 2,
+                                             depth / 2)
+        # Add collision cylinder 
+        
         body.SetMass(mass)
 
         # Create shape
@@ -255,7 +277,6 @@ class LinkChronoBody(ChronoBody, RobotBody):
                          pos_out_marker,
                          random_color,
                          is_collide=is_collide)
-
 
 class FlatChronoBody(ChronoBody, RobotBody):
 
