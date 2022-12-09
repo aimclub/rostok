@@ -1,17 +1,17 @@
-from rostok.block_builder.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint, connect_blocks
+from rostok.block_builder.node_render import LinkChronoBody, ChronoTransform, ChronoRevolveJoint, connect_blocks
 import pychrono.core as chrono
 from rostok.block_builder.transform_srtucture import FrameTransform
 import pychrono.irrlicht as chronoirr
 
 mysystem = chrono.ChSystemNSC()
 
-body_1 = ChronoBody(mysystem, length=1)
-body_2 = ChronoBody(mysystem, length=0.5)
-body_3 = ChronoBody(mysystem, length=0.5)
-body_4 = ChronoBody(mysystem, length=0.5)
-body_5 = ChronoBody(mysystem, length=1)
-body_6 = ChronoBody(mysystem, length=1)
-body_7 = ChronoBody(mysystem, length=1)
+body_1 = LinkChronoBody(mysystem, length=1)
+body_2 = LinkChronoBody(mysystem, length=0.5)
+body_3 = LinkChronoBody(mysystem, length=0.5)
+body_4 = LinkChronoBody(mysystem, length=0.5)
+body_5 = LinkChronoBody(mysystem, length=1)
+body_6 = LinkChronoBody(mysystem, length=1)
+body_7 = LinkChronoBody(mysystem, length=1)
 
 cord_sys_1 = FrameTransform([0,0,0],[1,0,0,0]) 
 transform1 = ChronoTransform(mysystem, cord_sys_1)

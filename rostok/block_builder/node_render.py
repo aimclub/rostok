@@ -1,90 +1,101 @@
-import pychrono.core as chrono
-from rostok.utils.dataset_materials.material_dataclass_manipulating import (DefaultChronoMaterial,
-                                                                     struct_material2object_material)
-from rostok.block_builder.transform_srtucture import FrameTransform
 from enum import Enum
 from abc import ABC
 from typing import Optional
 import random
 
+import pychrono.cascade as cascade
+import pychrono.core as chrono
 
-class BlockType(str, Enum):
-    Transform = "Transform"
-    Body = "Body"
-    Bridge = "Bridge"
+from OCC.Core import BRepPrimAPI
+from OCC.Core import BRepAlgoAPI
+from OCC.Core import gp
+from rostok.block_builder.body_size import BoxSize
+
+from rostok.utils.dataset_materials.material_dataclass_manipulating import (
+    DefaultChronoMaterial, struct_material2object_material)
+from rostok.block_builder.transform_srtucture import FrameTransform
+from rostok.block_builder.basic_node_block import (BlockBody, RobotBody, BlockBridge, BlockType,
+                                                   Block, BlockTransform, SimpleBody)
 
 
 class SpringTorque(chrono.TorqueFunctor):
+
     def __init__(self, spring_coef, damping_coef, rest_angle):
         super(SpringTorque, self).__init__()
         self.spring_coef = spring_coef
         self.damping_coef = damping_coef
         self.rest_angle = rest_angle
 
-    def evaluate(self,  #
-                 time,  # current time
-                 angle,  # relative angle of rotation
-                 vel,  # relative angular speed
-                 link):  # back-pointer to associated link
+    def evaluate(
+            self,  #
+            time,  # current time
+            angle,  # relative angle of rotation
+            vel,  # relative angular speed
+            link):  # back-pointer to associated link
         torque = 0
         if self.spring_coef > 10**-3:
             torque = -self.spring_coef * \
                 (angle - self.rest_angle) - self.damping_coef * vel
         else:
-            torque = - self.damping_coef * vel
+            torque = -self.damping_coef * vel
         return torque
 
 
-class Block(ABC):
-    def __init__(self, builder):
-        self.block_type = None
+class ContactReporter(chrono.ReportContactCallback):
 
-        self._ref_frame_in = None
-        self._ref_frame_out = None
-        self.transformed_frame_out = None
+    def __init__(self, chrono_body):
+        """Create a reporter normal contact forces for the body
 
-        self.builder: chrono.ChSystemNSC = builder
-        self.is_build = False
+        Args:
+            chrono_body (ChBody): Repoter's body
+        """
+        self._body = chrono_body
+        self.__current_normal_forces = None
+        self.__list_normal_forces = []
+        super().__init__()
 
-    def apply_transform(self, in_block):
-        pass
+    def OnReportContact(
+        self,
+        pA,  # contact pA 
+        pB,  # contact pB 
+        plane_coord,  # contact plane coordsystem (A column 'X' is contact normal) 
+        distance,  # contact distance 
+        eff_radius,  # effective radius of curvature at contact 
+        cforce,  # react.forces (if already computed). In coordsystem 'plane_coord' 
+        ctorque,  # react.torques, if rolling friction (if already computed). 
+        modA,  # model A (note: some containers may not support it and could be nullptr) 
+        modB):  # model B (note: some containers may not support it and could be nullptr)
+        bodyA = chrono.CastToChBody(modA)
+        bodyB = chrono.CastToChBody(modB)
+        if (bodyA == self._body) or (bodyB == self._body):
+            self.__current_normal_forces = cforce.x
+            self.__list_normal_forces.append(cforce.x)
+        return True
+
+    def is_empty(self):
+        return len(self.__list_normal_forces) == 0
+
+    def list_clear(self):
+        self.__list_normal_forces.clear()
+
+    def get_normal_forces(self):
+        return self.__current_normal_forces
+
+    def get_list_n_forces(self):
+        return self.__list_normal_forces
 
 
-class BlockBridge(Block, ABC):
-    def __init__(self, builder):
+class ChronoBody(BlockBody, ABC):
+
+    def __init__(self,
+                 builder: chrono.ChSystem,
+                 body: chrono.ChBody,
+                 in_pos_marker: chrono.ChVectorD,
+                 out_pos_marker: chrono.ChVectorD,
+                 random_color: bool,
+                 is_collide: bool = True):
         super().__init__(builder)
-        self.block_type = BlockType.Bridge
-
-
-class BlockTransform(Block, ABC):
-    def __init__(self, builder):
-        super().__init__(builder)
-        self.block_type = BlockType.Transform
-        self.transform = None
-
-
-class BlockBody(Block, ABC):
-    def __init__(self, builder):
-        super().__init__(builder)
-        self.block_type = BlockType.Body
-        self.body = None
-
-
-class ChronoBody(BlockBody):
-    def __init__(self, builder, length=2, width=0.2, random_color=True, mass=1, material = DefaultChronoMaterial()):
-        super().__init__(builder=builder)
-
-        # Create body
-        self.body = chrono.ChBody()
-        self.body.SetMass(mass)
-
-        # Create shape
-        # TODO: setter for shape
-        box_asset = chrono.ChBoxShape()
-        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width/2, length/2, width/2)
-        
-        self.__build_collision_model(material, width, length)
-        self.body.AddVisualShape(box_asset)
+        self.body = body
         self.builder.Add(self.body)
 
         # Create markers aka RefFrames
@@ -94,18 +105,17 @@ class ChronoBody(BlockBody):
 
         input_marker.SetMotionType(chrono.ChMarker.M_MOTION_KEYFRAMED)
         out_marker.SetMotionType(chrono.ChMarker.M_MOTION_KEYFRAMED)
-        transformed_out_marker.SetMotionType(
-            chrono.ChMarker.M_MOTION_KEYFRAMED)
+        transformed_out_marker.SetMotionType(chrono.ChMarker.M_MOTION_KEYFRAMED)
 
         self.body.AddMarker(input_marker)
         self.body.AddMarker(out_marker)
         self.body.AddMarker(transformed_out_marker)
         self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
         self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
+        self.body.SetCollide(is_collide)
 
-        input_marker.SetPos(chrono.ChVectorD(0, -length/2, 0))
-        out_marker.SetPos(chrono.ChVectorD(0, length/2, 0))
-
+        input_marker.SetPos(in_pos_marker)
+        out_marker.SetPos(out_pos_marker)
         # Calc SetPos
         transformed_out_marker.SetCoord(out_marker.GetCoord())
 
@@ -114,56 +124,14 @@ class ChronoBody(BlockBody):
         self.transformed_frame_out = transformed_out_marker
 
         # Normal Forces
-        self.__contact_reporter = self.ContactReporter(self.body)
-        
+        self.__contact_reporter = ContactReporter(self.body)
+
         if random_color:
             rgb = [random.random(), random.random(), random.random()]
             rgb[int(random.random() * 2)] *= 0.2
             self.body.GetVisualShape(0).SetColor(chrono.ChColor(*rgb))
 
-            
-    class ContactReporter (chrono.ReportContactCallback):
-        def __init__(self, chrono_body):
-            """Create a reporter normal contact forces for the body
-
-            Args:
-                chrono_body (ChBody): Repoter's body
-            """
-            self._body = chrono_body
-            self.__current_normal_forces = None
-            self.__list_normal_forces: list = []
-            super().__init__()
-
-        def OnReportContact(self,
-                            pA, # contact pA 
-                            pB, # contact pB 
-                            plane_coord, # contact plane coordsystem (A column 'X' is contact normal) 
-                            distance, # contact distance 
-                            eff_radius, # effective radius of curvature at contact 
-                            cforce, # react.forces (if already computed). In coordsystem 'plane_coord' 
-                            ctorque, # react.torques, if rolling friction (if already computed). 
-                            modA, # model A (note: some containers may not support it and could be nullptr) 
-                            modB): # model B (note: some containers may not support it and could be nullptr) 
-            bodyA = chrono.CastToChBody(modA)
-            bodyB = chrono.CastToChBody(modB)
-            if (bodyA == self._body) or (bodyB == self._body):
-                self.__current_normal_forces = cforce.x
-                self.__list_normal_forces.append(cforce.x)
-            return True
-        
-        def is_empty(self):
-            return len(self.__list_normal_forces) == 0
-        
-        def list_clear(self):
-            self.__list_normal_forces.clear()
-        
-        def get_normal_forces(self):
-            return self.__current_normal_forces
-        
-        def get_list_n_forces(self):
-            return self.__list_normal_forces
-
-    def __build_collision_model(self, struct_material, width, length):
+    def _build_collision_model(self, struct_material, width, length):
         """Build collision model of the block on material width and length
 
         Args:
@@ -171,10 +139,11 @@ class ChronoBody(BlockBody):
             width (flaot): Width of the box
             length (float): Length of the box
         """
-        chrono_object_material = struct_material2object_material(struct_material)                
+        chrono_object_material = struct_material2object_material(struct_material)
 
         self.body.GetCollisionModel().ClearModel()
-        self.body.GetCollisionModel().AddBox(chrono_object_material,width/2,length/2,width/2)
+        self.body.GetCollisionModel().AddBox(chrono_object_material, width / 2, length / 2,
+                                             width / 2)
         self.body.GetCollisionModel().BuildModel()
 
     def move_to_out_frame(self, in_block: Block):
@@ -206,12 +175,12 @@ class ChronoBody(BlockBody):
     @property
     def ref_frame_in(self):
         return self._ref_frame_in
-    
+
     @property
     def normal_force(self):
         self.builder.GetContactContainer().ReportAllContacts(self.__contact_reporter)
         return self.__contact_reporter.get_normal_forces()
-    
+
     @property
     def list_n_forces(self):
         container = self.builder.GetContactContainer()
@@ -222,17 +191,188 @@ class ChronoBody(BlockBody):
         return self.__contact_reporter.get_list_n_forces()
 
 
+class BoxChronoBody(ChronoBody, RobotBody):
+
+    def __init__(self,
+                 builder,
+                 size: BoxSize = BoxSize(0.1, 0.1, 0.1),
+                 random_color=True,
+                 mass=1,
+                 material=DefaultChronoMaterial(),
+                 is_collide: bool = True):
+
+        # Create body
+        material = struct_material2object_material(material)
+        body = chrono.ChBody()
+
+        box_asset = chrono.ChBoxShape()
+        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(size.width / 2, size.length / 2,
+                                                           size.height / 2)
+        body.AddVisualShape(box_asset)
+
+        body.SetMass(mass)
+
+        # Create shape
+        pos_in_marker = chrono.ChVectorD(0, -size.length / 2, 0)
+        pos_out_marker = chrono.ChVectorD(0, size.length / 2, 0)
+        super().__init__(builder,
+                         body,
+                         pos_in_marker,
+                         pos_out_marker,
+                         random_color,
+                         is_collide=is_collide)
+
+
+class LinkChronoBody(ChronoBody, RobotBody):
+
+    def __init__(self,
+                 builder,
+                 length=2,
+                 width=0.1,
+                 depth=0.3,
+                 random_color=True,
+                 mass=1,
+                 material=DefaultChronoMaterial(),
+                 is_collide: bool = True):
+
+        # Create body
+        material = struct_material2object_material(material)
+        box_s = BRepPrimAPI.BRepPrimAPI_MakeBox(gp.gp_Pnt(-width / 2, 0, 0), width, length - width,
+                                                depth).Shape()
+        cylinder_s = BRepPrimAPI.BRepPrimAPI_MakeCylinder(width / 2, depth).Shape()
+        shape = BRepAlgoAPI.BRepAlgoAPI_Fuse(box_s, cylinder_s).Shape()
+        vis_params = cascade.ChCascadeTriangulate(1, True, 0.5)
+        body = cascade.ChCascadeBodyEasy(shape, 1000, vis_params, True, material)
+        body.SetMass(mass)
+
+        # Create shape
+        # TODO: setter for shape
+        pos_in_marker = chrono.ChVectorD(0, -length / 2, 0)
+        pos_out_marker = chrono.ChVectorD(0, length / 2, 0)
+        super().__init__(builder,
+                         body,
+                         pos_in_marker,
+                         pos_out_marker,
+                         random_color,
+                         is_collide=is_collide)
+
+
+class FlatChronoBody(ChronoBody, RobotBody):
+
+    def __init__(self,
+                 builder,
+                 length=2,
+                 width=0.1,
+                 depth=0.3,
+                 random_color=True,
+                 mass=1,
+                 material=DefaultChronoMaterial(),
+                 is_collide: bool = True):
+        # Create body
+
+        body = chrono.ChBody()
+
+        box_asset = chrono.ChBoxShape()
+        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width / 2, length / 2 - width / 32, depth / 2)
+        body.AddVisualShape(box_asset)
+        body.SetCollide(True)
+
+        body.SetMass(mass)
+
+        pos_input_marker = chrono.ChVectorD(0, -length / 2, 0)
+        pos_out_marker = chrono.ChVectorD(0, length / 2, 0)
+        super().__init__(builder,
+                         body,
+                         pos_input_marker,
+                         pos_out_marker,
+                         random_color,
+                         is_collide=is_collide)
+
+        self._build_collision_model(material, width, length - width / 32)
+        # Create shape
+        # TODO: setter for shape
+
+
+class MountChronoBody(ChronoBody, RobotBody):
+
+    def __init__(self,
+                 builder,
+                 length=2,
+                 width=0.1,
+                 depth=0.3,
+                 random_color=True,
+                 mass=1,
+                 material=DefaultChronoMaterial(),
+                 is_collide: bool = True):
+        # Create body
+
+        body = chrono.ChBody()
+
+        box_asset = chrono.ChBoxShape()
+        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width / 2, length / 2, depth / 2)
+        body.AddVisualShape(box_asset)
+
+        body.SetMass(mass)
+
+        pos_input_marker = chrono.ChVectorD(0, -length / 2, 0)
+        pos_out_marker = chrono.ChVectorD(0, length / 2, 0)
+        super().__init__(builder,
+                         body,
+                         pos_input_marker,
+                         pos_out_marker,
+                         random_color,
+                         is_collide=is_collide)
+
+        self._build_collision_model(material, width, length)
+
+
+class ChronoBodyEnv(ChronoBody):
+
+    def __init__(self,
+                 builder,
+                 shape=SimpleBody.BOX,
+                 random_color=True,
+                 mass=1,
+                 material=DefaultChronoMaterial(),
+                 pos: FrameTransform = FrameTransform([0, 0.0, 0], [1, 0, 0, 0])):
+
+        # Create body
+        material = struct_material2object_material(material)
+        if shape is SimpleBody.BOX:
+            body = chrono.ChBodyEasyBox(shape.value.width, shape.value.length, shape.value.height,
+                                        1000, True, True, material)
+        elif shape is SimpleBody.CYLINDER:
+            body = chrono.ChBodyEasyCylinder(shape.value.radius, shape.value.height, 1000, True,
+                                             True, material)
+        elif shape is SimpleBody.SPHERE:
+            body = chrono.ChBodyEasySphere(shape.value.radius, 1000, True, True, material)
+        elif shape is SimpleBody.ELLIPSOID:
+            body = chrono.ChBodyEasyEllipsoid(
+                chrono.ChVectorD(shape.value.radius_a, shape.value.radius_b, shape.value.radius_c),
+                1000, True, True, material)
+        body.SetCollide(True)
+        transform = ChronoTransform(builder, pos)
+        body.SetCoord(transform.transform)
+
+        body.SetMass(mass)
+
+        # Create shape
+        pos_in_marker = chrono.ChVectorD(0, 0, 0)
+        pos_out_marker = chrono.ChVectorD(0, 0, 0)
+        super().__init__(builder, body, pos_in_marker, pos_out_marker, random_color)
+
+    def set_coord(self, frame: FrameTransform):
+        transform = ChronoTransform(self.builder, frame)
+        self.body.SetCoord(transform.transform)
+
 
 class ChronoRevolveJoint(BlockBridge):
     # Variants of joint control
     class InputType(str, Enum):
-        Torque = {"Name": "Torque",
-                  "TypeMotor": chrono.ChLinkMotorRotationTorque}
-        Velocity = {"Name": "Speed",
-                    "TypeMotor": chrono.ChLinkMotorRotationSpeed}
-        Position = {"Name": "Angle",
-                    "TypeMotor": chrono.ChLinkMotorRotationAngle}
-        Uncontrol = {"Name": "Uncontrol", "TypeMotor": chrono.ChLinkRevolute}
+        TORQUE = {"Name": "Torque", "TypeMotor": chrono.ChLinkMotorRotationTorque}
+        VELOCITY = {"Name": "Speed", "TypeMotor": chrono.ChLinkMotorRotationSpeed}
+        POSITION = {"Name": "Angle", "TypeMotor": chrono.ChLinkMotorRotationAngle}
+        UNCONTROL = {"Name": "Uncontrol", "TypeMotor": chrono.ChLinkRevolute}
 
         def __init__(self, vals):
             self.num = vals["Name"]
@@ -244,8 +384,13 @@ class ChronoRevolveJoint(BlockBridge):
         Y = chrono.Q_ROTATE_Z_TO_Y
         X = chrono.Q_ROTATE_Z_TO_X
 
-    def __init__(self, builder, axis=Axis.Z, type_of_input=InputType.Position,
-                 stiffness=0, damping=0, equilibrium_position=0):
+    def __init__(self,
+                 builder,
+                 axis=Axis.Z,
+                 type_of_input=InputType.POSITION,
+                 stiffness=0,
+                 damping=0,
+                 equilibrium_position=0):
         super().__init__(builder=builder)
         self.joint = None
         self.axis = axis
@@ -261,8 +406,8 @@ class ChronoRevolveJoint(BlockBridge):
     def connect(self, in_block: ChronoBody, out_block: ChronoBody):
         # If we have two not initialize joints engine crash
         self.joint = self.input_type.motor()
-        self.joint.Initialize(in_block.body, out_block.body, True,
-                              in_block.transformed_frame_out, out_block.ref_frame_in)
+        self.joint.Initialize(in_block.body, out_block.body, True, in_block.transformed_frame_out,
+                              out_block.ref_frame_in)
         self.builder.AddLink(self.joint)
 
         if (self.stiffness != 0) or (self.damping != 0):
@@ -274,29 +419,32 @@ class ChronoRevolveJoint(BlockBridge):
     def add_spring_damper(self, in_block: ChronoBody, out_block: ChronoBody):
         self.joint_spring = chrono.ChLinkRSDA()
         self.joint_spring.Initialize(in_block.body, out_block.body, False,
-                                     in_block.transformed_frame_out.GetAbsCoord(), out_block.ref_frame_in.GetAbsCoord())
-        self.torque_functor = SpringTorque(
-            self.stiffness, self.damping, self.equilibrium_position)
+                                     in_block.transformed_frame_out.GetAbsCoord(),
+                                     out_block.ref_frame_in.GetAbsCoord())
+        self.torque_functor = SpringTorque(self.stiffness, self.damping, self.equilibrium_position)
         self.joint_spring.RegisterTorqueFunctor(self.torque_functor)
         self.builder.Add(self.joint_spring)
 
 
 class ChronoTransform(BlockTransform):
+
     def __init__(self, builder: chrono.ChSystem, transform):
         super().__init__(builder=builder)
-        if isinstance(transform,chrono.ChCoordsysD):
+        if isinstance(transform, chrono.ChCoordsysD):
             self.transform = transform
         elif type(transform) is FrameTransform:
             coordsys_transform = chrono.ChCoordsysD(
-            chrono.ChVectorD(transform.position[0],transform.position[1],transform.position[2]),
-            chrono.ChQuaternionD(transform.rotation[0],transform.rotation[1],transform.rotation[2],transform.rotation[3]))
+                chrono.ChVectorD(transform.position[0], transform.position[1],
+                                 transform.position[2]),
+                chrono.ChQuaternionD(transform.rotation[0], transform.rotation[1],
+                                     transform.rotation[2], transform.rotation[3]))
             self.transform = coordsys_transform
 
 
 def find_body_from_two_previous_blocks(sequence: list[Block], it: int) -> Optional[Block]:
     # b->t->j->t->b Longest sequence
     for i in reversed(range(it)[-2:]):
-        if sequence[i].block_type == BlockType.Body:
+        if sequence[i].block_type == BlockType.BODY:
             return sequence[i]
     return None
 
@@ -304,7 +452,7 @@ def find_body_from_two_previous_blocks(sequence: list[Block], it: int) -> Option
 def find_body_from_two_after_blocks(sequence: list[Block], it: int) -> Optional[Block]:
     # b->t->j->t->b Longest sequence
     for block in sequence[it:it + 2]:
-        if block.block_type == BlockType.Body:
+        if block.block_type == BlockType.BODY:
             return block
     return None
 
@@ -315,7 +463,7 @@ def connect_blocks(sequence: list[Block]):
     need_fix_joint = False
 
     for it, block in enumerate(sequence):
-        if block.block_type is BlockType.Body:
+        if block.block_type is BlockType.BODY:
             # First body
             if previous_body_block is None:
                 need_fix_joint = True
@@ -328,14 +476,14 @@ def connect_blocks(sequence: list[Block]):
                 need_fix_joint = True
                 previous_body_block = block
 
-        elif block.block_type is BlockType.Bridge:
+        elif block.block_type is BlockType.BRIDGE:
             need_fix_joint = False
 
-        elif block.block_type is BlockType.Transform:
+        elif block.block_type is BlockType.TRANSFORM:
             sequence[it - 1].apply_transform(block)
 
     for it, block in enumerate(sequence):  # NOQA
-        if block.block_type == BlockType.Bridge:
+        if block.block_type == BlockType.BRIDGE:
 
             block_in = find_body_from_two_previous_blocks(sequence, it)
             block_out = find_body_from_two_after_blocks(sequence, it)

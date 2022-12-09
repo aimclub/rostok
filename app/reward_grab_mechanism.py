@@ -1,6 +1,6 @@
 from time import time
 
-from rostok.graph_grammar.node  import BlockWrapper, Node, Rule, GraphGrammar, ROOT
+from rostok.graph_grammar.node import BlockWrapper, Node, Rule, GraphGrammar, ROOT
 from rostok.block_builder.node_render import *
 from rostok.criterion.flags_simualtions import FlagSlipout, FlagNotContact, FlagMaxTime
 from pychrono import ChCoordsysD, ChVectorD
@@ -18,21 +18,32 @@ from numpy import arange
 from rostok.block_builder.blocks_utils import NodeFeatures
 
 
-def is_body(node: Node): return node in list_B
+def is_body(node: Node):
+    return node in list_B
 
 
 def plot_graph(graph):
     plt.figure()
-    nx.draw_networkx(graph, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800,
-                    labels={n: G.nodes[n]["Node"].label for n in G})
+    nx.draw_networkx(graph,
+                     pos=nx.kamada_kawai_layout(G, dim=2),
+                     node_size=800,
+                     labels={n: G.nodes[n]["Node"].label for n in G})
     plt.figure()
     nx.draw_networkx(graph, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
 
     fig = plt.figure()
     ax = fig.add_subplot()
     ax.axis([0, 10, 0, 10])
-    ax.text(2, 8, 'Close all matplotlib for start simlation', style='italic', fontsize=15,
-            bbox={'facecolor': 'red', 'alpha': 0.5, 'pad': 10})
+    ax.text(2,
+            8,
+            'Close all matplotlib for start simlation',
+            style='italic',
+            fontsize=15,
+            bbox={
+                'facecolor': 'red',
+                'alpha': 0.5,
+                'pad': 10
+            })
 
     plt.show()
 
@@ -52,26 +63,25 @@ mat = chrono.ChMaterialSurfaceNSC()
 mat.SetFriction(0.5)
 mat.SetDampingF(0.1)
 
-
 # Bodies
-link1 = BlockWrapper(ChronoBody, length=0.5)
-link2 = BlockWrapper(ChronoBody, length=0.5)
+link1 = BlockWrapper(LinkChronoBody, length=0.5, mass=0.3)
+link2 = BlockWrapper(LinkChronoBody, length=0.5, mass=0.3)
 
-flat1 = BlockWrapper(ChronoBody, width=0.4, length=0.1)
-flat2 = BlockWrapper(ChronoBody, width=0.7, length=0.1)
+flat1 = BlockWrapper(FlatChronoBody, width=0.5, length=0.1, depth=0.8)
+flat2 = BlockWrapper(FlatChronoBody, width=0.5, length=0.1, depth=0.8)
 
-u1 = BlockWrapper(ChronoBody, width=0.1, length=0.1)
+u1 = BlockWrapper(MountChronoBody, length=0.05, mass=0.01)
 
 # Transforms
 RZX = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_X)
 RZY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_Z_TO_Y)
 RXY = ChCoordsysD(ChVectorD(0, 0, 0), Q_ROTATE_X_TO_Y)
 
-MOVE_ZX_PLUS = FrameTransform([0.3,0,0.3],[1,0,0,0])
-MOVE_ZX_MINUS = FrameTransform([-0.3,0,-0.3],[1,0,0,0])
+MOVE_ZX_PLUS = FrameTransform([0.3, 0, 0.3], [1, 0, 0, 0])
+MOVE_ZX_MINUS = FrameTransform([-0.3, 0, -0.3], [1, 0, 0, 0])
 
-MOVE_X_PLUS = FrameTransform([0.3,0,0.],[1,0,0,0])
-MOVE_Z_PLUS_X_MINUS = FrameTransform([-0.3,0,0.3],[1,0,0,0])
+MOVE_X_PLUS = FrameTransform([0.3, 0, 0.], [1, 0, 0, 0])
+MOVE_Z_PLUS_X_MINUS = FrameTransform([-0.3, 0, 0.3], [1, 0, 0, 0])
 
 transform_rzx = BlockWrapper(ChronoTransform, RZX)
 transform_rzy = BlockWrapper(ChronoTransform, RZY)
@@ -83,8 +93,8 @@ transform_mz_plus_x_minus = BlockWrapper(ChronoTransform, MOVE_Z_PLUS_X_MINUS)
 
 # Joints
 
-type_of_input = ChronoRevolveJoint.InputType.Torque
-revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
+type_of_input = ChronoRevolveJoint.InputType.TORQUE
+revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z, type_of_input)
 
 # Nodes
 
@@ -98,7 +108,6 @@ T1 = Node(label="T1", is_terminal=True, block_wrapper=transform_mx_plus)
 T2 = Node(label="T2", is_terminal=True, block_wrapper=transform_mz_plus_x_minus)
 T3 = Node(label="T3", is_terminal=True, block_wrapper=transform_mzx_plus)
 T4 = Node(label="T4", is_terminal=True, block_wrapper=transform_mzx_minus)
-
 
 J = Node("J")
 L = Node("L")
@@ -232,40 +241,37 @@ TerminalJoint.id_node_connect_parent = 0
 TerminalJoint.graph_insert = rule_graph
 TerminalJoint.replaced_node = J
 
-
 G = GraphGrammar()
 
-rule_action_non_terminal = np.asarray([FlatCreate, Mount, Mount, Mount,
-                                       FingerUpper, FingerUpper, FingerUpper, FingerUpper,  FingerUpper, FingerUpper])
-rule_action_terminal = np.asarray([TerminalFlat,
-                         TerminalL1, TerminalL1, TerminalL1, TerminalL2, TerminalL2, TerminalL2,
-                         TerminalTransformL, TerminalTransformLZ, TerminalTransformRX,
-                         TerminalEndLimb, TerminalEndLimb, TerminalEndLimb,
-                         TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint])
+rule_action_non_terminal = np.asarray([
+    FlatCreate, Mount, Mount, Mount, FingerUpper, FingerUpper, FingerUpper, FingerUpper,
+    FingerUpper, FingerUpper
+])
+rule_action_terminal = np.asarray([
+    TerminalFlat, TerminalL1, TerminalL1, TerminalL1, TerminalL2, TerminalL2, TerminalL2,
+    TerminalTransformL, TerminalTransformLZ, TerminalTransformRX, TerminalEndLimb, TerminalEndLimb,
+    TerminalEndLimb, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint, TerminalJoint,
+    TerminalJoint
+])
 rule_action = np.r_[rule_action_non_terminal, rule_action_terminal]
-
 
 for i in list(rule_action):
     G.apply_rule(i)
 
-
-#Set type of system 
+#Set type of system
 
 chrono_system = chrono.ChSystemNSC()
 # chrono_system = chrono.ChSystemSMC()
 
 grab_robot = robot.Robot(G, chrono_system)
 
+obj = BlockWrapper(ChronoBodyEnv,
+                   shape=SimpleBody.BOX,
+                   pos=FrameTransform([0, 0.8, 0], [1, 0, 0, 0]))
 
-obj = chrono.ChBodyEasyBox(0.2,0.2,0.6,1000,True,True,mat)
-obj.SetCollide(True)
-obj.SetPos(chrono.ChVectorD(0,0.5,0))
-# obj.SetBodyFixed(True)
+node_list_plain = list(map(G.get_node_by_id, G.get_ids_in_dfs_order()))
 
-node_list_plain = list(map(G.get_node_by_id,
-                      G.get_ids_in_dfs_order()))
-
-config_sys = {"Set_G_acc":chrono.ChVectorD(0,-10,0)}
+config_sys = {"Set_G_acc": chrono.ChVectorD(0, -10, 0)}
 
 
 def create_const_traj(torque_value, stop_time: float, time_step: float):
@@ -284,19 +290,20 @@ def create_torque_traj_from_x(joint_dfs, x: list[float], stop_time: float, time_
         control_one_branch = []
         for block in branch:
             one_torque = next(x_iter)
-            control_one_branch.append(create_const_traj(
-                one_torque, stop_time, time_step))
+            control_one_branch.append(create_const_traj(one_torque, stop_time, time_step))
         torque_traj.append(np.array(control_one_branch))
 
     return torque_traj
 
 
-
 dfs_patrion_ids = G.graph_partition_dfs()
-def get_node(node_id): return G.get_node_by_id(node_id)
 
-dfs_patrion_node = [[get_node(node_id) for node_id in branch]
-                    for branch in dfs_patrion_ids]
+
+def get_node(node_id):
+    return G.get_node_by_id(node_id)
+
+
+dfs_patrion_node = [[get_node(node_id) for node_id in branch] for branch in dfs_patrion_ids]
 dfs_j = []
 number_trq = 0
 for branch in dfs_patrion_node:
@@ -309,13 +316,15 @@ for branch in dfs_patrion_node:
 const_torque_koef = [random.random() for _ in range(number_trq)]
 arr_trj = create_torque_traj_from_x(dfs_j, const_torque_koef, 10, 0.1)
 
-
 time_model = time()
 time_to_contact = 2
 time_without_contact = 0.2
 max_time = 10
-flags = [FlagSlipout(time_to_contact,time_without_contact),
-         FlagNotContact(time_to_contact), FlagMaxTime(max_time)]
+flags = [
+    FlagSlipout(time_to_contact, time_without_contact),
+    FlagNotContact(time_to_contact),
+    FlagMaxTime(max_time)
+]
 
 times_step = 1e-3
 
@@ -334,6 +343,6 @@ sim.set_flags_stop_simulation(flags)
 sim.change_config_system(config_sys)
 sim_output = sim.simulate_system(times_step, True)
 
-reward = criterion_calc(sim_output, B_NODES_NEW, J_NODES_NEW, LB_NODES_NEW, RB_NODES_NEW, WEIGHTS, GAIT_PERIOD)
+reward = criterion_calc(sim_output, B_NODES_NEW, J_NODES_NEW, LB_NODES_NEW, RB_NODES_NEW, WEIGHTS,
+                        GAIT_PERIOD)
 print(reward)
-print(None)

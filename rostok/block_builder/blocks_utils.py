@@ -1,4 +1,4 @@
-from rostok.block_builder.node_render import ChronoBody, ChronoTransform, ChronoRevolveJoint
+from rostok.block_builder.node_render import RobotBody, ChronoTransform, ChronoRevolveJoint
 from rostok.graph_grammar.node import Node
 from enum import Enum
 
@@ -9,7 +9,7 @@ class CollisionGroup(int, Enum):
     Object = 2
     World  = 3
 
-def make_collide(body_list: list[ChronoBody], group_id: CollisionGroup, disable_group: list[CollisionGroup] = None, self_colide=False):
+def make_collide(body_list: list[RobotBody], group_id: CollisionGroup, disable_group: list[CollisionGroup] = None, self_colide=False):
     
     if type(group_id) is  not CollisionGroup:
         raise Exception("group_id must be CollisionGroup. Instead {wrong_type}".format(wrong_type=type(group_id)))
@@ -32,6 +32,6 @@ class NodeFeatures:
     def is_joint(node: Node):
         return node.block_wrapper.block_cls is ChronoRevolveJoint
     def is_body(node: Node):
-        return node.block_wrapper.block_cls is ChronoBody
+        return node.block_wrapper.block_cls is RobotBody
     def is_transform(node: Node):
         return node.block_wrapper.block_cls is ChronoTransform    

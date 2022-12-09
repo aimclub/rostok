@@ -2,6 +2,7 @@ from rostok.graph_grammar.node import *
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 from rostok.graph_generators.graph_reward import Reward
 from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
+from rostok.utils.result_saver import MCTSReporter, RobotState
 
 def rule_is_terminal(rule: Rule):
     """Function finding non terminal rules 
@@ -169,7 +170,8 @@ class GraphEnvironment():
             return is_graph_eq
         return False
         
-    
+
+reporter = MCTSReporter("results/")
 class GraphVocabularyEnvironment(GraphEnvironment):
     def __init__(self, initilize_graph: GraphGrammar, rule_vocabulary: RuleVocabulary, max_numbers_rules_non_terminal=20):
         """Subclass graph environment on rule vocabulary instead rules and with real reward on simulation and control optimizing
@@ -181,6 +183,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         """     
         super().__init__(initilize_graph, None, max_numbers_rules_non_terminal)
         self._actions = rule_vocabulary
+        self.state: RobotState = RobotState()
         self.movments_trajectory = None
     
     def getPossibleActions(self):
@@ -192,8 +195,8 @@ class GraphVocabularyEnvironment(GraphEnvironment):
             possible_rules_name = self._actions.get_list_of_applicable_terminal_rules(self.graph)
         
         possible_rules = [self._actions.rule_dict[str_rule] for str_rule in possible_rules_name]
-        possible_actions = [RuleAction(rule) for rule in possible_rules]
-        return possible_actions
+        possible_actions = set(RuleAction(rule) for rule in possible_rules)
+        return list(possible_actions)
      
     def getReward(self):
         #try:
@@ -202,7 +205,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         self.movments_trajectory = result_optimizer[1]
         func_reward = self.optimizer.create_reward_function(self.graph)
         func_reward(self.movments_trajectory, True)
-         
+        reporter.add_reward(self.state, self.reward, self.movments_trajectory)
         print(self.reward)
         return self.reward
     
@@ -216,7 +219,10 @@ class GraphVocabularyEnvironment(GraphEnvironment):
             GraphEnvironment: New state environment after action taken
         """
         rule_action = action.get_rule
+        rule_dict = self._actions.rule_dict
+        rule_name = list(rule_dict.keys())[list(rule_dict.values()).index(rule_action)]
         new_state = deepcopy(self)
+        new_state.state.add_rule(rule_name)
         new_state.graph.apply_rule(rule_action)
         new_state.optimizer = self.optimizer
         if not action.is_terminal():
@@ -236,18 +242,32 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         Returns:
             bool, GraphGrammar: Return state of graph. If it is terminal then finish generate graph and new state graph.
         """
+        rule_action = action.get_rule
+        rule_dict = self._actions.rule_dict
+        rule_name = list(rule_dict.keys())[list(rule_dict.values()).index(rule_action)]
+        
         new_state = self.takeAction(action)
         self.graph = new_state.graph
         self.reward = new_state.reward
         self.counter_action = new_state.counter_action
         self.movments_trajectory = new_state.movments_trajectory
+        self.state = new_state.state
+        reporter.make_step(rule_name, self.counter_action)
         done = new_state.isTerminal()
+        
     
         if render:
             plt.figure()
             nx.draw_networkx(self.graph, pos=nx.kamada_kawai_layout(self.graph, dim=2), node_size=800,
                  labels={n: self.graph.nodes[n]["Node"].label for n in self.graph})
             plt.show()
+        if done: 
+            reporter.main_control = self.movments_trajectory
+            reporter.main_reward = self.reward
+            print(self.movments_trajectory)
+            reporter.dump_results()
+            reporter.plot_means()
+            
         return done, self.graph, self.movments_trajectory
     
     def __deepcopy__(self, memo):

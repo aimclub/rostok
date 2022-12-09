@@ -67,7 +67,9 @@ class Robot:
         for branch in dfs_rbnode:
             branch_rb = list(filter(is_joint, branch))
             branch_block = list(map(lambda x: x.block, branch_rb))
-            dfs_j.append(branch_block)
+            len_joints = len(branch_block)
+            if len_joints != 0:
+                dfs_j.append(branch_block)
 
         dfs_j.sort(key=len)
         return dfs_j

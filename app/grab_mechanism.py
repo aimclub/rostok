@@ -3,16 +3,16 @@ import networkx as nx
 import numpy as np
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
+from rostok.block_builder.body_size import BoxSize
 
 import rostok.block_builder.control as ctrl
 import rostok.virtual_experiment.robot as robot
 from rostok.graph_grammar.node import ROOT, BlockWrapper, GraphGrammar, Node, Rule
-from rostok.block_builder.node_render import ChronoBody, ChronoRevolveJoint, ChronoTransform
+from rostok.block_builder.node_render import LinkChronoBody, FlatChronoBody, MountChronoBody,  ChronoRevolveJoint, ChronoTransform, RobotBody
 from rostok.block_builder.blocks_utils import CollisionGroup, make_collide
 from rostok.criterion.flags_simualtions import FlagMaxTime
 from rostok.utils.dataset_materials.material_dataclass_manipulating import create_struct_material_from_file
 from rostok.block_builder.transform_srtucture import FrameTransform
-
 # Define block types
 mat = chrono.ChMaterialSurfaceNSC()
 mat.SetFriction(0.5)
@@ -21,13 +21,13 @@ mat.SetDampingF(0.1)
 mat_r = ("polyactide", "./rostok/utils/dataset_materials/material.xml", "ChMaterialSurfaceNSC")
 polyactide_material_struct = create_struct_material_from_file(*mat_r)
 # Bodies
-link1 = BlockWrapper(ChronoBody, length=0.6, material = polyactide_material_struct)
-link2 = BlockWrapper(ChronoBody, length=0.4, material = polyactide_material_struct)
+link1 = BlockWrapper(LinkChronoBody, length=0.6, material = polyactide_material_struct)
+link2 = BlockWrapper(LinkChronoBody, length=0.4, material = polyactide_material_struct)
 
-flat1 = BlockWrapper(ChronoBody, width=0.8, length=0.2)
-flat2 = BlockWrapper(ChronoBody, width=1.4, length=0.2)
+flat1 = BlockWrapper(FlatChronoBody, width=0.8, length=0.2)
+flat2 = BlockWrapper(FlatChronoBody, width=1.4, length=0.2)
 
-u1 = BlockWrapper(ChronoBody, width=0.2, length=0.2)
+u1 = BlockWrapper(MountChronoBody, width=0.1, length=0.1)
 
 # Transforms
 
@@ -42,7 +42,7 @@ transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
 transform_mx_plus = BlockWrapper(ChronoTransform, MOVE_X_PLUS)
 transform_mz_plus_x_minus = BlockWrapper(ChronoTransform, MOVE_Z_PLUS_X_MINUS)
 
-type_of_input = ChronoRevolveJoint.InputType.Torque
+type_of_input = ChronoRevolveJoint.InputType.TORQUE
 # Joints
 revolve1 = BlockWrapper(
     ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
@@ -244,7 +244,7 @@ vis.AddTypicalLights()
 
 # Make robot collide
 blocks = grab_robot.block_map.values()
-body_block = filter(lambda x: isinstance(x, ChronoBody), blocks)
+body_block = filter(lambda x: isinstance(x, RobotBody), blocks)
 make_collide(body_block, CollisionGroup.Robot)
 
 

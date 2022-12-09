@@ -3,7 +3,7 @@ import pychrono as chrono
 from rostok.virtual_experiment.robot import Robot
 from rostok.block_builder.blocks_utils import NodeFeatures
 from rostok.virtual_experiment.simulation_step import SimulationStepOptimization, SimOut
-from scipy.optimize import direct
+from scipy.optimize import direct, shgo
 from typing import Callable
 from dataclasses import dataclass
 from dataclasses import field
@@ -74,9 +74,9 @@ class ControlOptimizer():
         def reward(x, is_vis=False):
             # Init object state
             object_to_grab = self.cfg.get_rgab_object_callback()
-            init_pos = chrono.ChCoordsysD(object_to_grab.GetCoord())
-            object_to_grab.SetNoSpeedNoAcceleration()
-            object_to_grab.SetCoord(init_pos)
+            # init_pos = chrono.ChCoordsysD(object_to_grab.body.GetCoord())
+            # object_to_grab.body.SetNoSpeedNoAcceleration()
+            # object_to_grab.body.SetCoord(init_pos)
 
             arr_traj = self.cfg.params_to_timesiries_callback(generated_graph, x)
             sim = SimulationStepOptimization(
@@ -96,6 +96,6 @@ class ControlOptimizer():
         multi_bound = create_multidimensional_bounds(
             generated_graph, self.cfg.bound)
         if len(multi_bound) == 0:
-            return (10, 0)
+            return (0, 0)
         result = direct(reward_fun, multi_bound, maxiter=self.cfg.iters)
         return (result.fun, result.x)
