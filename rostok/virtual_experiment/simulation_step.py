@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.block_builder.node_render import RobotBody, ChronoRevolveJoint, RobotBody
+from rostok.block_builder.node_render import RobotBody, ChronoRevolveJoint, ChronoBodyEnv
 from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
-from rostok.block_builder.blocks_utils import make_collide, CollisionGroup
 from rostok.criterion.flags_simualtions import ConditionStopSimulation, FlagStopSimualtions
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
@@ -74,7 +73,7 @@ SimOut = dict[int, SimulationDataBlock]
 # Class for simulation system in loop optimization control
 
 class SimulationStepOptimization:
-    def __init__(self, control_trajectory, graph_mechanism: GraphGrammar, grasp_object: chrono.ChBody):
+    def __init__(self, control_trajectory, graph_mechanism: GraphGrammar, grasp_object: ChronoBodyEnv):
         self.control_trajectory = control_trajectory
         self.graph_mechanism = graph_mechanism
         self.controller_joints = []
@@ -192,8 +191,8 @@ class SimulationStepOptimization:
                                                              filter(lambda x: isinstance(x[1], RobotBody),
                                                                     self.grab_robot.block_map.items()))
                                                         
-        arrays_simulation_data_obj_force = [(999, [])]
-        arrays_simulation_data_amount_obj_contact_surfaces = [(999, [])]
+        arrays_simulation_data_obj_force = [(-1, [])]
+        arrays_simulation_data_amount_obj_contact_surfaces = [(-1, [])]
 
         # Loop of simulation
         while not self.condion_stop_simulation.flag_stop_simulation():
@@ -224,7 +223,7 @@ class SimulationStepOptimization:
             current_data_std_obj_force = RobotSensor.std_contact_forces_object(
                 self.grasp_object)
             
-            current_data_amount_obj_contact_surfaces = dict([(999, len([item for item in self.grasp_object.list_n_forces if item != 0]))])
+            current_data_amount_obj_contact_surfaces = dict([(-1, len([item for item in self.grasp_object.list_n_forces if item != 0]))])
             # Append current data in output arries
             arrays_simulation_data_joint_angle = list(map(append_arr_in_dict,
                                                      current_data_joint_angle.items(),

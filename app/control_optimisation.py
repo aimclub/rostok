@@ -1,5 +1,4 @@
-from math import fabs
-from turtle import shape
+
 import app_vocabulary
 
 from rostok.graph_grammar.node import GraphGrammar, BlockWrapper, Node
@@ -10,6 +9,7 @@ import rostok.criterion.criterion_calc as criterion
 from rostok.criterion.flags_simualtions import FlagMaxTime, FlagNotContact
 from rostok.trajectory_optimizer.control_optimizer import ConfigRewardFunction, ControlOptimizer
 from rostok.trajectory_optimizer.trajectory_generator import create_torque_traj_from_x
+from rostok.block_builder.basic_node_block import SimpleBody
 import matplotlib.pyplot as plt
 
 import pychrono as chrono
@@ -27,13 +27,7 @@ def get_object_to_grasp():
     matich = DefaultChronoMaterial()
     matich.Friction = 0.65
     matich.DampingF = 0.65
-    obj = BlockWrapper(ChronoBodyEnv,
-                       width=0.2,
-                       length=0.3,
-                       depth=0.5,
-                       material=matich,
-                       shape="ellipsoid",
-                       pos=FrameTransform([0, 1, 0], [0, -0.048, 0.706, 0.706]))
+    obj = BlockWrapper(ChronoBodyEnv,shape=SimpleBody.ELLIPSOID, material=matich, pos=FrameTransform([0, 1, 0],[0,-0.048, 0.706, 0.706]))
 
     return obj
 

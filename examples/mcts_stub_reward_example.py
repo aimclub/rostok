@@ -1,5 +1,5 @@
 
-from rostok.block_builder.node_render import (BasicChronoBody, FlatChronoBody, MountChronoBody,
+from rostok.block_builder.node_render import (LinkChronoBody, FlatChronoBody, MountChronoBody,
                                               ChronoRevolveJoint, ChronoTransform)
 import rostok.graph_generators.graph_environment as env_graph
 import mcts
@@ -77,8 +77,8 @@ mat_r = ("polyactide", "./rostok/utils/dataset_materials/material.xml", "ChMater
 polyactide_material_struct = create_struct_material_from_file(*mat_r)
 
 # Bodies
-link1 = BlockWrapper(BasicChronoBody, length=0.6, material = polyactide_material_struct)
-link2 = BlockWrapper(BasicChronoBody, length=0.4, material = polyactide_material_struct)
+link1 = BlockWrapper(LinkChronoBody, length=0.6, material = polyactide_material_struct)
+link2 = BlockWrapper(LinkChronoBody, length=0.4, material = polyactide_material_struct)
 
 flat1 = BlockWrapper(FlatChronoBody, width=0.8, length=0.2)
 flat2 = BlockWrapper(FlatChronoBody, width=1.4, length=0.2)
@@ -98,7 +98,7 @@ transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
 transform_mx_plus = BlockWrapper(ChronoTransform, MOVE_X_PLUS)
 transform_mz_plus_x_minus = BlockWrapper(ChronoTransform, MOVE_Z_PLUS_X_MINUS)
 
-type_of_input = ChronoRevolveJoint.InputType.Torque
+type_of_input = ChronoRevolveJoint.InputType.TORQUE
 # Joints
 revolve1 = BlockWrapper(
     ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)

@@ -13,7 +13,8 @@ def init_extension_rules(config_rules):
 
     length_link = list(map(lambda x: float(x), config_rules["Links"]["length"].split(",")))
 
-    flat = list(map(lambda x: BlockWrapper(FlatChronoBody, width=x, length=0.05, depth=0.8), width))
+    link = list(map(lambda x: BlockWrapper(LinkChronoBody, length=x),
+                    length_link))
 
     link = list(map(lambda x: BlockWrapper(BasicChronoBody, length=x), length_link))
 
@@ -57,7 +58,7 @@ def init_extension_rules(config_rules):
     # transform_to_alpha_rotate = BlockWrapper(ChronoTransform, ROTATE_TO_ALPHA)
 
     # %%
-    type_of_input = ChronoRevolveJoint.InputType.Torque
+    type_of_input = ChronoRevolveJoint.InputType.TORQUE
 
     # Joints
     revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z, type_of_input)

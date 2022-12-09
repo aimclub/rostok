@@ -8,7 +8,7 @@ import pychrono as chrono
 
 from rostok.graph_grammar import node_vocabulary, rule_vocabulary
 from rostok.graph_grammar.node import ROOT, GraphGrammar, BlockWrapper
-from rostok.block_builder.node_render import (BasicChronoBody, FlatChronoBody, MountChronoBody,
+from rostok.block_builder.node_render import (LinkChronoBody, FlatChronoBody, MountChronoBody,
                                             ChronoTransform, ChronoRevolveJoint)
 from rostok.block_builder.transform_srtucture import FrameTransform
 
@@ -26,8 +26,8 @@ mat.SetFriction(0.5)
 mat.SetDampingF(0.1)
 
 # Bodies
-link1 = BlockWrapper(BasicChronoBody, length=0.6)
-link2 = BlockWrapper(BasicChronoBody, length=0.4)
+link1 = BlockWrapper(LinkChronoBody, length=0.6)
+link2 = BlockWrapper(LinkChronoBody, length=0.4)
 
 flat1 = BlockWrapper(FlatChronoBody, width=0.5, length=0.1, depth= 0.8)
 flat2 = BlockWrapper(FlatChronoBody, width=0.5, length=0.1, depth= 0.8)
@@ -46,14 +46,14 @@ transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
 transform_mx_plus = BlockWrapper(ChronoTransform, MOVE_X_PLUS)
 transform_mz_plus_x_minus = BlockWrapper(ChronoTransform, MOVE_Z_PLUS_X_MINUS)
 
-type_of_input = ChronoRevolveJoint.InputType.Torque
+type_of_input = ChronoRevolveJoint.InputType.TORQUE
 # Joints
 revolve1 = BlockWrapper(
     ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
 
 
 # %%
-type_of_input = ChronoRevolveJoint.InputType.Torque
+type_of_input = ChronoRevolveJoint.InputType.TORQUE
 
 # Joints
 revolve1 = BlockWrapper(

@@ -1,4 +1,5 @@
 import numpy as np
+from rostok.block_builder.basic_node_block import SimpleBody
 from rostok.block_builder.node_render import ChronoBodyEnv
 from rostok.block_builder.transform_srtucture import FrameTransform
 from rostok.graph_grammar.node import BlockWrapper
@@ -13,7 +14,6 @@ from rostok.block_builder.blocks_utils import NodeFeatures
 from numpy import arange
 from rostok.trajectory_optimizer.control_optimizer import num_joints
 from rostok.trajectory_optimizer.trajectory_generator import create_dfs_joint
-
 """
     Example generate random constant torque
     Calculate all info about joint from graph
@@ -36,27 +36,28 @@ def create_torque_traj_from_x(joint_dfs, x: list[float], stop_time: float, time_
         control_one_branch = []
         for block in branch:
             one_torque = next(x_iter)
-            control_one_branch.append(create_const_traj(
-                one_torque, stop_time, time_step))
+            control_one_branch.append(create_const_traj(one_torque, stop_time, time_step))
         torque_traj.append(np.array(control_one_branch))
 
     return torque_traj
 
 
-mechs = [get_terminal_graph_three_finger,
-         get_terminal_graph_ladoshaka, get_terminal_graph_two_finger]
+mechs = [
+    get_terminal_graph_three_finger, get_terminal_graph_ladoshaka, get_terminal_graph_two_finger
+]
 
 for get_graph in mechs:
     G = get_graph()
 
     dfs_patrion_ids = G.graph_partition_dfs()
-    def get_node(node_id): return G.get_node_by_id(node_id)
 
-    dfs_patrion_node = [[get_node(node_id) for node_id in branch]
-                        for branch in dfs_patrion_ids]
+    def get_node(node_id):
+        return G.get_node_by_id(node_id)
+
+    dfs_patrion_node = [[get_node(node_id) for node_id in branch] for branch in dfs_patrion_ids]
     dfs_j = create_dfs_joint(G)
     number_trq = num_joints(G)
-    
+
     const_torque_koef = [random.random() for _ in range(number_trq)]
     arr_trj = create_torque_traj_from_x(dfs_j, const_torque_koef, 10, 0.1)
 
@@ -78,8 +79,12 @@ for get_graph in mechs:
     grab_obj_mat = chrono.ChMaterialSurfaceNSC()
     grab_obj_mat.SetFriction(0.5)
     grab_obj_mat.SetDampingF(0.1)
-    obj = BlockWrapper(ChronoBodyEnv, width = 0.3, depth = 0.6, length = 0.3, 
-                       pos=FrameTransform([0.,0.8,0.],[1,0,0,0]))
+
+    box = SimpleBody.BOX
+    box.width = 0.3
+    box.length = 0.3
+    box.height = 0.6
+    obj = BlockWrapper(ChronoBodyEnv, shape=box, pos=FrameTransform([0., 0.8, 0.], [1, 0, 0, 0]))
 
     sim = step.SimulationStepOptimization(arr_trj, G, obj)
     sim.set_flags_stop_simulation(flags)
