@@ -40,7 +40,7 @@ jobs:
 
     - name: Install Chrono
       run: |
-        wghttps://anaconda.org/projectchrono/pychrono/7.0.0/download/linux-64/pychrono-7.0.0-py39_2295.tar.bz2
+        wget https://anaconda.org/projectchrono/pychrono/7.0.0/download/linux-64/pychrono-7.0.0-py39_2295.tar.bz2
         conda install pychrono-7.0.0-py39_2295.tar.bz2
 
     - name: Test with pytest
