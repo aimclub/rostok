@@ -1,0 +1,7 @@
+title: Rostok Documentation
+theme: jekyll-theme-minimal
+markdown: kramdown
+description: Bookmark this to keep an eye on my project updates!
+  <div class='menu-group'>
+    <div class='main-menu-item'><a href="index">About the library</a></div>
+    <div class='menu-item'><a href="Algorithm">Algoritms</a></div>
