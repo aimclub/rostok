@@ -29,6 +29,7 @@ jobs:
     - name: Update conda
       run: |
         conda update -n base -c defaults conda
+        pip3 install pytest
 
     - name: Install Chrono
       run: |
