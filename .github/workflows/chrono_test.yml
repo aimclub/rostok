@@ -1,0 +1,40 @@
+name: Python Package using Conda
+
+on: [ push ]
+
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-22.04
+    strategy:
+      max-parallel: 5
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.9.12
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.9.12
+    - name: Add conda to system path
+      run: |
+        # $CONDA is an environment variable pointing to the root of the miniconda directory
+        echo $CONDA/bin >> $GITHUB_PATH
+  
+    
+    - name: Update conda
+      run: |
+        conda update -n base -c defaults conda
+
+    - name: Install Chrono
+      run: |
+        wget https://anaconda.org/projectchrono/pychrono/7.0.0/download/linux-64/pychrono-7.0.0-py39_2295.tar.bz2
+        conda install pychrono-7.0.0-py39_2295.tar.bz2
+
+    - name: Test with pytest
+      run: |
+        pytest tests/chrono_test.py
