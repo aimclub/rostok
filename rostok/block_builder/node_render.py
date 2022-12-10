@@ -236,7 +236,7 @@ class LinkChronoBody(ChronoBody, RobotBody):
         body = chrono.ChBody()
 
         # Calculate new length with gap
-        gap_between_bodies = 0.01
+        gap_between_bodies = 0.05
         cylinder_r = width / 2
         offset = gap_between_bodies + cylinder_r
         length_minus_gap = length - offset
