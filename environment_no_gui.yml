@@ -6,11 +6,9 @@ channels:
   - https://conda.anaconda.org/intel
   - https://conda.anaconda.org/conda-forge
   - projectchrono
-  - dlr-sc
   - defaults
 dependencies:
   - python=3.9.12
-  - opencascade
   - pythonocc-core=7.4.1
   - irrlicht
   - pychrono=7.0.0
