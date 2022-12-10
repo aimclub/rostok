@@ -1,7 +1,7 @@
 from statistics import mean
 from datetime import datetime
-import matplotlib.pyplot as plt
 import sys
+import matplotlib.pyplot as plt
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 
@@ -29,6 +29,8 @@ class RobotState():
         graph = GraphGrammar()
         for rule in self.rule_list:
             graph.apply_rule(rules.get_rule(rule))
+        rules.make_graph_terminal(graph)
+        return graph
 
 
 class MCTSReporter():
@@ -104,7 +106,7 @@ class MCTSReporter():
             sys.stdout = original_stdout
 
 
-def read_report(path):
+def read_report(path, rules: RuleVocabulary):
     with open(path,'r') as report:
         first_line = report.readline()
         print(first_line)
@@ -117,7 +119,8 @@ def read_report(path):
                 reward = report.readline().split().pop(0)
 
             line = report.readline()
-    return final_state, control, reward
+        final_graph = final_state.make_graph(rules)
+    return final_graph, control, reward
 
 if __name__ =="__main__":
     reporter = MCTSReporter("results/")
