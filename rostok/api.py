@@ -14,14 +14,19 @@ from app.control_optimisation import create_grab_criterion_fun, create_traj_fun,
 
 class OpenChainGen:
     """The main class manipulate settings and running generation open chain grab mechanism
+    
+    There are two ways to start robot generation. The first method uses the configuration file `rostock/config.ini` with the function `api.create_generator_by_config'.
+    It returns the class of the generation algorithm specified by the configuration. It remains to call the 'run_generation` method, which launches the search capture of the robot. In the second method, you configure the class arguments yourself.
+    Further, there are minimalistic descriptive arguments of the class.
+    
         
-        Args:
-            control_optimizer (ControlOptimizer): Object manipulate control optimizing. Defaults to None.
-            graph_env (GraphEnvironment): Object manipulate MCTS environment. Defaults to None.
-            rule_vocabulary (RuleVocabulary): Vocabulary of graph grammar rules. Defaults to None.
-            stop_simulation_flags (StopSimulationFlags): Flags to stop simulation by some condition. Defaults to None.
-            search_iteration (int): Max number MCTS exploration environment on each step. Defaults to 0.
-            max_numbers_non_terminal_rules (int): Max number of non-terminal rules which can be aplied. Defaults to 0.
+    Args:
+        control_optimizer (ControlOptimizer): Object manipulate control optimizing. Defaults to None.
+        graph_env (GraphEnvironment): Object manipulate MCTS environment. Defaults to None.
+        rule_vocabulary (RuleVocabulary): Vocabulary of graph grammar rules. Defaults to None.
+        stop_simulation_flags (StopSimulationFlags): Flags for stopping simulation by some condition. Defaults to None.
+        search_iteration (int):  The maximum number of non-terminal rules that can be applied. Defaults to 0.
+        max_numbers_non_terminal_rules (int): The maximum number of non-terminal rules that can be applied. Defaults to 0.
     """    
     def __init__(self):
         self.control_optimizer = None
@@ -33,14 +38,14 @@ class OpenChainGen:
         self.max_numbers_non_terminal_rules = 0
 
     def create_control_optimizer(self, bound, iterations, time_step, time_sim, gait):
-        """Create control optimizing object by input options
+        """Creating a control optimization object based on input data
 
         Args:
-            bound (tuple): Bound valuee of the control input in robot. The format is (min, max)
-            iterations (int): Max amount of optimizing iteration
+            bound (tuple): The lower and upper limit of the input robot control. The format is (min, max)
+            iterations (int): Maximum number of optimizing iteration
             time_step (float): Step width of simulation for optimizing control
-            time_sim (float): Define max time of simulation for optimizing control
-            gait (float): time value of grasping's gait period
+            time_sim (float): Define maximum time of simulation for optimizing control
+            gait (float): Time value of grasping's gait period
         """        
         WEIGHT = [5, 0, 1, 9]
 
@@ -62,7 +67,7 @@ class OpenChainGen:
         self.control_optimizer = ControlOptimizer(cfg)
 
     def create_environment(self):
-        """Create environment of searching grab construction. MCTS optimizing environment state with a view to maximizing the reward
+        """Create environment of searching grab construction. MCTS optimizing environment state with a view to maximizing the rewarCreating an object generating gripping structures. In the `run_generation` method, MCTS optimizes the action in the environment in order to maximize the reward
         """        
         G = GraphGrammar()
         max_rules = self.max_numbers_non_terminal_rules
@@ -70,13 +75,13 @@ class OpenChainGen:
         self.graph_env.set_control_optimizer(self.control_optimizer)
 
     def run_generation(self, visualaize=False):
-        """Run generating grab mechanism for
+        """Launches the gripping robot generation algorithm .
 
         Args:
-            visualaize (bool, optional): Visualization flag, If true turn on visualize generation steps. Defaults to False.
+            visualaize (bool, optional):Visualization flag, if true, enables visualization of generation steps. Defaults to False.
 
         Returns:
-            tuple: Tuple of result generating: generate grab mechanism, control trajectory and reward.
+            tuple: Tuple of generating result: generate grab mechanism, control trajectory and reward.
         """
         iter = 0
         finish = False
@@ -92,16 +97,16 @@ class OpenChainGen:
 
 
 def create_generator_by_config(config_file: str) -> OpenChainGen:
-    """Create object of generating mechanism from config file
+    """Creating a mechanism generation object from a configuration file
     
-    After creating, it possible change object to your task or just run search (`run_search_algorithm`).
-    Example config file in folder `./rosrok/config.ini`
+    After creation, you can change the object for your task or just run a search (`run_generation`).
+    Example of a configuration file in the folder `./rosrok/config.ini`
 
     Args:
         config_file (str): Path to config file by format .ini
 
     Returns:
-        OpenChainGen: Object of generating mechanism
+        OpenChainGen: The mechanism generation object
     """
     model = OpenChainGen()
     config = configparser.ConfigParser()
