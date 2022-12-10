@@ -172,6 +172,7 @@ class SimulationStepOptimization:
             vis.Initialize()
             vis.AddCamera(chrono.ChVectorD(1.5, 3, -2))
             vis.AddTypicalLights()
+            vis.EnableCollisionShapeDrawing(True)
 
         # Initilize temporarily dictionary of arries output data
         arrays_simulation_data_time = []
