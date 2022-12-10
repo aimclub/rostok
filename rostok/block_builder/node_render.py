@@ -3,12 +3,8 @@ from abc import ABC
 from typing import Optional
 import random
 
-import pychrono.cascade as cascade
 import pychrono.core as chrono
 
-from OCC.Core import BRepPrimAPI
-from OCC.Core import BRepAlgoAPI
-from OCC.Core import gp
 from rostok.block_builder.body_size import BoxSize
 
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
@@ -238,33 +234,47 @@ class LinkChronoBody(ChronoBody, RobotBody):
         # Create body
         material = struct_material2object_material(material)
         body = chrono.ChBody()
-        
-        # Calculate new length with gap 
-        TOLERANCE = 0.01
-        length_minus_gap = length - width - TOLERANCE
+
+        # Calculate new length with gap
+        gap_between_bodies = 0.01
+        cylinder_r = width / 2
+        offset = gap_between_bodies + cylinder_r
+        length_minus_gap = length - offset
+
+        if (length_minus_gap < 0):
+            raise Exception(
+                f"Soo short link length: {length} Need: length > width / 2 + {gap_between_bodies}")
 
         # Add box visual
         box_asset = chrono.ChBoxShape()
-        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width / 2, length / 2,
+        #TODO: Move box asset + gap + cylinder_r
+        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width / 2, (length - 2 * offset) / 2,
                                                            depth / 2)
-        body.AddVisualShape(box_asset)
 
+        body.AddVisualShape(box_asset)
 
         # Add cylinder visual
         cylinder = chrono.ChCylinder()
-        cylinder.p2 = chrono.ChVectorD(0, -length / 2, depth / 2)
-        cylinder.p1 = chrono.ChVectorD(0, -length / 2, -depth / 2)
-        cylinder.rad = width / 2
+        cylinder.p2 = chrono.ChVectorD(0, -length / 2 + gap_between_bodies + cylinder_r, depth / 2)
+        cylinder.p1 = chrono.ChVectorD(0, -length / 2 + gap_between_bodies + cylinder_r, -depth / 2)
+        cylinder.rad = cylinder_r
         cylinder_asset = chrono.ChCylinderShape(cylinder)
         body.AddVisualShape(cylinder_asset)
-        
 
-        # Add collision box 
+        # Add collision box
         body.GetCollisionModel().ClearModel()
-        body.GetCollisionModel().AddBox(material, width / 2, length_minus_gap / 2,
-                                             depth / 2)
-        # Add collision cylinder 
-        
+        body.GetCollisionModel().AddBox(
+            material, width / 2, length_minus_gap / 2, depth / 2,
+            chrono.ChVectorD(0, (cylinder_r + gap_between_bodies) / 2, 0))
+
+        # Add collision cylinder
+        body.GetCollisionModel().AddCylinder(
+            material, cylinder_r, depth / 2, depth / 2,
+            chrono.ChVectorD(0, -length / 2 + gap_between_bodies + cylinder_r, 0),
+            chrono.ChMatrix33D(chrono.Q_ROTATE_Z_TO_Y))
+
+        body.GetCollisionModel().BuildModel()
+
         body.SetMass(mass)
 
         # Create shape
@@ -277,6 +287,7 @@ class LinkChronoBody(ChronoBody, RobotBody):
                          pos_out_marker,
                          random_color,
                          is_collide=is_collide)
+
 
 class FlatChronoBody(ChronoBody, RobotBody):
 
@@ -294,7 +305,8 @@ class FlatChronoBody(ChronoBody, RobotBody):
         body = chrono.ChBody()
 
         box_asset = chrono.ChBoxShape()
-        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width / 2, length / 2 - width / 32, depth / 2)
+        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width / 2, length / 2 - width / 32,
+                                                           depth / 2)
         body.AddVisualShape(box_asset)
         body.SetCollide(True)
 
