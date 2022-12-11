@@ -10,10 +10,6 @@ from rostok.graph_grammar.node import ROOT, BlockWrapper, GraphGrammar
 from rostok.graph_grammar.node_vocabulary import NodeVocabulary
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 
-# Define block types
-mat = chrono.ChMaterialSurfaceNSC()
-mat.SetFriction(0.5)
-mat.SetDampingF(0.1)
 
 # Bodies
 link1 = BlockWrapper(LinkChronoBody, length=0.6)

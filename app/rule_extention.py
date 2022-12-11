@@ -20,11 +20,7 @@ def plot_graph(graph):
     #nx.draw_networkx(graph, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
     plt.show()
     
-
-# Define materials
-mat = chrono.ChMaterialSurfaceNSC()
-mysystem = chrono.ChSystemNSC() 
-mat.SetFriction(0.5)
+ 
 
 def init_extension_rules():
     # %% Bodies for extansions rules
