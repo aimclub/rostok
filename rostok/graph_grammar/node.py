@@ -7,6 +7,18 @@ from networkx.algorithms.traversal import dfs_preorder_nodes
 
 
 class BlockWrapper:
+    """Class is interface between node and interpretation in simulation.
+    
+    The interface allows you to create an interpretation of terminal nodes in the simulation. Interpretation classes is in `rostok.block_builder.node_render`.
+    The instance must be specified when creating the node.
+    When assembling a robot from a graph, an object is created by the `create_block` method.
+    When the object is created, the desired arguments of the interpretation object are set.
+    
+    Args:
+        block_cls: Interpretation class of node in simulation
+        args: Arguments `block_cls`
+        kwargs: Additional arguments `block_cls`
+    """    
     def __init__(self, block_cls, *args, **kwargs):
         self.block_cls = block_cls
         self.args = args
