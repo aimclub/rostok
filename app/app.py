@@ -11,6 +11,7 @@ from control_optimisation import create_grab_criterion_fun, create_traj_fun, get
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.trajectory_optimizer.control_optimizer import ConfigRewardFunction, ControlOptimizer
 from rostok.criterion.flags_simualtions import FlagMaxTime, FlagSlipout, FlagNotContact
+from rostok.utils.result_saver  import read_report
 
 import rostok.graph_generators.graph_environment as env
 
@@ -69,17 +70,19 @@ graph_env = env.GraphVocabularyEnvironment(G, rule_vocabul, max_numbers_rules)
 
 graph_env.set_control_optimizer(control_optimizer)
 
-# %% Run first algorithm
+#%% Run first algorithm
 iter = 0
 while not finish:
     action = searcher.search(initialState=graph_env)
-    finish, final_graph, opt_trajectory = graph_env.step(action, False)
+    finish, final_graph, opt_trajectory, path = graph_env.step(action, False)
     iter += 1
     print(
         f"number iteration: {iter}, counter actions: {graph_env.counter_action}, reward: {graph_env.reward}"
     )
-    
-    
-func_reward = control_optimizer.create_reward_function(final_graph)
-res = func_reward(opt_trajectory, True)
+
+best_graph, best_control, reward = read_report(path, rule_vocabul)
+best_control = [float(x) for x in best_control]
+func_reward = control_optimizer.create_reward_function(best_graph)
+res = -func_reward(best_control, True)
+plot_graph(best_graph)
 print(res)
