@@ -63,10 +63,10 @@ The library was developed in [ITMO University](https://en.itmo.ru/).
 
 * Ivan Borisov - chief scientist 
 * Kirill Zharkov - team leader
-* Yefim Osipov
-* Dmitriy Ivolga
-* Kirill Nasonov
-* Mikhail Chaikovskii
+* Yefim Osipov - scientific developer
+* Dmitriy Ivolga - scientific developer
+* Kirill Nasonov - scientific developer
+* Mikhail Chaikovskii - scientific developer
 
 ## Contacts
 
