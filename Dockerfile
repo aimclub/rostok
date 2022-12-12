@@ -19,14 +19,6 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86
 
 # Put conda in path so we can use conda activate
 ENV PATH=$CONDA_DIR/bin:$PATH
-
-
-RUN conda config --add channels https://conda.anaconda.org/conda-forge
-RUN conda config --add channels https://conda.anaconda.org/intel 
-
-RUN conda install -c conda-forge numpy irrlicht scipy
-RUN conda install -c projectchrono pychrono=7.0.0
-RUN conda install -c anaconda networkx
-
-RUN conda install -c conda-forge networkx matplotlib
+COPY environment_copy.yml .
+RUN conda env create -f environment.yml
 ENV DISPLAY=host.docker.internal:0.0
