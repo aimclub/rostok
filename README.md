@@ -29,18 +29,18 @@ More detailed description of the [algorithms and methods](docs/Algorithm.md).
 
 ## Installation in development mode 
 
-Rostok library is a framework that allows user to tune it for solving various task. Therefore, in order to get the full potential of the library a user should install it in development mode:  
+To modify the modules of the Rostok framework a user should install it in development mode:  
 
 * Create the environment using `conda env create -f environment.yml`
-* activate the environment `rostok`  
+* Activate the environment `rostok`  
 * Install the lates version of PyChrono physical engine using `conda install -c projectchrono pychrono`  
 * Install the package in development mode `pip3 install -e .`  
 
 ### Known issues 
 
-At some computers one can see a problem with the tcl module `version conflict for package "Tcl": have 8.6.12, need exactly 8.6.10`, try to install tk 8.6.10 using `conda install tk=8.6.10`
+At some PC's one can see a problem with the tcl module `version conflict for package "Tcl": have 8.6.12, need exactly 8.6.10`, try to install tk 8.6.10 using `conda install tk=8.6.10`
 
-After the installation of the package one can get an error `Original error was: DLL load failed while importing _multiarray_umath: The specified module could not be found` , try to reinstall numpy in the rostok environment
+After the installation of the package one can get an error `Original error was: DLL load failed while importing _multiarray_umath: The specified module could not be found`, try to reinstall numpy in the rostok environment
 
 ## Documentation
 
@@ -52,26 +52,26 @@ The description of the project and tutorials are available [at project websitehe
 
 ## Examples
 
-The example of configuration and using the generative pipeline is in `rostok\app` directory.  
-The examples of usage of individual modules is in `rostok\examples` directory. 
+An example of configuration and usage of the generative pipeline is in `rostok\app` directory.  
+Examples of usage of independent modules is in `rostok\examples` directory. 
 
 ## Acknowledgments
 <img src="./docs/images/logo.png" width="200">
 
 ### Affiliation
 
-The library was developed in [ITMO University](https://en.itmo.ru/).
+The framework was developed in [ITMO University](https://en.itmo.ru/).
 
 ### Developers
 
 * Ivan Borisov - chief scientist 
 * Kirill Zharkov - team leader
-* Yefim Osipov
-* Dmitriy Ivolga
-* Kirill Nasonov
-* Mikhail Chaikovskii
+* Yefim Osipov - developer
+* Dmitriy Ivolga - developer
+* Kirill Nasonov - developer
+* Mikhail Chaikovskii - developer
 
 ## Contacts
 
 * Ivan Borisov borisovii@itmo.ru for scientific aspects of the project
-* Kirill Zharkov kzharkov@itmo.ru for technical questions
+* Kirill Zharkov kzharkov@itmo.ru for technical questions of the project

@@ -1,6 +1,6 @@
 # Algorithms Description
 
-The basis for implemented co-design algorithms is the graph representation of the mechanism. The nodes of the graphs are the representations of the parts of the mechanism.The graph made of such nodes unambiguously determine the physical properties of the mechanism. A graph can be generated from the starting point using the set of rules that guarantee that any final state is physically possible.
+The basis for implemented co-design algorithms is the graph representation of the mechanism. The nodes of the graphs are the representations of the parts of the mechanism. The graph made of such nodes unambiguously determine the physical properties of the mechanism. A graph can be generated from the starting point using the set of rules that guarantee that any final state is physically possible.
 ## Search for grasping mechanism with open kinematic chain  
 The algorithm generates the grasping mechanism for the user defined object using the set of user-determined rules. The graphs constructed by the set of rules form the space of possible solutions and the algorithm searches that space to obtain the best design. Currently, the rules are set to generate the open kinematic chain mechanisms.  
 
