@@ -68,14 +68,17 @@ The framework was developed in [ITMO University](https://en.itmo.ru/).
 
 ### Developers
 
-* Ivan Borisov - chief scientist
+* Ivan Borisov - reasercher
 * Kirill Zharkov - team leader
 * Yefim Osipov - developer
 * Dmitriy Ivolga - developer
 * Kirill Nasonov - developer
-* Mikhail Chaikovskii - developer
+* Sergey Kolyubin - chief scientist
+<!-- * Mikhail Chaikovskii - reaserch developer -->
+
 
 ## Contacts
 
 * Ivan Borisov borisovii@itmo.ru for scientific aspects of the project
 * Kirill Zharkov kzharkov@itmo.ru for technical questions of the project
+* Sergey Kolyubin s.kolyubin@itmo.ru for collaboration aspects
