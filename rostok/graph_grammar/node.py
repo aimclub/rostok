@@ -30,6 +30,9 @@ class BlockWrapper:
 
 @dataclass
 class Node:
+    """Contains information about the label and block_wrapper,
+    which is the physical representation of the node in the simulator 
+    """
     label: str = "*"
     is_terminal: bool = False
 
@@ -47,6 +50,11 @@ class Node:
 
 
 class Rule:
+    """ The class contains a graph object for substitution into the generated graph
+    and the target node which will be replaced by self.graph_insert.
+    The feature of the rule's terminality is automatically determined.
+    Id's mean V from graph theory, do not intersect with V from generated graph. 
+    """
     _graph_insert: nx.DiGraph = nx.DiGraph()
     replaced_node: Node = Node()
     # In local is system!
@@ -76,6 +84,9 @@ class Rule:
 
 @dataclass
 class WrapperTuple:
+    """ The return type is used to build the Robot.
+        Id - из генерируемого графа  
+    """
     id: int
     block_wrapper: BlockWrapper  # Set default value
 
@@ -84,6 +95,10 @@ ROOT = Node("ROOT")
 
 
 class GraphGrammar(nx.DiGraph):
+    """ A class for using generative rules (similar to L grammar) and manipulating the construction graph.
+        The mechanism for assignment a unique Id, each added node using rule_apply will increase the counter.
+        Supports methods from networkx.DiGraph ancestor class
+    """
     def __init__(self, **attr):
         super().__init__(**attr)
         self.__uniq_id_counter = -1
@@ -93,7 +108,19 @@ class GraphGrammar(nx.DiGraph):
         self.__uniq_id_counter += 1
         return self.__uniq_id_counter
 
-    def find_nodes(self, match: Node):
+    def find_nodes(self, match: Node) -> list[int]:
+        """
+        Parameters
+        ----------
+        match : Node
+            Node for find, matched by label
+
+        Returns
+        -------
+        list[int]
+            Id of matched nodes
+        """
+
         match_nodes = []
         for raw_node in self.nodes.items():
             # Extract node info
@@ -103,7 +130,15 @@ class GraphGrammar(nx.DiGraph):
                 match_nodes.append(node_id)
         return match_nodes
 
-    def _replace_node(self, node_id, rule: Rule):
+    def _replace_node(self, node_id: int, rule: Rule):
+        """ Applies rules to node_id
+
+        Parameters
+        ----------
+        node_id : int
+        rule : Rule
+
+        """
         # Convert to list for mutable
         in_edges = [list(edge) for edge in self.in_edges(node_id)]
         out_edges = [list(edge) for edge in self.out_edges(node_id)]
@@ -140,7 +175,17 @@ class GraphGrammar(nx.DiGraph):
         self.add_edges_from(in_edges)
         self.add_edges_from(out_edges)
 
-    def closest_node_to_root(self, list_ids):
+    def closest_node_to_root(self, list_ids: list[int]) -> int:
+        """ Note, all edges have a weight of 1
+        Parameters
+        ----------
+        list_ids : list[int]
+
+        Returns
+        -------
+        int
+            id of closest Node
+        """
         root_id = self.get_root_id()
 
         def sort_by_root_distance(node_id):
@@ -149,7 +194,13 @@ class GraphGrammar(nx.DiGraph):
         sorta = sorted(list_ids, key=sort_by_root_distance)
         return sorta[0]
 
-    def get_root_id(self):
+    def get_root_id(self) -> int:
+        """
+        Returns
+        -------
+        int
+            root id
+        """
         for raw_node in self.nodes.items():
             raw_node_id = raw_node[0]
             if self.in_degree(raw_node_id) == 0:
@@ -170,14 +221,14 @@ class GraphGrammar(nx.DiGraph):
         else:
             self._replace_node(id_closest, rule)
 
-    def node_levels_bfs(self):
+    def node_levels_bfs(self) -> list[list[int]]:
         """Devide nodes into levels.
         
         Return a list of lists of nodes where each inner list is a 
         level in respect to the \'root\', which is the node with no in edges. 
         This function should be reviewed once we start to use graphs with cycles and not just trees"""
         levels = []
-        # Get the root node that has no in_edges. Currently, we assume that where is only one node without in_edges 
+        # Get the root node that has no in_edges. Currently, we assume that where is only one node without in_edges
         for raw_node in self.nodes.items():
             raw_node_id = raw_node[0]
             if self.in_degree(raw_node_id) == 0:
@@ -186,9 +237,9 @@ class GraphGrammar(nx.DiGraph):
         current_level = [root_id]
         next_level = []
         # The list of edges that is built on the bases of the range to the source
-        bfs_edges_list = list(nx.bfs_edges(self, source=root_id))  
+        bfs_edges_list = list(nx.bfs_edges(self, source=root_id))
         for edge in bfs_edges_list:
-            # If the edge starts in current level, the end of the edge appends to the next level 
+            # If the edge starts in current level, the end of the edge appends to the next level
             if edge[0] in current_level:
                 next_level.append(edge[1])
                 #print(next_level)
@@ -197,7 +248,7 @@ class GraphGrammar(nx.DiGraph):
                 levels.append(current_level)
                 current_level = next_level
                 next_level = [edge[1]]
-        
+
         # Finish the levels by appending current and next_level. In the cycle the appending occurs, when the edge of the next level is found.
         levels.append(current_level)
         levels.append(next_level)
@@ -233,6 +284,17 @@ class GraphGrammar(nx.DiGraph):
         return paths
 
     def build_terminal_wrapper_array(self) -> list[list[WrapperTuple]]:
+        """ Returns a 2-d array of the shape dfs_partition
+        Returns
+        -------
+        list[list[WrapperTuple]]
+    
+
+        Raises
+        ------
+        Exception
+            Exception('Graph contain non-terminal elements')
+        """
         paths = self.graph_partition_dfs()
         wrapper_array = []
 
@@ -263,8 +325,8 @@ class GraphGrammar(nx.DiGraph):
             List ids 
         """
         return list(dfs_preorder_nodes(self, self.get_root_id()))
-    
-    
+
+
     def __eq__(self, __o) -> bool:
         if isinstance(__o, GraphGrammar):
             is_node_eq = __o.nodes == self.nodes
