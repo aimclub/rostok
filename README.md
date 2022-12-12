@@ -37,10 +37,9 @@ To modify the modules of the Rostok framework a user should install it in develo
 
 * Create the environment using `conda env create -f environment.yml`
 * Activate the environment `rostok`  
-* Install the lates version of PyChrono physical engine using `conda install -c projectchrono pychrono`  
 * Install the package in development mode `pip3 install -e .`  
 
-### Known issues 
+### Known issues
 
 At some PC's one can see a problem with the tcl module `version conflict for package "Tcl": have 8.6.12, need exactly 8.6.10`, try to install tk 8.6.10 using `conda install tk=8.6.10`
 
@@ -48,7 +47,7 @@ After the installation of the package one can get an error `Original error was: 
 
 ## Documentation
 
-The description of the project and tutorials are available [at project websitehere](https://licaibeerlab.github.io/graph_assembler/).
+The description of the project and tutorials are available [at project website](https://licaibeerlab.github.io/rostok).
 
 ## Publications
 
@@ -60,6 +59,7 @@ An example of configuration and usage of the generative pipeline is in `rostok\a
 Examples of usage of independent modules is in `rostok\examples` directory. 
 
 ## Acknowledgments
+
 <img src="./docs/images/logo.png" width="200">
 
 ### Affiliation
@@ -68,7 +68,7 @@ The framework was developed in [ITMO University](https://en.itmo.ru/).
 
 ### Developers
 
-* Ivan Borisov - chief scientist 
+* Ivan Borisov - chief scientist
 * Kirill Zharkov - team leader
 * Yefim Osipov - developer
 * Dmitriy Ivolga - developer
