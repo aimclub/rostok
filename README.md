@@ -1,10 +1,12 @@
+<img src="./docs/images/logo_rostok.jpg" width="200">
+
 # Rostok
 
-Rostok is an open source Python framework for co-design of grasping mechanisms. It provides a framework to describe mechanisms as a graph, set the environment, perform simulation of the mechanism, get simulation reward and start the search for the best design. User can use the whole pipeline to get from nodes/details specification to the result of the search algorithm or use the individual modules. Library flexible design allows a user to implement custom generative rules and search algorithms. 
+Rostok is an open source Python framework for generative design of linkage mechanisms for robotic purposes. It provides a framework to describe mechanisms as a graph, set the environment, perform simulation of the mechanism, get simulation reward and start the search for the best design. User can use the whole pipeline to get from nodes/details specification to the result of the search algorithm or use the individual modules. Library flexible design allows a user to implement custom generative rules and search algorithms. 
 
 Currently, the generative co-design is mainly used in production of the static systems, while our project goal is to shift the generative design to the domain of the dynamic systems.
 
-## Project description
+## Project desription
 
 There are four main blocks:  
 
@@ -21,7 +23,7 @@ More detailed description of the [algorithms and methods](docs/Algorithm.md).
 ## Prerequisites
 
 * Anaconda3 
-* Usage of the Docker requires installation of Х-server for Windows https://sourceforge.net/projects/vcxsrv/
+* Usage of the Docker reqires installation of Х-server for Windows https://sourceforge.net/projects/vcxsrv/
 
 ## Installation in development mode 
 
@@ -62,10 +64,10 @@ The library was developed in [ITMO University](https://en.itmo.ru/).
 
 * Ivan Borisov - chief scientist
 * Kirill Zharkov - team leader
-* Yefim Osipov - scientific developer
-* Dmitriy Ivolga - scientific developer
-* Kirill Nasonov - scientific developer
-* Mikhail Chaikovskii - scientific developer
+* Yefim Osipov
+* Dmitriy Ivolga
+* Kirill Nasonov
+* Mikhail Chaikovskii
 
 ## Contacts
 
