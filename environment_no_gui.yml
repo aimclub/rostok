@@ -1,7 +1,7 @@
 # Environment without gui-part
 
 
-name: lic_ai_nvis
+name: rostok_no_gui
 channels:
   - https://conda.anaconda.org/intel
   - https://conda.anaconda.org/conda-forge
