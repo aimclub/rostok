@@ -28,7 +28,6 @@ rule_vocabul, node_features = rule_extention.init_extension_rules()
 
 # !!!! WRITE HERE THE PATH TO THE FILE WITH RESULTS !!!! #
 path = "./results/MCTS_report_22y_12m_12d_22H_27M/mcts_log_.txt"
-
 best_graph, best_control, reward = read_report(path, rule_vocabul)
 
 # %% Create condig optimizing control
