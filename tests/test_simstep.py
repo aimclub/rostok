@@ -8,6 +8,7 @@ from test_ruleset import (get_terminal_graph_no_joints,
 
 import rostok.virtual_experiment.simulation_step as step
 from test_ruleset import rule_vocab
+from rostok.graph_grammar import make_random_graph
 from rostok.block_builder.basic_node_block import SimpleBody
 from rostok.block_builder.node_render import (ChronoBodyEnv,
                                               DefaultChronoMaterial,
@@ -23,7 +24,7 @@ def test_create_graph():
     """
         Test for graph grammar and rule
     """
-    graph = rule_vocab.get_random_graph(5, rule_vocab)
+    graph = make_random_graph.make_random_graph(5, rule_vocab)
 
 
 def test_control_bind_and_create_sim():
