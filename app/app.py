@@ -57,14 +57,14 @@ control_optimizer = ControlOptimizer(cfg)
 # %% Init mcts parameters
 
 # Hyperparameters mctss
-iteration_limit = 7
+iteration_limit = 1
 
 # Initialize MCTS
 searcher = mcts.mcts(iterationLimit=iteration_limit)
 finish = False
 
 G = GraphGrammar()
-max_numbers_rules = 3
+max_numbers_rules = 2
 # Create graph envirenments for algorithm (not gym)
 graph_env = env.GraphVocabularyEnvironment(G, rule_vocabul, max_numbers_rules)
 
@@ -84,8 +84,9 @@ best_graph, best_control, reward = read_report(path, rule_vocabul)
 best_control = [float(x) for x in best_control]
 func_reward = control_optimizer.create_reward_function(best_graph)
 res = -func_reward(best_control, True)
-print(res)
 plot_graph(best_graph)
+print(res)
+
 
 
 
