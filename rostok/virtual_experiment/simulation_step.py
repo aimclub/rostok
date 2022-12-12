@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from rostok.graph_grammar.node import GraphGrammar
-from rostok.block_builder.node_render import RobotBody, ChronoRevolveJoint, ChronoBodyEnv
+from rostok.graph_grammar.node import GraphGrammar, BlockWrapper
+from rostok.block_builder.node_render import RobotBody, ChronoRevolveJoint
 from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
 from rostok.criterion.flags_simualtions import ConditionStopSimulation, FlagStopSimualtions
 import pychrono as chrono
@@ -54,12 +54,12 @@ class DataBodyBlock(SimulationDataBlock):
 """Type for output simulation. Store trajectory and block id"""
 @dataclass(frozen=True)
 class DataObjectBlock(SimulationDataBlock):
-    """Immutable class with output simulation data for robot body block.
+    """Immutable class with output simulation data for object body.
 
         Attr:
-            id_block (int): id of robot block
-            time (list[float]): list of time of simulation
-            sum_contact_forces (list[float]): list of contact forces sum
+            id_block (int): id of object block. Object id is less zero
+            time (list[float]): time array of simulation
+            sum_contact_forces (list[float]): list of summary contact forces
             abs_coord_COG (list[float]): list of absolute coordinates of block
             amount_contact_surfaces (list[int]): list of number of contact surfaces
     """
@@ -73,7 +73,18 @@ SimOut = dict[int, SimulationDataBlock]
 # Class for simulation system in loop optimization control
 
 class SimulationStepOptimization:
-    def __init__(self, control_trajectory, graph_mechanism: GraphGrammar, grasp_object: ChronoBodyEnv):
+    """Wrapper class of simulation robot with control on `pychrono` physical engine.
+
+    Before starting the simulation with the `simulate_system` method, recommended set stopping flag of simulation with `set_flags_stop_simulation`. 
+    Otherwise, the simulation time has no limits and lasts until the end of the program or until the visualization window is closed, if it is set.
+    There are flags in module `criterion.flags_simualtions`
+
+    Args:
+        control_trajectory: Array arries of control trajectory for each joints. Control trajectory of one joint have to have format [[time, value], ...]. Array must be same shape as array of joints.
+        graph_mechanism (GraphGrammar): Graph of the robot to be simulated
+        grasp_object (BlockWrapper): Wrapper of `ChronoBlockEnv`. This is the object that the robot grabs.
+    """    
+    def __init__(self, control_trajectory, graph_mechanism: GraphGrammar, grasp_object: BlockWrapper):
         self.control_trajectory = control_trajectory
         self.graph_mechanism = graph_mechanism
         self.controller_joints = []
@@ -86,26 +97,7 @@ class SimulationStepOptimization:
         self.chrono_system.SetSolverForceTolerance(1e-6)
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
         
-        # self.grasp_object = grasp_object.create_block(self.chrono_system)
         self.grasp_object = grasp_object.create_block(self.chrono_system)
-        # Create instance of chrono system and robot: grab mechanism
-        # self.chrono_system = chrono.ChSystemSMC()
-        # self.chrono_system.UseMaterialProperties(False)
-        # self.chrono_system.SetSolverType(chrono.ChSolver.Type_MINRES)
-        # self.chrono_system.SetContactForceModel(chrono.ChSystemSMC.Hertz)
-        # self.chrono_system.SetSolverForceTolerance(1e-6)
-        # self.chrono_system.SetSolverMaxIterations(100)
-        # timestepper = chrono.ChTimestepperHHT(self.chrono_system) #Hilber, Hughes and Taylor method 
-        # # timestepper = chrono.ChTimestepperRungeKuttaExpl(self.chrono_system) #Runge Kutta method
-        # self.chrono_system.SetTimestepper(timestepper)
-        
-        # # For HHT timestepper only:
-        # timestepper.SetAbsTolerances(1e-5)
-        # timestepper.SetScaling(True)
-        # timestepper.SetStepControl(True)
-        # timestepper.SetMinStepSize(1e-4)
-        # timestepper.SetAlpha(-0.2) # timestepper numerical damping parameter [-1/3; 0]; a = 0 there is no damping
-        # timestepper.SetMaxiters(5)
 
     
         self.grab_robot = Robot(self.graph_mechanism, self.chrono_system)
@@ -124,7 +116,14 @@ class SimulationStepOptimization:
         self.grab_robot.block_map[base_id].body.SetBodyFixed(True)
 
     def bind_trajectory(self, control_trajectory):
-        # Create the controller joint from the control trajectory
+        """Create the controller joint from the control trajectory
+
+        Args:
+            control_trajectory (list): Array arries of control trajectory for each joints. Control trajectory of one joint have to have format [[time, value], ...]. Array must be same shape as array of joints.
+
+        Raises:
+            IndexError: Exception in the case of a mismatch between the control and the joints 
+        """
         try:
             for id_finger, finger in enumerate(self.grab_robot.get_joints):
                 finger_controller = []
@@ -139,7 +138,11 @@ class SimulationStepOptimization:
 
     # Setter flags of stop simulation
     def set_flags_stop_simulation(self, flags_stop_simulation: list[FlagStopSimualtions]):
+        """Setter flags of stop simulation
 
+        Args:
+            flags_stop_simulation (list[FlagStopSimualtions]): List of desired checking flags. You can see flags in module `criterion.flags_simualtions`. Or create yours, that subclasses `FlagStopSimualtions`
+        """
         self.condion_stop_simulation = ConditionStopSimulation(self.chrono_system,
                                                                self.grab_robot,
                                                                self.grasp_object,
@@ -147,6 +150,14 @@ class SimulationStepOptimization:
 
     # Add peculiar parameters of chrono system. Like that {"Set_G_acc":chrono.ChVectorD(0,0,0)}
     def change_config_system(self, dict_config: dict):
+        """The method is for changing parameters of `pychrono` simulation system.
+
+        Args:
+            dict_config (dict): The dictionary which contains the configuration parameters simulation system. The format is {"<name_of_method>": <method_arguments>}. For example, {"Set_G_acc":chrono.ChVectorD(0,0,0)}
+
+        Raises:
+            AttributeError: Exception in case the system does not have a specified method
+        """        
         for str_method, input in dict_config.items():
             try:
                 metod_system = getattr(self.chrono_system, str_method)
@@ -157,7 +168,15 @@ class SimulationStepOptimization:
 
     # Run simulation
     def simulate_system(self, time_step, visualize=False) -> SimOut:
-        # Function appending arraies in map
+        """Start the simulation and return data from it
+
+        Args:
+            time_step (float): Width of time step the simulation
+            visualize (bool, optional): Flag to enable visualization. Defaults to False.
+
+        Returns:
+            SimOut(dict[int, SimulationDataBlock]): Dictionary of simulation data of each block. The keys are block id, and the values dataclasses with data.
+        """        
         def append_arr_in_dict(x, y):
             if x[0] == y[0]:
                 return (y[0], y[1] + [x[1]])

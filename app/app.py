@@ -34,15 +34,15 @@ rule_vocabul, node_features = rule_extention.init_extension_rules()
 # %% Create condig optimizing control
 
 GAIT = 2.5
-WEIGHT = [5, 0, 1, 9]
+WEIGHT = [3, 1, 1, 2]
 
 cfg = ConfigRewardFunction()
-cfg.bound = (0, 10)
-cfg.iters = 2
+cfg.bound = (2, 10)
+cfg.iters = 5
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
-cfg.time_step = 0.001
-cfg.time_sim = 3
-cfg.flags = [FlagMaxTime(3), FlagNotContact(1), FlagSlipout(1, 0.25)]
+cfg.time_step = 0.005
+cfg.time_sim = 2
+cfg.flags = [FlagMaxTime(2), FlagNotContact(1), FlagSlipout(0.5, 0.5)]
 """Wraps function call"""
 
 criterion_callback = create_grab_criterion_fun(node_features, GAIT, WEIGHT)
@@ -57,14 +57,14 @@ control_optimizer = ControlOptimizer(cfg)
 # %% Init mcts parameters
 
 # Hyperparameters mctss
-iteration_limit = 1
+iteration_limit = 5
 
 # Initialize MCTS
 searcher = mcts.mcts(iterationLimit=iteration_limit)
 finish = False
 
 G = GraphGrammar()
-max_numbers_rules = 2
+max_numbers_rules = 5
 # Create graph envirenments for algorithm (not gym)
 graph_env = env.GraphVocabularyEnvironment(G, rule_vocabul, max_numbers_rules)
 
@@ -86,8 +86,3 @@ func_reward = control_optimizer.create_reward_function(best_graph)
 res = -func_reward(best_control, True)
 plot_graph(best_graph)
 print(res)
-
-
-
-
-

@@ -9,6 +9,7 @@ description: Bookmark this to keep an eye on my project updates!
     <div class='main-menu-item'><a href="index">About the library</a></div>
     <div class='menu-item'><a href="project_structure">Project structure</a></div>
     <div class='menu-item'><a href="Algorithm">Algorithms</a></div>
+    <div class='menu-item'><a href="api">API documentation</a></div>
     <div class='menu-item'><a href="how_to_use">How to use our framework</a></div>
     <div class='menu-item'><a href="tutorials">Tutorials and documentation</a></div>
     <div class='menu-item'><a href="installation">Installation</a></div>
