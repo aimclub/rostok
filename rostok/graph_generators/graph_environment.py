@@ -185,6 +185,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         self._actions = rule_vocabulary
         self.state: RobotState = RobotState()
         self.movments_trajectory = None
+        self.step_counter = 0
     
     def getPossibleActions(self):
         """Getter possible actions for current state
@@ -203,9 +204,13 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         result_optimizer = self.optimizer.start_optimisation(self.graph)
         self.reward = - result_optimizer[0]
         self.movments_trajectory = result_optimizer[1]
-        func_reward = self.optimizer.create_reward_function(self.graph)
-        func_reward(self.movments_trajectory, True)
+        #func_reward = self.optimizer.create_reward_function(self.graph)
+        #func_reward(self.movments_trajectory, True)
         reporter.add_reward(self.state, self.reward, self.movments_trajectory)
+        if self.reward > reporter.best_reward:
+            reporter.best_reward = self.reward 
+            reporter.best_control = self.movments_trajectory
+            reporter.best_state = self.state
         print(self.reward)
         return self.reward
     
@@ -252,7 +257,8 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         self.counter_action = new_state.counter_action
         self.movments_trajectory = new_state.movments_trajectory
         self.state = new_state.state
-        reporter.make_step(rule_name, self.counter_action)
+        self.step_counter += 1
+        reporter.make_step(rule_name, self.step_counter)
         done = new_state.isTerminal()
         
     

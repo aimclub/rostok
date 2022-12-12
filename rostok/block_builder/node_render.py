@@ -127,7 +127,7 @@ class ChronoBody(BlockBody, ABC):
             rgb[int(random.random() * 2)] *= 0.2
             self.body.GetVisualShape(0).SetColor(chrono.ChColor(*rgb))
 
-    def _build_collision_model(self, struct_material, width, length):
+    def _build_collision_box_model(self, struct_material, width, length):
         """Build collision model of the block on material width and length
 
         Args:
@@ -236,7 +236,7 @@ class LinkChronoBody(ChronoBody, RobotBody):
         body = chrono.ChBody()
 
         # Calculate new length with gap
-        gap_between_bodies = 0.01
+        gap_between_bodies = 0.05
         cylinder_r = width / 2
         offset = gap_between_bodies + cylinder_r
         length_minus_gap = length - offset
@@ -321,7 +321,13 @@ class FlatChronoBody(ChronoBody, RobotBody):
                          random_color,
                          is_collide=is_collide)
 
-        self._build_collision_model(material, width, length - width / 32)
+        chrono_object_material = struct_material2object_material(material)
+
+        self.body.GetCollisionModel().ClearModel()
+        self.body.GetCollisionModel().AddBox(chrono_object_material, width / 2, length / 2 - width / 32,
+                                             depth / 2)
+        self.body.GetCollisionModel().BuildModel()
+
         # Create shape
         # TODO: setter for shape
 
@@ -356,7 +362,12 @@ class MountChronoBody(ChronoBody, RobotBody):
                          random_color,
                          is_collide=is_collide)
 
-        self._build_collision_model(material, width, length)
+        chrono_object_material = struct_material2object_material(material)
+
+        self.body.GetCollisionModel().ClearModel()
+        self.body.GetCollisionModel().AddBox(chrono_object_material, width / 2, length / 2,
+                                             depth / 2)
+        self.body.GetCollisionModel().BuildModel()
 
 
 class ChronoBodyEnv(ChronoBody):
@@ -386,7 +397,8 @@ class ChronoBodyEnv(ChronoBody):
         body.SetCollide(True)
         transform = ChronoTransform(builder, pos)
         body.SetCoord(transform.transform)
-
+        body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
+        body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
         body.SetMass(mass)
 
         # Create shape
