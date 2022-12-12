@@ -1,7 +1,7 @@
 from statistics import mean
 from datetime import datetime
-import matplotlib.pyplot as plt
 import sys
+import matplotlib.pyplot as plt
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 
@@ -29,6 +29,8 @@ class RobotState():
         graph = GraphGrammar()
         for rule in self.rule_list:
             graph.apply_rule(rules.get_rule(rule))
+        rules.make_graph_terminal(graph)
+        return graph
 
 
 class MCTSReporter():
@@ -37,16 +39,19 @@ class MCTSReporter():
         self.current_rewards = []
         self.rewards=dict()
         self.main_state = RobotState()
-        self.main_reward = -10
+        self.main_reward = 0.
         self.main_control = []
+        self.best_state = RobotState()
+        self.best_control = []
+        self.best_reward = 0.
         
     def add_reward(self, state:RobotState, reward: float, control):
         self.current_rewards.append([state.rule_list, reward, control])
 
     
     def make_step(self, rule, step_number):
-        print(step_number)
-        print(self.current_rewards)
+        #print(step_number)
+        #print(self.current_rewards)
         self.rewards[step_number] = self.current_rewards
         self.current_rewards=[]
         self.main_state.add_rule(rule)
@@ -76,23 +81,32 @@ class MCTSReporter():
                 print(str(key))
                 for design in self.rewards[key]:
                     print('rules:', *design[0])
-                    if design[2] != None:
-                        print('control:', *design[2])
-                    else: 
-                        print('control:', "no joints")
+                    control = design[2]
+                    if control is None:
+                        print('control:', "no joints")           
+                    else:
+                        print('control:', control)
                     print('reward:', design[1])
             print()
             print('main_result:')
             print('rules:', *self.main_state.rule_list)
-            if self.main_control != None:
-                print('control:', *self.main_control)
+            if self.main_control is None:
+                print('control:', "no joints")   
             else:
-                print('control:', "no joints")
+                print('control:', self.main_control)
             print('reward:',self.main_reward)
+            print()
+            print('best_result:')
+            print('rules:', *self.best_state.rule_list)
+            if self.best_control is None:
+                print('control:', "no joints")
+            else:
+                print('control:', *self.best_control) 
+            print('reward:',self.best_reward)
             sys.stdout = original_stdout
 
 
-def read_report(path):
+def read_report(path, rules: RuleVocabulary):
     with open(path,'r') as report:
         first_line = report.readline()
         print(first_line)
@@ -105,7 +119,8 @@ def read_report(path):
                 reward = report.readline().split().pop(0)
 
             line = report.readline()
-    return final_state, control, reward
+        final_graph = final_state.make_graph(rules)
+    return final_graph, control, reward
 
 if __name__ =="__main__":
     reporter = MCTSReporter("results/")
