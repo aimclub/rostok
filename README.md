@@ -29,10 +29,9 @@ Rostok library is a framework that allows user to tune it for solving various ta
 
 * Create the environment using `conda env create -f environment.yml`
 * activate the environment `rostok`  
-* Install the lates version of PyChrono physical engine using `conda install -c projectchrono pychrono`  
 * Install the package in development mode `pip3 install -e .`  
 
-### Known issues 
+### Known issues
 
 At some computers one can see a problem with the tcl module `version conflict for package "Tcl": have 8.6.12, need exactly 8.6.10`, try to install tk 8.6.10 using `conda install tk=8.6.10`
 
@@ -61,7 +60,7 @@ The library was developed in [ITMO University](https://en.itmo.ru/).
 
 ### Developers
 
-* Ivan Borisov - chief scientist 
+* Ivan Borisov - chief scientist
 * Kirill Zharkov - team leader
 * Yefim Osipov - scientific developer
 * Dmitriy Ivolga - scientific developer
