@@ -39,11 +39,11 @@ class MCTSReporter():
         self.current_rewards = []
         self.rewards=dict()
         self.main_state = RobotState()
-        self.main_reward = -10
+        self.main_reward = 0.
         self.main_control = []
         self.best_state = RobotState()
         self.best_control = []
-        self.best_reward = -10
+        self.best_reward = 0.
         
     def add_reward(self, state:RobotState, reward: float, control):
         self.current_rewards.append([state.rule_list, reward, control])
