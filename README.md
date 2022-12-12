@@ -4,7 +4,7 @@ Rostok is an open source Python framework for co-design of grasping mechanisms. 
 
 Currently, the generative co-design is mainly used in production of the static systems, while our project goal is to shift the generative design to the domain of the dynamic systems.
 
-## Project desription
+## Project description
 
 There are four main blocks:  
 
@@ -21,7 +21,7 @@ More detailed description of the [algorithms and methods](docs/Algorithm.md).
 ## Prerequisites
 
 * Anaconda3 
-* Usage of the Docker reqires installation of Х-server for Windows https://sourceforge.net/projects/vcxsrv/
+* Usage of the Docker requires installation of Х-server for Windows https://sourceforge.net/projects/vcxsrv/
 
 ## Installation in development mode 
 
@@ -53,7 +53,7 @@ The examples of usage of individual modules is in `rostok\examples` directory.
 
 ## Acknowledgments
 
-![project_general](./docs/images/logo.png)
+<img src="./docs/images/logo.png" width="200">
 
 ### Affiliation
 
