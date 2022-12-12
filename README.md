@@ -2,18 +2,20 @@
 
 # Rostok
 
-Rostok is an open source Python framework for generative design of linkage mechanisms for robotic purposes. It provides a framework to describe mechanisms as a graph, set the environment, perform simulation of the mechanism, get simulation reward and start the search for the best design. User can use the whole pipeline to get from nodes/details specification to the result of the search algorithm or use the individual modules. Library flexible design allows a user to implement custom generative rules and search algorithms. 
+Rostok is an open source Python framework for generative design of linkage mechanisms for robotic purposes. It provides a framework to describe mechanisms as a graph, set an environment, perform simulation of generated mechanisms, get a reward as a quantitative value of the generated design, and search for the best possible design. 
 
-Currently, the generative co-design is mainly used in production of the static systems, while our project goal is to shift the generative design to the domain of the dynamic systems.
+A user can utilize the entire framework as a pipeline to generate a set of suboptimal designs, or utilize the modules and submodules as independent parts. The framework allows to implement custom generative rules, modify search and optimization algorithms. 
+
+Currently the framework allows to perform co-design of open chain linkage mechanisms. Co-design consists in simultaneously searching for the mechanical structure and the trajectories of the robot to get the best possible performance. 
 
 ## Project desription
 
 There are four main blocks:  
 
-* Graph grammar - build, modification and get information from the graphs that contains full information of the mechanism
-* Virtual experiment - simulate the mechanism specified by the graph and get the reward for the attempt to grasp the body
-* Trajectory optimization - search for the optimal control of the mechanism in order to solve the task  
-* Search algorithm - traverse the space of the possible designs in order to achieve the better reward
+* Graph Grammar -- is needed for creation, modification, and extraction of the data from the graphs that contain the entire information of generated mechanisms
+* Virtual Experiment -- is the simulation needed for quantitative analysis of the behavior  and performance of generated mechanisms specified by grammar graphs
+* Trajectory Optimization -- finds suboptimal joint trajectories needed to efficiently perform the desired motion
+* Search Algorithm -- looks for optimal graph to represent mechanism topology
 
 ![project_general](./docs/images/general_scheme.jpg)
 ![project_algorithm](./docs/images/Algorithm_shceme.jpg)
