@@ -68,7 +68,7 @@ The framework was developed in [ITMO University](https://en.itmo.ru/).
 
 ### Developers
 
-* Ivan Borisov - reasercher
+* Ivan Borisov - researcher 
 * Kirill Zharkov - team leader
 * Yefim Osipov - developer
 * Dmitriy Ivolga - developer
