@@ -40,7 +40,7 @@ After the installation of the package one can get an error `Original error was: 
 
 ## Documentation
 
-The description of the project and tutorials are available [at project websitehere](https://licaibeerlab.github.io/graph_assembler/).
+The description of the project and tutorials are available [at project website](https://licaibeerlab.github.io/graph_assembler/).
 
 ## Publications
 
