@@ -8,6 +8,8 @@ A user can utilize the entire framework as a pipeline to generate a set of subop
 
 Currently the framework allows to perform co-design of open chain linkage mechanisms. Co-design consists in simultaneously searching for the mechanical structure and the trajectories of the robot to get the best possible performance. 
 
+<img src="./docs/images/brick_anim.gif" width="700">
+
 ## Project desription
 
 There are four main blocks:  
