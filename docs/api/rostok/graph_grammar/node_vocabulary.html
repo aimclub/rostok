@@ -16,8 +16,15 @@
     <nav class="pdoc">
         <label id="navtoggle" for="togglestate" class="pdoc-button"><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'><path stroke-linecap='round' stroke="currentColor" stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/></svg></label>
         <input id="togglestate" type="checkbox" aria-hidden="true" tabindex="-1">
-        <div>
+        <div>            <a class="pdoc-button module-list-button" href="../graph_grammar.html">
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-in-left" viewBox="0 0 16 16">
+  <path fill-rule="evenodd" d="M10 3.5a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 1 1 0v2A1.5 1.5 0 0 1 9.5 14h-8A1.5 1.5 0 0 1 0 12.5v-9A1.5 1.5 0 0 1 1.5 2h8A1.5 1.5 0 0 1 11 3.5v2a.5.5 0 0 1-1 0v-2z"/>
+  <path fill-rule="evenodd" d="M4.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H14.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/>
+</svg>                &nbsp;rostok.graph_grammar</a>
 
+
+            <input type="search" placeholder="Search..." role="searchbox" aria-label="search"
+                   pattern=".+" required>
 
 
 
@@ -61,7 +68,7 @@
     <main class="pdoc">
             <section class="module-info">
                     <h1 class="modulename">
-rostok<wbr>.graph_grammar<wbr>.node_vocabulary    </h1>
+<a href="./../../rostok.html">rostok</a><wbr>.<a href="./../graph_grammar.html">graph_grammar</a><wbr>.node_vocabulary    </h1>
 
                         <div class="docstring"><p>Class NodeVocabulary</p>
 </div>
@@ -185,33 +192,26 @@ rostok<wbr>.graph_grammar<wbr>.node_vocabulary    </h1>
 </span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 </span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>
 </span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>    <span class="k">def</span> <span class="nf">get_list_of_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Node</span><span class="p">]:</span>
-</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a>        <span class="sd">&quot;&quot;&quot;Return the list of nodes corresponding to the list of labels.</span>
-</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>
-</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a><span class="sd">        Parameters</span>
-</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a><span class="sd">        ----------</span>
-</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="sd">        nodes:list[str]</span>
-</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="sd">            the label list of labels that should be converted to the list of nodes</span>
-</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a>        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a>        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
-</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a>            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
-</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a>        <span class="k">return</span> <span class="n">result</span>
-</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a>
-</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>
-</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a>    <span class="n">node_vocab</span> <span class="o">=</span> <span class="n">NodeVocabulary</span><span class="p">()</span>
-</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a>    <span class="n">node_vocab</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">ROOT</span><span class="p">)</span>
-</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a>    <span class="n">node_vocab</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
-</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a>    <span class="n">node_vocab</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
-</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a>    <span class="n">node_vocab</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
-</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a>    <span class="n">node_vocab</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>
-</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a>    <span class="n">node_vocab</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="s1">&#39;A1&#39;</span><span class="p">,</span><span class="n">is_terminal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a>    <span class="n">node_vocab</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="s1">&#39;B1&#39;</span><span class="p">,</span> <span class="n">is_terminal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>    <span class="n">node_vocab</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="s1">&#39;C1&#39;</span><span class="p">,</span> <span class="n">is_terminal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a>    <span class="nb">print</span><span class="p">(</span><span class="n">node_vocab</span><span class="p">)</span>
-</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>
-</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a>
-</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a>    
+</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a>        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a>        <span class="k">return</span> <span class="n">result</span>
+</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a>
+</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a>
+</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a>    <span class="n">node_vocab</span> <span class="o">=</span> <span class="n">NodeVocabulary</span><span class="p">()</span>
+</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a>    <span class="n">node_vocab</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">ROOT</span><span class="p">)</span>
+</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a>    <span class="n">node_vocab</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a>    <span class="n">node_vocab</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a>    <span class="n">node_vocab</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>    <span class="n">node_vocab</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>
+</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a>    <span class="n">node_vocab</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="s1">&#39;A1&#39;</span><span class="p">,</span><span class="n">is_terminal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a>    <span class="n">node_vocab</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="s1">&#39;B1&#39;</span><span class="p">,</span> <span class="n">is_terminal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a>    <span class="n">node_vocab</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="s1">&#39;C1&#39;</span><span class="p">,</span> <span class="n">is_terminal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a>    <span class="nb">print</span><span class="p">(</span><span class="n">node_vocab</span><span class="p">)</span>
+</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a>
+</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a>
+</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a>    
 </span></pre></div>
 
 
@@ -338,17 +338,10 @@ rostok<wbr>.graph_grammar<wbr>.node_vocabulary    </h1>
 </span><span id="NodeVocabulary-114"><a href="#NodeVocabulary-114"><span class="linenos">114</span></a>        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 </span><span id="NodeVocabulary-115"><a href="#NodeVocabulary-115"><span class="linenos">115</span></a>
 </span><span id="NodeVocabulary-116"><a href="#NodeVocabulary-116"><span class="linenos">116</span></a>    <span class="k">def</span> <span class="nf">get_list_of_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Node</span><span class="p">]:</span>
-</span><span id="NodeVocabulary-117"><a href="#NodeVocabulary-117"><span class="linenos">117</span></a>        <span class="sd">&quot;&quot;&quot;Return the list of nodes corresponding to the list of labels.</span>
-</span><span id="NodeVocabulary-118"><a href="#NodeVocabulary-118"><span class="linenos">118</span></a>
-</span><span id="NodeVocabulary-119"><a href="#NodeVocabulary-119"><span class="linenos">119</span></a><span class="sd">        Parameters</span>
-</span><span id="NodeVocabulary-120"><a href="#NodeVocabulary-120"><span class="linenos">120</span></a><span class="sd">        ----------</span>
-</span><span id="NodeVocabulary-121"><a href="#NodeVocabulary-121"><span class="linenos">121</span></a><span class="sd">        nodes:list[str]</span>
-</span><span id="NodeVocabulary-122"><a href="#NodeVocabulary-122"><span class="linenos">122</span></a><span class="sd">            the label list of labels that should be converted to the list of nodes</span>
-</span><span id="NodeVocabulary-123"><a href="#NodeVocabulary-123"><span class="linenos">123</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="NodeVocabulary-124"><a href="#NodeVocabulary-124"><span class="linenos">124</span></a>        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span id="NodeVocabulary-125"><a href="#NodeVocabulary-125"><span class="linenos">125</span></a>        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
-</span><span id="NodeVocabulary-126"><a href="#NodeVocabulary-126"><span class="linenos">126</span></a>            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
-</span><span id="NodeVocabulary-127"><a href="#NodeVocabulary-127"><span class="linenos">127</span></a>        <span class="k">return</span> <span class="n">result</span>
+</span><span id="NodeVocabulary-117"><a href="#NodeVocabulary-117"><span class="linenos">117</span></a>        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="NodeVocabulary-118"><a href="#NodeVocabulary-118"><span class="linenos">118</span></a>        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+</span><span id="NodeVocabulary-119"><a href="#NodeVocabulary-119"><span class="linenos">119</span></a>            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+</span><span id="NodeVocabulary-120"><a href="#NodeVocabulary-120"><span class="linenos">120</span></a>        <span class="k">return</span> <span class="n">result</span>
 </span></pre></div>
 
 
@@ -404,7 +397,7 @@ check_node(self, label:str)->bool:
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">add_node</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">node</span><span class="p">:</span> <span class="n">rostok</span><span class="o">.</span><span class="n">graph_grammar</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">Node</span></span><span class="return-annotation">):</span></span>
+        <span class="name">add_node</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">node</span><span class="p">:</span> <span class="n"><a href="node.html#Node">rostok.graph_grammar.node.Node</a></span></span><span class="return-annotation">):</span></span>
 
                 <label class="view-source-button" for="NodeVocabulary.add_node-view-source"><span>View Source</span></label>
 
@@ -452,7 +445,7 @@ check_node(self, label:str)->bool:
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">create_node</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">label</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">is_terminal</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">block_wrapper</span><span class="p">:</span> <span class="n">rostok</span><span class="o">.</span><span class="n">graph_grammar</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">BlockWrapper</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">):</span></span>
+        <span class="name">create_node</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">label</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">is_terminal</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>,</span><span class="param">	<span class="n">block_wrapper</span><span class="p">:</span> <span class="n"><a href="node.html#BlockWrapper">rostok.graph_grammar.node.BlockWrapper</a></span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">):</span></span>
 
                 <label class="view-source-button" for="NodeVocabulary.create_node-view-source"><span>View Source</span></label>
 
@@ -509,7 +502,7 @@ block_wrapper:
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_node</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">label</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">rostok</span><span class="o">.</span><span class="n">graph_grammar</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">Node</span>:</span></span>
+        <span class="name">get_node</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">label</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n"><a href="node.html#Node">rostok.graph_grammar.node.Node</a></span>:</span></span>
 
                 <label class="view-source-button" for="NodeVocabulary.get_node-view-source"><span>View Source</span></label>
 
@@ -590,38 +583,205 @@ block_wrapper:
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_list_of_nodes</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">nodes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></span><span class="return-annotation">) -> <span class="nb">list</span><span class="p">[</span><span class="n">rostok</span><span class="o">.</span><span class="n">graph_grammar</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">Node</span><span class="p">]</span>:</span></span>
+        <span class="name">get_list_of_nodes</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">nodes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></span><span class="return-annotation">) -> <span class="nb">list</span><span class="p">[</span><span class="n"><a href="node.html#Node">rostok.graph_grammar.node.Node</a></span><span class="p">]</span>:</span></span>
 
                 <label class="view-source-button" for="NodeVocabulary.get_list_of_nodes-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#NodeVocabulary.get_list_of_nodes"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="NodeVocabulary.get_list_of_nodes-116"><a href="#NodeVocabulary.get_list_of_nodes-116"><span class="linenos">116</span></a>    <span class="k">def</span> <span class="nf">get_list_of_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Node</span><span class="p">]:</span>
-</span><span id="NodeVocabulary.get_list_of_nodes-117"><a href="#NodeVocabulary.get_list_of_nodes-117"><span class="linenos">117</span></a>        <span class="sd">&quot;&quot;&quot;Return the list of nodes corresponding to the list of labels.</span>
-</span><span id="NodeVocabulary.get_list_of_nodes-118"><a href="#NodeVocabulary.get_list_of_nodes-118"><span class="linenos">118</span></a>
-</span><span id="NodeVocabulary.get_list_of_nodes-119"><a href="#NodeVocabulary.get_list_of_nodes-119"><span class="linenos">119</span></a><span class="sd">        Parameters</span>
-</span><span id="NodeVocabulary.get_list_of_nodes-120"><a href="#NodeVocabulary.get_list_of_nodes-120"><span class="linenos">120</span></a><span class="sd">        ----------</span>
-</span><span id="NodeVocabulary.get_list_of_nodes-121"><a href="#NodeVocabulary.get_list_of_nodes-121"><span class="linenos">121</span></a><span class="sd">        nodes:list[str]</span>
-</span><span id="NodeVocabulary.get_list_of_nodes-122"><a href="#NodeVocabulary.get_list_of_nodes-122"><span class="linenos">122</span></a><span class="sd">            the label list of labels that should be converted to the list of nodes</span>
-</span><span id="NodeVocabulary.get_list_of_nodes-123"><a href="#NodeVocabulary.get_list_of_nodes-123"><span class="linenos">123</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="NodeVocabulary.get_list_of_nodes-124"><a href="#NodeVocabulary.get_list_of_nodes-124"><span class="linenos">124</span></a>        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span id="NodeVocabulary.get_list_of_nodes-125"><a href="#NodeVocabulary.get_list_of_nodes-125"><span class="linenos">125</span></a>        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
-</span><span id="NodeVocabulary.get_list_of_nodes-126"><a href="#NodeVocabulary.get_list_of_nodes-126"><span class="linenos">126</span></a>            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
-</span><span id="NodeVocabulary.get_list_of_nodes-127"><a href="#NodeVocabulary.get_list_of_nodes-127"><span class="linenos">127</span></a>        <span class="k">return</span> <span class="n">result</span>
+</span><span id="NodeVocabulary.get_list_of_nodes-117"><a href="#NodeVocabulary.get_list_of_nodes-117"><span class="linenos">117</span></a>        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="NodeVocabulary.get_list_of_nodes-118"><a href="#NodeVocabulary.get_list_of_nodes-118"><span class="linenos">118</span></a>        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+</span><span id="NodeVocabulary.get_list_of_nodes-119"><a href="#NodeVocabulary.get_list_of_nodes-119"><span class="linenos">119</span></a>            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+</span><span id="NodeVocabulary.get_list_of_nodes-120"><a href="#NodeVocabulary.get_list_of_nodes-120"><span class="linenos">120</span></a>        <span class="k">return</span> <span class="n">result</span>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Return the list of nodes corresponding to the list of labels.</p>
-
-<h2 id="parameters">Parameters</h2>
-
-<p>nodes:list[str]
-    the label list of labels that should be converted to the list of nodes</p>
-</div>
-
+    
 
                             </div>
                 </section>
     </main>
-</body>
+<script>
+    function escapeHTML(html) {
+        return document.createElement('div').appendChild(document.createTextNode(html)).parentNode.innerHTML;
+    }
+
+    const originalContent = document.querySelector("main.pdoc");
+    let currentContent = originalContent;
+
+    function setContent(innerHTML) {
+        let elem;
+        if (innerHTML) {
+            elem = document.createElement("main");
+            elem.classList.add("pdoc");
+            elem.innerHTML = innerHTML;
+        } else {
+            elem = originalContent;
+        }
+        if (currentContent !== elem) {
+            currentContent.replaceWith(elem);
+            currentContent = elem;
+        }
+    }
+
+    function getSearchTerm() {
+        return (new URL(window.location)).searchParams.get("search");
+    }
+
+    const searchBox = document.querySelector(".pdoc input[type=search]");
+    searchBox.addEventListener("input", function () {
+        let url = new URL(window.location);
+        if (searchBox.value.trim()) {
+            url.hash = "";
+            url.searchParams.set("search", searchBox.value);
+        } else {
+            url.searchParams.delete("search");
+        }
+        history.replaceState("", "", url.toString());
+        onInput();
+    });
+    window.addEventListener("popstate", onInput);
+
+
+    let search, searchErr;
+
+    async function initialize() {
+        try {
+            search = await new Promise((resolve, reject) => {
+                const script = document.createElement("script");
+                script.type = "text/javascript";
+                script.async = true;
+                script.onload = () => resolve(window.pdocSearch);
+                script.onerror = (e) => reject(e);
+                script.src = "../../search.js";
+                document.getElementsByTagName("head")[0].appendChild(script);
+            });
+        } catch (e) {
+            console.error("Cannot fetch pdoc search index");
+            searchErr = "Cannot fetch search index.";
+        }
+        onInput();
+
+        document.querySelector("nav.pdoc").addEventListener("click", e => {
+            if (e.target.hash) {
+                searchBox.value = "";
+                searchBox.dispatchEvent(new Event("input"));
+            }
+        });
+    }
+
+    function onInput() {
+        setContent((() => {
+            const term = getSearchTerm();
+            if (!term) {
+                return null
+            }
+            if (searchErr) {
+                return `<h3>Error: ${searchErr}</h3>`
+            }
+            if (!search) {
+                return "<h3>Searching...</h3>"
+            }
+
+            window.scrollTo({top: 0, left: 0, behavior: 'auto'});
+
+            const results = search(term);
+
+            let html;
+            if (results.length === 0) {
+                html = `No search results for '${escapeHTML(term)}'.`
+            } else {
+                html = `<h4>${results.length} search result${results.length > 1 ? "s" : ""} for '${escapeHTML(term)}'.</h4>`;
+            }
+            for (let result of results.slice(0, 10)) {
+                let doc = result.doc;
+                let url = `../../${doc.modulename.replaceAll(".", "/")}.html`;
+                if (doc.qualname) {
+                    url += `#${doc.qualname}`;
+                }
+
+                let heading;
+                switch (result.doc.kind) {
+                    case "function":
+                        if (doc.fullname.endsWith(".__init__")) {
+                            heading = `<span class="name">${doc.fullname.replace(/\.__init__$/, "")}</span>${doc.signature}`;
+                        } else {
+                            heading = `<span class="def">${doc.funcdef}</span> <span class="name">${doc.fullname}</span>${doc.signature}`;
+                        }
+                        break;
+                    case "class":
+                        heading = `<span class="def">class</span> <span class="name">${doc.fullname}</span>`;
+                        if (doc.bases)
+                            heading += `<wbr>(<span class="base">${doc.bases}</span>)`;
+                        heading += `:`;
+                        break;
+                    case "variable":
+                        heading = `<span class="name">${doc.fullname}</span>`;
+                        if (doc.annotation)
+                            heading += `<span class="annotation">${doc.annotation}</span>`;
+                        if (doc.default_value)
+                            heading += `<span class="default_value">${doc.default_value}</span>`;
+                        break;
+                    default:
+                        heading = `<span class="name">${doc.fullname}</span>`;
+                        break;
+                }
+                html += `
+                        <section class="search-result">
+                        <a href="${url}" class="attr ${doc.kind}">${heading}</a>
+                        <div class="docstring">${doc.doc}</div>
+                        </section>
+                    `;
+
+            }
+            return html;
+        })());
+    }
+
+    if (getSearchTerm()) {
+        initialize();
+        searchBox.value = getSearchTerm();
+        onInput();
+    } else {
+        searchBox.addEventListener("focus", initialize, {once: true});
+    }
+
+    searchBox.addEventListener("keydown", e => {
+        if (["ArrowDown", "ArrowUp", "Enter"].includes(e.key)) {
+            let focused = currentContent.querySelector(".search-result.focused");
+            if (!focused) {
+                currentContent.querySelector(".search-result").classList.add("focused");
+            } else if (
+                e.key === "ArrowDown"
+                && focused.nextElementSibling
+                && focused.nextElementSibling.classList.contains("search-result")
+            ) {
+                focused.classList.remove("focused");
+                focused.nextElementSibling.classList.add("focused");
+                focused.nextElementSibling.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                    inline: "nearest"
+                });
+            } else if (
+                e.key === "ArrowUp"
+                && focused.previousElementSibling
+                && focused.previousElementSibling.classList.contains("search-result")
+            ) {
+                focused.classList.remove("focused");
+                focused.previousElementSibling.classList.add("focused");
+                focused.previousElementSibling.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                    inline: "nearest"
+                });
+            } else if (
+                e.key === "Enter"
+            ) {
+                focused.querySelector("a").click();
+            }
+        }
+    });
+</script></body>
 </html>
