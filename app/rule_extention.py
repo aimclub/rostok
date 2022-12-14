@@ -1,35 +1,74 @@
-import networkx as nx
-import matplotlib.pyplot as plt
-
 from rostok.graph_grammar.node import BlockWrapper, ROOT
 from rostok.graph_grammar import node_vocabulary, rule_vocabulary
 from rostok.block_builder.node_render import *
-from rostok.block_builder.transform_srtucture import rotation
+
+import pychrono as chrono
+
+import networkx as nx
+import matplotlib.pyplot as plt
+import numpy as np
 
 
-def create_extension_rules(width_flats, length_links):
+def plot_graph(graph):
+    plt.figure()
+    nx.draw_networkx(graph,
+                     pos=nx.kamada_kawai_layout(graph, dim=2),
+                     node_size=800,
+                     labels={n: graph.nodes[n]["Node"].label for n in G})
+    #plt.figure()
+    #nx.draw_networkx(graph, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
+    plt.show()
+
+
+def init_extension_rules():
     # %% Bodies for extansions rules
-    link = list(map(lambda x: BlockWrapper(LinkChronoBody, length=x),
-                    length_links))
+    width = [0.25, 0.35, 0.5]
+    alpha = 45
+    alpha_left = [0, 30, 60]
+    alpha_right = [180, 150, 120]
+    length_link = [0.4, 0.6, 0.8]
 
-    flat = list(map(lambda x: BlockWrapper(FlatChronoBody, width=x), width_flats))
+    flat = list(map(lambda x: BlockWrapper(FlatChronoBody, width=x, length=0.05, depth=0.8), width))
+
+    link = list(map(lambda x: BlockWrapper(LinkChronoBody, length=x), length_link))
 
     u1 = BlockWrapper(MountChronoBody, width=0.1, length=0.05)
     u2 = BlockWrapper(MountChronoBody, width=0.2, length=0.1)
 
-    MOVE_TO_RIGHT_SIDE = map(lambda x: FrameTransform([x, 0, 0], [0, 0, 1, 0]), width_flats)
-    MOVE_TO_RIGHT_SIDE_PLUS = map(lambda x: FrameTransform([x, 0, +0.3], [0, 0, 1, 0]), width_flats)
+    # %% Tranform for extansions rules
+    # z_shift = [-0.3, 0, 0.3]
+    # MOVE_TO_RIGHT_SIDE = []
+    # for i in width:
+    #     for j in z_shift:
+    #         for alpha in alpha_right:
+    #             quat_Y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))
+    #             ROTATE_TO_ALPHA = FrameTransform([i, 0, j],[quat_Y_ang_alpha.e0,quat_Y_ang_alpha.e1,
+    #                                         quat_Y_ang_alpha.e2,quat_Y_ang_alpha.e3])
+    #             MOVE_TO_RIGHT_SIDE.append(ROTATE_TO_ALPHA)
+
+    # transform_to_right_mount_list = list(map(lambda x: BlockWrapper(ChronoTransform, x), MOVE_TO_RIGHT_SIDE))
+
+    def rotation(alpha):
+        quat_Y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))
+        return [quat_Y_ang_alpha.e0, quat_Y_ang_alpha.e1, quat_Y_ang_alpha.e2, quat_Y_ang_alpha.e3]
+
+    MOVE_TO_RIGHT_SIDE = map(lambda x: FrameTransform([x, 0, 0], [0, 0, 1, 0]), width)
+    MOVE_TO_RIGHT_SIDE_PLUS = map(lambda x: FrameTransform([x, 0, +0.3], [0, 0, 1, 0]), width)
     MOVE_TO_RIGHT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([x, 0, +0.3], rotation(150)),
-                                        width_flats)
-    MOVE_TO_RIGHT_SIDE_MINUS = map(lambda x: FrameTransform([x, 0, -0.3], [0, 0, 1, 0]), width_flats)
+                                        width)
+    MOVE_TO_RIGHT_SIDE_MINUS = map(lambda x: FrameTransform([x, 0, -0.3], [0, 0, 1, 0]), width)
     MOVE_TO_RIGHT_SIDE_MINUS_ANGLE = map(lambda x: FrameTransform([x, 0, -0.3], rotation(210)),
-                                         width_flats)
-    MOVE_TO_LEFT_SIDE = map(lambda x: FrameTransform([-x, 0, 0], [1, 0, 0, 0]), width_flats)
-    MOVE_TO_LEFT_SIDE_PLUS = map(lambda x: FrameTransform([-x, 0, +0.3], [1, 0, 0, 0]), width_flats)
-    MOVE_TO_LEFT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([-x, 0, +0.3], rotation(30)), width_flats)
-    MOVE_TO_LEFT_SIDE_MINUS = map(lambda x: FrameTransform([-x, 0, -0.3], [1, 0, 0, 0]), width_flats)
+                                         width)
+    MOVE_TO_LEFT_SIDE = map(lambda x: FrameTransform([-x, 0, 0], [1, 0, 0, 0]), width)
+    MOVE_TO_LEFT_SIDE_PLUS = map(lambda x: FrameTransform([-x, 0, +0.3], [1, 0, 0, 0]), width)
+    MOVE_TO_LEFT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([-x, 0, +0.3], rotation(30)), width)
+    MOVE_TO_LEFT_SIDE_MINUS = map(lambda x: FrameTransform([-x, 0, -0.3], [1, 0, 0, 0]), width)
     MOVE_TO_LEFT_SIDE_MINUS_ANGLE = map(lambda x: FrameTransform([-x, 0, -0.3], rotation(-30)),
-                                        width_flats)
+                                        width)
+
+    # quat_Y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))
+    # ROTATE_TO_ALPHA = FrameTransform([0, 0, 0],[quat_Y_ang_alpha.e0,quat_Y_ang_alpha.e1,
+    #                                         quat_Y_ang_alpha.e2,quat_Y_ang_alpha.e3])
 
     transform_to_right_mount = list(
         map(lambda x: BlockWrapper(ChronoTransform, x), MOVE_TO_RIGHT_SIDE))
@@ -79,6 +118,7 @@ def create_extension_rules(width_flats, length_links):
     node_vocab.create_node("SMLM")
     node_vocab.create_node("SMLMA")
 
+    #O = Node("O")
     node_vocab.create_node(label="J1", is_terminal=True, block_wrapper=revolve1)
     node_vocab.create_node(label="L1", is_terminal=True, block_wrapper=link[0])
     node_vocab.create_node(label="L2", is_terminal=True, block_wrapper=link[1])
@@ -190,6 +230,8 @@ def create_extension_rules(width_flats, length_links):
                            ["F", "SMLPA", "SMLMA", "SMR", "EM", "EM", "EM"], 0, 0, [(0, 1), (0, 2),
                                                                                     (0, 3), (1, 4),
                                                                                     (2, 5), (3, 6)])
+    #rule_vocab.create_rule("InitMechanism_4", ["ROOT"], ["F", "SMLP","SMLM", "SMRP","SMRM","EM","EM","EM","EM"], 0 , 0, [(0,1),(0,2),(0,3),(0,4),(1,5),(2,6),(3,7),(4,8)])
+    #rule_vocab.create_rule("InitMechanism_4_A", ["ROOT"], ["F", "SMLPA","SMLMA", "SMRPA","SMRMA","EM","EM","EM","EM"], 0 , 0, [(0,1),(0,2),(0,3),(0,4),(1,5),(2,6),(3,7),(4,8)])
     rule_vocab.create_rule("FingerUpper", ["EM"], ["J", "L", "EM"], 0, 2, [(0, 1), (1, 2)])
 
     rule_vocab.create_rule("TerminalFlat1", ["F"], ["F1"], 0, 0)

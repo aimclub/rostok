@@ -30,7 +30,7 @@ for i in hyper:
     # %% Create extension rule vocabulary
     
 
-    rule_vocabul, node_features = rule_extention.create_extension_rules()
+    rule_vocabul, node_features = rule_extention.init_extension_rules()
 
     # %% Create condig optimizing control
 
