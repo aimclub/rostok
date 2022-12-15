@@ -34,10 +34,15 @@ class NodeVocabulary():
             raise Exception('Attempt to add a Node with a label that is already in dictionary!')
 
         self.node_dict[node.label] = node
-        if node.is_terminal: self.terminal_node_dict[node.label] = node
-        else:  self.nonterminal_node_dict[node.label] = node
+        if node.is_terminal:
+            self.terminal_node_dict[node.label] = node
+        else:
+            self.nonterminal_node_dict[node.label] = node
 
-    def create_node(self, label: str, is_terminal:bool=False, block_wrapper:BlockWrapper=None):
+    def create_node(self,
+                    label: str,
+                    is_terminal: bool = False,
+                    block_wrapper: BlockWrapper = None):
         """Create a node and add it to the vocabulary.
             
         Args:
@@ -53,12 +58,14 @@ class NodeVocabulary():
         if label in self.node_dict.keys():
             raise Exception('Attempt to create a Node with a label that is already in dictionary!')
 
-        node = Node(label, is_terminal, block_wrapper)         
+        node = Node(label, is_terminal, block_wrapper)
         self.node_dict[label] = node
-        if is_terminal: self.terminal_node_dict[label] = node
-        else:  self.nonterminal_node_dict[label] = node
+        if is_terminal:
+            self.terminal_node_dict[label] = node
+        else:
+            self.nonterminal_node_dict[label] = node
 
-    def get_node(self, label:str) -> Node:
+    def get_node(self, label: str) -> Node:
         """Return a node corresponding to the label.
 
         Args:
@@ -77,7 +84,7 @@ class NodeVocabulary():
 
         return node
 
-    def check_node(self, label:str)->bool:
+    def check_node(self, label: str) -> bool:
         """Check if the label is in the vocabulary.
 
         Args:
@@ -87,15 +94,17 @@ class NodeVocabulary():
             bool: True is the label is in dictionary, False otherwise.
         """
 
-        if label in self.node_dict.keys(): return True
-        else: return False
+        if label in self.node_dict.keys():
+            return True
+        else:
+            return False
 
     def __str__(self):
         """Return the list of the labels in the vocabulary."""
 
         return str(self.node_dict.keys())
 
-    def get_list_of_nodes(self, nodes:list[str]) -> list[Node]:
+    def get_list_of_nodes(self, nodes: list[str]) -> list[Node]:
         """Returns list of Node objects corresponding to list of labels.
         
         Args:
@@ -118,10 +127,7 @@ if __name__ == '__main__':
     node_vocab.create_node('B')
     node_vocab.create_node('C')
     node_vocab.create_node('D')
-    node_vocab.create_node('A1',is_terminal=True)
+    node_vocab.create_node('A1', is_terminal=True)
     node_vocab.create_node('B1', is_terminal=True)
     node_vocab.create_node('C1', is_terminal=True)
     print(node_vocab)
-
-
-    
