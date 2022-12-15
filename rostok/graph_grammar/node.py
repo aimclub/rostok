@@ -9,12 +9,13 @@ from networkx.algorithms.traversal import dfs_preorder_nodes
 
 class BlockWrapper:
     """Class is interface between node and interpretation in simulation.
-    
-    The interface allows you to create an interpretation of terminal nodes in the simulation. Interpretation classes is in `rostok.block_builder.node_render`.
+
+    The interface allows you to create an interpretation of terminal nodes in the simulation.
+    Interpretation classes is in `rostok.block_builder.node_render`.
     The instance must be specified when creating the node.
     When assembling a robot from a graph, an object is created by the `create_block` method.
     When the object is created, the desired arguments of the interpretation object are set.
-    
+
     Args:
         block_cls: Interpretation class of node in simulation
         args: Arguments `block_cls`
@@ -33,7 +34,7 @@ class BlockWrapper:
 @dataclass
 class Node:
     """Contains information about the label and block_wrapper,
-    which is the physical representation of the node in the simulator 
+    which is the physical representation of the node in the simulator
     """
     label: str = "*"
     is_terminal: bool = False
@@ -56,7 +57,7 @@ class Rule:
     """ The class contains a graph object for substitution into the generated graph
     and the target node which will be replaced by self.graph_insert.
     The feature of the rule's terminality is automatically determined.
-    Id's mean V from graph theory, do not intersect with V from generated graph. 
+    Id's mean V from graph theory, do not intersect with V from generated graph.
     """
     _graph_insert: nx.DiGraph = nx.DiGraph()
     replaced_node: Node = Node()
@@ -86,7 +87,7 @@ class Rule:
 @dataclass
 class WrapperTuple:
     """ The return type is used to build the Robot.
-        Id - from the generated graph 
+        Id - from the generated graph
     """
     id: int
     block_wrapper: BlockWrapper  # Set default value
@@ -96,8 +97,10 @@ ROOT = Node("ROOT")
 
 
 class GraphGrammar(nx.DiGraph):
-    """ A class for using generative rules (similar to L grammar) and manipulating the construction graph.
-        The mechanism for assignment a unique Id, each added node using rule_apply will increase the counter.
+    """ A class for using generative rules (similar to L grammar) and
+        manipulating the construction graph.
+        The mechanism for assignment a unique Id, each added node using rule_apply
+        will increase the counter.
         Supports methods from networkx.DiGraph ancestor class
     """
 
@@ -111,7 +114,7 @@ class GraphGrammar(nx.DiGraph):
         return self.__uniq_id_counter
 
     def find_nodes(self, match: Node) -> list[int]:
-        """_summary_
+        """
 
         Args:
             match (Node): Node for find, matched by label
@@ -133,8 +136,8 @@ class GraphGrammar(nx.DiGraph):
         """Applies rules to node_id
 
         Args:
-            node_id (int):  
-            rule (Rule): 
+            node_id (int):
+            rule (Rule):
         """
 
         # Convert to list for mutable
@@ -194,7 +197,7 @@ class GraphGrammar(nx.DiGraph):
         """
 
         Returns:
-            int: root id 
+            int: root id
         """
 
         for raw_node in self.nodes.items():
@@ -218,12 +221,14 @@ class GraphGrammar(nx.DiGraph):
 
     def node_levels_bfs(self) -> list[list[int]]:
         """Devide nodes into levels.
-        
-        Return a list of lists of nodes where each inner list is a 
-        level in respect to the \'root\', which is the node with no in edges. 
-        This function should be reviewed once we start to use graphs with cycles and not just trees"""
+
+        Return a list of lists of nodes where each inner list is a
+        level in respect to the \'root\', which is the node with no in edges.
+        This function should be reviewed once we start to use graphs with cycles and not just trees
+        """
         levels = []
-        # Get the root node that has no in_edges. Currently, we assume that where is only one node without in_edges
+        # Get the root node that has no in_edges. Currently, we assume
+        # that where is only one node without in_edges
         for raw_node in self.nodes.items():
             raw_node_id = raw_node[0]
             if self.in_degree(raw_node_id) == 0:
@@ -237,14 +242,15 @@ class GraphGrammar(nx.DiGraph):
             # If the edge starts in current level, the end of the edge appends to the next level
             if edge[0] in current_level:
                 next_level.append(edge[1])
-                #print(next_level)
-            # Else, the current level is finished and appended to the levels. next_level becomes current_level and the end of the edge goes to the new  next_level
+            # Else, the current level is finished and appended to the levels. next_level becomes
+            # current_level and the end of the edge goes to the new  next_level
             else:
                 levels.append(current_level)
                 current_level = next_level
                 next_level = [edge[1]]
 
-        # Finish the levels by appending current and next_level. In the cycle the appending occurs, when the edge of the next level is found.
+        # Finish the levels by appending current and next_level. In the cycle the appending occurs,
+        # when the edge of the next level is found.
         levels.append(current_level)
         levels.append(next_level)
         return levels
@@ -255,7 +261,7 @@ class GraphGrammar(nx.DiGraph):
             Collum is id node
 
         Returns:
-            list[list[int]]: 
+            list[list[int]]:
         """
 
         paths = []
@@ -312,7 +318,7 @@ class GraphGrammar(nx.DiGraph):
         One of the options to present the graph in a flat form
 
         Returns:
-            list[int]: 
+            list[int]:
         """
 
         return list(dfs_preorder_nodes(self, self.get_root_id()))
