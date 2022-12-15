@@ -1,8 +1,9 @@
-import networkx as nx
-import matplotlib.pyplot as plt
-import pychrono as chrono
 from copy import deepcopy
 from dataclasses import dataclass
+
+import matplotlib.pyplot as plt
+import networkx as nx
+import pychrono as chrono
 from networkx.algorithms.traversal import dfs_preorder_nodes
 
 
@@ -18,7 +19,8 @@ class BlockWrapper:
         block_cls: Interpretation class of node in simulation
         args: Arguments `block_cls`
         kwargs: Additional arguments `block_cls`
-    """    
+    """
+
     def __init__(self, block_cls, *args, **kwargs):
         self.block_cls = block_cls
         self.args = args
@@ -45,7 +47,8 @@ class Node:
     def __eq__(self, __o: object) -> bool:
         if not isinstance(__o, self.__class__):
             raise Exception(
-                "Wrong type of comparable object. Must be Node instead {wrong_type}".format(wrong_type=type(__o)))
+                "Wrong type of comparable object. Must be Node instead {wrong_type}".format(
+                    wrong_type=type(__o)))
         return self.label == __o.label
 
 
@@ -69,9 +72,7 @@ class Rule:
     @graph_insert.setter
     def graph_insert(self, graph: nx.DiGraph):
         self._is_terminal = all(
-            [raw_node["Node"].is_terminal
-             for _, raw_node in graph.nodes(data=True)]
-        )
+            [raw_node["Node"].is_terminal for _, raw_node in graph.nodes(data=True)])
         self._graph_insert = graph
 
     @property
@@ -85,7 +86,7 @@ class Rule:
 @dataclass
 class WrapperTuple:
     """ The return type is used to build the Robot.
-        Id - из генерируемого графа  
+        Id - from the generated graph 
     """
     id: int
     block_wrapper: BlockWrapper  # Set default value
@@ -99,6 +100,7 @@ class GraphGrammar(nx.DiGraph):
         The mechanism for assignment a unique Id, each added node using rule_apply will increase the counter.
         Supports methods from networkx.DiGraph ancestor class
     """
+
     def __init__(self, **attr):
         super().__init__(**attr)
         self.__uniq_id_counter = -1
@@ -109,16 +111,13 @@ class GraphGrammar(nx.DiGraph):
         return self.__uniq_id_counter
 
     def find_nodes(self, match: Node) -> list[int]:
-        """
-        Parameters
-        ----------
-        match : Node
-            Node for find, matched by label
+        """_summary_
 
-        Returns
-        -------
-        list[int]
-            Id of matched nodes
+        Args:
+            match (Node): Node for find, matched by label
+
+        Returns:
+            list[int]: Id of matched nodes
         """
 
         match_nodes = []
@@ -131,14 +130,13 @@ class GraphGrammar(nx.DiGraph):
         return match_nodes
 
     def _replace_node(self, node_id: int, rule: Rule):
-        """ Applies rules to node_id
+        """Applies rules to node_id
 
-        Parameters
-        ----------
-        node_id : int
-        rule : Rule
-
+        Args:
+            node_id (int):  
+            rule (Rule): 
         """
+
         # Convert to list for mutable
         in_edges = [list(edge) for edge in self.in_edges(node_id)]
         out_edges = [list(edge) for edge in self.out_edges(node_id)]
@@ -165,8 +163,7 @@ class GraphGrammar(nx.DiGraph):
             edge[0] = id_node_connect_child_graph
 
         # Convert ids in rule to graph ids system
-        rule_graph_relabeled = nx.relabel_nodes(
-            rule.graph_insert, relabel_in_rule)
+        rule_graph_relabeled = nx.relabel_nodes(rule.graph_insert, relabel_in_rule)
 
         # Push changes into graph
         self.remove_node(node_id)
@@ -176,16 +173,15 @@ class GraphGrammar(nx.DiGraph):
         self.add_edges_from(out_edges)
 
     def closest_node_to_root(self, list_ids: list[int]) -> int:
-        """ Note, all edges have a weight of 1
-        Parameters
-        ----------
-        list_ids : list[int]
+        """Find closest node to root from list_ids
 
-        Returns
-        -------
-        int
-            id of closest Node
+        Args:
+            list_ids (list[int]):
+
+        Returns:
+            int: id of closest Node
         """
+
         root_id = self.get_root_id()
 
         def sort_by_root_distance(node_id):
@@ -196,11 +192,11 @@ class GraphGrammar(nx.DiGraph):
 
     def get_root_id(self) -> int:
         """
-        Returns
-        -------
-        int
-            root id
+
+        Returns:
+            int: root id 
         """
+
         for raw_node in self.nodes.items():
             raw_node_id = raw_node[0]
             if self.in_degree(raw_node_id) == 0:
@@ -213,8 +209,7 @@ class GraphGrammar(nx.DiGraph):
         id_closest = self.closest_node_to_root(ids)
         if rule.graph_insert.order() == 0:
             # Stub removing leaf node if input rule is empty
-            out_edges_ids_node = list(
-                filter(lambda x: x[0] == id_closest, edge_list))
+            out_edges_ids_node = list(filter(lambda x: x[0] == id_closest, edge_list))
             if out_edges_ids_node:
                 raise Exception("Trying delete not leaf node")
             self.remove_node(id_closest)
@@ -255,14 +250,14 @@ class GraphGrammar(nx.DiGraph):
         return levels
 
     def graph_partition_dfs(self) -> list[list[int]]:
-        """
-        Returns
-        -------
-        list[list[int]]
-            2D list
+        """ 2D list
             Row is branch of graph
             Collum is id node
+
+        Returns:
+            list[list[int]]: 
         """
+
         paths = []
         path = []
 
@@ -284,17 +279,15 @@ class GraphGrammar(nx.DiGraph):
         return paths
 
     def build_terminal_wrapper_array(self) -> list[list[WrapperTuple]]:
-        """ Returns a 2-d array of the shape dfs_partition
-        Returns
-        -------
-        list[list[WrapperTuple]]
-    
+        """Returns a 2-d array of the shape dfs_partition
 
-        Raises
-        ------
-        Exception
-            Exception('Graph contain non-terminal elements')
+        Raises:
+            Exception: Graph contain non-terminal elements
+
+        Returns:
+            list[list[WrapperTuple]]:
         """
+
         paths = self.graph_partition_dfs()
         wrapper_array = []
 
@@ -315,17 +308,14 @@ class GraphGrammar(nx.DiGraph):
         return self.nodes[node_id]["Node"]
 
     def get_ids_in_dfs_order(self) -> list[int]:
-        """ 
-        Iterate in deep first order over node ids
+        """Iterate in deep first order over node ids
         One of the options to present the graph in a flat form
 
-        Returns
-        -------
-        list[int]
-            List ids 
+        Returns:
+            list[int]: 
         """
-        return list(dfs_preorder_nodes(self, self.get_root_id()))
 
+        return list(dfs_preorder_nodes(self, self.get_root_id()))
 
     def __eq__(self, __o) -> bool:
         if isinstance(__o, GraphGrammar):
