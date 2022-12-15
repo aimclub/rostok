@@ -1,4 +1,4 @@
-from example_ruleset import get_terminal_graph_three_finger, get_nonterminal_graph_two_finger, get_terminal_graph_two_finger, J_NODES, B_NODES, T_EXAMPLE
+from example_vocabulary import get_terminal_graph_three_finger, J_NODES, B_NODES, T_EXAMPLE
 from rostok.graph_grammar.node import Node
 
 

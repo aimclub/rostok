@@ -171,7 +171,8 @@ class GraphEnvironment():
         return False
         
 
-reporter = MCTSReporter("results/")
+reporter = MCTSReporter()
+
 class GraphVocabularyEnvironment(GraphEnvironment):
     def __init__(self, initilize_graph: GraphGrammar, rule_vocabulary: RuleVocabulary, max_numbers_rules_non_terminal=20):
         """Subclass graph environment on rule vocabulary instead rules and with real reward on simulation and control optimizing
@@ -261,20 +262,19 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         reporter.make_step(rule_name, self.step_counter)
         done = new_state.isTerminal()
         
-    
         if render:
             plt.figure()
             nx.draw_networkx(self.graph, pos=nx.kamada_kawai_layout(self.graph, dim=2), node_size=800,
                  labels={n: self.graph.nodes[n]["Node"].label for n in self.graph})
             plt.show()
+        path = None
         if done: 
             reporter.main_control = self.movments_trajectory
             reporter.main_reward = self.reward
             print(self.movments_trajectory)
-            reporter.dump_results()
-            reporter.plot_means()
+            path = reporter.dump_results()
             
-        return done, self.graph, self.movments_trajectory
+        return done, self.graph, self.movments_trajectory, path
     
     def __deepcopy__(self, memo):
         cls = self.__class__

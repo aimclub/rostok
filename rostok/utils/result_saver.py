@@ -1,7 +1,8 @@
 from statistics import mean
+from pathlib import Path 
 from datetime import datetime
-import matplotlib.pyplot as plt
 import sys
+import matplotlib.pyplot as plt
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 
@@ -29,19 +30,21 @@ class RobotState():
         graph = GraphGrammar()
         for rule in self.rule_list:
             graph.apply_rule(rules.get_rule(rule))
+        rules.make_graph_terminal(graph)
+        return graph
 
 
 class MCTSReporter():
-    def __init__(self, path):
-        self.path = path
+    def __init__(self):
+        #self.path = path
         self.current_rewards = []
         self.rewards=dict()
         self.main_state = RobotState()
-        self.main_reward = -10
+        self.main_reward = 0.
         self.main_control = []
         self.best_state = RobotState()
         self.best_control = []
-        self.best_reward = -10
+        self.best_reward = 0.
         
     def add_reward(self, state:RobotState, reward: float, control):
         self.current_rewards.append([state.rule_list, reward, control])
@@ -70,7 +73,10 @@ class MCTSReporter():
         print("dump_results started")
         time = datetime.now()
         time = str(time.date())+"_"+str(time.hour)+"-"+str(time.minute)+"-"+str(time.second)
-        with open(self.path + "mcts_log_"+time+".txt", 'w') as file:
+        path = Path("./results/MCTS_report_" + datetime.now().strftime("%yy_%mm_%dd_%HH_%MM"))
+        path.mkdir(parents=True, exist_ok=True)
+        path = Path("./results/MCTS_report_" + datetime.now().strftime("%yy_%mm_%dd_%HH_%MM")+"/mcts_log_.txt")
+        with open(path, 'w') as file:
             original_stdout = sys.stdout
             sys.stdout = file
             
@@ -102,25 +108,29 @@ class MCTSReporter():
                 print('control:', *self.best_control) 
             print('reward:',self.best_reward)
             sys.stdout = original_stdout
+        return path
 
 
-def read_report(path):
+def read_report(path, rules: RuleVocabulary):
     with open(path,'r') as report:
-        first_line = report.readline()
-        print(first_line)
-        line = first_line
-        while line:
-            if line == 'main_result':
-                rules = report.readline().split().pop(0)
-                final_state = RobotState(rules)
-                control = report.readline().split().pop(0)
-                reward = report.readline().split().pop(0)
-
-            line = report.readline()
-    return final_state, control, reward
+        final_state = None
+        lines = report.readlines()
+        for i in range(len(lines)):
+            line = lines[i]
+            if line == 'best_result:\n':
+                current_rules = (lines[i+1]).split()
+                del current_rules[0]
+                final_state = RobotState(current_rules)
+                control = (lines[i+2]).split()
+                del control[0]
+                reward = (lines[i+3]).split()
+                del reward[0]   
+        final_graph = final_state.make_graph(rules)
+    return final_graph, control, reward
 
 if __name__ =="__main__":
-    reporter = MCTSReporter("results/")
+
+    reporter = MCTSReporter()
     state1 = RobotState(["Rule1", "Rule2"])
     state2 = RobotState(["Rule1", "Rule2", "Rule3"])
     reporter.add_reward(state1, 10, [14, 25])
