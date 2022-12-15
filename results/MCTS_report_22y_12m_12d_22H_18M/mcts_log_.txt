@@ -1,0 +1,43 @@
+MCTS report generated at:  2022-12-12_22-18-2
+1
+rules: InitMechanism_3_R_A TerminalTransformRightMinusAngle1 TerminalFlat2 TerminalTransformRightPlusAngle1 TerminalEndLimb1 TerminalTransformLeft2 TerminalEndLimb1 TerminalEndLimb2
+control: 0
+reward: 0
+2
+rules: InitMechanism_3_R_A TerminalFlat1 TerminalEndLimb1 TerminalTransformRightPlusAngle3 TerminalTransformLeft1 TerminalEndLimb2 TerminalEndLimb2 TerminalTransformRightMinusAngle1
+control: 0
+reward: 0
+3
+rules: InitMechanism_3_R_A TerminalFlat1 TerminalTransformLeft1 TerminalTransformRightMinusAngle1 TerminalTransformRightPlusAngle1 TerminalEndLimb2 TerminalEndLimb2 TerminalEndLimb2
+control: 0
+reward: 0
+4
+rules: InitMechanism_3_R_A TerminalFlat1 TerminalTransformLeft1 TerminalEndLimb1 TerminalEndLimb1 TerminalTransformRightMinusAngle1 TerminalTransformRightPlusAngle3 TerminalEndLimb1
+control: 0
+reward: 0
+5
+rules: InitMechanism_3_R_A TerminalFlat1 TerminalTransformLeft1 TerminalEndLimb1 TerminalEndLimb1 TerminalEndLimb2 TerminalTransformRightPlusAngle2 TerminalTransformRightMinusAngle3
+control: 0
+reward: 0
+6
+rules: InitMechanism_3_R_A TerminalFlat1 TerminalTransformLeft1 TerminalEndLimb1 TerminalEndLimb1 TerminalEndLimb1 TerminalTransformRightMinusAngle3 TerminalTransformRightPlusAngle1
+control: 0
+reward: 0
+7
+rules: InitMechanism_3_R_A TerminalFlat1 TerminalTransformLeft1 TerminalEndLimb1 TerminalEndLimb1 TerminalEndLimb1 TerminalTransformRightPlusAngle3 TerminalTransformRightMinusAngle3
+control: 0
+reward: 0
+8
+rules: InitMechanism_3_R_A TerminalFlat1 TerminalTransformLeft1 TerminalEndLimb1 TerminalEndLimb1 TerminalEndLimb1 TerminalTransformRightPlusAngle3 TerminalTransformRightMinusAngle3
+control: 0
+reward: 0
+
+main_result:
+rules: InitMechanism_3_R_A TerminalFlat1 TerminalTransformLeft1 TerminalEndLimb1 TerminalEndLimb1 TerminalEndLimb1 TerminalTransformRightPlusAngle3 TerminalTransformRightMinusAngle3
+control: no joints
+reward: 0
+
+best_result:
+rules:
+control:
+reward: 0.0

@@ -2,6 +2,7 @@ from statistics import mean
 from pathlib import Path 
 from datetime import datetime
 import sys
+import networkx as nx
 import matplotlib.pyplot as plt
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
@@ -57,12 +58,12 @@ class MCTSReporter():
         self.current_rewards=[]
         self.main_state.add_rule(rule)
 
+
     def plot_means(self):
         print("plot_means started")
         mean_rewards=[]
         for key in self.rewards:
             rewards = [result[1] for result in self.rewards[key]]
-            print(rewards)
             mean_rewards.append(mean(rewards))
 
         plt.figure()
@@ -74,12 +75,11 @@ class MCTSReporter():
         time = datetime.now()
         time = str(time.date())+"_"+str(time.hour)+"-"+str(time.minute)+"-"+str(time.second)
         path = Path("./results/MCTS_report_" + datetime.now().strftime("%yy_%mm_%dd_%HH_%MM"))
-        path.mkdir(parents=True, exist_ok=True)
-        path = Path("./results/MCTS_report_" + datetime.now().strftime("%yy_%mm_%dd_%HH_%MM")+"/mcts_log_.txt")
-        with open(path, 'w') as file:
+        path. mkdir(parents=True, exist_ok=True)
+        path_to_file = Path(path, "mcts_log.txt")
+        with open(path_to_file, 'w') as file:
             original_stdout = sys.stdout
             sys.stdout = file
-            
             print('MCTS report generated at: ', str(time))
             for key in self.rewards:
                 print(str(key))
@@ -112,7 +112,8 @@ class MCTSReporter():
 
 
 def read_report(path, rules: RuleVocabulary):
-    with open(path,'r') as report:
+    path_to_log = Path(path, "mcts_log.txt")
+    with open(path_to_log,'r') as report:
         final_state = None
         lines = report.readlines()
         for i in range(len(lines)):
@@ -126,6 +127,14 @@ def read_report(path, rules: RuleVocabulary):
                 reward = (lines[i+3]).split()
                 del reward[0]   
         final_graph = final_state.make_graph(rules)
+        
+    path_to_pic=Path(path,"best_result_graph.jpg")
+    plt.figure()
+    nx.draw_networkx(final_graph,
+                     pos=nx.kamada_kawai_layout(final_graph, dim=2),
+                     node_size=800,
+                     labels={n: final_graph.nodes[n]["Node"].label for n in final_graph})
+    plt.savefig(path_to_pic)
     return final_graph, control, reward
 
 if __name__ =="__main__":

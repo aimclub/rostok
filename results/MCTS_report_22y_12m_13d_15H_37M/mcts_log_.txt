@@ -1,0 +1,95 @@
+MCTS report generated at:  2022-12-13_15-37-24
+1
+rules: InitMechanism_2 TerminalFlat2 TerminalTransformRight1 TerminalEndLimb2 TerminalEndLimb1 TerminalTransformLeft1
+control: 0
+reward: 0
+rules: InitMechanism_3_R TerminalEndLimb1 TerminalFlat1 TerminalTransformLeft3 TerminalEndLimb1 TerminalTransformRightPlus3 TerminalTransformRightMinus2 TerminalEndLimb1
+control: 0
+reward: 0
+2
+rules: InitMechanism_2 TerminalFlat3 TerminalEndLimb1 TerminalTransformLeft1 TerminalTransformRight3 TerminalEndLimb2
+control: 0
+reward: 0
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformLeft3 TerminalTransformRight3 TerminalEndLimb2 FingerUpper TerminalL1 TerminalJoint TerminalEndLimb2
+control: [8.37037037]
+reward: 2.7305820313466014
+3
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight3 TerminalEndLimb2 FingerUpper TerminalL1 TerminalEndLimb1 TerminalJoint TerminalTransformLeft2
+control: [9.85185185]
+reward: 2.764468491438208
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 FingerUpper TerminalL2 TerminalEndLimb1 TerminalJoint TerminalEndLimb2 TerminalTransformLeft2
+control: [9.25925926]
+reward: 2.863687422394844
+4
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 FingerUpper TerminalL3 TerminalJoint TerminalEndLimb1 FingerUpper TerminalL2 TerminalJoint TerminalEndLimb1
+control: [8.66666667 8.96296296]
+reward: 2.7726405755986363
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft2 TerminalEndLimb2 TerminalEndLimb2
+control: 0
+reward: 0
+5
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 FingerUpper TerminalEndLimb1 TerminalEndLimb2 TerminalL3 TerminalJoint
+control: [9.25925926]
+reward: 2.7283184695165748
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 TerminalEndLimb2 TerminalEndLimb2
+control: 0
+reward: 0
+6
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 FingerUpper TerminalL3 TerminalJoint TerminalEndLimb2 TerminalEndLimb1
+control: [9.85185185]
+reward: 2.7931885341236975
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 FingerUpper TerminalL2 TerminalEndLimb1 TerminalEndLimb2 TerminalJoint
+control: [6.59259259]
+reward: 2.8738723333631917
+7
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 FingerUpper TerminalL2 FingerUpper TerminalL3 TerminalEndLimb2 TerminalJoint TerminalJoint TerminalEndLimb1
+control: [9.55555556 6.        ]
+reward: 3.1500009038646444
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 FingerUpper TerminalL2 TerminalEndLimb2 TerminalEndLimb2 TerminalJoint
+control: [8.96296296]
+reward: 2.9550711936673655
+8
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 FingerUpper TerminalL2 FingerUpper TerminalL3 TerminalEndLimb1 TerminalEndLimb1 TerminalJoint TerminalJoint
+control: [9.55555556 8.66666667]
+reward: 3.1756510950338193
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 FingerUpper TerminalL2 FingerUpper TerminalL2 TerminalEndLimb2 TerminalEndLimb1 TerminalJoint TerminalJoint
+control: [9.55555556 8.66666667]
+reward: 3.1760939593529085
+9
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 FingerUpper TerminalL2 FingerUpper TerminalL2 TerminalEndLimb2 TerminalJoint TerminalJoint TerminalEndLimb2
+control: [7.77777778 6.        ]
+reward: 3.202123092037837
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 FingerUpper TerminalL2 FingerUpper TerminalL2 TerminalEndLimb1 TerminalEndLimb2 TerminalJoint TerminalJoint
+control: [9.55555556 8.66666667]
+reward: 3.1665545977284792
+10
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 FingerUpper TerminalL2 FingerUpper TerminalL2 TerminalEndLimb2 TerminalEndLimb2 TerminalJoint TerminalJoint
+control: [7.77777778 6.        ]
+reward: 3.202123092037837
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 FingerUpper TerminalL2 FingerUpper TerminalL2 TerminalEndLimb2 TerminalEndLimb1 TerminalJoint TerminalJoint
+control: [9.55555556 8.66666667]
+reward: 3.1760939593529085
+11
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 FingerUpper TerminalL2 FingerUpper TerminalL2 TerminalEndLimb2 TerminalEndLimb2 TerminalJoint TerminalJoint
+control: [7.77777778 6.        ]
+reward: 3.202123092037837
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 FingerUpper TerminalL2 FingerUpper TerminalL2 TerminalEndLimb2 TerminalEndLimb2 TerminalJoint TerminalJoint
+control: [7.77777778 6.        ]
+reward: 3.202123092037837
+12
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 FingerUpper TerminalL2 FingerUpper TerminalL2 TerminalEndLimb2 TerminalEndLimb2 TerminalJoint TerminalJoint
+control: [7.77777778 6.        ]
+reward: 3.202123092037837
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 FingerUpper TerminalL2 FingerUpper TerminalL2 TerminalEndLimb2 TerminalEndLimb2 TerminalJoint TerminalJoint
+control: [7.77777778 6.        ]
+reward: 3.202123092037837
+
+main_result:
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 FingerUpper TerminalL2 FingerUpper TerminalL2 TerminalEndLimb2 TerminalEndLimb2 TerminalJoint TerminalJoint
+control: no joints
+reward: 0
+
+best_result:
+rules: InitMechanism_2 TerminalFlat1 TerminalTransformRight2 TerminalTransformLeft1 FingerUpper TerminalL2 FingerUpper TerminalL2 TerminalEndLimb2 TerminalJoint TerminalJoint TerminalEndLimb2
+control: 7.777777777777777 6.0
+reward: 3.202123092037837
