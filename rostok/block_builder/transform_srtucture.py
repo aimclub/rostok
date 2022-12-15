@@ -1,3 +1,3 @@
 from collections import namedtuple
 
-FrameTransform = namedtuple('FrameTransform',["position", "rotation"])
+FrameTransform = namedtuple('FrameTransform', ["position", "rotation"])
