@@ -191,7 +191,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         Args:
             initilize_graph (GraphGrammar): Initial state of the graph
             rule_vocabulary (RuleVocabulary): Object of the rule vocabulary for manipulation on
-            graph 
+            graph
             max_numbers_rules_non_terminal (int): Max amount of non-terminal rules.
             Defaults to 20.
         """
