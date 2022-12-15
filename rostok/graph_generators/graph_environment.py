@@ -6,7 +6,7 @@ from rostok.utils.result_saver import MCTSReporter, RobotState
 
 
 def rule_is_terminal(rule: Rule):
-    """Function finding non terminal rules 
+    """Function finding non terminal rules
 
     Args:
         rule (Rule): Input rule to checking
@@ -308,7 +308,7 @@ class GraphStubsEnvironment(GraphEnvironment):
 
         Args:
             initilize_graph (GraphGrammar): Initial state of the graph
-            rules (list[Rule]): List of rules 
+            rules (list[Rule]): List of rules
             max_numbers_rules_non_terminal (int): Max amount of non-terminal rules. Defaults to 20.
         """
         super().__init__(initilize_graph, rules, max_numbers_rules_non_terminal)
