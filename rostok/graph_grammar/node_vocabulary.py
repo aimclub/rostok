@@ -1,18 +1,19 @@
 """ Module contains NodeVocabulary class."""
 
-from rostok.graph_grammar.node import Node, BlockWrapper, ROOT
+from rostok.graph_grammar.node import ROOT, BlockWrapper, Node
 
 
 class NodeVocabulary():
     """The class contains dictionary of nodes and methods to manipulate with it.
-    
-    This is a class to manage a dictionary of nodes. The keys are labels of the nodes and the values are Node objects
-    User can create or add nodes to vocabulary, get individual nodes or list of nodes. 
+
+    This is a class to manage a dictionary of nodes. The keys are labels of the nodes and
+    the values are Node objects. User can create or add nodes to vocabulary, get individual
+    nodes or list of nodes.
 
     Attributes:
         node_dict (List[Node]): dictionary of all nodes.
-        terminal_node_dict (List[Node]): dictionary of only terminal nodes. 
-        non-terminal_node_dict (List[Node]): dictionary of only non-terminal nodes.     
+        terminal_node_dict (List[Node]): dictionary of only terminal nodes.
+        non-terminal_node_dict (List[Node]): dictionary of only non-terminal nodes.
     """
 
     def __init__(self):
@@ -30,7 +31,7 @@ class NodeVocabulary():
         Raises:
             Exception: Attempt to add a Node with a label that is already in dictionary!
         """
-        if node.label in self.node_dict.keys():
+        if node.label in self.node_dict:
             raise Exception('Attempt to add a Node with a label that is already in dictionary!')
 
         self.node_dict[node.label] = node
@@ -44,18 +45,19 @@ class NodeVocabulary():
                     is_terminal: bool = False,
                     block_wrapper: BlockWrapper = None):
         """Create a node and add it to the vocabulary.
-            
+
         Args:
             label (str): the label of the new node.
-            is_terminal (bool, optional): defines if the new node is a terminal node. Default is False.
-            block_wrapper (BlockWrapper, optional): the object that contains physical properties of the 
-                node. Default is None. 
+            is_terminal (bool, optional): defines if the new node is a terminal node. Default
+                is False.
+            block_wrapper (BlockWrapper, optional): the object that contains physical properties
+                of the node. Default is None.
 
         Raises:
             Exception: Attempt to add a Node with a label that is already in dictionary!
         """
 
-        if label in self.node_dict.keys():
+        if label in self.node_dict:
             raise Exception('Attempt to create a Node with a label that is already in dictionary!')
 
         node = Node(label, is_terminal, block_wrapper)
@@ -72,8 +74,8 @@ class NodeVocabulary():
             label(str): the label of the node that should be returned.
 
         Returns:
-            A requested node as a Node class object.   
-         
+            A requested node as a Node class object.
+
         Raises
             Exception: Node with given label not found!
         """
@@ -89,15 +91,15 @@ class NodeVocabulary():
 
         Args:
             label(str): the label of the node that should be checked.
-        
+
         Returns:
             bool: True is the label is in dictionary, False otherwise.
         """
 
-        if label in self.node_dict.keys():
+        if label in self.node_dict:
             return True
-        else:
-            return False
+
+        return False
 
     def __str__(self):
         """Return the list of the labels in the vocabulary."""
@@ -106,11 +108,10 @@ class NodeVocabulary():
 
     def get_list_of_nodes(self, nodes: list[str]) -> list[Node]:
         """Returns list of Node objects corresponding to list of labels.
-        
+
         Args:
             nodes (list[str]): list of labels to construct a list of Node objects.
 
-        
         Returns:
             list of Node objects corresponding to the list of passed labels.
         """

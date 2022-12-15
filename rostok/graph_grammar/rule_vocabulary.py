@@ -1,43 +1,47 @@
 """Module contains RuleVocabulary class."""
 
+import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-import matplotlib.pyplot as plt
+
+from rostok.graph_grammar.node import ROOT, GraphGrammar, Rule
 from rostok.graph_grammar.node_vocabulary import NodeVocabulary
-from rostok.graph_grammar.node import Rule, GraphGrammar, ROOT
 
 
 class RuleVocabulary():
     """The class that contains the rules for building the GraphGrammar object.
 
-    All rules for mechanism generation should be created with an instance of RuleVocabulary. This class provides 
-    utility methods for the rules. 
-    
+    All rules for mechanism generation should be created with an instance of RuleVocabulary.
+    This class provides utility methods for the rules.
+
     Attributes:
-        node_vocab (NodeVocabulary): the node vocabulary that should contain all the nodes used in the rules.
+        node_vocab (NodeVocabulary): the node vocabulary that should contain all the nodes used in
+            the rules.
         rule_dict (dict{str: Rule}): the dictionary of all rules with the rule names as keys.
         nonterminal_rule_dict (dict{str: Rule}): the dictionary of only non-terminal rules.
         terminal_rule_dict (dict{str: rule}): the dictionary of only terminal rules.
-        rules_nonterminal_node_set (set(str)): the set of node labels that are used as the new nodes in the non-terminal 
-            rules. These are nodes that can appear in the final graph.
-        rules_terminal_node_set (set(str)): the set of node labels that are used as the new nodes in the terminal rules. 
-            These are nodes that can appear in the final graph.
-        terminal_dict (dict{str: list[str]}): the dictionary that contains the list of terminal states for all non-terminal nodes.
+        rules_nonterminal_node_set (set(str)): the set of node labels that are used as the new nodes
+            in the non-terminal rules. These are nodes that can appear in the final graph.
+        rules_terminal_node_set (set(str)): the set of node labels that are used as the new nodes
+            in the terminal rules. These are nodes that can appear in the final graph.
+        terminal_dict (dict{str: list[str]}): the dictionary that contains the list of terminal
+            states for all non-terminal nodes.
     """
 
     def __init__(self, node_vocab: NodeVocabulary = NodeVocabulary()):
-        """Cretae a new empty vocabulary object.
-        
+        """Create a new empty vocabulary object.
+
         Args:
-            node_vocab (NodeVocabulary, optional): the node vocabulary for the rules. Default is an empty node vocabulary.
+            node_vocab (NodeVocabulary, optional): the node vocabulary for the rules. Default is an
+                empty node vocabulary.
         """
         self.node_vocab = node_vocab
-        self.rule_dict = {}
-        self.nonterminal_rule_dict = {}
-        self.terminal_rule_dict = {}
-        self.rules_nonterminal_node_set = set()
-        self.rules_terminal_node_set = set()
-        self.terminal_dict = {}
+        self.rule_dict: dict[str, Rule] = {}
+        self.nonterminal_rule_dict: dict[str, Rule] = {}
+        self.terminal_rule_dict: dict[str, Rule] = {}
+        self.rules_nonterminal_node_set: set[str] = set()
+        self.rules_terminal_node_set: set[str] = set()
+        self.terminal_dict: dict[str, list[str]] = {}
         self._completed = False
 
     def create_rule(self,
@@ -46,11 +50,12 @@ class RuleVocabulary():
                     new_nodes: list[str],
                     current_in_edges: int,
                     current_out_edges: int,
-                    new_edges: list[(int, int)] = [],
+                    new_edges: list[tuple[int, int]] = [],
                     current_links: list[(int, int)] = []):
         """Create a rule and add it to the dictionary.
-        
-        The method checks the created rule. There is no method to add already created rule to the vocabulary.
+
+        The method checks the created rule. There is no method to add already created rule to
+        the vocabulary.
 
         Args:
             name (str): name of the new rule.
@@ -65,13 +70,15 @@ class RuleVocabulary():
             Exception: prohibited length of the current_nodes list, should be 1.
             Exception: the node vocabulary dose not include the replacing node or the new nodes.
             Exception: the edge contains node idx out of graph length or the edge is a loop.
-            Exception: attempt to link in or out edges of the replaced node to the node idx out of new subgraph length.
+            Exception: attempt to link in or out edges of the replaced node to the node idx out of
+                new subgraph length.
         """
 
         if name in self.rule_dict:
             raise Exception('This name is already in the rule vocabulary!')
 
-        # Currently the GraphGrammar class can only apply rules that replace one node with the new system of nodes.
+        # Currently the GraphGrammar class can only apply rules that replace one node with the 
+        # new system of nodes.
         # But in future we may apply replacement of the linked set of nodes
         if len(current_nodes) != 1:
             raise Exception(f'Prohibited length of the current_nodes: {len(current_nodes)}!')
@@ -112,7 +119,7 @@ class RuleVocabulary():
         new_rule.id_node_connect_parent = current_in_edges
         new_rule.id_node_connect_child = current_out_edges
         self.rule_dict[name] = new_rule
-        if new_rule.is_terminal():
+        if new_rule.is_terminal:
             self.terminal_rule_dict[name] = new_rule
             self.rules_terminal_node_set.update(set(new_nodes))
             if len(new_nodes) > 0:
@@ -139,7 +146,7 @@ class RuleVocabulary():
     # Check set of rules itself, without any graph
     def check_rules(self):
         """Check set of rules itself, without any graph.
-        
+
         Check the rules for having at least one terminal rule for every node that appears in the end graph of a nonterminal rule.
         """
         # Check if all nonterminal nodes from vocab are in the rules. If not print a warning
@@ -187,9 +194,9 @@ class RuleVocabulary():
 
     def get_list_of_applicable_nonterminal_rules(self, grammar: GraphGrammar):
         """Return the list of non-terminal applicable rules for the current graph.
-        
+
         Args:
-            grammar (GraphGrammar): a GraphGrammar object analyze.  
+            grammar (GraphGrammar): a GraphGrammar object analyze.
 
         Returns:
             list of rule names for non-terminal rules that can be applied for the graph.
@@ -211,7 +218,7 @@ class RuleVocabulary():
         """Return the list of terminal applicable rules for the current graph.
 
         Args:
-            grammar (GraphGrammar): a GraphGrammar object analyze.  
+            grammar (GraphGrammar): a GraphGrammar object analyze.
 
         Returns:
             list of rule names for terminal rules that can be applied for the graph.
@@ -235,7 +242,7 @@ class RuleVocabulary():
             node_name (str): a node label for which function returns the list of the terminal rules.
 
         Returns:
-            The list of rule names for rules that can be applied to make a node terminal.  
+            The list of rule names for rules that can be applied to make a node terminal.
         """
         rule_list = []
         for rule_name, rule in self.terminal_rule_dict.items():
@@ -247,10 +254,10 @@ class RuleVocabulary():
     def make_graph_terminal(self, grammar: GraphGrammar):
         """Converts a graph into a graph with only terminal nodes.
 
-        For each non-terminal node the function apply a random rule that make it terminal. 
-        
+        For each non-terminal node the function apply a random rule that make it terminal.
+
         Args:
-            grammar (GraphGrammar): GraphGrammar object that should become terminal. 
+            grammar (GraphGrammar): GraphGrammar object that should become terminal.
         """
         rule_list = []
         for node in grammar.nodes.items():
