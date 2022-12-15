@@ -298,7 +298,7 @@ class ChControllerPID(ChronoControl):
         """Setter the desired trajectory how python function
 
         Args:
-            function (def): Link to the function which generate values the desired trajectory 
+            function (def): Link to the function which generate values the desired trajectory
             each time
         """
         self.trajectory = ChCustomFunction(function, *args, **kwargs)

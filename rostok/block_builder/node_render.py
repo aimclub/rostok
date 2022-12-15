@@ -40,7 +40,7 @@ class SpringTorque(chrono.TorqueFunctor):
 class ContactReporter(chrono.ReportContactCallback):
 
     def __init__(self, chrono_body):
-        """Create a sensor of contact normal forces for the body
+        """Create a sensor of contact normal forces for the body.
 
         Args:
             chrono_body (ChBody): The body on which the sensor is install
@@ -84,9 +84,9 @@ class ContactReporter(chrono.ReportContactCallback):
 
 
 class ChronoBody(BlockBody, ABC):
-    """Abstract class, that interpreting nodes of a robot body part in a physics engine
-    (`pychrono`).
-    
+    """Abstract class, that interpreting nodes of a robot body part in a
+    physics engine (`pychrono`).
+
     Attributes:
         body (pychrono.ChBody): Pychrono object of the solid body. It defines visualisation,
         collision shape, position on the world frame and etc in simulation system.
@@ -109,10 +109,12 @@ class ChronoBody(BlockBody, ABC):
                  out_pos_marker: chrono.ChVectorD,
                  random_color: bool,
                  is_collide: bool = True):
-        """Abstract class of interpretation of nodes of a robot body part in a physics engine
-        
-        Initlization adds body in system, creates input and output marker of the body and sets them. 
-        Also, it initilize object of the contact reporter 
+        """Abstract class of interpretation of nodes of a robot body part in a
+        physics engine.
+
+        Initlization adds body in system, creates input and output
+        marker of the body and sets them. Also, it initilize object of
+        the contact reporter
         """
         super().__init__(builder)
         self.body = body
@@ -152,7 +154,7 @@ class ChronoBody(BlockBody, ABC):
             self.body.GetVisualShape(0).SetColor(chrono.ChColor(*rgb))
 
     def _build_collision_box_model(self, struct_material, width, length):
-        """Build collision model of the block on material width and length
+        """Build collision model of the block on material width and length.
 
         Args:
             struct_material (Material): Dataclass of material body
@@ -167,7 +169,7 @@ class ChronoBody(BlockBody, ABC):
         self.body.GetCollisionModel().BuildModel()
 
     def move_to_out_frame(self, in_block: Block):
-        """Move the input frame body to output frame position input block
+        """Move the input frame body to output frame position input block.
 
         Args:
             in_block (Block): The block defines relative movming to output frame
@@ -184,11 +186,11 @@ class ChronoBody(BlockBody, ABC):
         self.body.SetCoord(coord)
 
     def make_fix_joint(self, in_block):
-        """Create weld joint (fixing relative posiotion and orientation) between input block and 
-        the body
+        """Create weld joint (fixing relative posiotion and orientation)
+        between input block and the body.
 
         Args:
-            in_block (Block): The block which define relative fixing position and orientation the 
+            in_block (Block): The block which define relative fixing position and orientation the
             body in system
         """
         fix_joint = chrono.ChLinkMateFix()
@@ -196,12 +198,12 @@ class ChronoBody(BlockBody, ABC):
         self.builder.Add(fix_joint)
 
     def reset_transformed_frame_out(self):
-        """Reset all transforms output frame of the body and back to initial state
-        """
+        """Reset all transforms output frame of the body and back to initial
+        state."""
         self.transformed_frame_out.SetCoord(self._ref_frame_out.GetCoord())
 
     def apply_transform(self, in_block: BlockTransform):
-        """Applied input transformation to the output frame of the body
+        """Applied input transformation to the output frame of the body.
 
         Args:
             in_block (BlockTransform): The block which define transformations
@@ -213,7 +215,7 @@ class ChronoBody(BlockBody, ABC):
 
     @property
     def ref_frame_in(self) -> chrono.ChMarker:
-        """Return the input frame of the body
+        """Return the input frame of the body.
 
         Returns:
             pychrono.ChMarker: The input frame of the body
@@ -222,7 +224,7 @@ class ChronoBody(BlockBody, ABC):
 
     @property
     def normal_force(self) -> float:
-        """Return value normal forces of random collision point
+        """Return value normal forces of random collision point.
 
         Returns:
             float: Value normal forces of random collision point
@@ -232,7 +234,7 @@ class ChronoBody(BlockBody, ABC):
 
     @property
     def list_n_forces(self) -> list:
-        """Return a list of all the contact forces
+        """Return a list of all the contact forces.
 
         Returns:
             list: List normal forces of all the contacts points
@@ -246,9 +248,9 @@ class ChronoBody(BlockBody, ABC):
 
 
 class BoxChronoBody(ChronoBody, RobotBody):
-    """Class of the simple box body shape of robot on pychrono engine. 
-    It defines interpretation of node of body part in physic system `pychrono`
-    
+    """Class of the simple box body shape of robot on pychrono engine. It
+    defines interpretation of node of body part in physic system `pychrono`
+
     Args:
         builder (chrono.ChSystem): Arg sets the system, which hosth the body
         size (BoxSize, optional): Size of the body box. Defaults to BoxSize(0.1, 0.1, 0.1).
@@ -290,8 +292,9 @@ class BoxChronoBody(ChronoBody, RobotBody):
 
 
 class LinkChronoBody(ChronoBody, RobotBody):
-    """Class interpretation of node of the link robot in physic engine `pychrono`.
-    
+    """Class interpretation of node of the link robot in physic engine
+    `pychrono`.
+
     Args:
         builder (chrono.ChSystem): Arg sets the system, which hosting the body
         length (float): Length of the robot link. Defaults to 2.
@@ -301,7 +304,7 @@ class LinkChronoBody(ChronoBody, RobotBody):
         mass (float, optional): Value mass of the body box. Defaults to 1.
         material (Material, optional): Surface material, which define contact friction and etc.
         Defaults to DefaultChronoMaterial.
-        is_collide (bool, optional): Flag of collision body with other object in system. 
+        is_collide (bool, optional): Flag of collision body with other object in system.
         Defaults to True.
     """
 
@@ -373,7 +376,7 @@ class LinkChronoBody(ChronoBody, RobotBody):
 
 class FlatChronoBody(ChronoBody, RobotBody):
     """Class interprets node of robot flat (palm) in physic engine `pychrono`.
-    
+
     Args:
         builder (chrono.ChSystem): Arg sets the system, which hosting the body
         length (float): Length of the robot link. Defaults to 2.
@@ -427,7 +430,7 @@ class FlatChronoBody(ChronoBody, RobotBody):
 
 class MountChronoBody(ChronoBody, RobotBody):
     """Class is interprets node of robot end limbs in physic engine `pychrono`.
-    
+
     Args:
         builder (chrono.ChSystem): Arg sets the system, which hosting the body
         length (float): Length of the robot link. Defaults to 0.1.
@@ -478,9 +481,10 @@ class MountChronoBody(ChronoBody, RobotBody):
 
 
 class ChronoBodyEnv(ChronoBody):
-    """Class of environments bodies with standard shape, like box, ellipsoid, cylinder. 
-    It adds solid body in `pychrono` physical system that is not robot part
-    
+    """Class of environments bodies with standard shape, like box, ellipsoid,
+    cylinder. It adds solid body in `pychrono` physical system that is not
+    robot part.
+
     Args:
         builder (chrono.ChSystem): Arg sets the system, which hosting the body
         shape (SimpleBody): Args define the shape of the body. Defaults to SimpleBody.BOX
@@ -531,25 +535,25 @@ class ChronoBodyEnv(ChronoBody):
 
 
 class ChronoRevolveJoint(BlockBridge):
-    """The class representing revolute joint object in `pychrono` physical engine.
-    It is the embodiment of joint nodes from the mechanism graph in simulation
-    
+    """The class representing revolute joint object in `pychrono` physical
+    engine. It is the embodiment of joint nodes from the mechanism graph in
+    simulation.
 
-        Args:
-            builder (pychrono.ChSystem): Arg sets the system, which hosting the body
-            axis (Axis, optional): Define rotation axis. Defaults to Axis.Z.
-            type_of_input (InputType, optional): Define type of input joint control.
-            Defaults to InputType.POSITION. Instead of, can changes to torque, that more realistic.
-            stiffness (float, optional): Optional arg add a spring with `stiffness` to joint.
-            Defaults to 0.
-            damping (float, optional): Optional arg add a dempher to joint. Defaults to 0.
-            equilibrium_position (float, optional): Define equilibrium position of the spring.
-            Defaults to 0.
-            
-        Attributes:
-            joint (pychrono.ChLink): Joint define nodes of the joint part in the system
-            axis (Axis): The axis of the rotation
-            input_type (InputType): The type of input
+    Args:
+        builder (pychrono.ChSystem): Arg sets the system, which hosting the body
+        axis (Axis, optional): Define rotation axis. Defaults to Axis.Z.
+        type_of_input (InputType, optional): Define type of input joint control.
+        Defaults to InputType.POSITION. Instead of, can changes to torque, that more realistic.
+        stiffness (float, optional): Optional arg add a spring with `stiffness` to joint.
+        Defaults to 0.
+        damping (float, optional): Optional arg add a dempher to joint. Defaults to 0.
+        equilibrium_position (float, optional): Define equilibrium position of the spring.
+        Defaults to 0.
+
+    Attributes:
+        joint (pychrono.ChLink): Joint define nodes of the joint part in the system
+        axis (Axis): The axis of the rotation
+        input_type (InputType): The type of input
     """
 
     class InputType(str, Enum):
@@ -588,8 +592,8 @@ class ChronoRevolveJoint(BlockBridge):
         self.equilibrium_position = equilibrium_position
 
     def connect(self, in_block: ChronoBody, out_block: ChronoBody):
-        """Joint is connected two bodies
-        
+        """Joint is connected two bodies.
+
         If we have two not initialize joints engine crash
 
         Args:
@@ -605,7 +609,7 @@ class ChronoRevolveJoint(BlockBridge):
             self._add_spring_damper(in_block, out_block)
 
     def apply_transform(self, in_block):
-        """Aplied input tranformation to the output frame of the body
+        """Aplied input tranformation to the output frame of the body.
 
         Args:
             in_block (BlockTransform): The block which define transormations
@@ -623,7 +627,8 @@ class ChronoRevolveJoint(BlockBridge):
 
 
 class ChronoTransform(BlockTransform):
-    """Class representing node of the transformation in `pychrono` physical engine
+    """Class representing node of the transformation in `pychrono` physical
+    engine.
 
     Args:
         builder (pychrono.ChSystem): Arg sets the system, which hosth the body
