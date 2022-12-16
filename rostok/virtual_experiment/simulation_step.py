@@ -175,7 +175,9 @@ class SimulationStepOptimization:
                 metod_system = getattr(self.chrono_system, str_method)
                 metod_system(input)
             except AttributeError:
-                raise AttributeError("Chrono system don't have method {0}".format(str_method))
+                raise AttributeError(
+                    "Chrono system doesn't have method {0}".format(str_method))
+
 
     # Run simulation
     def simulate_system(self, time_step, visualize=False) -> SimOut:
