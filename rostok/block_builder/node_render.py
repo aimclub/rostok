@@ -82,7 +82,7 @@ class ContactReporter(chrono.ReportContactCallback):
 
 
 class ChronoBody(BlockBody, ABC):
-    """Abstract class, that interpreting nodes of a robot body part in a physics engine (`pychrono`).
+    """Abstract class, that interpreting nodes of a robot body part in a physics engine (`pychrono <https://projectchrono.org/pychrono/>`_).
     
     Attributes:
         body (pychrono.ChBody): Pychrono object of the solid body. It defines visualisation, collision shape, position on the world frame and etc in simulation system.
@@ -94,7 +94,7 @@ class ChronoBody(BlockBody, ABC):
         in_pos_marker (pychrono.ChVectorD): Arg defines position input frame the body
         out_pos_marker (chrono.ChVectorD): Arg defines position output frame the body
         random_color (bool): Flag of the random color of the body
-        is_collide (bool, optional): Flag of collision body with other objects in system.. Defaults to True.
+        is_collide (bool, optional): Flag of collision body with other objects in system. Defaults to True.
     """
 
     def __init__(self,
@@ -238,7 +238,7 @@ class ChronoBody(BlockBody, ABC):
 
 
 class BoxChronoBody(ChronoBody, RobotBody):
-    """Class of the simple box body shape of robot on pychrono engine. It defines interpretation of node of body part in physic system `pychrono`
+    """Class of the simple box body shape of robot on pychrono engine. It defines interpretation of node of body part in physic system `pychrono <https://projectchrono.org/pychrono/>`_
     
     Args:
         builder (chrono.ChSystem): Arg sets the system, which hosth the body
@@ -279,7 +279,7 @@ class BoxChronoBody(ChronoBody, RobotBody):
 
 
 class LinkChronoBody(ChronoBody, RobotBody):
-    """Class interpretation of node of the link robot in physic engine `pychrono`.
+    """Class interpretation of node of the link robot in physic engine `pychrono <https://projectchrono.org/pychrono/>`_.
     
     Args:
         builder (chrono.ChSystem): Arg sets the system, which hosth the body
@@ -359,7 +359,7 @@ class LinkChronoBody(ChronoBody, RobotBody):
 
 
 class FlatChronoBody(ChronoBody, RobotBody):
-    """Class interprets node of robot flat (palm) in physic engine `pychrono`.
+    """Class interprets node of robot flat (palm) in physic engine `pychrono <https://projectchrono.org/pychrono/>`_.
     
     Args:
         builder (chrono.ChSystem): Arg sets the system, which hosth the body
@@ -412,7 +412,7 @@ class FlatChronoBody(ChronoBody, RobotBody):
 
 
 class MountChronoBody(ChronoBody, RobotBody):
-    """Class is interprets node of robot end limbs in physic engine `pychrono`.
+    """Class is interprets node of robot end limbs in physic engine `pychrono <https://projectchrono.org/pychrono/>`_.
     
     Args:
         builder (chrono.ChSystem): Arg sets the system, which hosth the body
@@ -462,7 +462,7 @@ class MountChronoBody(ChronoBody, RobotBody):
 
 
 class ChronoBodyEnv(ChronoBody):
-    """Class of environments bodies with standard shape, like box, ellipsoid, cylinder. It adds solid body in `pychrono` physical system that is not robot part
+    """Class of environments bodies with standard shape, like box, ellipsoid, cylinder. It adds solid body in `pychrono <https://projectchrono.org/pychrono/>`_ physical system that is not robot part
     
     Args:
         builder (chrono.ChSystem): Arg sets the system, which hosth the body
@@ -513,7 +513,7 @@ class ChronoBodyEnv(ChronoBody):
 
 
 class ChronoRevolveJoint(BlockBridge):
-    """The class representing revolute joint object in `pychrono` physical engine. It is the embodiment of joint nodes from the mechanism graph in simulation
+    """The class representing revolute joint object in `pychrono <https://projectchrono.org/pychrono/>`_ physical engine. It is the embodiment of joint nodes from the mechanism graph in simulation
     
 
         Args:
@@ -601,7 +601,7 @@ class ChronoRevolveJoint(BlockBridge):
 
 
 class ChronoTransform(BlockTransform):
-    """Class representing node of the transformation in `pychrono` physical engine
+    """Class representing node of the transformation in `pychrono <https://projectchrono.org/pychrono/>`_ physical engine
 
     Args:
         builder (pychrono.ChSystem): Arg sets the system, which hosth the body

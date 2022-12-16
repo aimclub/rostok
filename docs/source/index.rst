@@ -6,7 +6,7 @@
 Rostok framework for co-design of dynamical systems
 ===================================================
 
-This site contains main documentation for the `rotok framework <https://github.com/LicAiBeerLab/graph_assembler>`__.
+This site contains main documentation for the `rostok framework <https://github.com/LicAiBeerLab/graph_assembler>`_.
 
 Rostok is an open source library which provides the framework for generative co-design of mechatronic and robotic systems. Currently, the generative design is mainly used in production of static parts, while our project goal is to shift the generative design to the domain of the dynamic systems.  
 
