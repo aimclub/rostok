@@ -18,7 +18,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Contact us" href="../contact_us.html" />
-    <link rel="prev" title="Simulation Module" href="simulation/simulation_step.html" />
+    <link rel="prev" title="Stop simulation flag" href="simulation/flag_simulations.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -44,16 +44,96 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rostok.trajectory_optimizer.control_optimizer.</span></span><span class="sig-name descname"><span class="pre">ConfigRewardFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">bound:</span> <span class="pre">tuple[float,</span> <span class="pre">float]</span> <span class="pre">=</span> <span class="pre">(-1,</span> <span class="pre">1),</span> <span class="pre">iters:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">10,</span> <span class="pre">sim_config:</span> <span class="pre">dict[str,</span> <span class="pre">str]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">time_step:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.001,</span> <span class="pre">time_sim:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">2,</span> <span class="pre">flags:</span> <span class="pre">list</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">criterion_callback:</span> <span class="pre">~typing.Optional[~typing.Callable[[dict[int,</span> <span class="pre">rostok.virtual_experiment.simulation_step.SimulationDataBlock],</span> <span class="pre">~rostok.virtual_experiment.robot.Robot],</span> <span class="pre">float]]</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">get_rgab_object_callback:</span> <span class="pre">~typing.Optional[~typing.Callable[[],</span> <span class="pre">~pychrono.core.ChBody]]</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">params_to_timesiries_callback:</span> <span class="pre">~typing.Optional[~typing.Callable[[~rostok.graph_grammar.node.GraphGrammar,</span> <span class="pre">list[float]],</span> <span class="pre">list]]</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction" title="Permalink to this definition">¶</a></dt>
-<dd><p>bound - tuple (lower bound, upper bound) extend to joints number
-iters - number of iteration optimization algorithm
-sim_config - config passed to Chrono engine
-time_step - simulation step
-time_sim - simulation duration
-flags - List of stop flags, breaks sim
-criterion_callback - calls after simulation (SimOut, Robot) -&gt; float
-get_rgab_object - calls before simulation () -&gt; ObjectToGrasp
-params_to_timesiries_array - calls before simulation to calculate trajectory
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction.bound">
+<span class="sig-name descname"><span class="pre">bound</span></span><a class="headerlink" href="#rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction.bound" title="Permalink to this definition">¶</a></dt>
+<dd><p>tuple (lower bound, upper bound) extend to joints number</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[float, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction.iters">
+<span class="sig-name descname"><span class="pre">iters</span></span><a class="headerlink" href="#rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction.iters" title="Permalink to this definition">¶</a></dt>
+<dd><p>number of iteration optimization algorithm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction.sim_config">
+<span class="sig-name descname"><span class="pre">sim_config</span></span><a class="headerlink" href="#rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction.sim_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>config passed to Chrono engine</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction.time_step">
+<span class="sig-name descname"><span class="pre">time_step</span></span><a class="headerlink" href="#rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction.time_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>simulation step</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction.time_sim">
+<span class="sig-name descname"><span class="pre">time_sim</span></span><a class="headerlink" href="#rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction.time_sim" title="Permalink to this definition">¶</a></dt>
+<dd><p>simulation duration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction.flags">
+<span class="sig-name descname"><span class="pre">flags</span></span><a class="headerlink" href="#rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction.flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of stop flags, breaks sim</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction.criterion_callback">
+<span class="sig-name descname"><span class="pre">criterion_callback</span></span><a class="headerlink" href="#rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction.criterion_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>calls after simulation (SimOut, Robot) -&gt; float</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Callable[[dict[int, rostok.virtual_experiment.simulation_step.SimulationDataBlock], rostok.virtual_experiment.robot.Robot], float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction.get_rgab_object">
+<span class="sig-name descname"><span class="pre">get_rgab_object</span></span><a class="headerlink" href="#rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction.get_rgab_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>calls before simulation () -&gt; ObjectToGrasp</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction.params_to_timesiries_array">
+<span class="sig-name descname"><span class="pre">params_to_timesiries_array</span></span><a class="headerlink" href="#rostok.trajectory_optimizer.control_optimizer.ConfigRewardFunction.params_to_timesiries_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>calls before simulation to calculate trajectory
 (GraphGrammar, list[float]) -&gt; list[list] in dfs form, See class SimulationStepOptimization</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -71,7 +151,7 @@ params_to_timesiries_array - calls before simulation to calculate trajectory
 <dd><p>Create reward function</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>generated_graph</strong> (<a class="reference internal" href="graph_grammar/graph_grammar.html#rostok.graph_grammar.node.GraphGrammar" title="rostok.graph_grammar.node.GraphGrammar"><em>GraphGrammar</em></a>) – _description_</p>
+<dd class="field-odd"><p><strong>generated_graph</strong> (<a class="reference internal" href="graph_grammar/graph_grammar.html#rostok.graph_grammar.node.GraphGrammar" title="rostok.graph_grammar.node.GraphGrammar"><em>GraphGrammar</em></a>) – </p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Function of virtual experemnt that
@@ -108,8 +188,8 @@ returns reward based on criterion_callback</p>
 <h3>Navigation</h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../project_description.html">Project description</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../introduction/quickstart.html">Usage of the framework</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../introduction/install.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../introduction/tutorials.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced_usage/algorithm.html">Algorithms Description</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Modules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contact_us.html">Contact us</a></li>
@@ -120,7 +200,7 @@ returns reward based on criterion_callback</p>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="index.html">Modules</a><ul>
-      <li>Previous: <a href="simulation/simulation_step.html" title="previous chapter">Simulation Module</a></li>
+      <li>Previous: <a href="simulation/flag_simulations.html" title="previous chapter">Stop simulation flag</a></li>
       <li>Next: <a href="../contact_us.html" title="next chapter">Contact us</a></li>
   </ul></li>
   </ul></li>

@@ -42,22 +42,23 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="rostok.graph_grammar.node_vocabulary.NodeVocabulary">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rostok.graph_grammar.node_vocabulary.</span></span><span class="sig-name descname"><span class="pre">NodeVocabulary</span></span><a class="headerlink" href="#rostok.graph_grammar.node_vocabulary.NodeVocabulary" title="Permalink to this definition">¶</a></dt>
-<dd><p>A class to contain nodes for robot graphs.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rostok.graph_grammar.node_vocabulary.NodeVocabulary.node_dict">
-<span class="sig-name descname"><span class="pre">node_dict</span></span><a class="headerlink" href="#rostok.graph_grammar.node_vocabulary.NodeVocabulary.node_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>dictionary of all nodes</p>
+<dd><p>The class contains dictionary of nodes and methods to manipulate with it.
+This is a class to manage a dictionary of nodes. The keys are labels of the nodes and
+the values are Node objects. User can create or add nodes to vocabulary, get individual
+nodes or list of nodes.
+.. attribute:: node_dict</p>
+<blockquote>
+<div><p>dictionary of all nodes.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>List[<a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.Node" title="rostok.graph_grammar.node.Node">Node</a>]</p>
+<dt class="field-odd">type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[Node]</p>
 </dd>
 </dl>
-</dd></dl>
-
+</div></blockquote>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rostok.graph_grammar.node_vocabulary.NodeVocabulary.terminal_node_dict">
 <span class="sig-name descname"><span class="pre">terminal_node_dict</span></span><a class="headerlink" href="#rostok.graph_grammar.node_vocabulary.NodeVocabulary.terminal_node_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>dictionary of terminal nodes</p>
+<dd><p>dictionary of only terminal nodes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>List[<a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.Node" title="rostok.graph_grammar.node.Node">Node</a>]</p>
@@ -66,9 +67,9 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rostok.graph_grammar.node_vocabulary.NodeVocabulary.nonterminal_node_dict">
-<span class="sig-name descname"><span class="pre">nonterminal_node_dict</span></span><a class="headerlink" href="#rostok.graph_grammar.node_vocabulary.NodeVocabulary.nonterminal_node_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>dictionary of nonterminal nodes</p>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">non-terminal_node_dict</span></span></dt>
+<dd><p>dictionary of only non-terminal nodes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>List[<a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.Node" title="rostok.graph_grammar.node.Node">Node</a>]</p>
@@ -79,48 +80,28 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="rostok.graph_grammar.node_vocabulary.NodeVocabulary.add_node">
 <span class="sig-name descname"><span class="pre">add_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.Node" title="rostok.graph_grammar.node.Node"><span class="pre">Node</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rostok.graph_grammar.node_vocabulary.NodeVocabulary.add_node" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds a node that already created</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">create_node(self,</span> <span class="pre">label:</span> <span class="pre">str,</span> <span class="pre">is_terminal:bool=False,</span> <span class="pre">block_wrapper:BlockWrapper=None):</span></span></dt>
-<dd><p>Create a node and add it to the vocabulary.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">def</span> <span class="pre">get_node(self,</span> <span class="pre">label:str)</span> <span class="pre">-&gt;</span> <span class="pre">Node:</span></span></dt>
-<dd><p>Return a node corresponding to the label.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="rostok.graph_grammar.node_vocabulary.NodeVocabulary.check_node">
-<span class="sig-name descname"><span class="pre">check_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool:</span></span></span><a class="headerlink" href="#rostok.graph_grammar.node_vocabulary.NodeVocabulary.check_node" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if the label is in the vocabulary.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="id0">
-<span class="sig-name descname"><span class="pre">add_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.Node" title="rostok.graph_grammar.node.Node"><span class="pre">Node</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add an already created node to the vocabulary.</p>
+<dd><p>Add an already created node to the vocabulary.
+:param node: node to be added to vocabulary.
+:type node: Node</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>node</strong> (<a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.Node" title="rostok.graph_grammar.node.Node"><em>Node</em></a>) – node to be added to vocabulary</p>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>Exception</strong> – If the label of the new node is already in the vocabulary</p>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Exception</strong> – Attempt to add a Node with a label that is already in dictionary!</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="id1">
-<span class="sig-name descname"><span class="pre">check_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#id1" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if the label is in the vocabulary.</p>
+<dt class="sig sig-object py" id="rostok.graph_grammar.node_vocabulary.NodeVocabulary.check_node">
+<span class="sig-name descname"><span class="pre">check_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rostok.graph_grammar.node_vocabulary.NodeVocabulary.check_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the label is in the vocabulary.
+:param label: the label of the node that should be checked.
+:type label: str</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>label</strong> (<em>str</em>) – the label of the node that should be checked</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True is the label is in dictionary, False otherwise.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
@@ -128,17 +109,33 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="rostok.graph_grammar.node_vocabulary.NodeVocabulary.create_node">
 <span class="sig-name descname"><span class="pre">create_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_terminal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_wrapper</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="graph_builder.html#rostok.graph_grammar.node.BlockWrapper" title="rostok.graph_grammar.node.BlockWrapper"><span class="pre">BlockWrapper</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rostok.graph_grammar.node_vocabulary.NodeVocabulary.create_node" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a node and add it to the vocabulary.</p>
+<dd><p>Create a node and add it to the vocabulary.
+:param label: the label of the new node.
+:type label: str
+:param is_terminal: defines if the new node is a terminal node. Default</p>
+<blockquote>
+<div><p>is False.</p>
+</div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>str</em>) – the label of the new node</p></li>
-<li><p><strong>is_terminal</strong> (<em>bool</em><em>, </em><em>optional</em>) – defines if the new node is a terminal node. Default is False</p></li>
-<li><p><strong>block_wrapper</strong> – the wrapper of the node that would be used to create a chrono object for simulation</p></li>
-</ul>
+<dd class="field-odd"><p><strong>block_wrapper</strong> (<a class="reference internal" href="graph_builder.html#rostok.graph_grammar.node.BlockWrapper" title="rostok.graph_grammar.node.BlockWrapper"><em>BlockWrapper</em></a><em>, </em><em>optional</em>) – the object that contains physical properties
+of the node. Default is None.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>Exception</strong> – If the label of the new node is already in the vocabulary</p>
+<dd class="field-even"><p><strong>Exception</strong> – Attempt to add a Node with a label that is already in dictionary!</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rostok.graph_grammar.node_vocabulary.NodeVocabulary.get_list_of_nodes">
+<span class="sig-name descname"><span class="pre">get_list_of_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.Node" title="rostok.graph_grammar.node.Node"><span class="pre">rostok.graph_grammar.node.Node</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rostok.graph_grammar.node_vocabulary.NodeVocabulary.get_list_of_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns list of Node objects corresponding to list of labels.
+:param nodes: list of labels to construct a list of Node objects.
+:type nodes: list[str]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of Node objects corresponding to the list of passed labels.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -146,13 +143,16 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="rostok.graph_grammar.node_vocabulary.NodeVocabulary.get_node">
 <span class="sig-name descname"><span class="pre">get_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.Node" title="rostok.graph_grammar.node.Node"><span class="pre">Node</span></a></span></span><a class="headerlink" href="#rostok.graph_grammar.node_vocabulary.NodeVocabulary.get_node" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a node corresponding to the label.</p>
+<dd><p>Return a node corresponding to the label.
+:param label: the label of the node that should be returned.
+:type label: str</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>label</strong> (<em>str</em>) – the label of the node that should be returned</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A requested node as a Node class object.</p>
 </dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>Exception</strong> – If the node with label doesn’t exist in the vocabulary</p>
+</dl>
+<dl class="simple">
+<dt>Raises</dt><dd><p>Exception: Node with given label not found!</p>
 </dd>
 </dl>
 </dd></dl>
@@ -165,11 +165,14 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="rostok.graph_grammar.rule_vocabulary.RuleVocabulary">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rostok.graph_grammar.rule_vocabulary.</span></span><span class="sig-name descname"><span class="pre">RuleVocabulary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_vocab:</span> <span class="pre">~rostok.graph_grammar.node_vocabulary.NodeVocabulary</span> <span class="pre">=</span> <span class="pre">&lt;rostok.graph_grammar.node_vocabulary.NodeVocabulary</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary" title="Permalink to this definition">¶</a></dt>
-<dd><p>The class that contains the rules for building the GraphGrammar object</p>
+<dd><p>The class that contains the rules for building the py:class:<cite>GraphGrammar</cite> object.
+All rules for mechanism generation should be created with an instance of <a class="reference internal" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary" title="rostok.graph_grammar.rule_vocabulary.RuleVocabulary"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuleVocabulary</span></code></a>.
+This class provides utility methods for the rules.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rostok.graph_grammar.rule_vocabulary.RuleVocabulary.node_vocab">
 <span class="sig-name descname"><span class="pre">node_vocab</span></span><a class="headerlink" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary.node_vocab" title="Permalink to this definition">¶</a></dt>
-<dd><p>the node vocabulary that should contain all the nodes used in the rules</p>
+<dd><p>the node vocabulary that should contain all the nodes used in
+the rules.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#rostok.graph_grammar.node_vocabulary.NodeVocabulary" title="rostok.graph_grammar.node_vocabulary.NodeVocabulary">NodeVocabulary</a></p>
@@ -180,10 +183,10 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rostok.graph_grammar.rule_vocabulary.RuleVocabulary.rule_dict">
 <span class="sig-name descname"><span class="pre">rule_dict</span></span><a class="headerlink" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary.rule_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>the dictionary of all rules with the rule names as keys</p>
+<dd><p>the dictionary of all rules with the rule names as keys.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dictionary{name: rule}</p>
+<dd class="field-odd"><p>dict[str, <a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.Rule" title="rostok.graph_grammar.node.Rule">Rule</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -191,10 +194,10 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rostok.graph_grammar.rule_vocabulary.RuleVocabulary.nonterminal_rule_dict">
 <span class="sig-name descname"><span class="pre">nonterminal_rule_dict</span></span><a class="headerlink" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary.nonterminal_rule_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>the dictionary of nonterminal rules</p>
+<dd><p>the dictionary of only non-terminal rules.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dictionary{name: rule}</p>
+<dd class="field-odd"><p>dict[str, <a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.Rule" title="rostok.graph_grammar.node.Rule">Rule</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -202,10 +205,10 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rostok.graph_grammar.rule_vocabulary.RuleVocabulary.terminal_rule_dict">
 <span class="sig-name descname"><span class="pre">terminal_rule_dict</span></span><a class="headerlink" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary.terminal_rule_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>the dictionary of terminal rules</p>
+<dd><p>the dictionary of only terminal rules.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dictionary{name: rule}</p>
+<dd class="field-odd"><p>dict[str, <a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.Rule" title="rostok.graph_grammar.node.Rule">Rule</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -213,10 +216,11 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rostok.graph_grammar.rule_vocabulary.RuleVocabulary.rules_nonterminal_node_set">
 <span class="sig-name descname"><span class="pre">rules_nonterminal_node_set</span></span><a class="headerlink" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary.rules_nonterminal_node_set" title="Permalink to this definition">¶</a></dt>
-<dd><p>the set of node labels that are used as the new nodes in the nonterminal rules. These are nodes that can appear in the final graph</p>
+<dd><p>the set of node labels that are used as the new nodes
+in the non-terminal rules. These are nodes that can appear in the final graph.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Set(Node.label)</p>
+<dd class="field-odd"><p>set(str)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -224,10 +228,11 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rostok.graph_grammar.rule_vocabulary.RuleVocabulary.rules_terminal_node_set">
 <span class="sig-name descname"><span class="pre">rules_terminal_node_set</span></span><a class="headerlink" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary.rules_terminal_node_set" title="Permalink to this definition">¶</a></dt>
-<dd><p>the set of node labels that are used as the new nodes in the terminal rules. These are nodes that can appear in the final graph</p>
+<dd><p>the set of node labels that are used as the new nodes
+in the terminal rules. These are nodes that can appear in the final graph.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Set(Node.label)</p>
+<dd class="field-odd"><p>set(str)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -235,21 +240,11 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rostok.graph_grammar.rule_vocabulary.RuleVocabulary.terminal_dict">
 <span class="sig-name descname"><span class="pre">terminal_dict</span></span><a class="headerlink" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary.terminal_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>the dictionary of the terminal states of the nonterminal node</p>
+<dd><p>the dictionary that contains the list of terminal
+states for all non-terminal nodes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict{Node.label: [Node.label]}</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rostok.graph_grammar.rule_vocabulary.RuleVocabulary.completed">
-<span class="sig-name descname"><span class="pre">completed</span></span><a class="headerlink" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary.completed" title="Permalink to this definition">¶</a></dt>
-<dd><p>the state that changes in the check_rules() method if the set of rules is enough to make any graph terminal</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bool</p>
+<dd class="field-odd"><p>dict[str, list[str]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -257,33 +252,35 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="rostok.graph_grammar.rule_vocabulary.RuleVocabulary.check_rules">
 <span class="sig-name descname"><span class="pre">check_rules</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary.check_rules" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check set of rules itself, without any graph.</p>
-<p>Check the rules for having at least one terminal rule for every node that appears in the end graph of a nonterminal rule</p>
+<dd><p>Check set of rules itself, without any graph.
+Check the rules for having at least one terminal rule for every node that appears in the end graph of a nonterminal rule.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rostok.graph_grammar.rule_vocabulary.RuleVocabulary.create_rule">
-<span class="sig-name descname"><span class="pre">create_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_nodes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_nodes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_in_edges</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_out_edges</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_edges</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary.create_rule" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a rule and add it to the dictionary.</p>
-<p>The method checks the created rule. There is no method to add already created rule to the vocabulary.</p>
+<span class="sig-name descname"><span class="pre">create_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_nodes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_nodes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_in_edges</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_out_edges</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_edges</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary.create_rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a rule and add it to the dictionary.
+The method checks the created rule. There is no method to add already created rule to
+the vocabulary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – name of the new rule</p></li>
-<li><p><strong>current_nodes</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – list of the nodes to be replased</p></li>
-<li><p><strong>new_nodes</strong> – list of the new nodes that to be inserted in the graph</p></li>
-<li><p><strong>current_in_edges</strong> (<em>int</em>) – the node to link the in edges of the replaced node</p></li>
-<li><p><strong>current_out_edges</strong> (<em>int</em>) – the node to link the out edges of the replaced node</p></li>
-<li><p><strong>new_edges</strong> (<em>list</em><em>[</em><em>(</em><em>int</em><em>, </em><em>int</em><em>)</em><em>]</em>) – the edges of the inserting subgraph</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – name of the new rule.</p></li>
+<li><p><strong>current_nodes</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – list of the nodes to be replaced.</p></li>
+<li><p><strong>new_nodes</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – list of the new nodes that to be inserted in the graph.</p></li>
+<li><p><strong>current_in_edges</strong> (<em>int</em>) – the node to link the in edges of the replaced node.</p></li>
+<li><p><strong>current_out_edges</strong> (<em>int</em>) – the node to link the out edges of the replaced node.</p></li>
+<li><p><strong>new_edges</strong> (<em>list</em><em>[</em><em>(</em><em>int</em><em>, </em><em>int</em><em>)</em><em>]</em>) – the edges of the inserting subgraph.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>Exception</strong> – If the name of the new rule is already in the vocabulary</p></li>
-<li><p><strong>Exception</strong> – If the length of the current_nodes is not 1</p></li>
-<li><p><strong>Exception</strong> – If the node vocabulary dose not include the replacing node or the new nodes</p></li>
-<li><p><strong>Exception</strong> – If the edge contains node idx out of graph length or the edge is a loop</p></li>
-<li><p><strong>Exception</strong> – Attempt to link in or out edges of the replaced node to the node idx out of new subgraph length</p></li>
+<li><p><strong>Exception</strong> – this name is already in the rule vocabulary!</p></li>
+<li><p><strong>Exception</strong> – prohibited length of the current_nodes list, should be 1.</p></li>
+<li><p><strong>Exception</strong> – the node vocabulary dose not include the replacing node or the new nodes.</p></li>
+<li><p><strong>Exception</strong> – the edge contains node idx out of graph length or the edge is a loop.</p></li>
+<li><p><strong>Exception</strong> – attempt to link in or out edges of the replaced node to the node idx out of
+    new subgraph length.</p></li>
 </ul>
 </dd>
 </dl>
@@ -292,10 +289,12 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="rostok.graph_grammar.rule_vocabulary.RuleVocabulary.get_list_of_applicable_nonterminal_rules">
 <span class="sig-name descname"><span class="pre">get_list_of_applicable_nonterminal_rules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grammar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.GraphGrammar" title="rostok.graph_grammar.node.GraphGrammar"><span class="pre">GraphGrammar</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary.get_list_of_applicable_nonterminal_rules" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the list of nonterminal applicable rules for the current graph.</p>
+<dd><p>Return the list of non-terminal applicable rules for the current graph.
+:param grammar: a py:class:<cite>GraphGrammar</cite> object analyze.
+:type grammar: GraphGrammar</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>grammar</strong> (<a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.GraphGrammar" title="rostok.graph_grammar.node.GraphGrammar"><em>GraphGrammar</em></a>) – A current GraphGrammar object</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of rule names for non-terminal rules that can be applied for the graph.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -303,10 +302,12 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="rostok.graph_grammar.rule_vocabulary.RuleVocabulary.get_list_of_applicable_rules">
 <span class="sig-name descname"><span class="pre">get_list_of_applicable_rules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grammar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.GraphGrammar" title="rostok.graph_grammar.node.GraphGrammar"><span class="pre">GraphGrammar</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary.get_list_of_applicable_rules" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the total list of applicable rules for the current graph.</p>
+<dd><p>Return the total list of applicable rules for the current graph.
+:param grammar: a py:class:<cite>GraphGrammar</cite> object analyze.
+:type grammar: GraphGrammar</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>grammar</strong> (<a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.GraphGrammar" title="rostok.graph_grammar.node.GraphGrammar"><em>GraphGrammar</em></a>) – A current GraphGrammar object</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of rule names for rules that can be applied for the graph.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -314,10 +315,12 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="rostok.graph_grammar.rule_vocabulary.RuleVocabulary.get_list_of_applicable_terminal_rules">
 <span class="sig-name descname"><span class="pre">get_list_of_applicable_terminal_rules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grammar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.GraphGrammar" title="rostok.graph_grammar.node.GraphGrammar"><span class="pre">GraphGrammar</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary.get_list_of_applicable_terminal_rules" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the list of terminal applicable rules for the current graph.</p>
+<dd><p>Return the list of terminal applicable rules for the current graph.
+:param grammar: a py:class:<cite>GraphGrammar</cite> object analyze.
+:type grammar: GraphGrammar</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>grammar</strong> (<a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.GraphGrammar" title="rostok.graph_grammar.node.GraphGrammar"><em>GraphGrammar</em></a>) – A current GraphGrammar object</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of rule names for terminal rules that can be applied for the graph.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -328,29 +331,29 @@
 <dd><p>Return a rule with the corresponding name.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – the name of the rule to be returned</p>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – the name of the rule to be returned.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rostok.graph_grammar.rule_vocabulary.RuleVocabulary.make_graph_terminal">
-<span class="sig-name descname"><span class="pre">make_graph_terminal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.GraphGrammar" title="rostok.graph_grammar.node.GraphGrammar"><span class="pre">GraphGrammar</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary.make_graph_terminal" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts a graph into a graph with only terminal nodes with a random terminal rule for each node.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>grammar</strong> (<a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.GraphGrammar" title="rostok.graph_grammar.node.GraphGrammar"><em>GraphGrammar</em></a>) – A current GraphGrammar object</p>
-</dd>
-</dl>
+<span class="sig-name descname"><span class="pre">make_graph_terminal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grammar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="graph_grammar.html#rostok.graph_grammar.node.GraphGrammar" title="rostok.graph_grammar.node.GraphGrammar"><span class="pre">GraphGrammar</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary.make_graph_terminal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a graph into a graph with only terminal nodes.
+For each non-terminal node the function apply a random rule that make it terminal.
+:param grammar: py:class:<cite>GraphGrammar</cite> object that should become terminal.
+:type grammar: GraphGrammar</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rostok.graph_grammar.rule_vocabulary.RuleVocabulary.terminal_rules_for_node">
 <span class="sig-name descname"><span class="pre">terminal_rules_for_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rostok.graph_grammar.rule_vocabulary.RuleVocabulary.terminal_rules_for_node" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of the terminal rules for the node</p>
+<dd><p>Return a list of the terminal rules for the node
+:param node_name: a node label for which function returns the list of the terminal rules.
+:type node_name: str</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>node_name</strong> (<em>str</em>) – A node label for which function returns the list of the terminal rules</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The list of rule names for rules that can be applied to make a node terminal.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -379,8 +382,8 @@
 <h3>Navigation</h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../project_description.html">Project description</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../introduction/quickstart.html">Usage of the framework</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../introduction/install.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction/tutorials.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced_usage/algorithm.html">Algorithms Description</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">Modules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contact_us.html">Contact us</a></li>

@@ -13,16 +13,17 @@ from rostok.virtual_experiment.simulation_step import (SimOut, SimulationStepOpt
 @dataclass
 class ConfigRewardFunction:
     """
-        bound - tuple (lower bound, upper bound) extend to joints number
-        iters - number of iteration optimization algorithm
-        sim_config - config passed to Chrono engine
-        time_step - simulation step
-        time_sim - simulation duration
-        flags - List of stop flags, breaks sim
-        criterion_callback - calls after simulation (SimOut, Robot) -> float
-        get_rgab_object - calls before simulation () -> ObjectToGrasp
-        params_to_timesiries_array - calls before simulation to calculate trajectory
-        (GraphGrammar, list[float]) -> list[list] in dfs form, See class SimulationStepOptimization
+    Attributes:
+        bound: tuple (lower bound, upper bound) extend to joints number
+        iters: number of iteration optimization algorithm
+        sim_config: config passed to Chrono engine
+        time_step: simulation step
+        time_sim: simulation duration
+        flags: List of stop flags, breaks sim
+        criterion_callback: calls after simulation (SimOut, Robot) -> float
+        get_rgab_object: calls before simulation () -> ObjectToGrasp
+        params_to_timesiries_array: calls before simulation to calculate trajectory
+            (GraphGrammar, list[float]) -> list[list] in dfs form, See class SimulationStepOptimization
     """
     bound: tuple[float, float] = (-1, 1)
     iters: int = 10
@@ -45,7 +46,7 @@ def create_multidimensional_bounds(graph: GraphGrammar, one_d_bound: tuple[float
 
 
 def num_joints(graph: GraphGrammar) -> int:
-    """ Detect joints based on node_render clases
+    """ Detect joints based on :py:mod:`node_render` clases
 
     Args:
         graph (GraphGrammar):
@@ -68,7 +69,7 @@ class ControlOptimizer():
         """Create reward function
 
         Args:
-            generated_graph (GraphGrammar): _description_
+            generated_graph (GraphGrammar):
 
         Returns:
             Callable[[list[float]], float]: Function of virtual experemnt that

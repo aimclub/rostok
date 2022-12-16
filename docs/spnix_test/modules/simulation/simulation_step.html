@@ -17,7 +17,7 @@
     <script src="../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Control optimization module" href="../trajectory_simulation.html" />
+    <link rel="next" title="Stop simulation flag" href="flag_simulations.html" />
     <link rel="prev" title="Graph builder" href="../graph_grammar/graph_builder.html" />
    
   <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
@@ -42,16 +42,23 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="rostok.virtual_experiment.simulation_step.SimulationStepOptimization">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rostok.virtual_experiment.simulation_step.</span></span><span class="sig-name descname"><span class="pre">SimulationStepOptimization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">control_trajectory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_mechanism</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../graph_grammar/graph_grammar.html#rostok.graph_grammar.node.GraphGrammar" title="rostok.graph_grammar.node.GraphGrammar"><span class="pre">GraphGrammar</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">grasp_object</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../graph_grammar/graph_builder.html#rostok.graph_grammar.node.BlockWrapper" title="rostok.graph_grammar.node.BlockWrapper"><span class="pre">BlockWrapper</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rostok.virtual_experiment.simulation_step.SimulationStepOptimization" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper class of simulation robot with control on <cite>pychrono</cite> physical engine.</p>
-<p>Before starting the simulation with the <cite>simulate_system</cite> method, recommended set stopping flag of simulation with <cite>set_flags_stop_simulation</cite>.
-Otherwise, the simulation time has no limits and lasts until the end of the program or until the visualization window is closed, if it is set.
-There are flags in module <cite>criterion.flags_simualtions</cite></p>
+<dd><p>Wrapper class of simulation robot with control on <a class="reference external" href="https://projectchrono.org/pychrono/">pychrono</a> physical engine.</p>
+<dl class="simple">
+<dt>Before starting the simulation with the <a class="reference internal" href="#rostok.virtual_experiment.simulation_step.SimulationStepOptimization.simulate_system" title="rostok.virtual_experiment.simulation_step.SimulationStepOptimization.simulate_system"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SimulationStepOptimization.simulate_system()</span></code></a> method, recommended set stopping flag</dt><dd><p>of simulation with <a class="reference internal" href="#rostok.virtual_experiment.simulation_step.SimulationStepOptimization.set_flags_stop_simulation" title="rostok.virtual_experiment.simulation_step.SimulationStepOptimization.set_flags_stop_simulation"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SimulationStepOptimization.set_flags_stop_simulation()</span></code></a>.</p>
+</dd>
+</dl>
+<p>Otherwise, the simulation time has no limits and lasts until the end of the program or until
+the visualization window is closed, if it is set.
+There are flags in module <code class="xref py py-mod docutils literal notranslate"><span class="pre">flags_simualtions</span></code></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>control_trajectory</strong> – Array arries of control trajectory for each joints. Control trajectory of one joint have to have format [[time, value], …]. Array must be same shape as array of joints.</p></li>
+<li><p><strong>control_trajectory</strong> – Array arries of control trajectory for each joints.
+Control trajectory of one joint have to have format [[time, value], …].
+Array must be same shape as array of joints.</p></li>
 <li><p><strong>graph_mechanism</strong> (<a class="reference internal" href="../graph_grammar/graph_grammar.html#rostok.graph_grammar.node.GraphGrammar" title="rostok.graph_grammar.node.GraphGrammar"><em>GraphGrammar</em></a>) – Graph of the robot to be simulated</p></li>
-<li><p><strong>grasp_object</strong> (<a class="reference internal" href="../graph_grammar/graph_builder.html#rostok.graph_grammar.node.BlockWrapper" title="rostok.graph_grammar.node.BlockWrapper"><em>BlockWrapper</em></a>) – Wrapper of <cite>ChronoBlockEnv</cite>. This is the object that the robot grabs.</p></li>
+<li><p><strong>grasp_object</strong> (<a class="reference internal" href="../graph_grammar/graph_builder.html#rostok.graph_grammar.node.BlockWrapper" title="rostok.graph_grammar.node.BlockWrapper"><em>BlockWrapper</em></a>) – Wrapper of <code class="xref py py-class docutils literal notranslate"><span class="pre">ChronoBodyEnv</span></code>.
+This is the object that the robot grabs.</p></li>
 </ul>
 </dd>
 </dl>
@@ -61,7 +68,9 @@ There are flags in module <cite>criterion.flags_simualtions</cite></p>
 <dd><p>Create the controller joint from the control trajectory</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>control_trajectory</strong> (<em>list</em>) – Array arries of control trajectory for each joints. Control trajectory of one joint have to have format [[time, value], …]. Array must be same shape as array of joints.</p>
+<dd class="field-odd"><p><strong>control_trajectory</strong> (<em>list</em>) – Array arries of control trajectory for each joints. Control
+trajectory of one joint have to have format [[time, value], …].
+Array must be same shape as array of joints.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>IndexError</strong> – Exception in the case of a mismatch between the control and the joints</p>
@@ -72,10 +81,12 @@ There are flags in module <cite>criterion.flags_simualtions</cite></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="rostok.virtual_experiment.simulation_step.SimulationStepOptimization.change_config_system">
 <span class="sig-name descname"><span class="pre">change_config_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rostok.virtual_experiment.simulation_step.SimulationStepOptimization.change_config_system" title="Permalink to this definition">¶</a></dt>
-<dd><p>The method is for changing parameters of <cite>pychrono</cite> simulation system.</p>
+<dd><p>The method is for changing parameters of <a class="reference external" href="https://projectchrono.org/pychrono/">pychrono</a> simulation system.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>dict_config</strong> (<em>dict</em>) – The dictionary which contains the configuration parameters simulation system. The format is {“&lt;name_of_method&gt;”: &lt;method_arguments&gt;}. For example, {“Set_G_acc”:chrono.ChVectorD(0,0,0)}</p>
+<dd class="field-odd"><p><strong>dict_config</strong> (<em>dict</em>) – The dictionary which contains the configuration parameters
+simulation system. The format is {“&lt;name_of_method&gt;”: &lt;method_arguments&gt;}.
+For example, {“Set_G_acc”:chrono.ChVectorD(0,0,0)}</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>AttributeError</strong> – Exception in case the system does not have a specified method</p>
@@ -85,11 +96,13 @@ There are flags in module <cite>criterion.flags_simualtions</cite></p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rostok.virtual_experiment.simulation_step.SimulationStepOptimization.set_flags_stop_simulation">
-<span class="sig-name descname"><span class="pre">set_flags_stop_simulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flags_stop_simulation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">rostok.criterion.flags_simualtions.FlagStopSimualtions</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rostok.virtual_experiment.simulation_step.SimulationStepOptimization.set_flags_stop_simulation" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">set_flags_stop_simulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flags_stop_simulation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="flag_simulations.html#rostok.criterion.flags_simualtions.FlagStopSimualtions" title="rostok.criterion.flags_simualtions.FlagStopSimualtions"><span class="pre">rostok.criterion.flags_simualtions.FlagStopSimualtions</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rostok.virtual_experiment.simulation_step.SimulationStepOptimization.set_flags_stop_simulation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Setter flags of stop simulation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>flags_stop_simulation</strong> (<em>list</em><em>[</em><em>FlagStopSimualtions</em><em>]</em>) – List of desired checking flags. You can see flags in module <cite>criterion.flags_simualtions</cite>. Or create yours, that subclasses <cite>FlagStopSimualtions</cite></p>
+<dd class="field-odd"><p><strong>flags_stop_simulation</strong> (<em>list</em><em>[</em><a class="reference internal" href="flag_simulations.html#rostok.criterion.flags_simualtions.FlagStopSimualtions" title="rostok.criterion.flags_simualtions.FlagStopSimualtions"><em>FlagStopSimualtions</em></a><em>]</em>) – List of desired checking flags.
+You can see flags in module <code class="xref py py-mod docutils literal notranslate"><span class="pre">flags_simualtions</span></code>.
+Or create yours, that subclasses <code class="xref py py-class docutils literal notranslate"><span class="pre">FlagStopSimualtions</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -106,7 +119,8 @@ There are flags in module <cite>criterion.flags_simualtions</cite></p>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dictionary of simulation data of each block. The keys are block id, and the values dataclasses with data.</p>
+<dd class="field-even"><p>Dictionary of simulation data of each block.
+The keys are block id, and the values dataclasses with data.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>SimOut(dict[int, SimulationDataBlock])</p>
@@ -138,8 +152,8 @@ There are flags in module <cite>criterion.flags_simualtions</cite></p>
 <h3>Navigation</h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../project_description.html">Project description</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../introduction/quickstart.html">Usage of the framework</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../introduction/install.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction/tutorials.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced_usage/algorithm.html">Algorithms Description</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">Modules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contact_us.html">Contact us</a></li>
@@ -151,7 +165,7 @@ There are flags in module <cite>criterion.flags_simualtions</cite></p>
   <li><a href="../../index.html">Documentation overview</a><ul>
   <li><a href="../index.html">Modules</a><ul>
       <li>Previous: <a href="../graph_grammar/graph_builder.html" title="previous chapter">Graph builder</a></li>
-      <li>Next: <a href="../trajectory_simulation.html" title="next chapter">Control optimization module</a></li>
+      <li>Next: <a href="flag_simulations.html" title="next chapter">Stop simulation flag</a></li>
   </ul></li>
   </ul></li>
 </ul>

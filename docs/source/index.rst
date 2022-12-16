@@ -25,7 +25,6 @@ Content
    introduction/tutorials
    advanced_usage/algorithm
    modules/index
-   examples/index
    contact_us
 
 Indices and tables

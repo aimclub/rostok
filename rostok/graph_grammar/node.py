@@ -11,15 +11,15 @@ class BlockWrapper:
     """Class is interface between node and interpretation in simulation.
 
     The interface allows you to create an interpretation of terminal nodes in the simulation.
-    Interpretation classes is in `rostok.block_builder.node_render`.
+    Interpretation classes is in :py:mod:`node_render`.
     The instance must be specified when creating the node.
-    When assembling a robot from a graph, an object is created by the `create_block` method.
+    When assembling a robot from a graph, an object is created by the :py:meth:`BlockWrapper.create_block` method.
     When the object is created, the desired arguments of the interpretation object are set.
 
     Args:
         block_cls: Interpretation class of node in simulation
-        args: Arguments `block_cls`
-        kwargs: Additional arguments `block_cls`
+        args: Arguments py:attr:`BlockWrapper.block_cls`
+        kwargs: Additional arguments py:attr:`BlockWrapper.block_cls`
     """
 
     def __init__(self, block_cls, *args, **kwargs):
@@ -33,7 +33,7 @@ class BlockWrapper:
 
 @dataclass
 class Node:
-    """Contains information about the label and block_wrapper,
+    """Contains information about the label and :py:class:`BlockWrapper`,
     which is the physical representation of the node in the simulator
     """
     label: str = "*"
@@ -55,7 +55,7 @@ class Node:
 
 class Rule:
     """ The class contains a graph object for substitution into the generated graph
-    and the target node which will be replaced by self.graph_insert.
+    and the target node which will be replaced by :py:attr:`Rule.graph_insert`.
     The feature of the rule's terminality is automatically determined.
     Id's mean V from graph theory, do not intersect with V from generated graph.
     """
@@ -99,9 +99,9 @@ ROOT = Node("ROOT")
 class GraphGrammar(nx.DiGraph):
     """ A class for using generative rules (similar to L grammar) and
         manipulating the construction graph.
-        The mechanism for assignment a unique Id, each added node using rule_apply
+        The mechanism for assignment a unique Id, each added node using :py:meth:`GraphGrammar.rule_apply`
         will increase the counter.
-        Supports methods from networkx.DiGraph ancestor class
+        Supports methods from :py:class:`networkx.DiGraph` ancestor class
     """
 
     def __init__(self, **attr):
