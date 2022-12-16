@@ -5,15 +5,8 @@ from rostok.graph_grammar.node import ROOT, BlockWrapper, Node
 
 class NodeVocabulary():
     """The class contains dictionary of nodes and methods to manipulate with it.
-
     This is a class to manage a dictionary of nodes. The keys are labels of the nodes and
     the values are Node objects. User can create or add nodes to vocabulary, get individual
-    nodes or list of nodes.
-
-    Attributes:
-        node_dict (List[Node]): dictionary of all nodes.
-        terminal_node_dict (List[Node]): dictionary of only terminal nodes.
-        non-terminal_node_dict (List[Node]): dictionary of only non-terminal nodes.
     nodes or list of nodes.
     Attributes:
         node_dict (List[Node]): dictionary of all nodes.
@@ -30,9 +23,7 @@ class NodeVocabulary():
     def add_node(self, node: Node):
         """Add an already created node to the vocabulary.
         Args:
-        Args:
             node (Node): node to be added to vocabulary.
-
         Raises:
             Exception: Attempt to add a Node with a label that is already in dictionary!
         """
@@ -50,7 +41,6 @@ class NodeVocabulary():
                     is_terminal: bool = False,
                     block_wrapper: BlockWrapper = None):
         """Create a node and add it to the vocabulary.
-        Args:
         Args:
             label (str): the label of the new node.
             is_terminal (bool, optional): defines if the new node is a terminal node. Default
@@ -74,9 +64,7 @@ class NodeVocabulary():
     def get_node(self, label: str) -> Node:
         """Return a node corresponding to the label.
         Args:
-        Args:
             label(str): the label of the node that should be returned.
-
         Returns:
             A requested node as a Node class object.
         Raises
@@ -95,7 +83,6 @@ class NodeVocabulary():
             label(str): the label of the node that should be checked.
         Returns:
             bool: True is the label is in dictionary, False otherwise.
-            bool: True is the label is in dictionary, False otherwise.
         """
 
         if label in self.node_dict:
@@ -110,10 +97,8 @@ class NodeVocabulary():
 
     def get_list_of_nodes(self, nodes: list[str]) -> list[Node]:
         """Returns list of Node objects corresponding to list of labels.
-
         Args:
             nodes (list[str]): list of labels to construct a list of Node objects.
-
         Returns:
             list of Node objects corresponding to the list of passed labels.
         """
