@@ -10,10 +10,8 @@ from rostok.graph_grammar.node_vocabulary import NodeVocabulary
 
 class RuleVocabulary():
     """The class that contains the rules for building the GraphGrammar object.
-
     All rules for mechanism generation should be created with an instance of RuleVocabulary.
     This class provides utility methods for the rules.
-
     Attributes:
         node_vocab (NodeVocabulary): the node vocabulary that should contain all the nodes used in
             the rules.
@@ -30,7 +28,6 @@ class RuleVocabulary():
 
     def __init__(self, node_vocab: NodeVocabulary = NodeVocabulary()):
         """Create a new empty vocabulary object.
-
         Args:
             node_vocab (NodeVocabulary, optional): the node vocabulary for the rules. Default is an
                 empty node vocabulary.
@@ -53,10 +50,8 @@ class RuleVocabulary():
                     new_edges: list[tuple[int, int]] = [],
                     current_links: list[(int, int)] = []):
         """Create a rule and add it to the dictionary.
-
         The method checks the created rule. There is no method to add already created rule to
         the vocabulary.
-
         Args:
             name (str): name of the new rule.
             current_nodes (list[str]): list of the nodes to be replaced.
@@ -64,7 +59,6 @@ class RuleVocabulary():
             current_in_edges (int):the node to link the in edges of the replaced node.
             current_out_edges (int): the node to link the out edges of the replaced node.
             new_edges (list[(int, int)]):the edges of the inserting subgraph.
-
         Raises:
             Exception: this name is already in the rule vocabulary!
             Exception: prohibited length of the current_nodes list, should be 1.
@@ -146,7 +140,6 @@ class RuleVocabulary():
     # Check set of rules itself, without any graph
     def check_rules(self):
         """Check set of rules itself, without any graph.
-
         Check the rules for having at least one terminal rule for every node that appears in the end graph of a nonterminal rule.
         """
         # Check if all nonterminal nodes from vocab are in the rules. If not print a warning
@@ -172,10 +165,8 @@ class RuleVocabulary():
 
     def get_list_of_applicable_rules(self, grammar: GraphGrammar):
         """Return the total list of applicable rules for the current graph.
-
         Args:
             grammar (GraphGrammar): a GraphGrammar object analyze.  
-
         Returns:
             list of rule names for rules that can be applied for the graph.
         """
@@ -194,10 +185,8 @@ class RuleVocabulary():
 
     def get_list_of_applicable_nonterminal_rules(self, grammar: GraphGrammar):
         """Return the list of non-terminal applicable rules for the current graph.
-
         Args:
             grammar (GraphGrammar): a GraphGrammar object analyze.
-
         Returns:
             list of rule names for non-terminal rules that can be applied for the graph.
         """
@@ -216,10 +205,8 @@ class RuleVocabulary():
 
     def get_list_of_applicable_terminal_rules(self, grammar: GraphGrammar):
         """Return the list of terminal applicable rules for the current graph.
-
         Args:
             grammar (GraphGrammar): a GraphGrammar object analyze.
-
         Returns:
             list of rule names for terminal rules that can be applied for the graph.
         """
@@ -237,10 +224,8 @@ class RuleVocabulary():
 
     def terminal_rules_for_node(self, node_name: str):
         """Return a list of the terminal rules for the node
-
         Args:
             node_name (str): a node label for which function returns the list of the terminal rules.
-
         Returns:
             The list of rule names for rules that can be applied to make a node terminal.
         """
@@ -253,9 +238,7 @@ class RuleVocabulary():
 
     def make_graph_terminal(self, grammar: GraphGrammar):
         """Converts a graph into a graph with only terminal nodes.
-
         For each non-terminal node the function apply a random rule that make it terminal.
-
         Args:
             grammar (GraphGrammar): GraphGrammar object that should become terminal.
         """

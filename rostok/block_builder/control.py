@@ -1,13 +1,14 @@
-from rostok.block_builder.node_render import ChronoRevolveJoint, Block
-
+from abc import ABC
 from copy import deepcopy
+
+import numpy as np
 import pychrono as chrono
 import scipy.interpolate as interpolate
-import numpy as np
-from abc import ABC
+
+from rostok.block_builder.node_render import Block, ChronoRevolveJoint
 
 
-def get_controllable_joints(blocks: list[Block]):
+def get_controllable_joints(blocks: list[list[Block]]):
     """Create 2D-list joints from list of blocks. First index is the number
         partition graph, second index is the number of joint
 
@@ -18,13 +19,10 @@ def get_controllable_joints(blocks: list[Block]):
     """
     control_joints = []
     for path in blocks:
-        line = []
         for n in path:
             if isinstance(n, ChronoRevolveJoint):
                 control_joints.append(n)
-    #control_joint = filter(lambda x: isinstance(x,ChronoRevolveJoint), blocks)
     return control_joints
-
 
 
 def time_points_2_ch_function(arr_time_point):
@@ -37,8 +35,7 @@ def time_points_2_ch_function(arr_time_point):
         ChSpline: Chrono function of spline points
     """
     arr_time_point = arr_time_point.T
-    spline_coefficients = interpolate.splrep(
-        arr_time_point[:, 0], arr_time_point[:, 1])
+    spline_coefficients = interpolate.splrep(arr_time_point[:, 0], arr_time_point[:, 1])
     time_interval = (arr_time_point[0, 0], arr_time_point[-1, 0])
     out_func = ChSpline(spline_coefficients, time_interval)
 
@@ -50,14 +47,13 @@ def points_2_ch_function(des_points, time_interval: tuple):
 
     Args:
         des_points (list): List of values which define spline
-        time_interval (tuple): Interval between time start and finish points 
+        time_interval (tuple): Interval between time start and finish points
 
     Returns:
         ChSpline: Chrono function of spline points
     """
     num_points = np.size(des_points)
-    trajectory_time = np.linspace(
-        time_interval[0], time_interval[1], num_points)
+    trajectory_time = np.linspace(time_interval[0], time_interval[1], num_points)
 
     spline_coefficients = interpolate.splrep(trajectory_time, des_points)
     out_func = ChSpline(spline_coefficients, time_interval)
@@ -86,6 +82,7 @@ class ChCustomFunction(chrono.ChFunction):
 
 
 class ChSpline(chrono.ChFunction):
+
     def __init__(self, coefficients, time_interval):
         """Class of spline function on chrono
 
@@ -110,7 +107,12 @@ class ChSpline(chrono.ChFunction):
 
 
 class ChPID(chrono.ChFunction_SetpointCallback):
-    def __init__(self, joint, proportional_coefficient, differential_coefficient, integral_coefficients=0.):
+
+    def __init__(self,
+                 joint,
+                 proportional_coefficient,
+                 differential_coefficient,
+                 integral_coefficients=0.):
         """Subclass ChFunction. PID-function calculate inputs for current time
 
         Args:
@@ -149,24 +151,28 @@ class ChPID(chrono.ChFunction_SetpointCallback):
             mes_vel = self.joint.GetMotorRot_dt()
             d_err = self.des_pos.Get_y_dx(time) - mes_vel
 
-            self.err_i += err*(time - self.prev_time)
+            self.err_i += err * (time - self.prev_time)
 
-            self.F = self.K_P*err + self.K_D*d_err + self.K_I*self.err_i
+            self.F = self.K_P * err + self.K_D * d_err + self.K_I * self.err_i
             self.prev_time = time
         return self.F
 
+
 class ChronoControl(ABC):
+
     def __init__(self, joint_block):
         """Abstract class of control for chrono joint (ChMotor)
 
         Args:
-            joint_block (ChMotor): Object to create the controller 
+            joint_block (ChMotor): Object to create the controller
         """
         self.__joint = joint_block
-        self.type_variants = {ChronoRevolveJoint.InputType.TORQUE: lambda x: self.get_joint().SetTorqueFunction(x),
-                              ChronoRevolveJoint.InputType.VELOCITY: lambda x: self.get_joint().SetSpeedFunction(x),
-                              ChronoRevolveJoint.InputType.POSITION: lambda x: self.get_joint().SetAngleFunction(x),
-                              ChronoRevolveJoint.InputType.UNCONTROL: None}
+        self.type_variants = {
+            ChronoRevolveJoint.InputType.TORQUE: lambda x: self.get_joint().SetTorqueFunction(x),
+            ChronoRevolveJoint.InputType.VELOCITY: lambda x: self.get_joint().SetSpeedFunction(x),
+            ChronoRevolveJoint.InputType.POSITION: lambda x: self.get_joint().SetAngleFunction(x),
+            ChronoRevolveJoint.InputType.UNCONTROL: None
+        }
 
     def get_joint(self):
         return self.__joint.joint
@@ -190,6 +196,7 @@ class ChronoControl(ABC):
 
 
 class RampControl(ChronoControl):
+
     def __init__(self, in_joint_block, y_0=0., angular=-0.5):
         """Class ramp input on joint
 
@@ -202,7 +209,9 @@ class RampControl(ChronoControl):
         self.chr_function = chrono.ChFunction_Ramp(y_0, angular)
         self.set_input(self.chr_function)
 
+
 class TrackingControl(ChronoControl):
+
     def __init__(self, in_joint_block):
         """Class tracking the trajectory at the position input
 
@@ -221,8 +230,7 @@ class TrackingControl(ChronoControl):
             time_interval (tuple): (start, stop) time interval of trajectory
         """
         self.time_interval = time_interval
-        self.chr_function = points_2_ch_function(
-            des_positions, self.time_interval)
+        self.chr_function = points_2_ch_function(des_positions, self.time_interval)
         self.set_input(self.chr_function)
 
     def set_des_positions(self, des_arr_time_to_pos: np.array):
@@ -238,15 +246,20 @@ class TrackingControl(ChronoControl):
         """Setter the desired trajectory how python function
 
         Args:
-            function (def): Link to the function which generate values the desired trajectory each time
+            function (def): Link to the function which generate values the desired trajectory
+            each time
         """
         self.chr_function = ChCustomFunction(function, *args, **kwargs)
         self.set_input(self.chr_function)
 
 
-
 class ChControllerPID(ChronoControl):
-    def __init__(self, joint_block, proportional_coefficient, differential_coefficient, integral_coefficients=0.):
+
+    def __init__(self,
+                 joint_block,
+                 proportional_coefficient,
+                 differential_coefficient,
+                 integral_coefficients=0.):
         """Class of PID tracking controller
 
         Args:
@@ -257,8 +270,8 @@ class ChControllerPID(ChronoControl):
         """
         ChronoControl.__init__(self, joint_block)
         self.trajectory = None
-        self.PID_ctrl = ChPID(self.get_joint(
-        ), proportional_coefficient, differential_coefficient, integral_coefficients)
+        self.PID_ctrl = ChPID(self.get_joint(), proportional_coefficient, differential_coefficient,
+                              integral_coefficients)
 
     def set_des_positions_interval(self, des_pos: np.array, time_interval: tuple):
         """Setter the desired trajectory on time interval
@@ -285,13 +298,16 @@ class ChControllerPID(ChronoControl):
         """Setter the desired trajectory how python function
 
         Args:
-            function (def): Link to the function which generate values the desired trajectory each time
+            function (def): Link to the function which generate values the desired trajectory
+            each time
         """
         self.trajectory = ChCustomFunction(function, *args, **kwargs)
         self.PID_ctrl.set_des_point(self.trajectory)
         self.set_input(self.PID_ctrl)
 
+
 class ConstControl(ChronoControl):
+
     def __init__(self, in_joint_block, T=0.):
         ChronoControl.__init__(self, in_joint_block)
         self.chr_function = chrono.ChFunction_Const(T)
