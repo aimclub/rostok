@@ -284,10 +284,11 @@ class GraphVocabularyEnvironment(GraphEnvironment):
             plt.show()
         path = None
         if done:
+            reporter.main_reward = self.getReward()
             reporter.main_control = self.movments_trajectory
-            reporter.main_reward = self.reward
             print(self.movments_trajectory)
             path = reporter.dump_results()
+            reporter.plot_means()
 
         return done, self.graph, self.movments_trajectory, path
 

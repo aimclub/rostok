@@ -7,6 +7,8 @@ import numpy as np
 from rostok.graph_grammar.node import ROOT, GraphGrammar, Rule
 from rostok.graph_grammar.node_vocabulary import NodeVocabulary
 
+class RuleVocabulary():
+    """The class that contains the rules for building the GraphGrammar object.
 
 class RuleVocabulary():
     """The class that contains the rules for building the GraphGrammar object.
@@ -25,6 +27,7 @@ class RuleVocabulary():
         terminal_dict (dict{str: list[str]}): the dictionary that contains the list of terminal
             states for all non-terminal nodes.
     """
+
 
     def __init__(self, node_vocab: NodeVocabulary = NodeVocabulary()):
         """Create a new empty vocabulary object.
@@ -169,6 +172,7 @@ class RuleVocabulary():
             grammar (GraphGrammar): a GraphGrammar object analyze.  
         Returns:
             list of rule names for rules that can be applied for the graph.
+            list of rule names for rules that can be applied for the graph.
         """
 
         list_of_applicable_rules = []
@@ -188,6 +192,7 @@ class RuleVocabulary():
         Args:
             grammar (GraphGrammar): a GraphGrammar object analyze.
         Returns:
+            list of rule names for non-terminal rules that can be applied for the graph.
             list of rule names for non-terminal rules that can be applied for the graph.
         """
 
@@ -209,6 +214,7 @@ class RuleVocabulary():
             grammar (GraphGrammar): a GraphGrammar object analyze.
         Returns:
             list of rule names for terminal rules that can be applied for the graph.
+            list of rule names for terminal rules that can be applied for the graph.
         """
         list_of_applicable_rules = []
         for rule_tuple in self.terminal_rule_dict.items():
@@ -227,6 +233,7 @@ class RuleVocabulary():
         Args:
             node_name (str): a node label for which function returns the list of the terminal rules.
         Returns:
+            The list of rule names for rules that can be applied to make a node terminal.
             The list of rule names for rules that can be applied to make a node terminal.
         """
         rule_list = []
