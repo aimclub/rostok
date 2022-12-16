@@ -28,7 +28,7 @@ def sort_left_right(rob: Robot, side_list: list, body_list: list):
     Raises:
         StopIteration: If finger has "side" node from side_list
     Returns:
-        nodes (list): list that contains lists of nodes of Body type with side from side_list; size 
+        nodes (list): list that contains lists of nodes of Body type with side from side_list;
                           size of list nodes is equal numbers of fingers from a relevant side
     """
     nodes = []
