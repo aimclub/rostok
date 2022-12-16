@@ -61,7 +61,7 @@ class GraphEnvironment():
         """
         self.init_graph = deepcopy(initilize_graph)
         self.graph = deepcopy(initilize_graph)
-        self._actions = [RuleAction(r) for r in rules] if not rules is None else None
+        self._actions = [RuleAction(r) for r in rules] if rules is not None else None
         self.max_actions_not_terminal = max_numbers_rules_non_terminal
         self.current_player = 1
         self.reward = 0
