@@ -29,6 +29,7 @@ rule_actions = []
 NUMBER = 5
 fig1, axs1 = plt.subplots(1, NUMBER)
 
+# Randomly selects rules and shows their impact on the graph.
 for i in range(NUMBER):
     list_rules = rule_vocab.get_list_of_applicable_rules(graph)
     rand_rule_name = np.random.choice(list_rules)

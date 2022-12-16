@@ -26,7 +26,7 @@ def is_body(node: Node):
 def is_special_transform(node: Node):
     return node in T_EXAMPLE
 
-
+# Return true if branch contain nodes from T_EXAMPLE
 def branch_filter(branch: list[Node]):
     check_list = list(map(is_special_transform, branch))
     return any(check_list)
