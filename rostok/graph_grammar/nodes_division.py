@@ -1,8 +1,6 @@
-import rostok.virtual_experiment.robot as robot
-from itertools import product
+from rostok.virtual_experiment.robot import Robot
 
-
-def nodes_division(rob: robot, type_node: list):
+def nodes_division(rob: Robot, type_node: list):
     """Division all nodes by type (body, joint, etc.)
     Args:
         rob (robot): instance of the Robot class
@@ -19,10 +17,10 @@ def nodes_division(rob: robot, type_node: list):
     return nodes
 
 
-def sort_left_right(rob: robot, side_list: list, body_list: list):
+def sort_left_right(rob: Robot, side_list: list, body_list: list):
     """Sorting nodes of Body type into right/left (depending on finger's side) and splitting them by fingers 
     Args:
-        rob (robot): instance of the robot class
+        rob (robot): instance of the Robot class
         side_list (list):side list that contains transition node (left/right)
         body_list (list): list of possible Body nodes
     Raises:
