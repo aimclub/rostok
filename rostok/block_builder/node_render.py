@@ -22,12 +22,16 @@ class SpringTorque(chrono.TorqueFunctor):
         self.damping_coef = damping_coef
         self.rest_angle = rest_angle
 
-    def evaluate(
-            self,  #
-            time,  # current time
+    def evaluate(self,
+            time,   # current time
             angle,  # relative angle of rotation
-            vel,  # relative angular speed
+            vel,    # relative angular speed
             link):  # back-pointer to associated link
+        """_summary_
+
+        Returns:
+            _type_: _description_
+        """
         torque = 0
         if self.spring_coef > 10**-3:
             torque = -self.spring_coef * \
@@ -50,22 +54,38 @@ class ContactReporter(chrono.ReportContactCallback):
         self.__list_normal_forces = []
         super().__init__()
 
-    def OnReportContact(
-        self,
-        pA,  # contact pA 
-        pB,  # contact pB 
-        plane_coord,  # contact plane coordsystem (A column 'X' is contact normal) 
-        distance,  # contact distance 
-        eff_radius,  # effective radius of curvature at contact 
-        cforce,  # react.forces (if already computed). In coordsystem 'plane_coord' 
-        ctorque,  # react.torques, if rolling friction (if already computed). 
-        modA,  # model A (note: some containers may not support it and could be nullptr) 
-        modB):  # model B (note: some containers may not support it and could be nullptr)
-        bodyA = chrono.CastToChBody(modA)
-        bodyB = chrono.CastToChBody(modB)
-        if (bodyA == self._body) or (bodyB == self._body):
-            self.__current_normal_forces = cforce.x
-            self.__list_normal_forces.append(cforce.x)
+    def OnReportContact(self,
+        pA : chrono.ChVectorD,
+        pB : chrono.ChVectorD,
+        plane_coord : chrono.ChMatrix33D,
+        distance : float,
+        eff_radius : float,
+        react_forces : chrono.ChVectorD,
+        react_torques : chrono.ChVectorD,
+        contactobjA: chrono.ChContactable,
+        contactobjB: chrono.ChContactable):
+
+        """Callback used to report contact points already added to the container
+
+        Args:
+            pA (ChVector): coordinates of contact point(s) in body A
+            pB (ChVector): coordinates of contact point(s) in body B
+            plane_coord (ChMatrix33): contact plane coordsystem
+            distance (float): contact distance
+            eff_radius (float)): effective radius of curvature at contact
+            react_forces (ChVector): reaction forces in coordsystem 'plane_coord'
+            react_torques (ChVector): reaction torques, if rolling friction
+            contactobjA (ChContactable): model A
+            contactobjB (ChContactable): model B
+        Returns:
+            bool: If returns false, the contact scanning will be stopped
+        """
+
+        body_a = chrono.CastToChBody(contactobjA)
+        body_b = chrono.CastToChBody(contactobjB)
+        if (body_a == self._body) or (body_b == self._body):
+            self.__current_normal_forces = react_forces.x
+            self.__list_normal_forces.append(react_forces.x)
         return True
 
     def is_empty(self):
@@ -150,7 +170,7 @@ class ChronoBody(BlockBody, ABC):
 
         Args:
             struct_material (Material): Dataclass of material body
-            width (flaot): Width of the box
+            width (float): Width of the box
             length (float): Length of the box
         """
         chrono_object_material = struct_material2object_material(struct_material)
