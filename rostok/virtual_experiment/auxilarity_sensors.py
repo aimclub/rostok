@@ -105,7 +105,6 @@ class RobotSensor:
         Returns:
             dict[int, float]: Dictionary which keys are id blocks of robot bodies and values are sum of contact forces
         """
-        # obj = object.GraspObj()
         if np.size(obj.list_n_forces)>0:
             contact_force_obj = np.std(obj.list_n_forces)
             return dict([(-1, contact_force_obj)])
