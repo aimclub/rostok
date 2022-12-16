@@ -22,6 +22,7 @@ def plot_graph(graph: GraphGrammar):
                      pos=nx.kamada_kawai_layout(graph, dim=2),
                      node_size=800,
                      labels={n: graph.nodes[n]["Node"].label for n in graph})
+    plt.savefig("./results/graph.jpg")
     plt.show()
 
 
@@ -57,14 +58,14 @@ control_optimizer = ControlOptimizer(cfg)
 # %% Init mcts parameters
 
 # Hyperparameters mctss
-iteration_limit = 5
+iteration_limit = 20
 
 # Initialize MCTS
 searcher = mcts.mcts(iterationLimit=iteration_limit)
 finish = False
 
 G = GraphGrammar()
-max_numbers_rules = 5
+max_numbers_rules = 10
 # Create graph envirenments for algorithm (not gym)
 graph_env = env.GraphVocabularyEnvironment(G, rule_vocabul, max_numbers_rules)
 
@@ -79,6 +80,7 @@ while not finish:
     print(
         f"number iteration: {iter}, counter actions: {graph_env.counter_action}, reward: {graph_env.reward}"
     )
+
 
 best_graph, best_control, reward = read_report(path, rule_vocabul)
 best_control = [float(x) for x in best_control]
