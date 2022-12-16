@@ -22,11 +22,12 @@ def criterion_calc(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, ga
     """
     Function that calculates reward for grasp device. It has four riterions. All of them should be maximized.
     1) Criterion of isotropy of contact forces, that affects on object
-        Desciption: list cont contains mean values of contact force for each contact point of opject.
-                    If sum of cont is equal zero (no body is in contact), then criterion is equal 0.
-        Otherwise, delta_u (standart deviation of contact forces) is calculated. We want to minimize deviation.
+        Desciption: obj_contact_forces contains values of standart deviation of contact forces for each contact point of object.
+                    If there are no contacts for object or median of contact surfaces is less than 6, criterion is equal 0.
+        Otherwise, mean value of standart deviation of contact forces is calculated. We want to minimize this.
     2) Criterion of number of contact surfaces
-        Desciption: f2 is equal the ratio of mean value of contact surfaces (during simulation) to the overall potentional number of contact surfaces.
+        Desciption: cont_surf_crit is equal the ratio of median of contact surfaces (during simulation)
+                    to the overall potentional number of contact surfaces.
     3) Criterion of mean values of distance between each of fingers
         Desciption: algorithm has to minimize mean values of the distance for each finger.
     4) Criterion of simulation time
@@ -55,10 +56,7 @@ def criterion_calc(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, ga
  
     #2) Contact surfaces criterion
     if np.size(b_nodes_sim) > 0:
-        res = [0] * len(b_nodes_sim[0]['amount_contact_surfaces'])
-        for body in b_nodes_sim:
-            res = list(map(sum, zip(body['amount_contact_surfaces'],res)))
-        cont_surf_crit = np.mean(res) / len(b_nodes_sim)
+        cont_surf_crit = np.median(sim_output[-1].obj_amount_surf_forces) / len(b_nodes_sim)
     else:
         cont_surf_crit = 0
 
