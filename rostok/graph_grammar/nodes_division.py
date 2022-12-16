@@ -33,9 +33,9 @@ def sort_left_right(rob: robot, side_list: list, body_list: list):
     """
     nodes = []
     partition_dfs = rob.get_dfs_partiton()
-    for _, part in enumerate(partition_dfs):
+    for part in partition_dfs:
         try:
-            for _, node in enumerate(part):
+            for node in part:
                 if node.node in side_list:
                     raise StopIteration
         except StopIteration:
