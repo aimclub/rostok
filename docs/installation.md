@@ -1,6 +1,6 @@
 # Installation guide
 
-* Create the environment using 
+* Create the environment using
 
 ```conda env create -f environment.yml```
 
@@ -16,7 +16,7 @@
 
 ```pip3 install -e .```  
 
-## Known issues 
+## Known issues
 
 At some PC's one can see a problem with the tcl module `version conflict for package "Tcl": have 8.6.12, need exactly 8.6.10`, try to install tk 8.6.10 using `conda install tk=8.6.10`
 

@@ -1,0 +1,44 @@
+====================
+Stop simulation flag
+====================
+
+Base flags
+----------
+
+class FlagStopSimualtions
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: rostok.criterion.flag_simulations.FlagStopSimualtions
+    :members:
+    :no-undoc-members:
+
+class FlagMaxTime
+^^^^^^^^^^^^^^^^^
+
+.. autoclass:: rostok.criterion.flag_simulations.FlagMaxTime
+    :members:
+    :no-undoc-members:
+
+Flags by contact
+----------------
+
+class FlagWithContact
+^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: rostok.criterion.flag_simulations.FlagWithContact
+    :members:
+    :no-undoc-members:
+
+class FlagSlipout
+^^^^^^^^^^^^^^^^^
+
+.. autoclass:: rostok.criterion.flag_simulations.FlagSlipout
+    :members:
+    :no-undoc-members:
+
+class FlagNotContact
+^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: rostok.criterion.flag_simulations.FlagNotContact
+    :members:
+    :no-undoc-members:

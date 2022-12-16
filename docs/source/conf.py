@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent / '../../'))
 
 project = 'rostok'
 copyright = '2022, BE2R Lab, ITMO'
-author = 'BE2R Lab, ITMO'
+author = 'Ivan Borisov, Kirill Zharkov, Yefim Osipov, Dmitriy Ivolga, Kirill Nasonov, Sergey Kolyubin'
 release = '0.0.1'
 
 # -- General configuration ---------------------------------------------------
