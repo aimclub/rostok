@@ -22,8 +22,7 @@ def get_controllable_joints(blocks: list[Block]):
         for n in path:
             if isinstance(n, ChronoRevolveJoint):
                 control_joints.append(n)
-    #control_joint = filter(lambda x: isinstance(x,ChronoRevolveJoint), blocks)
-    return control_joints
+        return control_joints
 
 
 
