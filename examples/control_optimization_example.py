@@ -53,28 +53,28 @@ def create_traj_fun(stop_time: float, time_step: float):
     return fun
 
 
-if __name__ == '__main__':
-    GAIT = 2.5
-    WEIGHT = [5, 0, 1, 5]
+ 
+GAIT = 2.5
+WEIGHT = [5, 0, 1, 5]
 
-    cfg = ConfigRewardFunction()
-    cfg.bound = (-5, 5)
-    cfg.iters = 2
-    cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
-    cfg.time_step = 0.005
-    cfg.time_sim = 2
-    cfg.flags = [FlagMaxTime(cfg.time_sim)]
-    """Wraps function call"""
+cfg = ConfigRewardFunction()
+cfg.bound = (-5, 5)
+cfg.iters = 2
+cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
+cfg.time_step = 0.005
+cfg.time_sim = 2
+cfg.flags = [FlagMaxTime(cfg.time_sim)]
+"""Wraps function call"""
 
-    criterion_callback = create_grab_criterion_fun(example_vocabulary.NODE_FEATURES, GAIT, WEIGHT)
-    traj_generator_fun = create_traj_fun(cfg.time_sim, cfg.time_step)
+criterion_callback = create_grab_criterion_fun(example_vocabulary.NODE_FEATURES, GAIT, WEIGHT)
+traj_generator_fun = create_traj_fun(cfg.time_sim, cfg.time_step)
 
-    cfg.criterion_callback = criterion_callback
-    cfg.get_rgab_object_callback = get_object_to_grasp
-    cfg.params_to_timesiries_callback = traj_generator_fun
+cfg.criterion_callback = criterion_callback
+cfg.get_rgab_object_callback = get_object_to_grasp
+cfg.params_to_timesiries_callback = traj_generator_fun
 
-    control_optimizer = ControlOptimizer(cfg)
-    graph = example_vocabulary.get_terminal_graph_three_finger()
+control_optimizer = ControlOptimizer(cfg)
+graph = example_vocabulary.get_terminal_graph_three_finger()
 
-    res = control_optimizer.start_optimisation(graph)
-    print(res)
+res = control_optimizer.start_optimisation(graph)
+print(res)
