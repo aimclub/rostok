@@ -1,11 +1,14 @@
 import random
 
 import pychrono as chrono
-from example_vocabulary import get_terminal_graph_three_finger, PALM_LIST, RM_MOUNTS, LM_MOUNTS, J_NODES, B_NODES
+from example_vocabulary import (B_NODES, J_NODES, LM_MOUNTS, PALM_LIST,
+                                RM_MOUNTS, get_terminal_graph_three_finger)
 
 import rostok.virtual_experiment.simulation_step as step
 from rostok.block_builder.basic_node_block import SimpleBody
-from rostok.block_builder.node_render import (ChronoBodyEnv, DefaultChronoMaterial, FrameTransform)
+from rostok.block_builder.node_render import (ChronoBodyEnv,
+                                              DefaultChronoMaterial,
+                                              FrameTransform)
 from rostok.criterion.criterion_calc import criterion_calc
 from rostok.criterion.flags_simualtions import FlagMaxTime
 from rostok.graph_grammar.node import BlockWrapper
@@ -14,7 +17,7 @@ from rostok.trajectory_optimizer.control_optimizer import num_joints
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
 
-# Constans
+# Constants
 MAX_TIME = 1
 TIME_STEP = 1e-3
 
@@ -26,12 +29,12 @@ const_torque_koef = [random.random() for _ in range(number_trq)]
 arr_trj = create_torque_traj_from_x(graph, const_torque_koef, MAX_TIME, TIME_STEP)
 
 # Create object to grasp
-matich = DefaultChronoMaterial()
-matich.Friction = 0.65
-matich.DampingF = 0.65
+mat = DefaultChronoMaterial()
+mat.Friction = 0.65
+mat.DampingF = 0.65
 obj = BlockWrapper(ChronoBodyEnv,
                    shape=SimpleBody.BOX,
-                   material=matich,
+                   material=mat,
                    pos=FrameTransform([0, 1, 0], [0, -0.048, 0.706, 0.706]))
 
 # Configurate simulation
