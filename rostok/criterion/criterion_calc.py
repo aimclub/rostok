@@ -2,7 +2,8 @@ from rostok.graph_grammar.nodes_division import *
 from scipy.spatial import distance
 import numpy as np
 
-def app_v_2_l(final: list, val: list ):
+
+def app_v_2_l(final: list, val: list):
     """
     Function to append value of the list "val" to list "final"
     Args:
@@ -17,6 +18,7 @@ def app_v_2_l(final: list, val: list ):
         it_n = next(myit)
         res.append(it_n)
     return res
+
 
 def criterion_calc(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, gait) -> float:
     """
@@ -46,14 +48,16 @@ def criterion_calc(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, ga
         reward (float): Reward for grasping device
     """
 
-    [b_nodes_sim, j_nodes_sim, lb_nodes_sim, rb_nodes_sim]  = traj_to_list(b_nodes, j_nodes, lb_nodes, rb_nodes, sim_output)
+    [b_nodes_sim, j_nodes_sim, lb_nodes_sim,
+     rb_nodes_sim] = traj_to_list(b_nodes, j_nodes, lb_nodes, rb_nodes, sim_output)
 
     #1) Force criterion
-    if np.size(sim_output[-1].obj_contact_forces) == 0 or np.median(sim_output[-1].obj_amount_surf_forces)<6:
+    if np.size(sim_output[-1].obj_contact_forces) == 0 or np.median(
+            sim_output[-1].obj_amount_surf_forces) < 6:
         force_crit = 0
     else:
-        force_crit = 1/(1+np.mean(sim_output[-1].obj_contact_forces))
- 
+        force_crit = 1 / (1 + np.mean(sim_output[-1].obj_contact_forces))
+
     #2) Contact surfaces criterion
     if np.size(b_nodes_sim) > 0:
         cont_surf_crit = np.median(sim_output[-1].obj_amount_surf_forces) / len(b_nodes_sim)
@@ -76,35 +80,37 @@ def criterion_calc(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, ga
                 # Counting of the body blocks of the right finger
                 for body in finger:
                     #step_n-th value of COG coord in [XYZ] format for j-th block of i-th right finger
-                    temp_xyz = [body['abs_coord_cog'][step_n][0],
-                                body['abs_coord_cog'][step_n][1],
-                                body['abs_coord_cog'][step_n][2]]
+                    temp_xyz = [
+                        body['abs_coord_cog'][step_n][0], body['abs_coord_cog'][step_n][1],
+                        body['abs_coord_cog'][step_n][2]
+                    ]
                     #Element - by - element addition. Right i-th finger's summ of coordinates
-                    rb_temp_pos = list(map(sum, zip(rb_temp_pos,temp_xyz)))
+                    rb_temp_pos = list(map(sum, zip(rb_temp_pos, temp_xyz)))
                 #COG value of i-th right finger
-                r_sum_cog.append([x/len(finger) for x in rb_temp_pos])
-            
+                r_sum_cog.append([x / len(finger) for x in rb_temp_pos])
+
             # Counting of the left fingers (choose i-th left finger)
             for finger in lb_nodes_sim:
                 lb_temp_pos = [0, 0, 0]
                 # Counting of the body blocks of the left finger
                 for body in finger:
                     #step_n-th value of COG coord in [XYZ] format for body block of left finger
-                    temp_xyz = [body['abs_coord_cog'][step_n][0],
-                                body['abs_coord_cog'][step_n][1],
-                                body['abs_coord_cog'][step_n][2]]
+                    temp_xyz = [
+                        body['abs_coord_cog'][step_n][0], body['abs_coord_cog'][step_n][1],
+                        body['abs_coord_cog'][step_n][2]
+                    ]
                     #Element - by - element addition. Left i-th finger's summ of coordinates
-                    lb_temp_pos = list(map(sum, zip(lb_temp_pos,temp_xyz)))
+                    lb_temp_pos = list(map(sum, zip(lb_temp_pos, temp_xyz)))
                 #COG value of i-th left finger
-                l_sum_cog.append([x/len(finger) for x in lb_temp_pos])
+                l_sum_cog.append([x / len(finger) for x in lb_temp_pos])
 
             #If number of fingers is more than 2 (at least 2 fingers on one side)
-            if step_n == 0 and (len(r_sum_cog)*len(l_sum_cog))>1:
-                for _ in range (len(r_sum_cog)*len(l_sum_cog)):
+            if step_n == 0 and (len(r_sum_cog) * len(l_sum_cog)) > 1:
+                for _ in range(len(r_sum_cog) * len(l_sum_cog)):
                     #If grasp has more than 2 fingers, then temp_dist is list of the lists.
                     #Temp dist has number of list is equal number of distances
                     temp_dist.append([])
-            elif step_n == 0 and (len(r_sum_cog)*len(l_sum_cog))==1:
+            elif step_n == 0 and (len(r_sum_cog) * len(l_sum_cog)) == 1:
                 temp_dist = []
             else:
                 pass
@@ -112,9 +118,9 @@ def criterion_calc(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, ga
             for r_cog_val in r_sum_cog:
                 for l_cog_val in l_sum_cog:
                     #Euclidean distance is calculated for each step
-                    euc_dist.append(distance.euclidean(r_cog_val,l_cog_val)) 
+                    euc_dist.append(distance.euclidean(r_cog_val, l_cog_val))
             #If grasp has more than 2 fingers
-            if len(euc_dist)>1:
+            if len(euc_dist) > 1:
                 #Add a distance value to the corresponding list
                 app_v_2_l(temp_dist, euc_dist)
             else:
@@ -124,23 +130,24 @@ def criterion_calc(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, ga
             l_sum_cog = []
 
             #Next iter
-            step_n+=1
+            step_n += 1
 
         #Calculation
-        if len(euc_dist)>1:
+        if len(euc_dist) > 1:
             mean_euc_dist = []
             for val in temp_dist:
                 mean_euc_dist.append(np.mean(val))
-            distance_crit = 1/(1+(sum(mean_euc_dist)))
+            distance_crit = 1 / (1 + (sum(mean_euc_dist)))
         else:
-            distance_crit = 1/(1+(np.mean(temp_dist)))
+            distance_crit = 1 / (1 + (np.mean(temp_dist)))
     else:
         distance_crit = 0
-   
+
     #4) Time criterion
     if np.size(j_nodes_sim) > 0:
-        time_crit = j_nodes_sim[0]['time'][-1]/gait
+        time_crit = j_nodes_sim[0]['time'][-1] / gait
     else:
         time_crit = 0
-    
-    return -weights[0]*force_crit - weights[1]*cont_surf_crit - weights[2]*distance_crit - weights[3]*time_crit
+
+    return -weights[0] * force_crit - weights[1] * cont_surf_crit - weights[
+        2] * distance_crit - weights[3] * time_crit

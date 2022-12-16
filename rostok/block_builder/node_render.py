@@ -22,11 +22,7 @@ class SpringTorque(chrono.TorqueFunctor):
         self.damping_coef = damping_coef
         self.rest_angle = rest_angle
 
-    def evaluate(self,
-            time,   
-            angle, 
-            vel,   
-            link): 
+    def evaluate(self, time, angle, vel, link):
         """Calculation of torque, that is created by spring
         
 
@@ -62,17 +58,10 @@ class ContactReporter(chrono.ReportContactCallback):
         self.__list_normal_forces = []
         super().__init__()
 
-    def OnReportContact(self,
-        pA : chrono.ChVectorD,
-        pB : chrono.ChVectorD,
-        plane_coord : chrono.ChMatrix33D,
-        distance : float,
-        eff_radius : float,
-        react_forces : chrono.ChVectorD,
-        react_torques : chrono.ChVectorD,
-        contactobjA: chrono.ChContactable,
-        contactobjB: chrono.ChContactable):
-
+    def OnReportContact(self, pA: chrono.ChVectorD, pB: chrono.ChVectorD,
+                        plane_coord: chrono.ChMatrix33D, distance: float, eff_radius: float,
+                        react_forces: chrono.ChVectorD, react_torques: chrono.ChVectorD,
+                        contactobjA: chrono.ChContactable, contactobjB: chrono.ChContactable):
         """Callback used to report contact points already added to the container
 
         Args:
@@ -433,10 +422,9 @@ class FlatChronoBody(ChronoBody, RobotBody):
         chrono_object_material = struct_material2object_material(material)
 
         self.body.GetCollisionModel().ClearModel()
-        self.body.GetCollisionModel().AddBox(chrono_object_material, width / 2, length / 2 - width / 32,
-                                             depth / 2)
+        self.body.GetCollisionModel().AddBox(chrono_object_material, width / 2,
+                                             length / 2 - width / 32, depth / 2)
         self.body.GetCollisionModel().BuildModel()
-
 
 
 class MountChronoBody(ChronoBody, RobotBody):
@@ -601,7 +589,7 @@ class ChronoRevolveJoint(BlockBridge):
         Args:
             in_block (ChronoBody): Slave body to connect
             out_block (ChronoBody): Master body to connect
-        """        
+        """
         self.joint = self.input_type.motor()
         self.joint.Initialize(in_block.body, out_block.body, True, in_block.transformed_frame_out,
                               out_block.ref_frame_in)
@@ -621,8 +609,8 @@ class ChronoRevolveJoint(BlockBridge):
     def _add_spring_damper(self, in_block: ChronoBody, out_block: ChronoBody):
         self._joint_spring = chrono.ChLinkRSDA()
         self._joint_spring.Initialize(in_block.body, out_block.body, False,
-                                     in_block.transformed_frame_out.GetAbsCoord(),
-                                     out_block.ref_frame_in.GetAbsCoord())
+                                      in_block.transformed_frame_out.GetAbsCoord(),
+                                      out_block.ref_frame_in.GetAbsCoord())
         self._torque_functor = SpringTorque(self.stiffness, self.damping, self.equilibrium_position)
         self._joint_spring.RegisterTorqueFunctor(self._torque_functor)
         self.builder.Add(self._joint_spring)
@@ -635,11 +623,12 @@ class ChronoTransform(BlockTransform):
         builder (pychrono.ChSystem): Arg sets the system, which hosth the body
         transform (FrameTransform): Define tranformation of the instance
     """
+
     def __init__(self, builder: chrono.ChSystem, transform):
         super().__init__(builder=builder)
         if isinstance(transform, chrono.ChCoordsysD):
             self.transform = transform
-        elif isinstance(transform,FrameTransform):
+        elif isinstance(transform, FrameTransform):
             coordsys_transform = chrono.ChCoordsysD(
                 chrono.ChVectorD(transform.position[0], transform.position[1],
                                  transform.position[2]),

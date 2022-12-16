@@ -23,6 +23,7 @@ class BuilderNotInitializedError(Exception):
 class FlagStopSimualtions(ABC):
     """Abstract class for stopping flags
     """
+
     def __init__(self):
         self.flag_state = False
         self.robot = None
@@ -62,6 +63,7 @@ class FlagMaxTime(FlagStopSimualtions):
     Args:
         max_time_simulation (float):Max seconds simulation
     """
+
     def __init__(self, max_time_simulation):
         super().__init__()
         self.max_time = max_time_simulation
@@ -80,6 +82,7 @@ class FlagMaxTime(FlagStopSimualtions):
 class FlagWithContact(FlagStopSimualtions, ABC):
     """Abstract class of stop flag simulation base on contact with bodies
     """
+
     def __init__(self):
         super().__init__()
 
@@ -114,6 +117,7 @@ class FlagSlipout(FlagWithContact):
         time_to_contact (float): Max time from start simulation to contact. Defaults to 3..
         time_without_contact (float): Max time without contact. Defaults to 0.2.
     """
+
     def __init__(self, time_to_contact: float = 3., time_without_contact: float = 0.2):
         super().__init__()
 
@@ -148,6 +152,7 @@ class FlagNotContact(FlagWithContact):
     Args:
         time_to_contact (float): Max time without contact. Defaults to 3..
     """
+
     def __init__(self, time_to_contact: float = 3.):
         super().__init__()
 
@@ -180,6 +185,7 @@ class ConditionStopSimulation:
         obj (chrono.ChBody): Object which checking on condition_description_
         flags (list[FlagStopSimualtions]): Flag of the stopping simulation
     """
+
     def __init__(self, chrono_system: chrono.ChSystem, in_robot: robot.Robot, obj: chrono.ChBody,
                  flags: list[FlagStopSimualtions]):
         self.__stop_flag = False

@@ -1,5 +1,6 @@
 import rostok.virtual_experiment.robot as robot
-from itertools import product 
+from itertools import product
+
 
 def nodes_division(rob: robot, type_node: list):
     """Division all nodes by type (body, joint, etc.)
@@ -48,7 +49,6 @@ def sort_left_right(rob: robot, side_list: list, body_list: list):
     return nodes
 
 
-
 def traj_to_list(b_nodes, j_nodes, lb_nodes, rb_nodes, sim_out: dict):
     """Combines simulation results with the corresponding node
     Args:
@@ -78,24 +78,27 @@ def traj_to_list(b_nodes, j_nodes, lb_nodes, rb_nodes, sim_out: dict):
 
     for b_node in b_nodes:
         if b_node.id == sim_out[b_node.id].id_block:
-            dict_b_temp = {'id':b_node.id,
-                      'amount_contact_surfaces':sim_out[b_node.id].amount_contact_surfaces,
-                      'sum_contact_forces': sim_out[b_node.id].sum_contact_forces}
+            dict_b_temp = {
+                'id': b_node.id,
+                'amount_contact_surfaces': sim_out[b_node.id].amount_contact_surfaces,
+                'sum_contact_forces': sim_out[b_node.id].sum_contact_forces
+            }
             list_b.append(dict_b_temp)
 
     for j_node in j_nodes:
         if j_node.id == sim_out[j_node.id].id_block:
-            dict_j_temp = {'id':j_node.id,
-                      'angle_list': sim_out[j_node.id].angle_list,
-                      'time': sim_out[j_node.id].time}
+            dict_j_temp = {
+                'id': j_node.id,
+                'angle_list': sim_out[j_node.id].angle_list,
+                'time': sim_out[j_node.id].time
+            }
             list_j.append(dict_j_temp)
 
     for left_bodies in lb_nodes:
         list_dict = []
         for body in left_bodies:
             if body.id == sim_out[body.id].id_block:
-                dict_lb_temp = {'id':body.id,
-                           'abs_coord_cog':sim_out[body.id].abs_coord_COG}
+                dict_lb_temp = {'id': body.id, 'abs_coord_cog': sim_out[body.id].abs_coord_COG}
                 list_dict.append(dict_lb_temp)
         list_lb.append(list_dict)
 
@@ -103,8 +106,7 @@ def traj_to_list(b_nodes, j_nodes, lb_nodes, rb_nodes, sim_out: dict):
         list_dict = []
         for body in right_bodies:
             if body.id == sim_out[body.id].id_block:
-                dict_rb_temp = {'id':body.id,
-                         'abs_coord_cog':sim_out[body.id].abs_coord_COG}
+                dict_rb_temp = {'id': body.id, 'abs_coord_cog': sim_out[body.id].abs_coord_COG}
                 list_dict.append(dict_rb_temp)
         list_rb.append(list_dict)
 
