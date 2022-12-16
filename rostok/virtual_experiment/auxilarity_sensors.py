@@ -15,7 +15,7 @@ class RobotSensor:
     # FIXME: Change to correct method
     @staticmethod
     def mean_center(in_robot: Robot) -> chrono.ChVectorD:
-        """Mean center of the robot. Line center of the robot's mass 
+        """Mean center of the robot. Line center of the robot's mass
 
         Args:
             in_robot (Robot): Robot to measure
@@ -40,7 +40,8 @@ class RobotSensor:
             in_robot (Robot): Robot to measure sum of contact forces
 
         Returns:
-            dict[int, float]: Dictionary which keys are id blocks of robot bodies and values are sum of contact forces
+            dict[int, float]: Dictionary which keys are id blocks of robot bodies and values
+            are sum of contact forces
         """
         blocks = in_robot.block_map
         body_block = filter(lambda x: isinstance(x[1], RobotBody), blocks.items())
@@ -55,7 +56,8 @@ class RobotSensor:
             in_robot (Robot): Robot to measure
 
         Returns:
-            dict[int, chrono.ChVectorD]: Dictionary which keys are id blocks of robot boides and values are coordinates COG
+            dict[int, chrono.ChVectorD]: Dictionary which keys are id blocks of robot
+            boides and values are coordinates COG
         """
         blocks = in_robot.block_map
         body_block = filter(lambda x: isinstance(x[1], RobotBody), blocks.items())
@@ -76,7 +78,8 @@ class RobotSensor:
             in_robot (Robot): Robot to measure
 
         Returns:
-            dict[int, int]: Dictionary which keys are id blocks of robot bodies and values are number of contact surfaces
+            dict[int, int]: Dictionary which keys are id blocks of robot
+            bodies and values are number of contact surfaces
         """
         blocks = in_robot.block_map
         body_block = filter(lambda x: isinstance(x[1], RobotBody), blocks.items())
@@ -94,7 +97,8 @@ class RobotSensor:
             in_robot (Robot): Robot to measure joint angles
 
         Returns:
-            dict[int, float]: Dictionary which keys are id blocks of robot joints and values are radians of angle joint
+            dict[int, float]: Dictionary which keys are id blocks of robot
+            joints and values are radians of angle joint
         """
         blocks = in_robot.block_map
         joint_blocks = filter(lambda x: isinstance(x[1], ChronoRevolveJoint), blocks.items())
@@ -111,6 +115,7 @@ class RobotSensor:
         Returns:
             dict[int, float]: Dictionary which keys are id object and values of standart deviation of contact forces
         """
+
         if np.size(obj.list_n_forces) > 0:
             contact_force_obj = np.std(obj.list_n_forces)
             return dict([(-1, contact_force_obj)])

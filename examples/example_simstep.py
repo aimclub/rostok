@@ -23,7 +23,7 @@ mechs = [
 ]
 
 for get_graph in mechs:
-    # Constans
+    # Constants
     MAX_TIME = 1
     TIME_STEP = 1e-3
 
@@ -35,12 +35,12 @@ for get_graph in mechs:
     arr_trj = create_torque_traj_from_x(graph, const_torque_koef, MAX_TIME, TIME_STEP)
 
     # Create object to grasp
-    matich = DefaultChronoMaterial()
-    matich.Friction = 0.65
-    matich.DampingF = 0.65
+    mat = DefaultChronoMaterial()
+    mat.Friction = 0.65
+    mat.DampingF = 0.65
     obj = BlockWrapper(ChronoBodyEnv,
                         shape=SimpleBody.BOX,
-                        material=matich,
+                        material=mat,
                         pos=FrameTransform([0, 1, 0], [0, -0.048, 0.706, 0.706]))
 
     # Configurate simulation

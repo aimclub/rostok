@@ -3,7 +3,9 @@ from scipy.spatial import distance
 import numpy as np
 
 
+
 def app_v_2_l(final: list, val: list):
+
     """
     Function to append value of the list "val" to list "final"
     Args:
@@ -14,10 +16,14 @@ def app_v_2_l(final: list, val: list):
         final (list)
     """
     myit = iter(val)
+
     for _, res in enumerate(final):
         it_n = next(myit)
         res.append(it_n)
     return res
+
+
+def criterion_calc(sim_output, B, J, LB, RB, W, gait) -> float:
 
 
 def criterion_calc(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, gait) -> float:
@@ -42,6 +48,7 @@ def criterion_calc(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, ga
         lb_nodes (list): list that contains lists of nodes of Body type from left fingers
         rb_nodes (list): list that contains lists of nodes of Body type from right fingers
         weights (list): list of weight coefficients
+
         gait (float): time value of grasping's gait period
 
     Returns:
@@ -151,3 +158,4 @@ def criterion_calc(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, ga
 
     return -weights[0] * force_crit - weights[1] * cont_surf_crit - weights[
         2] * distance_crit - weights[3] * time_crit
+

@@ -177,7 +177,7 @@ class FlagNotContact(FlagWithContact):
 
 
 class ConditionStopSimulation:
-    """A class of flag-based chrono-modeling stopping conditions. 
+    """A class of flag-based chrono-modeling stopping conditions.
 
     Args:
         chrono_system (chrono.ChSystem): System which checking on condition
@@ -198,7 +198,7 @@ class ConditionStopSimulation:
             flag.build(self.chrono_system, self.in_robot, self.obj)
 
     def flag_stop_simulation(self):
-        """Сondition of stop simulation
+        """Condition of stop simulation
 
         Returns:
             bool: True if simulation have to be stopped

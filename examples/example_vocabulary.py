@@ -3,13 +3,13 @@ from cmath import sqrt
 import numpy as np
 import pychrono as chrono
 
-from rostok.block_builder.node_render import (ChronoRevolveJoint, ChronoTransform, FlatChronoBody,
+from rostok.block_builder.node_render import (ChronoRevolveJoint,
+                                              ChronoTransform, FlatChronoBody,
                                               LinkChronoBody, MountChronoBody)
 from rostok.block_builder.transform_srtucture import FrameTransform
 from rostok.graph_grammar.node import ROOT, BlockWrapper, GraphGrammar
 from rostok.graph_grammar.node_vocabulary import NodeVocabulary
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
-
 
 # Bodies
 link1 = BlockWrapper(LinkChronoBody, length=0.6)

@@ -1,16 +1,17 @@
-from dataclasses import dataclass, asdict
 import xml.etree.ElementTree as ET
+from dataclasses import asdict, dataclass
+
 import pychrono as chrono
+
 
 @dataclass
 class Material:
     """Dataclass for materials
     """
     name: str
-    type_class: str 
+    type_class: str
 
 
-    
 @dataclass
 class DefaultChronoMaterial(Material):
     """Dataclass of default materials for chrono bodies
@@ -20,7 +21,7 @@ class DefaultChronoMaterial(Material):
     Friction = 0.5
     DampingF = 0.1
 
-    
+
 def struct_material2object_material(struct_material: Material, prefix_setter: str = "Set"):
     """Convert dataclass Materal from struct_material to some object material
 
@@ -35,38 +36,41 @@ def struct_material2object_material(struct_material: Material, prefix_setter: st
         struct_material.type_class: Object of material is defined dataclass Material
     """
     chrono_material = getattr(chrono, struct_material.type_class)()
-    
-    struct_material_attributes = set(dir(struct_material)) -  set(["name", "type_class"]) - set(dir(dataclass))
 
-    
+    struct_material_attributes = set(dir(struct_material)) - set(["name", "type_class"]) - set(
+        dir(dataclass))
+
     for method in struct_material_attributes:
         if method[0:2] != "__":
-            value = getattr(struct_material,method)
+            value = getattr(struct_material, method)
             try:
-                getattr(chrono_material,prefix_setter + method)(value)
+                getattr(chrono_material, prefix_setter + method)(value)
             except AttributeError:
-                raise Exception("Your class material don't have method {0}".format(prefix_setter + method))
+                raise Exception("Your class material don't have method {0}".format(prefix_setter +
+                                                                                   method))
     return chrono_material
+
 
 def string_xml2struct_material(xml_string):
     """Convert string xml to dataclass Material
 
     Args:
-        xml_string (str): String of methods and class material 
+        xml_string (str): String of methods and class material
 
     Returns:
         Material: Dataclass of Material
     """
-    
+
     xml_material = ET.fromstring(xml_string)
-    
+
     class_material = xml_material[0]
-    
-    struct_material: Material = Material(xml_material.tag,class_material.tag)
+
+    struct_material: Material = Material(xml_material.tag, class_material.tag)
     for method in class_material:
-            setattr(struct_material,method.tag, float(method.text))
-            
+        setattr(struct_material, method.tag, float(method.text))
+
     return struct_material
+
 
 def parse_dataset_material(str_type_material: str, file: str):
     """Parse file with materials and find the material in dataset
@@ -82,8 +86,11 @@ def parse_dataset_material(str_type_material: str, file: str):
     dataset_material = xml_material.getroot()
     info_material = dataset_material.find(str_type_material)
     return info_material
-    
-def create_struct_material_from_file(str_type_material: str, file = None, class_material: str = "ChMaterialSurfaceNSC"):
+
+
+def create_struct_material_from_file(str_type_material: str,
+                                     file=None,
+                                     class_material: str = "ChMaterialSurfaceNSC"):
     """Create dataclass Material from xml-file
 
     Args:
@@ -99,34 +106,37 @@ def create_struct_material_from_file(str_type_material: str, file = None, class_
         struct_material(Material): Dataclass of material
     """
     struct_material = Material(str_type_material, class_material)
-    info_material = parse_dataset_material(str_type_material,file)
+    info_material = parse_dataset_material(str_type_material, file)
     try:
-        methods_class_material =  info_material.find(class_material)
+        methods_class_material = info_material.find(class_material)
     except AttributeError:
         raise AttributeError("File don't have the material {0}".format(str_type_material))
-    
+
     if methods_class_material is None:
         raise Exception("Didn't set parameters material for your class material")
     for method in methods_class_material:
         setattr(struct_material, method.tag, float(method.text))
     return struct_material
 
-def save_object_material(object_material, name_material: str, file: str, prefix_getter = "Get"):
+
+def save_object_material(object_material, name_material: str, file: str, prefix_getter="Get"):
     """Save object material with parameters in file
 
     Args:
-        object_material (ChMaterialSurface): Chrono object of material (Not checking with other type object)
-        name_material (str): Name of material 
+        object_material (ChMaterialSurface): Chrono object of material
+            (Not checking with other type object)
+        name_material (str): Name of material
         file (str): Path to the xml file for saving material information
     """
-    getter_material = (method for method in set(dir(object_material)) - set(dir(object)) if method[0:3]==prefix_getter)
-    
+    getter_material = (method for method in set(dir(object_material)) - set(dir(object))
+                       if method[0:3] == prefix_getter)
+
     tree = ET.ElementTree(file=file)
     root = tree.getroot()
     child_root = root.find(name_material)
-    if  child_root:
+    if child_root:
         children = root.find(name_material)
-        
+
         str_class_material = str(object_material.__class__).split(".")[-1][0:-2]
         class_material_exsist = children.find(str_class_material)
         if class_material_exsist:
@@ -139,11 +149,11 @@ def save_object_material(object_material, name_material: str, file: str, prefix_
         root.append(children)
         str_class_material = str(object_material.__class__).split(".")[-1][0:-2]
         is_new_class_material = True
-    
+
     if is_new_class_material:
         element_class_material = ET.Element(str_class_material)
         children.append(element_class_material)
-    
+
     for getter in getter_material:
         value = getattr(object_material, getter)()
         setter = getter[3:len(getter)]
@@ -155,12 +165,13 @@ def save_object_material(object_material, name_material: str, file: str, prefix_
             else:
                 params_material = ET.SubElement(element_class_material, setter)
                 params_material.text = str(value)
-            
+
     tree = ET.ElementTree(root)
-    
+
     with open(file, "wb") as fh:
         tree.write(fh)
-        
+
+
 if __name__ == "__main__":
     str_xml_material = """<test_mat>
                             <ChMaterialSurfaceNSC>}
@@ -168,7 +179,7 @@ if __name__ == "__main__":
                             <DampingF>0.1</DampingF>
                             </ChMaterialSurfaceNSC>
                         </test_mat>"""
-                    
+
     data_material1 = string_xml2struct_material(str_xml_material)
     chr_object = struct_material2object_material(data_material1)
     file = "./src/utils/dataset_materials/material.xml"

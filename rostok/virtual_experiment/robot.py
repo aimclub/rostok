@@ -1,10 +1,9 @@
 from copy import deepcopy
-from rostok.graph_grammar.node import Node, WrapperTuple, GraphGrammar
-from rostok.block_builder.node_render import Block, connect_blocks, ChronoRevolveJoint
-from rostok.trajectory_optimizer.trajectory_generator import create_dfs_joint
-from rostok.block_builder.blocks_utils import NodeFeatures
 from dataclasses import dataclass
-import networkx as nx
+
+from rostok.block_builder.blocks_utils import NodeFeatures
+from rostok.block_builder.node_render import (Block, ChronoRevolveJoint, connect_blocks)
+from rostok.graph_grammar.node import GraphGrammar, Node, WrapperTuple
 
 
 @dataclass
@@ -15,6 +14,7 @@ class RobotNode:
 
 
 class Robot:
+
     def __init__(self, robot_graph: GraphGrammar, simulation):
         self.__graph = deepcopy(robot_graph)
         wrapper_tuple_array = self.__graph.build_terminal_wrapper_array()
@@ -81,11 +81,8 @@ class Robot:
         partition = self.__graph.graph_partition_dfs()
 
         def covert_to_robot_node(x):
-            return RobotNode(x,
-            self.__graph.nodes()[x]["Block"],
-            self.__graph.nodes()[x]["Node"])
+            return RobotNode(x, self.__graph.nodes()[x]["Block"], self.__graph.nodes()[x]["Node"])
 
-        partiton_graph = [list(map(covert_to_robot_node, x))
-                                                for x in partition]
+        partiton_graph = [list(map(covert_to_robot_node, x)) for x in partition]
 
         return partiton_graph

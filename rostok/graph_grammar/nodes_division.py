@@ -1,5 +1,6 @@
 from rostok.virtual_experiment.robot import Robot
 
+
 def nodes_division(rob: Robot, type_node: list):
     """Division all nodes by type (body, joint, etc.)
     Args:
@@ -10,6 +11,7 @@ def nodes_division(rob: Robot, type_node: list):
     """
     nodes = []
     partition_dfs = rob.get_dfs_partiton()
+
     for part in partition_dfs:
         for node in part:
             if (node.node in type_node) and node not in nodes:
@@ -39,11 +41,11 @@ def sort_left_right(rob: Robot, side_list: list, body_list: list):
         except StopIteration:
             continue
         passed_body = []
+
         for idx, node in enumerate(part):
             if (node.node in body_list) and idx != 0:
                 passed_body.append(node)
         nodes.append(passed_body)
-
     return nodes
 
 
