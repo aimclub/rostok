@@ -23,14 +23,22 @@ class SpringTorque(chrono.TorqueFunctor):
         self.rest_angle = rest_angle
 
     def evaluate(self,
-            time,   # current time
-            angle,  # relative angle of rotation
-            vel,    # relative angular speed
-            link):  # back-pointer to associated link
-        """_summary_
+            time,   
+            angle, 
+            vel,   
+            link): 
+        """Calculation of torque, that is created by spring
+        
+
+        Args:
+            time  :  current time
+            angle :  relative angle of rotation
+            vel   :  relative angular speed
+            link  :  back-pointer to associated link
+
 
         Returns:
-            _type_: _description_
+            torque: torque, that is created by spring
         """
         torque = 0
         if self.spring_coef > 10**-3:
