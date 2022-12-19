@@ -58,7 +58,7 @@ control_optimizer = ControlOptimizer(cfg)
 # %% Init mcts parameters
 
 # Hyperparameters mctss
-iteration_limit = 20
+iteration_limit = 50
 
 # Initialize MCTS
 searcher = mcts.mcts(iterationLimit=iteration_limit)

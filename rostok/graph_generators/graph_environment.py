@@ -214,16 +214,28 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         return list(possible_actions)
 
     def getReward(self):
+        if len(seen_graphs)>0:
+            seen_graphs_t = list(zip(*seen_graphs))
+            i = 0
+            for graph in seen_graphs_t[0]:
+                if graph == self.graph:
+                    self.reward = seen_graphs_t[1][i]
+                    self.movments_trajectory = seen_graphs_t[2][i]
+                    reporter.add_reward(self.state, self.reward, self.movments_trajectory)
+                    print('seen reward:', self.reward)
+                    return self.reward
+                i += 1
 
         result_optimizer = self.optimizer.start_optimisation(self.graph)
         self.reward = -result_optimizer[0]
         self.movments_trajectory = result_optimizer[1]
-
+        seen_graphs.append([deepcopy(self.graph), self.reward, deepcopy(self.movments_trajectory)])
         reporter.add_reward(self.state, self.reward, self.movments_trajectory)
         if self.reward > reporter.best_reward:
             reporter.best_reward = self.reward
             reporter.best_control = self.movments_trajectory
             reporter.best_state = self.state
+
         print(self.reward)
         return self.reward
 
