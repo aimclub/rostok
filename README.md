@@ -24,7 +24,7 @@ There are four main blocks:
 ![project_general](./docs/images/general_scheme.jpg)
 ![project_algorithm](./docs/images/Algorithm_shceme.jpg)
 
-More detailed description of the [algorithms and methods](./docs/Algorithm.md).
+More detailed description of the [algorithms and methods](https://licaibeerlab.github.io/rostok/advanced_usage/algorithm.html).
 
 ## Prerequisites
 
