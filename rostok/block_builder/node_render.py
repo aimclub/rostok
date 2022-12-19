@@ -102,8 +102,8 @@ class ContactReporter(chrono.ReportContactCallback):
 
 class ChronoBody(BlockBody, ABC):
     """Abstract class, that interpreting nodes of a robot body part in a
-    physics engine (`pychrono`).
-
+    physics engine (`pychrono <https://projectchrono.org/pychrono/>`_).
+    
     Attributes:
         body (pychrono.ChBody): Pychrono object of the solid body. It defines visualisation,
         collision shape, position on the world frame and etc in simulation system.
@@ -266,8 +266,8 @@ class ChronoBody(BlockBody, ABC):
 
 class BoxChronoBody(ChronoBody, RobotBody):
     """Class of the simple box body shape of robot on pychrono engine. It
-    defines interpretation of node of body part in physic system `pychrono`
-
+    defines interpretation of node of body part in physic system `pychrono <https://projectchrono.org/pychrono/>`_
+    
     Args:
         builder (chrono.ChSystem): Arg sets the system, which hosth the body
         size (BoxSize, optional): Size of the body box. Defaults to BoxSize(0.1, 0.1, 0.1).
@@ -310,8 +310,8 @@ class BoxChronoBody(ChronoBody, RobotBody):
 
 class LinkChronoBody(ChronoBody, RobotBody):
     """Class interpretation of node of the link robot in physic engine
-    `pychrono`.
-
+    `pychrono <https://projectchrono.org/pychrono/>`_.
+    
     Args:
         builder (chrono.ChSystem): Arg sets the system, which hosting the body
         length (float): Length of the robot link. Defaults to 2.
@@ -392,8 +392,8 @@ class LinkChronoBody(ChronoBody, RobotBody):
 
 
 class FlatChronoBody(ChronoBody, RobotBody):
-    """Class interprets node of robot flat (palm) in physic engine `pychrono`.
-
+    """Class interprets node of robot flat (palm) in physic engine `pychrono <https://projectchrono.org/pychrono/>`_.
+    
     Args:
         builder (chrono.ChSystem): Arg sets the system, which hosting the body
         length (float): Length of the robot link. Defaults to 2.
@@ -446,8 +446,8 @@ class FlatChronoBody(ChronoBody, RobotBody):
 
 
 class MountChronoBody(ChronoBody, RobotBody):
-    """Class is interprets node of robot end limbs in physic engine `pychrono`.
-
+    """Class is interprets node of robot end limbs in physic engine `pychrono <https://projectchrono.org/pychrono/>`_.
+    
     Args:
         builder (chrono.ChSystem): Arg sets the system, which hosting the body
         length (float): Length of the robot link. Defaults to 0.1.
@@ -499,9 +499,9 @@ class MountChronoBody(ChronoBody, RobotBody):
 
 class ChronoBodyEnv(ChronoBody):
     """Class of environments bodies with standard shape, like box, ellipsoid,
-    cylinder. It adds solid body in `pychrono` physical system that is not
+    cylinder. It adds solid body in `pychrono <https://projectchrono.org/pychrono/>`_ physical system that is not
     robot part.
-
+    
     Args:
         builder (chrono.ChSystem): Arg sets the system, which hosting the body
         shape (SimpleBody): Args define the shape of the body. Defaults to SimpleBody.BOX
@@ -552,25 +552,23 @@ class ChronoBodyEnv(ChronoBody):
 
 
 class ChronoRevolveJoint(BlockBridge):
-    """The class representing revolute joint object in `pychrono` physical
+    """The class representing revolute joint object in `pychrono <https://projectchrono.org/pychrono/>`_ physical
     engine. It is the embodiment of joint nodes from the mechanism graph in
     simulation.
+    
 
-    Args:
-        builder (pychrono.ChSystem): Arg sets the system, which hosting the body
-        axis (Axis, optional): Define rotation axis. Defaults to Axis.Z.
-        type_of_input (InputType, optional): Define type of input joint control.
-        Defaults to InputType.POSITION. Instead of, can changes to torque, that more realistic.
-        stiffness (float, optional): Optional arg add a spring with `stiffness` to joint.
-        Defaults to 0.
-        damping (float, optional): Optional arg add a dempher to joint. Defaults to 0.
-        equilibrium_position (float, optional): Define equilibrium position of the spring.
-        Defaults to 0.
-
-    Attributes:
-        joint (pychrono.ChLink): Joint define nodes of the joint part in the system
-        axis (Axis): The axis of the rotation
-        input_type (InputType): The type of input
+        Args:
+            builder (pychrono.ChSystem): Arg sets the system, which hosth the body
+            axis (Axis, optional): Define rotation axis. Defaults to Axis.Z.
+            type_of_input (InputType, optional): Define type of input joint control. Defaults to InputType.POSITION. Instead of, can changes to torque, that more realistic.
+            stiffness (float, optional): Optional arg add a spring with `stiffness` to joint. Defaults to 0.
+            damping (float, optional): Optional arg add a dempher to joint. Defaults to 0.
+            equilibrium_position (float, optional): Define equilibrium position of the spring. Defaults to 0.
+            
+        Attributes:
+            joint (pychrono.ChLink): Joint define nodes of the joint part in the system
+            axis (Axis): The axis of the rotation
+            input_type (InputType): The type of input
     """
 
     class InputType(str, Enum):
@@ -644,8 +642,8 @@ class ChronoRevolveJoint(BlockBridge):
 
 
 class ChronoTransform(BlockTransform):
-    """Class representing node of the transformation in `pychrono` physical
-    engine.
+    """Class representing node of the transformation in `pychrono <https://projectchrono.org/pychrono/>`_ physical
+    engine
 
     Args:
         builder (pychrono.ChSystem): Arg sets the system, which hosth the body
