@@ -1,4 +1,7 @@
-<img src="./docs/images/logo_rostok_long.png" width="600">
+<p align="center">
+    <img src="./docs/images/logo_rostok_long.png" width="600">
+</p>
+
 
 # Rostok
 
