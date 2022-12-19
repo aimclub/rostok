@@ -10,5 +10,8 @@ sphinx:
   builder: html
   configuration: docs/source/conf.py
 
-conda:
-  environment: environment_no_gui.yml
+python:
+  version: "3.9"
+  install:
+    - method: pip
+      path: .
