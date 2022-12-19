@@ -1,4 +1,4 @@
-<img src="../docs/images/logo_rostok.jpg" width="200">
+<img src="./docs/images/logo_rostok.jpg" width="200">
 
 # Rostok
 
@@ -9,7 +9,7 @@ A user can utilize the entire framework as a pipeline to generate a set of subop
 Currently the framework allows to perform co-design of open chain linkage mechanisms. Co-design consists in simultaneously searching for the mechanical structure and the trajectories of the robot to get the best possible performance.
 
 <p align="center">
-    <img src="../docs/images/brick_anim.gif" width="700">
+    <img src="./docs/images/brick_anim.gif" width="700">
 </p>
 
 ## Project desription
@@ -21,10 +21,10 @@ There are four main blocks:
 * Trajectory Optimization -- finds suboptimal joint trajectories needed to efficiently perform the desired motion
 * Search Algorithm -- looks for optimal graph to represent mechanism topology
 
-![project_general](../docs/images/general_scheme.jpg)
-![project_algorithm](../docs/images/Algorithm_shceme.jpg)
+![project_general](./docs/images/general_scheme.jpg)
+![project_algorithm](./docs/images/Algorithm_shceme.jpg)
 
-More detailed description of the [algorithms and methods](../docs/Algorithm.md).
+More detailed description of the [algorithms and methods](./docs/Algorithm.md).
 
 ## Prerequisites
 
