@@ -9,4 +9,4 @@ We prepared tutorials that show what one can do with the library.
 2. `Create graphs using nodes and rules <tutorial_graph.html>`_
 3. `Set the object to grasp and use the built graphs to start simulation of the grasping mechanism <tutorial_sym_step.html>`_
 4. `Use optimizer to get optimal joint trajectories and best reward for the mechanism <tutorial_control_optimization.html>`_
-5. `Use node and rule vocabularies to search the design of grasping robot for a simple body <tutorial_control_optimization.html>`_
+5. `Use node and rule vocabularies to search the design of grasping robot for a simple body <tutorial_search.html>`_
