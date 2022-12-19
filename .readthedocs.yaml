@@ -11,4 +11,4 @@ sphinx:
   configuration: docs/source/conf.py
 
 conda:
-  requirements: environment_no_gui.yml
+  environment: environment_no_gui.yml
