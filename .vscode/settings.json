@@ -16,6 +16,7 @@
         "--disable=C0114, C0115, C0116"
     ],
     "isort.check": true,
-    "isort.importStrategy": "fromEnvironment"
+    "isort.importStrategy": "fromEnvironment",
+    "esbonio.sphinx.confDir": ""
     
 }

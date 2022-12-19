@@ -27,7 +27,7 @@ class SimulationDataBlock:
 
 @dataclass(frozen=True)
 class DataJointBlock(SimulationDataBlock):
-    """Immutable class with output simulation data for robot joint block.
+    """Immutable class with output simulation data for robot joint block (:py:class:`ChronoRevoluteJoint`).
 
         Attr:
             id_block (int): id of robot block
@@ -39,7 +39,7 @@ class DataJointBlock(SimulationDataBlock):
 
 @dataclass(frozen=True)
 class DataBodyBlock(SimulationDataBlock):
-    """Immutable class with output simulation data for robot body block.
+    """Immutable class with output simulation data for robot body block (:py:class:`rostok.block_builder.node_render.BoxChronoBody`)
 
         Attr:
             id_block (int): id of robot block
@@ -58,7 +58,7 @@ class DataBodyBlock(SimulationDataBlock):
 
 @dataclass(frozen=True)
 class DataObjectBlock(SimulationDataBlock):
-    """Immutable class with output simulation data for object body.
+    """Immutable class with output simulation data for object body (:py:class:`rostok.block_builder.node_render.ChronoBodyEnv`)
 
         Attr:
             id_block (int): id of object block. Object id is less zero
@@ -78,20 +78,20 @@ SimOut = dict[int, SimulationDataBlock]
 
 
 class SimulationStepOptimization:
-    """Wrapper class of simulation robot with control on `pychrono` physical engine.
+    """Wrapper class of simulation robot with control on `pychrono <https://projectchrono.org/pychrono/>`_ physical engine.
 
-    Before starting the simulation with the `simulate_system` method, recommended set stopping flag
-        of simulation with `set_flags_stop_simulation`.
+    Before starting the simulation with the :py:meth:`SimulationStepOptimization.simulate_system` method, recommended set stopping flag
+        of simulation with :py:meth:`SimulationStepOptimization.set_flags_stop_simulation`.
     Otherwise, the simulation time has no limits and lasts until the end of the program or until
     the visualization window is closed, if it is set.
-    There are flags in module `criterion.flags_simualtions`
+    There are flags in module :py:mod:`flags_simualtions`
 
     Args:
         control_trajectory: Array arries of control trajectory for each joints.
             Control trajectory of one joint have to have format [[time, value], ...].
             Array must be same shape as array of joints.
         graph_mechanism (GraphGrammar): Graph of the robot to be simulated
-        grasp_object (BlockWrapper): Wrapper of `ChronoBlockEnv`.
+        grasp_object (BlockWrapper): Wrapper of :py:class:`ChronoBodyEnv`.
             This is the object that the robot grabs.
     """
 
@@ -151,8 +151,8 @@ class SimulationStepOptimization:
 
         Args:
             flags_stop_simulation (list[FlagStopSimualtions]): List of desired checking flags.
-                You can see flags in module `criterion.flags_simualtions`.
-                Or create yours, that subclasses `FlagStopSimualtions`
+                You can see flags in module :py:mod:`flags_simualtions`.
+                Or create yours, that subclasses :py:class:`FlagStopSimualtions`
         """
         self.condion_stop_simulation = ConditionStopSimulation(self.chrono_system, self.grab_robot,
                                                                self.grasp_object,
@@ -160,7 +160,7 @@ class SimulationStepOptimization:
 
     # Add peculiar parameters of chrono system. Like that {"Set_G_acc":chrono.ChVectorD(0,0,0)}
     def change_config_system(self, dict_config: dict):
-        """The method is for changing parameters of `pychrono` simulation system.
+        """The method is for changing parameters of `pychrono <https://projectchrono.org/pychrono/>`_ simulation system.
 
         Args:
             dict_config (dict): The dictionary which contains the configuration parameters
@@ -175,7 +175,9 @@ class SimulationStepOptimization:
                 metod_system = getattr(self.chrono_system, str_method)
                 metod_system(input)
             except AttributeError:
-                raise AttributeError("Chrono system don't have method {0}".format(str_method))
+                raise AttributeError(
+                    "Chrono system doesn't have method {0}".format(str_method))
+
 
     # Run simulation
     def simulate_system(self, time_step, visualize=False) -> SimOut:

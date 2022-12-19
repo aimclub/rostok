@@ -1,8 +1,8 @@
-import numpy as np
 import pychrono as chrono
-
-from rostok.block_builder.node_render import ChronoRevolveJoint, RobotBody
+import numpy as np
 from rostok.virtual_experiment.robot import Robot
+from rostok.block_builder.node_render import RobotBody, ChronoRevolveJoint
+
 
 
 class RobotSensor:
@@ -107,14 +107,13 @@ class RobotSensor:
 
     @staticmethod
     def std_contact_forces_object(obj):
-        """Sensor of sum contact forces blocks of robot
+        """Sensor of standart deviation of contact forces that affect on object
 
         Args:
             in_robot (Robot): Robot to measure sum of contact forces
 
         Returns:
-            dict[int, float]: Dictionary which keys are id blocks of robot
-            bodies and values are sum of contact forces
+            dict[int, float]: Dictionary which keys are id object and values of standart deviation of contact forces
         """
 
         if np.size(obj.list_n_forces) > 0:
