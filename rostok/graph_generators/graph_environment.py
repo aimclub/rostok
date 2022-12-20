@@ -177,6 +177,7 @@ class GraphEnvironment():
 
 
 reporter = MCTSReporter()
+seen_graphs: list[list[GraphGrammar, float, list[float]]] = [] 
 
 
 class GraphVocabularyEnvironment(GraphEnvironment):
