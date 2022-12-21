@@ -1,16 +1,27 @@
-from statistics import mean
-from pathlib import Path
-from datetime import datetime
+"""Module includes classes and functions that control saving and reading data"""
+import pickle
 import sys
-import networkx as nx
+import shutil
+from copy import deepcopy
+from datetime import datetime
+from pathlib import Path
+from statistics import mean
+
 import matplotlib.pyplot as plt
+import networkx as nx
+
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 
 
 # State here is a list of rules that can be used to create robots
 class RobotState():
+    """The class that represents a mechanism within a given ruleset.
 
+    This class represents a mechanism through the ordered list of rules that is used to
+    build a grath. It requires a RuleVocabulary object that controls the building of the
+    graph from state.
+    """
     def __init__(self, rule_list: list[str] = []):
         self.rule_list = rule_list.copy()
 
@@ -37,8 +48,20 @@ class RobotState():
 
 
 class MCTSReporter():
+    __instance = None
+
+    @staticmethod
+    def get_instance():
+        if MCTSReporter.__instance is None:
+            MCTSReporter()
+        return MCTSReporter.__instance
 
     def __init__(self):
+        if MCTSReporter.__instance is not None:
+            raise Exception("Attempt to create an instance of manager class -"+
+                "use get_instance method instead!")
+
+        self.seen_graphs: list[list[GraphGrammar, float, list[float]]] = []
         self.current_rewards = []
         self.rewards = dict()
         self.main_state = RobotState()
@@ -47,15 +70,62 @@ class MCTSReporter():
         self.best_state = RobotState()
         self.best_control = []
         self.best_reward = 0.
+        self.path = Path("./results")
+        self.rule_vocabulary = None
+        MCTSReporter.__instance = self
+
+    def set_rule_vocabulary(self, rules):
+        self.rule_vocabulary = rules
+    
+    def add_graph(self, graph, reward, control):
+        self.seen_graphs.append([deepcopy(graph), reward, deepcopy(control)])
+    
+    def check_graph(self, new_garph):
+        if len(self.seen_graphs)>0:
+            seen_graphs_t = list(zip(*self.seen_graphs))
+            i = 0
+            for graph in seen_graphs_t[0]:
+                if graph == new_garph:
+                    reward = seen_graphs_t[1][i]
+                    control = seen_graphs_t[2][i]
+                    #self.add_reward(self.state, self.reward, self.movments_trajectory)
+                    print('seen reward:', reward)
+                    return True, reward, control
+                i += 1
+        return False, 0, []
 
     def add_reward(self, state: RobotState, reward: float, control):
         self.current_rewards.append([state.rule_list, reward, control])
 
     def make_step(self, rule, step_number):
         self.rewards[step_number] = self.current_rewards
-        self.current_rewards = []
         self.main_state.add_rule(rule)
+        path = Path(self.path, "temp_logs")
+        path.mkdir(parents=True, exist_ok=True)
+        rules_path = Path(path,"rules.pickle")
+        file = open(rules_path,'wb+')
+        pickle.dump(self.rule_vocabulary,file)
+        file.close()
+        path_log = Path(path,"temp_log.txt")
+        with open(path_log, 'a') as file:
+            original_stdout = sys.stdout
+            sys.stdout = file
+            print(step_number)
+            for design in self.current_rewards:
+                print('rules:', *design[0])
+                control = design[2]
+                if control is None:
+                    print('control:', "no joints")
+                else:
+                    print('control:', control)
+                print('reward:', design[1])
 
+            print()
+            print('main_result:')
+            print('rules:', *self.main_state.rule_list)
+            sys.stdout = original_stdout
+
+        self.current_rewards = []
 
     def plot_means(self):
         print("plot_means started")
@@ -66,6 +136,7 @@ class MCTSReporter():
 
         plt.figure()
         plt.plot(mean_rewards)
+        plt.savefig()
         plt.show()
 
     def dump_results(self):
@@ -73,8 +144,12 @@ class MCTSReporter():
         time = datetime.now()
         time = str(time.date()) + "_" + str(time.hour) + "-" + str(time.minute) + "-" + str(
             time.second)
-        path = Path("./results/MCTS_report_" + datetime.now().strftime("%yy_%mm_%dd_%HH_%MM"))
-        path. mkdir(parents=True, exist_ok=True)
+        path = Path(self.path,"MCTS_report_" + datetime.now().strftime("%yy_%mm_%dd_%HH_%MM"))
+        path.mkdir(parents=True, exist_ok=True)
+        rules_path = Path(path,"rules.pickle")
+        file = open(rules_path,'wb+')
+        pickle.dump(self.rule_vocabulary,file)
+        file.close()
         path_to_file = Path(path, "mcts_log.txt")
         with open(path_to_file, 'w') as file:
             original_stdout = sys.stdout
@@ -107,6 +182,8 @@ class MCTSReporter():
                 print('control:', *self.best_control)
             print('reward:', self.best_reward)
             sys.stdout = original_stdout
+        temp_path = self.path / "temp_logs"
+        shutil.rmtree(temp_path)
         return path
 
 

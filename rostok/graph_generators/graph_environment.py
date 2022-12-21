@@ -3,6 +3,7 @@ from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 from rostok.graph_generators.graph_reward import Reward
 from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
 from rostok.utils.result_saver import MCTSReporter, RobotState
+from rostok.utils.result_saver import MCTSReporter
 
 
 def rule_is_terminal(rule: Rule):
@@ -176,10 +177,6 @@ class GraphEnvironment():
         return False
 
 
-reporter = MCTSReporter()
-seen_graphs: list[list[GraphGrammar, float, list[float]]] = [] 
-
-
 class GraphVocabularyEnvironment(GraphEnvironment):
 
     def __init__(self,
@@ -201,6 +198,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         self.state: RobotState = RobotState()
         self.movments_trajectory = None
         self.step_counter = 0
+        MCTSReporter.get_instance().set_rule_vocabulary(rule_vocabulary)
 
     def getPossibleActions(self):
         """Getter possible actions for current state
@@ -215,22 +213,19 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         return list(possible_actions)
 
     def getReward(self):
-        if len(seen_graphs)>0:
-            seen_graphs_t = list(zip(*seen_graphs))
-            i = 0
-            for graph in seen_graphs_t[0]:
-                if graph == self.graph:
-                    self.reward = seen_graphs_t[1][i]
-                    self.movments_trajectory = seen_graphs_t[2][i]
-                    reporter.add_reward(self.state, self.reward, self.movments_trajectory)
-                    print('seen reward:', self.reward)
-                    return self.reward
-                i += 1
+        reporter = MCTSReporter.get_instance()
+        report = reporter.check_graph(self.graph)
+        if report[0]:
+            self.reward = report[1]
+            self.movments_trajectory = report[2]
+            reporter.add_reward(self.state, self.reward, self.movments_trajectory)
+            print('seen reward:', self.reward)
+            return self.reward
 
         result_optimizer = self.optimizer.start_optimisation(self.graph)
-        self.reward = -result_optimizer[0]
+        self.reward = - result_optimizer[0]
         self.movments_trajectory = result_optimizer[1]
-        seen_graphs.append([deepcopy(self.graph), self.reward, deepcopy(self.movments_trajectory)])
+        reporter.add_graph(self.graph, self.reward, self.movments_trajectory)
         reporter.add_reward(self.state, self.reward, self.movments_trajectory)
         if self.reward > reporter.best_reward:
             reporter.best_reward = self.reward
@@ -285,6 +280,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         self.movments_trajectory = new_state.movments_trajectory
         self.state = new_state.state
         self.step_counter += 1
+        reporter = MCTSReporter.get_instance()
         reporter.make_step(rule_name, self.step_counter)
         done = new_state.isTerminal()
 
@@ -299,11 +295,8 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         if done:
             reporter.main_reward = self.getReward()
             reporter.main_control = self.movments_trajectory
-            print(self.movments_trajectory)
-            path = reporter.dump_results()
-            reporter.plot_means()
 
-        return done, self.graph, self.movments_trajectory, path
+        return done, self.graph
 
     def __deepcopy__(self, memo):
         cls = self.__class__
@@ -336,3 +329,4 @@ class GraphStubsEnvironment(GraphEnvironment):
         reward = self.function_reward(self.graph, self.map_nodes_reward)
         self.reward = reward
         return self.reward
+
