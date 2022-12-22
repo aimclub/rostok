@@ -30,14 +30,14 @@ arr_trj = create_torque_traj_from_x(graph, const_torque_koef, MAX_TIME, TIME_STE
 # Create object to grasp with material props
 mat = DefaultChronoMaterial()
 mat.Friction = 0.65
-mat.DampingF = 0.65
+mat.DampingF = 0.05
 obj = BlockWrapper(ChronoBodyEnv,
                    shape=SimpleBody.BOX,
                    material=mat,
                    pos=FrameTransform([0, 1, 0], [0, -0.048, 0.706, 0.706]))
 
 # Configurate simulation
-config_sys = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
+config_sys = {"Set_G_acc": chrono.ChVectorD(0, -1, 0)}
 flags = [FlagMaxTime(MAX_TIME)]
 
 sim = step.SimulationStepOptimization(arr_trj, graph, obj)

@@ -232,8 +232,8 @@ class SimulationStepOptimization:
         arrays_simulation_data_amount_obj_contact_surfaces = [(-1, [])]
 
         # Loop of simulation
-        while not self.condion_stop_simulation.flag_stop_simulation():
-            # while vis.Run():
+        # while not self.condion_stop_simulation.flag_stop_simulation():
+        while vis.Run():
             self.chrono_system.Update()
             self.chrono_system.DoStepDynamics(time_step)
             # Realtime for fixed step
@@ -255,6 +255,8 @@ class SimulationStepOptimization:
             current_data_sum_contact_forces = RobotSensor.sum_contact_forces_blocks(self.grab_robot)
             current_data_abs_coord_COG = RobotSensor.abs_coord_COG_blocks(self.grab_robot)
             current_data_std_obj_force = RobotSensor.std_contact_forces_object(self.grasp_object)
+
+            current_data_cont_coord = RobotSensor.contact_coord(self.grasp_object)
 
             current_data_amount_obj_contact_surfaces = dict([
                 (-1, len([item for item in self.grasp_object.list_n_forces if item != 0]))
