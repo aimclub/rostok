@@ -1,7 +1,6 @@
 from cmath import sqrt
 
 import numpy as np
-import pychrono as chrono
 
 from rostok.block_builder.node_render import (ChronoRevolveJoint,
                                               ChronoTransform, FlatChronoBody,
