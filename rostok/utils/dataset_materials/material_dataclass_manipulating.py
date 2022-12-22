@@ -16,11 +16,19 @@ class Material:
 class DefaultChronoMaterial(Material):
     """Dataclass of default materials for chrono bodies
     """
+    # name: str = "default"
+    # type_class: str = "ChMaterialSurfaceNSC"
+    # Friction = 0.5
+    # DampingF = 0.5
+    # Compliance = 0.1
+
     name: str = "default"
-    type_class: str = "ChMaterialSurfaceNSC"
-    Friction = 0.5
-    DampingF = 0.1
-    Compliance = 0.01
+    type_class: str = "ChMaterialSurfaceSMC"
+    Friction = 0.4
+    Kn = 2e3
+    Gn = 1e1
+    # Kt = 1e5
+    # Gt = 0.5e3
     
 
 

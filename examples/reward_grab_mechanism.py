@@ -24,13 +24,11 @@ graph = get_terminal_graph_three_finger()
 
 # Create trajectory
 number_trq = num_joints(graph)
-const_torque_koef = [random.random() for _ in range(number_trq)]
+const_torque_koef = [random.random()*0 for _ in range(number_trq)]
 arr_trj = create_torque_traj_from_x(graph, const_torque_koef, MAX_TIME, TIME_STEP)
 
 # Create object to grasp with material props
 mat = DefaultChronoMaterial()
-mat.Friction = 0.65
-mat.DampingF = 0.05
 obj = BlockWrapper(ChronoBodyEnv,
                    shape=SimpleBody.BOX,
                    material=mat,

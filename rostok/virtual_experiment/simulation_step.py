@@ -102,11 +102,28 @@ class SimulationStepOptimization:
         self.controller_joints = []
 
         # Create instance of chrono system and robot: grab mechanism
-        self.chrono_system = chrono.ChSystemNSC()
-        self.chrono_system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
-        self.chrono_system.SetSolverMaxIterations(100)
+        # self.chrono_system = chrono.ChSystemNSC()
+        # self.chrono_system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
+        # self.chrono_system.SetSolverMaxIterations(100)
+        # self.chrono_system.SetSolverForceTolerance(1e-6)
+        # self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
+        
+        self.chrono_system = chrono.ChSystemSMC()
+        self.chrono_system.UseMaterialProperties(False)
+        self.chrono_system.SetSolverType(chrono.ChSolver.Type_MINRES)
+        self.chrono_system.SetContactForceModel(chrono.ChSystemSMC.Hertz)
         self.chrono_system.SetSolverForceTolerance(1e-6)
-        self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
+        self.chrono_system.SetSolverMaxIterations(100)
+        timestepper = chrono.ChTimestepperHHT(self.chrono_system) #Hilber, Hughes and Taylor method 
+        self.chrono_system.SetTimestepper(timestepper)
+        
+        # For HHT timestepper only:
+        timestepper.SetAbsTolerances(1e-5)
+        timestepper.SetScaling(True)
+        timestepper.SetStepControl(True)
+        timestepper.SetMinStepSize(1e-4)
+        timestepper.SetAlpha(-0.2) # timestepper numerical damping parameter [-1/3; 0]; a = 0 there is no damping
+        timestepper.SetMaxiters(5)
 
         self.grasp_object = grasp_object.create_block(self.chrono_system)
 
