@@ -58,7 +58,7 @@ control_optimizer = ControlOptimizer(cfg)
 # %% Init mcts parameters
 
 # Hyperparameters mctss
-iteration_limit = 20
+iteration_limit = 50
 
 # Initialize MCTS
 searcher = mcts.mcts(iterationLimit=iteration_limit)
@@ -85,6 +85,6 @@ while not finish:
 best_graph, best_control, reward = read_report(path, rule_vocabul)
 best_control = [float(x) for x in best_control]
 func_reward = control_optimizer.create_reward_function(best_graph)
-res = -func_reward(best_control, True)
+res = - func_reward(best_control, True)
 plot_graph(best_graph)
 print(res)
