@@ -110,7 +110,7 @@ class RobotSensor:
         """Sensor of standart deviation of contact forces that affect on object
 
         Args:
-            in_robot (Robot): Robot to measure sum of contact forces
+            obj: Grasp object
 
         Returns:
             dict[int, float]: Dictionary which keys are id object and values of standart deviation of contact forces
@@ -125,15 +125,39 @@ class RobotSensor:
         
     @staticmethod
     def contact_coord(obj):
-        """Sensor of standart deviation of contact forces that affect on object
+        """Sensor of COG of contact points
 
         Args:
-            in_robot (Robot): Robot to measure sum of contact forces
+            obj : Grasp object
 
         Returns:
-            dict[int, float]: Dictionary which keys are id object and values of standart deviation of contact forces
+            dict[int, float]: Dictionary which keys are id object and values are COG of contact point volume in XYZ format
         """
         if np.size(obj.list_c_coord) > 0:
-            return dict([(-1, obj.list_c_coord)])
+            coordinates = []
+            coord_x = 0
+            coord_y = 0
+            coord_z = 0
+            for coord in obj.list_c_coord:
+                coord_x += coord[0]
+                coord_y += coord[1]
+                coord_z += coord[2]
+            coordinates.append([coord_x/len(obj.list_c_coord), coord_y/len(obj.list_c_coord), coord_z/len(obj.list_c_coord)])
+            # return dict([(-1, coordinates)])
+            return dict([(-1, [coord_x/len(obj.list_c_coord), coord_y/len(obj.list_c_coord), coord_z/len(obj.list_c_coord)])])
         else:
             return None
+
+    @staticmethod
+    def abs_coord_COG_obj(obj):
+        """Sensor of absolute coordinates of the robot boides
+
+        Args:
+            in_robot (Robot): Robot to measure
+
+        Returns:
+            dict[int, chrono.ChVectorD]: Dictionary which keys are id blocks of robot
+            boides and values are coordinates COG
+        """
+        if np.size(obj.list_c_coord) > 0:
+            return dict([(-1, [obj.body.GetPos().x, obj.body.GetPos().y, obj.body.GetPos().z])])
