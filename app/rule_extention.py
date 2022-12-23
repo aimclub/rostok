@@ -18,7 +18,8 @@ def plot_graph(graph):
     #plt.figure()
     #nx.draw_networkx(graph, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
     plt.show()
-
+    
+ 
 
 def init_extension_rules():
     # %% Bodies for extansions rules

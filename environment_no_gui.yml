@@ -1,0 +1,22 @@
+# Environment without gui-part
+
+
+name: rostok_no_gui
+channels:
+  - https://conda.anaconda.org/intel
+  - https://conda.anaconda.org/conda-forge
+  - projectchrono
+  - defaults
+dependencies:
+  - python=3.9.12
+  - pythonocc-core=7.4.1
+  - irrlicht
+  - pychrono=7.0.0
+  - numpy
+  
+  - pip:
+    - networkx==2.8.6
+    - matplotlib==3.6.0
+    - scipy
+    - mcts==1.0.4
+    - pytest
