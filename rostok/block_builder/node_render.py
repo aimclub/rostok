@@ -90,8 +90,8 @@ class ContactReporter(chrono.ReportContactCallback):
             self.__list_normal_forces.append(react_forces.x)
 
             if (body_a == self._body):
-                self.__current_contact_coord = pA
-                self.__list_contact_coord.append(pA)
+                self.__current_contact_coord = [pA.x, pA.y, pA.z]
+                self.__list_contact_coord.append(self.__current_contact_coord)
             elif(body_b == self._body):
                 self.__current_contact_coord = pB
                 self.__list_contact_coord.append(pB)
