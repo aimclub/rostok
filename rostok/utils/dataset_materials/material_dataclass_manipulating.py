@@ -24,11 +24,11 @@ class DefaultChronoMaterial(Material):
 
     name: str = "default"
     type_class: str = "ChMaterialSurfaceSMC"
-    Friction = 0.4
-    Kn = 2e3
-    Gn = 1e1
-    # Kt = 1e5
-    # Gt = 0.5e3
+    Friction = 0.8
+    Kn = 2e8
+    Gn = 1e6
+    # Kt = 1e8
+    Gt = 0.5e6
     
 
 
