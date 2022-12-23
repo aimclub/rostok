@@ -7,8 +7,8 @@ from rostok.graph_grammar.node import GraphGrammar, BlockWrapper, ROOT
 from rostok.block_builder.transform_srtucture import FrameTransform, rotation
 from rostok.trajectory_optimizer.control_optimizer import ConfigRewardFunction, ControlOptimizer
 from rostok.criterion.flags_simualtions import FlagMaxTime, FlagSlipout, FlagNotContact
-from rostok.block_builder.node_render import (LinkChronoBody,MountChronoBody,ChronoTransform,ChronoRevolveJoint,
-                                                FlatChronoBody)
+from rostok.block_builder.node_render import (LinkChronoBody, MountChronoBody, ChronoTransform,
+                                              ChronoRevolveJoint, FlatChronoBody)
 
 import rostok.graph_generators.graph_environment as env
 import rostok.graph_grammar.node_vocabulary as node_vocabulary
@@ -33,7 +33,8 @@ class OpenChainGen:
         stop_simulation_flags (StopSimulationFlags): Flags for stopping simulation by some condition. Defaults to None.
         search_iteration (int):  The maximum number of non-terminal rules that can be applied. Defaults to 0.
         max_numbers_non_terminal_rules (int): The maximum number of non-terminal rules that can be applied. Defaults to 0.
-    """    
+    """
+
     def __init__(self):
         self.control_optimizer = None
         self.graph_env = None
@@ -52,7 +53,7 @@ class OpenChainGen:
             time_step (float): Step width of simulation for optimizing control
             time_sim (float): Define maximum time of simulation for optimizing control
             gait (float): Time value of grasping's gait period
-        """        
+        """
         WEIGHT = [5, 0, 1, 9]
 
         cfg = ConfigRewardFunction()
@@ -72,16 +73,17 @@ class OpenChainGen:
 
         self.control_optimizer = ControlOptimizer(cfg)
 
-    def create_environment(self, max_number_rules = None):
+    def create_environment(self, max_number_rules=None):
         """Create environment of searching grab construction. MCTS optimizing environment state with a view to maximizing the rewarCreating an object generating gripping structures. In the `run_generation` method, MCTS optimizes the action in the environment in order to maximize the reward
-        """        
+        """
         grap_grammar = GraphGrammar()
         if max_number_rules is not None:
             self.max_numbers_non_terminal_rules = max_number_rules
-        self.graph_env = env.GraphVocabularyEnvironment(grap_grammar, self.rule_vocabulary, self.max_numbers_non_terminal_rules)
+        self.graph_env = env.GraphVocabularyEnvironment(grap_grammar, self.rule_vocabulary,
+                                                        self.max_numbers_non_terminal_rules)
         self.graph_env.set_control_optimizer(self.control_optimizer)
 
-    def run_generation(self, max_search_iteration = None, visualaize=False):
+    def run_generation(self, max_search_iteration=None, visualaize=False):
         """Launches the gripping robot generation algorithm .
 
         Args:
@@ -126,8 +128,7 @@ def create_generator_by_config(config_file: str) -> OpenChainGen:
 
     widths_flat = list(map(lambda x: float(x), config_flats["width"].split(",")))
     lengths_link = list(map(lambda x: float(x), config_links["length"].split(",")))
-    model.rule_vocabulary, model._node_features = create_extension_rules(
-        widths_flat, lengths_link)
+    model.rule_vocabulary, model._node_features = create_extension_rules(widths_flat, lengths_link)
 
     congif_opti_control = config["OptimizingControl"]
     bound = (float(congif_opti_control["low_bound"]), float(congif_opti_control["up_bound"]))
@@ -140,8 +141,7 @@ def create_generator_by_config(config_file: str) -> OpenChainGen:
         FlagSlipout(time_sim / 4, 0.5),
         FlagNotContact(time_sim / 4)
     ]
-    model.create_control_optimizer(bound, iteration_opti_control,
-                                                             time_step, time_sim, gait)
+    model.create_control_optimizer(bound, iteration_opti_control, time_step, time_sim, gait)
 
     config_search = config["MCTS"]
     model.search_iteration = int(config_search["iteration"])
@@ -150,7 +150,8 @@ def create_generator_by_config(config_file: str) -> OpenChainGen:
 
     return model
 
-def create_extension_rules(width_flats:list[float], length_links:list[float]):
+
+def create_extension_rules(width_flats: list[float], length_links: list[float]):
     """Creating standard rules: creating palm with 2/3/4 fingers, adding phalanx to mount and terminating node. The function returns the rule_vocabulary is object of `Rule Vocabulary` class. It can manipulate vocabulary rules. Adding new rules or return (non)terminal rules. See description to `rostock.graph_grammar.rule_vocabulary`
     Current, supporting exactly three different width_flats and length_links.
 
@@ -160,12 +161,13 @@ def create_extension_rules(width_flats:list[float], length_links:list[float]):
 
     Returns:
         tuple: Tuple have two elements: rule_vocabulary(`RuleVocabulary`) and node_features for correct calculate grab criterion.
-    """    
+    """
     if len(width_flats) != 3 or len(length_links) != 3:
-        raise Exception("Read the description. In the current version, you need to add exactly three list items")
+        raise Exception(
+            "Read the description. In the current version, you need to add exactly three list items"
+        )
     # %% Bodies for extansions rules
-    links = list(map(lambda x: BlockWrapper(LinkChronoBody, length=x),
-                    length_links))
+    links = list(map(lambda x: BlockWrapper(LinkChronoBody, length=x), length_links))
 
     flats = list(map(lambda x: BlockWrapper(FlatChronoBody, width=x), width_flats))
 
@@ -176,13 +178,16 @@ def create_extension_rules(width_flats:list[float], length_links:list[float]):
     MOVE_TO_RIGHT_SIDE_PLUS = map(lambda x: FrameTransform([x, 0, +0.3], [0, 0, 1, 0]), width_flats)
     MOVE_TO_RIGHT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([x, 0, +0.3], rotation(150)),
                                         width_flats)
-    MOVE_TO_RIGHT_SIDE_MINUS = map(lambda x: FrameTransform([x, 0, -0.3], [0, 0, 1, 0]), width_flats)
+    MOVE_TO_RIGHT_SIDE_MINUS = map(lambda x: FrameTransform([x, 0, -0.3], [0, 0, 1, 0]),
+                                   width_flats)
     MOVE_TO_RIGHT_SIDE_MINUS_ANGLE = map(lambda x: FrameTransform([x, 0, -0.3], rotation(210)),
                                          width_flats)
     MOVE_TO_LEFT_SIDE = map(lambda x: FrameTransform([-x, 0, 0], [1, 0, 0, 0]), width_flats)
     MOVE_TO_LEFT_SIDE_PLUS = map(lambda x: FrameTransform([-x, 0, +0.3], [1, 0, 0, 0]), width_flats)
-    MOVE_TO_LEFT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([-x, 0, +0.3], rotation(30)), width_flats)
-    MOVE_TO_LEFT_SIDE_MINUS = map(lambda x: FrameTransform([-x, 0, -0.3], [1, 0, 0, 0]), width_flats)
+    MOVE_TO_LEFT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([-x, 0, +0.3], rotation(30)),
+                                       width_flats)
+    MOVE_TO_LEFT_SIDE_MINUS = map(lambda x: FrameTransform([-x, 0, -0.3], [1, 0, 0, 0]),
+                                  width_flats)
     MOVE_TO_LEFT_SIDE_MINUS_ANGLE = map(lambda x: FrameTransform([-x, 0, -0.3], rotation(-30)),
                                         width_flats)
 
@@ -235,17 +240,17 @@ def create_extension_rules(width_flats:list[float], length_links:list[float]):
     node_vocab.create_node("SMLMA")
 
     node_vocab.create_node(label="J1", is_terminal=True, block_wrapper=revolve1)
-    
+
     link_labels = []
     for idx, link in enumerate(links):
-        link_labels.append("L" + str(idx+1))
+        link_labels.append("L" + str(idx + 1))
         node_vocab.create_node(label=link_labels[-1], is_terminal=True, block_wrapper=link)
-    
+
     flat_labels = []
     for idx, flat in enumerate(flats):
-        flat_labels.append("F" + str(idx+1))
+        flat_labels.append("F" + str(idx + 1))
         node_vocab.create_node(label=flat_labels[-1], is_terminal=True, block_wrapper=flat)
-        
+
     node_vocab.create_node(label="U1", is_terminal=True, block_wrapper=u1)
     node_vocab.create_node(label="U2", is_terminal=True, block_wrapper=u2)
 
