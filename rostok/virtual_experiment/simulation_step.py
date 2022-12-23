@@ -69,6 +69,7 @@ class DataObjectBlock(SimulationDataBlock):
     """
     obj_contact_forces: list[float]
     obj_amount_surf_forces: list[float]
+    obj_cont_coord: list[float]
 
 
 """Type for output simulation. Store trajectory and block id"""
@@ -247,6 +248,7 @@ class SimulationStepOptimization:
 
         arrays_simulation_data_obj_force = [(-1, [])]
         arrays_simulation_data_amount_obj_contact_surfaces = [(-1, [])]
+        arrays_simulation_data_cont_coord = [(-1, [])]
 
         # Loop of simulation
         # while not self.condion_stop_simulation.flag_stop_simulation():
@@ -276,7 +278,7 @@ class SimulationStepOptimization:
             current_data_cont_coord = RobotSensor.contact_coord(self.grasp_object)
 
             current_data_amount_obj_contact_surfaces = dict([
-                (-1, len([item for item in self.grasp_object.list_n_forces if item != 0]))
+                (-1, len([item for item in self.grasp_object.list_c_coord if item != 0]))
             ])
             # Append current data in output arries
             arrays_simulation_data_joint_angle = list(
@@ -299,9 +301,15 @@ class SimulationStepOptimization:
                 arrays_simulation_data_obj_force = map(append_arr_in_dict,
                                                        current_data_std_obj_force.items(),
                                                        arrays_simulation_data_obj_force)
+
             arrays_simulation_data_amount_obj_contact_surfaces = map(
                 append_arr_in_dict, current_data_amount_obj_contact_surfaces.items(),
                 arrays_simulation_data_amount_obj_contact_surfaces)
+
+            if current_data_cont_coord is not None:
+                arrays_simulation_data_cont_coord = map(
+                    append_arr_in_dict, current_data_cont_coord.items(),
+                    arrays_simulation_data_cont_coord)
 
         if visualize:
             vis.GetDevice().closeDevice()
@@ -318,9 +326,11 @@ class SimulationStepOptimization:
                 arrays_simulation_data_amount_contact_surfaces))
 
         simulation_data_object: dict[int, DataObjectBlock] = dict(
-            map(lambda x, y: (x[0], DataObjectBlock(x[0], arrays_simulation_data_time, x[1], y[1])),
+            map(lambda x, y, z: (x[0], DataObjectBlock(x[0], arrays_simulation_data_time, x[1], y[1], z[1])),
                 arrays_simulation_data_obj_force,
-                arrays_simulation_data_amount_obj_contact_surfaces))
+                arrays_simulation_data_amount_obj_contact_surfaces,
+                arrays_simulation_data_cont_coord))
+
         simulation_data_joint_angle.update(simulation_data_body)
         simulation_data_joint_angle.update(simulation_data_object)
 

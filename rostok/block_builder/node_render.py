@@ -83,17 +83,19 @@ class ContactReporter(chrono.ReportContactCallback):
 
         body_a = chrono.CastToChBody(contactobjA)
         body_b = chrono.CastToChBody(contactobjB)
+
+
         if (body_a == self._body) or (body_b == self._body):
             self.__current_normal_forces = react_forces.x
             self.__list_normal_forces.append(react_forces.x)
 
-        if (body_a == self._body):
-            self.__current_contact_coord = pA
-            self.__list_contact_coord.append(pA)
-        elif(body_b == self._body):
-            self.__current_contact_coord = pB
-            self.__list_contact_coord.append(pB)
-            
+            if (body_a == self._body):
+                self.__current_contact_coord = pA
+                self.__list_contact_coord.append(pA)
+            elif(body_b == self._body):
+                self.__current_contact_coord = pB
+                self.__list_contact_coord.append(pB)
+                
         return True
 
     def is_empty(self):
@@ -198,6 +200,8 @@ class ChronoBody(BlockBody, ABC):
         self.body.GetCollisionModel().ClearModel()
         self.body.GetCollisionModel().AddBox(chrono_object_material, width / 2, length / 2,
                                              width / 2)
+        self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
+        self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)                                       
         self.body.GetCollisionModel().BuildModel()
 
     def move_to_out_frame(self, in_block: Block):
@@ -333,6 +337,7 @@ class BoxChronoBody(ChronoBody, RobotBody):
                          pos_out_marker,
                          random_color,
                          is_collide=is_collide)
+        
         self._build_collision_model(material, size.width, size.length)
 
 
@@ -405,6 +410,8 @@ class LinkChronoBody(ChronoBody, RobotBody):
             chrono.ChVectorD(0, -length / 2 + gap_between_bodies + cylinder_r, 0),
             chrono.ChMatrix33D(chrono.Q_ROTATE_Z_TO_Y))
 
+        body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
+        body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
         body.GetCollisionModel().BuildModel()
 
         body.SetMass(mass)
@@ -470,6 +477,8 @@ class FlatChronoBody(ChronoBody, RobotBody):
         self.body.GetCollisionModel().ClearModel()
         self.body.GetCollisionModel().AddBox(chrono_object_material, width / 2,
                                              length / 2 - width / 32, depth / 2)
+        self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
+        self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
         self.body.GetCollisionModel().BuildModel()
 
 
@@ -522,6 +531,8 @@ class MountChronoBody(ChronoBody, RobotBody):
         self.body.GetCollisionModel().ClearModel()
         self.body.GetCollisionModel().AddBox(chrono_object_material, width / 2, length / 2,
                                              depth / 2)
+        self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
+        self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
         self.body.GetCollisionModel().BuildModel()
 
 

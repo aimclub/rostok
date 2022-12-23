@@ -32,10 +32,10 @@ mat = DefaultChronoMaterial()
 obj = BlockWrapper(ChronoBodyEnv,
                    shape=SimpleBody.BOX,
                    material=mat,
-                   pos=FrameTransform([0, 1, 0], [0, -0.048, 0.706, 0.706]))
+                   pos=FrameTransform([0, 1, 0], [1, 0, 0, 0])) #[0, -0.048, 0.706, 0.706]
 
 # Configurate simulation
-config_sys = {"Set_G_acc": chrono.ChVectorD(0, -1, 0)}
+config_sys = {"Set_G_acc": chrono.ChVectorD(0, -10, 0)}
 flags = [FlagMaxTime(MAX_TIME)]
 
 sim = step.SimulationStepOptimization(arr_trj, graph, obj)
