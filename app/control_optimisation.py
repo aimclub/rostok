@@ -16,7 +16,7 @@ def get_object_to_grasp():
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=SimpleBody.BOX,
                        material=matich,
-                       pos=FrameTransform([0, 0.5, 0], [0, -0.048, 0.706, 0.706]))
+                       pos=FrameTransform([0, 1.5, 0], [0, -0.048, 0.706, 0.706]))
 
     return obj
 
