@@ -1,9 +1,11 @@
+from numpy import ndarray
 from rostok.graph_grammar.node import *
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 from rostok.graph_generators.graph_reward import Reward
 from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
 from rostok.utils.result_saver import MCTSReporter, RobotState
 from rostok.utils.result_saver import MCTSReporter
+
 
 
 def rule_is_terminal(rule: Rule):
@@ -226,7 +228,12 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         self.reward = - result_optimizer[0]
         self.movments_trajectory = result_optimizer[1]
         reporter.add_graph(self.graph, self.reward, self.movments_trajectory)
-        reporter.add_reward(self.state, self.reward, self.movments_trajectory)
+        if isinstance(self.movments_trajectory, ndarray):
+            control = list(deepcopy(self.movments_trajectory))
+        else:
+            control = deepcopy(self.movments_trajectory)
+
+        reporter.add_reward(self.state, self.reward, control)
         if self.reward > reporter.best_reward:
             reporter.best_reward = self.reward
             reporter.best_control = self.movments_trajectory

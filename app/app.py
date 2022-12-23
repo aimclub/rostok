@@ -14,7 +14,7 @@ from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact,
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.trajectory_optimizer.control_optimizer import (
     ConfigRewardFunction, ControlOptimizer)
-from rostok.utils.result_saver import read_report
+#from rostok.utils.result_saver import read_report
 from rostok.utils.result_saver import MCTSReporter
 
 
@@ -87,9 +87,9 @@ while not finish:
 
 reporter = MCTSReporter.get_instance()
 path = reporter.dump_results()
-best_graph, best_control, reward = read_report(path, rule_vocabul)
-best_control = [float(x) for x in best_control]
-func_reward = control_optimizer.create_reward_function(best_graph)
-res = - func_reward(best_control, True)
-plot_graph(best_graph)
-print(res)
+# best_graph, best_control, reward = read_report(path, rule_vocabul)
+# best_control = [float(x) for x in best_control]
+# func_reward = control_optimizer.create_reward_function(best_graph)
+# res = - func_reward(best_control, True)
+# plot_graph(best_graph)
+# print(res)

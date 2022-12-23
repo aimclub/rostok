@@ -1,5 +1,6 @@
 """Module includes classes and functions that control saving and reading data"""
 import pickle
+import json
 import sys
 import shutil
 from copy import deepcopy
@@ -126,6 +127,7 @@ class MCTSReporter():
             sys.stdout = original_stdout
 
         self.current_rewards = []
+        print(f'step {step_number} finished')
 
     def plot_means(self):
         print("plot_means started")
@@ -136,7 +138,6 @@ class MCTSReporter():
 
         plt.figure()
         plt.plot(mean_rewards)
-        plt.savefig()
         plt.show()
 
     def dump_results(self):
@@ -150,21 +151,21 @@ class MCTSReporter():
         file = open(rules_path,'wb+')
         pickle.dump(self.rule_vocabulary,file)
         file.close()
-        path_to_file = Path(path, "mcts_log.txt")
+        path_to_file = Path(path, "mcts_result.txt")
         with open(path_to_file, 'w') as file:
             original_stdout = sys.stdout
             sys.stdout = file
             print('MCTS report generated at: ', str(time))
-            for key in self.rewards:
-                print(str(key))
-                for design in self.rewards[key]:
-                    print('rules:', *design[0])
-                    control = design[2]
-                    if control is None:
-                        print('control:', "no joints")
-                    else:
-                        print('control:', control)
-                    print('reward:', design[1])
+            # for key in self.rewards:
+            #     print(str(key))
+            #     for design in self.rewards[key]:
+            #         print('rules:', *design[0])
+            #         control = design[2]
+            #         if control is None:
+            #             print('control:', "no joints")
+            #         else:
+            #             print('control:', control)
+            #         print('reward:', design[1])
             print()
             print('main_result:')
             print('rules:', *self.main_state.rule_list)
@@ -183,35 +184,111 @@ class MCTSReporter():
             print('reward:', self.best_reward)
             sys.stdout = original_stdout
         temp_path = self.path / "temp_logs"
-        shutil.rmtree(temp_path)
+        #shutil.rmtree(temp_path)
+        self.create_json_report(path)
+        print("dump_results finished")
         return path
 
+    def get_best_info(self):
+        graph = self.best_state.make_graph(self.rule_vocabulary)
+        return graph, self.best_control, self.best_reward
 
-def read_report(path, rules: RuleVocabulary):
-    path_to_log = Path(path, "mcts_log.txt")
-    with open(path_to_log,'r') as report:
-        final_state = None
-        lines = report.readlines()
-        for i in range(len(lines)):
-            line = lines[i]
-            if line == 'best_result:\n':
-                current_rules = (lines[i + 1]).split()
-                del current_rules[0]
-                final_state = RobotState(current_rules)
-                control = (lines[i + 2]).split()
-                del control[0]
-                reward = (lines[i + 3]).split()
-                del reward[0]
-        final_graph = final_state.make_graph(rules)
+    def create_json_report(self, path):
+        path = Path(path, 'report.json')
+        file = open(path, 'w')
+        json.dump(self.rewards,file)
+        file.close()
+
+    def load_report(self, path):
+        # path is a path to catalog where u have
+        path_to_report = Path(path, "mcts_result.txt")
+        with open(path_to_report,'r') as report:
+            lines = report.readlines()
+            print('read', lines[0])
+            rule_list = lines[3].split()
+            del rule_list[0]
+            self.main_state = RobotState(rule_list)
+            reward = lines[4].split()
+            del reward[0]
+            self.main_reward = float(reward[0])
+            control = lines[5].split()
+            del control[0]
+            self.main_control = [float(x) for x in control]
+            rule_list = lines[8].split()
+            del rule_list[0]
+            self.best_state = RobotState(rule_list)
+            reward = lines[9].split()
+            del reward[0]
+            self.main_reward = float(reward[0])
+            control = lines[10].split()
+            del control[0]
+            self.main_control = [float(x) for x in control]
         
-    path_to_pic=Path(path,"best_result_graph.jpg")
-    plt.figure()
-    nx.draw_networkx(final_graph,
-                     pos=nx.kamada_kawai_layout(final_graph, dim=2),
-                     node_size=800,
-                     labels={n: final_graph.nodes[n]["Node"].label for n in final_graph})
-    plt.savefig(path_to_pic)
-    return final_graph, control, reward
+        rule_path = Path(path, "rules.pickle")
+        rule_file = open(rule_path, 'rb')
+        self.rule_vocabulary = pickle.load(rule_file)
+        rule_file.close()
+        rewards_file = Path(path, 'report.json')
+        with open(rewards_file,'r') as rewards:
+            self.rewards = json.load(rewards)
+
+        self.seen_graphs = []
+        for step in self.rewards.items():
+            for robot in step[1]:
+                state = RobotState(robot[0])
+                graph = state.make_graph(self.rule_vocabulary)
+                reward = float(robot[1])
+                if hasattr(robot[2],'__iter__'): 
+                    control = [float(x) for x in robot[2]]
+                else:
+                     control = float(robot[2])
+                self.add_graph(graph, reward, control)
+
+        # path_to_report = Path(path, "mcts_result.txt")
+        # with open(path_to_report,'r') as report:
+        #     lines = report.readlines()
+        #     print('read', lines[0])
+        #     self.main_state = RobotState(lines[3])
+        #     self.main_reward = float(lines[4])
+        #     self.main_control = [float(x) for x in lines[5]]
+        #     self.best_state = RobotState(lines[8])
+        #     self.main_reward = float(lines[9])
+        #     self.main_control = [float(x) for x in lines[10]]
+
+        # line_count = 0
+        # for line in report:
+        #     if line_count == 0:
+        #         print('read', line)
+        #         continue
+
+        # with open(path_to_log,'r') as report:
+        #     lines = report.readlines()
+
+    def read_report(path, rules: RuleVocabulary):
+        path_to_log = Path(path, "mcts_log.txt")
+        with open(path_to_log,'r') as report:
+            final_state = None
+            lines = report.readlines()
+            for i in range(len(lines)):
+                line = lines[i]
+                if line == 'best_result:\n':
+                    current_rules = (lines[i + 1]).split()
+                    del current_rules[0]
+                    final_state = RobotState(current_rules)
+                    control = (lines[i + 2]).split()
+                    del control[0]
+                    reward = (lines[i + 3]).split()
+                    del reward[0]
+            final_graph = final_state.make_graph(rules)
+            
+        path_to_pic=Path(path,"best_result_graph.jpg")
+        plt.figure()
+        nx.draw_networkx(final_graph,
+                        pos=nx.kamada_kawai_layout(final_graph, dim=2),
+                        node_size=800,
+                        labels={n: final_graph.nodes[n]["Node"].label for n in final_graph})
+        plt.savefig(path_to_pic)
+        return final_graph, control, reward
 
 
 if __name__ == "__main__":
