@@ -296,7 +296,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
             reporter.main_reward = self.getReward()
             reporter.main_control = self.movments_trajectory
 
-        return done, self.graph
+        return done, self.graph, self.movments_trajectory
 
     def __deepcopy__(self, memo):
         cls = self.__class__

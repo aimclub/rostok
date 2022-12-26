@@ -1,33 +1,36 @@
 import configparser
+from typing import Callable, Optional, Any
 
 import pychrono as chrono
 import mcts
 
-from rostok.graph_grammar.node import GraphGrammar, BlockWrapper, ROOT
+from rostok.graph_grammar.node import GraphGrammar, BlockWrapper, ROOT, Node
+from rostok.block_builder.basic_node_block import SimpleBody
+from rostok.block_builder.node_render import Material, DefaultChronoMaterial
 from rostok.block_builder.transform_srtucture import FrameTransform, rotation
 from rostok.trajectory_optimizer.control_optimizer import ConfigRewardFunction, ControlOptimizer
-from rostok.criterion.flags_simualtions import FlagMaxTime, FlagSlipout, FlagNotContact
+from rostok.criterion.flags_simualtions import FlagMaxTime, FlagSlipout, FlagNotContact, FlagStopSimualtions
 from rostok.block_builder.node_render import (LinkChronoBody, MountChronoBody, ChronoTransform,
-                                              ChronoRevolveJoint, FlatChronoBody)
-
+                                              ChronoRevolveJoint, FlatChronoBody, ChronoBodyEnv)
 import rostok.graph_generators.graph_environment as env
 import rostok.graph_grammar.node_vocabulary as node_vocabulary
 import rostok.graph_grammar.rule_vocabulary as rule_vocabulary
-
-import app.rule_extention as rules
-from app.control_optimisation import create_grab_criterion_fun, create_traj_fun, get_object_to_grasp
+import rostok.criterion.criterion_calc as criterion
+from rostok.trajectory_optimizer.trajectory_generator import \
+    create_torque_traj_from_x
+from rostok.virtual_experiment.simulation_step import SimOut
 
 
 class OpenChainGen:
     """The main class manipulate settings and running generation open chain grab mechanism
     
-    There are two ways to start robot generation. The first method uses the configuration file `rostock/config.ini` with the function `api.create_generator_by_config'.
-    It returns the class of the generation algorithm specified by the configuration. It remains to call the 'run_generation` method, which launches the search capture of the robot. In the second method, you configure the class arguments yourself.
+    There are two ways to start robot generation. The first method uses the 
+    configuration file `rostock/config.ini` with the function :py:func:`api.create_generator_by_config`.
+    It returns the class of the generation algorithm specified by the configuration. It remains to call the :py:method:'OpenChainGen.run_generation` 
+    method, which launches the search capture of the robot. In the second method, you configure the class arguments yourself.
     Further, there are minimalistic descriptive arguments of the class.
-    
-        
-    Args:
-        control_optimizer (ControlOptimizer): Object manipulate control optimizing. Defaults to None.
+
+    Attributes:
         graph_env (GraphEnvironment): Object manipulate MCTS environment. Defaults to None.
         rule_vocabulary (RuleVocabulary): Vocabulary of graph grammar rules. Defaults to None.
         stop_simulation_flags (StopSimulationFlags): Flags for stopping simulation by some condition. Defaults to None.
@@ -35,16 +38,41 @@ class OpenChainGen:
         max_numbers_non_terminal_rules (int): The maximum number of non-terminal rules that can be applied. Defaults to 0.
     """
 
-    def __init__(self):
-        self.control_optimizer = None
-        self.graph_env = None
-        self.rule_vocabulary = None
-        self._node_features = None
-        self.stop_simulation_flags = None
-        self.search_iteration = 0
-        self.max_numbers_non_terminal_rules = 0
+    def __init__(self) -> None:
+        self._cfg_control_optimizer: ConfigRewardFunction = ConfigRewardFunction()
+        self.graph_env: Optional[env.GraphEnvironment] = None
+        self.rule_vocabulary: rule_vocabulary.RuleVocabulary = rule_vocabulary.RuleVocabulary()
+        self._node_features: list = [[]]
+        self._builder_grasp_object: Callable[[], Any] = None
+        self.stop_simulation_flags: Optional[list[FlagStopSimualtions]] = None
+        self.search_iteration: int = 0
+        self.max_numbers_non_terminal_rules: int = 0
 
-    def create_control_optimizer(self, bound, iterations, time_step, time_sim, gait):
+    @property
+    def cfg_control_optimizer(self):
+        """ ConfigRewardFunction: The config of control optimizer
+        """        
+        return self._cfg_control_optimizer
+
+    @cfg_control_optimizer.setter
+    def control_optimizer(self, value: ControlOptimizer):
+        self._control_optimizer = value
+        self._cfg_control_optimizer.get_rgab_object_callback = self._builder_grasp_object
+
+    def set_grasp_object(self,
+                         shape: SimpleBody = SimpleBody.BOX,
+                         position: FrameTransform = FrameTransform([0, 1.5, 0],
+                                                                   [0, -0.048, 0.706, 0.706]),
+                         material: Material = DefaultChronoMaterial()):
+        """Setter a grasp object 
+
+        Args:
+            grasp_object (SimpleBody): Desired object to grasp
+        """
+        self._builder_grasp_object = create_builder_grasp_object(shape, position, material)
+        self._cfg_control_optimizer.get_rgab_object_callback = self._builder_grasp_object
+
+    def set_settings_control_optimizer(self, bound, iterations, time_step, time_sim, gait):
         """Creating a control optimization object based on input data
 
         Args:
@@ -56,44 +84,56 @@ class OpenChainGen:
         """
         WEIGHT = [5, 0, 1, 9]
 
-        cfg = ConfigRewardFunction()
-        cfg.bound = bound
-        cfg.iters = iterations
-        cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
-        cfg.time_step = time_step
-        cfg.time_sim = time_sim
-        cfg.flags = self.stop_simulation_flags
+        self._cfg_control_optimizer = ConfigRewardFunction()
+        self._cfg_control_optimizer.bound = bound
+        self._cfg_control_optimizer.iters = iterations
+        self._cfg_control_optimizer.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
+        self._cfg_control_optimizer.time_step = time_step
+        self._cfg_control_optimizer.time_sim = time_sim
+        self._cfg_control_optimizer.flags = self.stop_simulation_flags
 
         criterion_callback = create_grab_criterion_fun(self._node_features, gait, WEIGHT)
-        traj_generator_fun = create_traj_fun(cfg.time_sim, cfg.time_step)
+        traj_generator_fun = create_traj_fun(self._cfg_control_optimizer.time_sim,
+                                             self._cfg_control_optimizer.time_step)
 
-        cfg.criterion_callback = criterion_callback
-        cfg.get_rgab_object_callback = get_object_to_grasp
-        cfg.params_to_timesiries_callback = traj_generator_fun
+        self._cfg_control_optimizer.criterion_callback = criterion_callback
+        self._cfg_control_optimizer.get_rgab_object_callback = self._builder_grasp_object
+        self._cfg_control_optimizer.params_to_timesiries_callback = traj_generator_fun
 
-        self.control_optimizer = ControlOptimizer(cfg)
+    def set_config_control_optimizer(self, config: ConfigRewardFunction):
+        self._cfg_control_optimizer = config
 
     def create_environment(self, max_number_rules=None):
-        """Create environment of searching grab construction. MCTS optimizing environment state with a view to maximizing the rewarCreating an object generating gripping structures. In the `run_generation` method, MCTS optimizes the action in the environment in order to maximize the reward
+        """Create environment of searching grab construction. MCTS optimizing environment state with a view to maximizing the reward. 
+        Creating an object generating gripping structures. In the `run_generation` method, MCTS optimizes the action in the environment in order to maximize the reward
         """
         grap_grammar = GraphGrammar()
         if max_number_rules is not None:
             self.max_numbers_non_terminal_rules = max_number_rules
         self.graph_env = env.GraphVocabularyEnvironment(grap_grammar, self.rule_vocabulary,
                                                         self.max_numbers_non_terminal_rules)
-        self.graph_env.set_control_optimizer(self.control_optimizer)
 
-    def run_generation(self, max_search_iteration=None, visualaize=False):
-        """Launches the gripping robot generation algorithm .
+    def run_generation(self, max_search_iteration: int = 0, visualaize: bool = False):
+        """Launches the gripping robot generation algorithm.
 
         Args:
-            visualaize (bool, optional):Visualization flag, if true, enables visualization of generation steps. Defaults to False.
+            max_search_iteration int: The maximum number of iterations of the Monte Carlo tree search exploration at each step. Defaults to 0.
+            visualaize bool: Visualization flag, if true, enables visualization of generation steps. Defaults to False.
+
+        Raises:
+            Exception: The grab object is not specified before the algorithm is started
 
         Returns:
             tuple: Tuple of generating result: generate grab mechanism, control trajectory and reward.
         """
-        if max_search_iteration is not None:
+        self.graph_env.set_control_optimizer(ControlOptimizer(self._cfg_control_optimizer))
+
+        if self._builder_grasp_object is None:
+            raise Exception("Object to grasp wasn't set")
+
+        if max_search_iteration != 0:
             self.search_iteration = max_search_iteration
+
         iter = 0
         finish = False
         searcher = mcts.mcts(iterationLimit=self.search_iteration)
@@ -102,7 +142,7 @@ class OpenChainGen:
             finish, final_graph, opt_trajectory = self.graph_env.step(action, visualaize)
             iter += 1
             print(
-                f"number iteration: {iter}, counter actions: {self.graph_env.counter_action}, reward: {self.graph_env.reward}"
+                f"number iteration: {iter}, counter actions: {self.graph_env.counter_action}, best reward: {self.graph_env.reward}"
             )
         return final_graph, opt_trajectory, self.graph_env.reward
 
@@ -110,7 +150,7 @@ class OpenChainGen:
 def create_generator_by_config(config_file: str) -> OpenChainGen:
     """Creating a mechanism generation object from a configuration file
     
-    After creation, you can change the object for your task or just run a search (`run_generation`).
+    After creation, need to set the object for your task (:py:method:`OpenChainGen.set_grasp_object`)s and run a search (:py:method:`OpenChainGen.run_generation`).
     Example of a configuration file in the folder `./rosrok/config.ini`
 
     Args:
@@ -141,7 +181,7 @@ def create_generator_by_config(config_file: str) -> OpenChainGen:
         FlagSlipout(time_sim / 4, 0.5),
         FlagNotContact(time_sim / 4)
     ]
-    model.create_control_optimizer(bound, iteration_opti_control, time_step, time_sim, gait)
+    model.set_settings_control_optimizer(bound, iteration_opti_control, time_step, time_sim, gait)
 
     config_search = config["MCTS"]
     model.search_iteration = int(config_search["iteration"])
@@ -152,15 +192,17 @@ def create_generator_by_config(config_file: str) -> OpenChainGen:
 
 
 def create_extension_rules(width_flats: list[float], length_links: list[float]):
-    """Creating standard rules: creating palm with 2/3/4 fingers, adding phalanx to mount and terminating node. The function returns the rule_vocabulary is object of `Rule Vocabulary` class. It can manipulate vocabulary rules. Adding new rules or return (non)terminal rules. See description to `rostock.graph_grammar.rule_vocabulary`
+    """Creating standard rules: creating palm with 2/3/4 fingers, adding phalanx to mount and terminating node.
+    The function returns the rule_vocabulary is object of :py:class:`rule_vocabulary.RuleVocabulary` class. 
+    It can manipulate vocabulary rules. Adding new rules or return (non)terminal rules. See description to :py:module:`rostock.graph_grammar.rule_vocabulary`
     Current, supporting exactly three different width_flats and length_links.
 
     Args:
-        width_flats (list[float]): List of desired flats(palms) width. It has exactly three flat widths 
+        width_flats (list[float]): List of desired flats(palms) width. It has exactly three flat widths
         length_links (list[float]): List of desired phalanx lengths. It has exactly three link lengths
 
     Returns:
-        tuple: Tuple have two elements: rule_vocabulary(`RuleVocabulary`) and node_features for correct calculate grab criterion.
+        tuple: Tuple have two elements: rule_vocabulary(`rule_vocabulary.RuleVocabulary`) and node_features for correct calculate grab criterion.
     """
     if len(width_flats) != 3 or len(length_links) != 3:
         raise Exception(
@@ -422,3 +464,42 @@ def create_extension_rules(width_flats: list[float], length_links: list[float]):
     # Required for criteria calc
     node_features = [list_B, list_J, list_LM, list_RM]
     return rule_vocab, node_features
+
+
+def grab_crtitrion(sim_output: dict[int, SimOut], grab_robot, node_feature: list[list[Node]], gait,
+                   weight):
+    j_nodes = criterion.nodes_division(grab_robot, node_feature[1])
+    b_nodes = criterion.nodes_division(grab_robot, node_feature[0])
+    rb_nodes = criterion.sort_left_right(grab_robot, node_feature[3], node_feature[0])
+    lb_nodes = criterion.sort_left_right(grab_robot, node_feature[2], node_feature[0])
+
+    return criterion.criterion_calc(sim_output, b_nodes, j_nodes, rb_nodes, lb_nodes, weight, gait)
+
+
+def create_grab_criterion_fun(node_features, gait, weight):
+
+    def fun(sim_output, grab_robot):
+        return grab_crtitrion(sim_output, grab_robot, node_features, gait, weight)
+
+    return fun
+
+
+def create_traj_fun(stop_time: float, time_step: float):
+
+    def fun(graph: GraphGrammar, x: list[float]):
+        return create_torque_traj_from_x(graph, x, stop_time, time_step)
+
+    return fun
+
+
+def create_builder_grasp_object(shape=SimpleBody.BOX,
+                                position=FrameTransform([0, 1.5, 0], [0, -0.048, 0.706, 0.706]),
+                                material=DefaultChronoMaterial()):
+
+    def builder_grasp_object():
+
+        obj = BlockWrapper(ChronoBodyEnv, shape=shape, material=material, pos=position)
+
+        return obj
+
+    return builder_grasp_object
