@@ -1,8 +1,8 @@
 """Module includes classes and functions that control saving and reading data"""
-import pickle
 import json
-import sys
+import pickle
 import shutil
+import sys
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
@@ -21,10 +21,11 @@ class RobotState():
 
     This class represents a mechanism through the ordered list of rules that is used to
     build a grath. It requires a RuleVocabulary object that controls the building of the
-    graph from state.
+    graph from state. The State can represent the unfinished design. 
     """
-    def __init__(self, rule_list: list[str] = []):
-        self.rule_list = rule_list.copy()
+    def __init__(self,  rules: RuleVocabulary, rule_list: list[str] = []):
+        self.rule_list: list[str] = rule_list.copy()
+        self.rules = rules
 
     def add_rule(self, rule: str):
         self.rule_list.append(rule)
@@ -35,18 +36,28 @@ class RobotState():
         return new
 
     def __hash__(self):
-        answ = ''
-        for rule in self.rule_list:
-            answ += rule
+        answ = str.join(self.rule_list)
         return hash(answ)
 
-    def make_graph(self, rules: RuleVocabulary):
+    def make_graph(self):
         graph = GraphGrammar()
         for rule in self.rule_list:
-            graph.apply_rule(rules.get_rule(rule))
-        rules.make_graph_terminal(graph)
+            graph.apply_rule(self.rules.get_rule(rule))
+        self.rules.make_graph_terminal(graph)
         return graph
 
+class OptimizedState():
+    def __init__(self, state: RobotState, reward = 0, control = None):
+        self.rules = state.rules
+        self.state = state
+        self.reward = reward
+        self.control = control
+
+class OptimizedGraph():
+    def __init__(self, graph, reward, control):
+        self.graph = deepcopy(graph)
+        self.reward = reward
+        self.control = deepcopy(control)
 
 class MCTSReporter():
     __instance = None
@@ -62,69 +73,94 @@ class MCTSReporter():
             raise Exception("Attempt to create an instance of manager class -"+
                 "use get_instance method instead!")
 
-        self.seen_graphs: list[list[GraphGrammar, float, list[float]]] = []
-        self.current_rewards = []
-        self.rewards = dict()
-        self.main_state = RobotState()
-        self.main_reward = 0.
-        self.main_control = []
-        self.best_state = RobotState()
-        self.best_control = []
-        self.best_reward = 0.
-        self.path = Path("./results")
+        self.seen_graphs: list[OptimizedGraph] = []
         self.rule_vocabulary = None
+        self.current_rewards: list[OptimizedState] = []
+        self.rewards:dict[int, list[OptimizedState]] = {}
+        self.main_state = None
+        self.main_simulated_state = None
+        self.best_simulated_state = None
+        self.path = Path("./results")
         MCTSReporter.__instance = self
 
-    def set_rule_vocabulary(self, rules):
+    @property
+    def rule_vocabulary(self):
+        return self.rule_vocabulary
+
+    @rule_vocabulary.setter
+    def rule_vocabulary(self, rules):
         self.rule_vocabulary = rules
-    
+
     def add_graph(self, graph, reward, control):
-        self.seen_graphs.append([deepcopy(graph), reward, deepcopy(control)])
-    
+        if control is None:
+            control = []
+        elif isinstance(control, float):
+            control = [control]
+
+        control = list(control)
+        new_optimized_graph = OptimizedGraph(graph,reward,control)
+        self.seen_graphs.append(new_optimized_graph)
+
     def check_graph(self, new_garph):
-        if len(self.seen_graphs)>0:
-            seen_graphs_t = list(zip(*self.seen_graphs))
+        if len(self.seen_graphs) > 0:
+            #seen_graphs_t = list(zip(*self.seen_graphs))
             i = 0
-            for graph in seen_graphs_t[0]:
-                if graph == new_garph:
-                    reward = seen_graphs_t[1][i]
-                    control = seen_graphs_t[2][i]
+            for optimized_graph in self.seen_graphs:
+                if optimized_graph.graph == new_garph:
+                    reward = optimized_graph.reward
+                    control = optimized_graph.control
                     #self.add_reward(self.state, self.reward, self.movments_trajectory)
                     print('seen reward:', reward)
                     return True, reward, control
                 i += 1
+
         return False, 0, []
 
     def add_reward(self, state: RobotState, reward: float, control):
-        self.current_rewards.append([state.rule_list, reward, control])
+        if control is None:
+            control = []
+        elif isinstance(control, float):
+            control = [control]
+
+        control = list(control)
+        new_optimized_state = OptimizedState(state, reward, control)
+        self.current_rewards.append(new_optimized_state)
 
     def make_step(self, rule, step_number):
+        #add to the dict of steps
         self.rewards[step_number] = self.current_rewards
-        self.main_state.add_rule(rule)
+        if self.main_state is not None:
+            self.main_state.add_rule(rule)
+        else:
+            self.main_state = RobotState(self.rule_vocabulary, [rule])
+
         path = Path(self.path, "temp_logs")
         path.mkdir(parents=True, exist_ok=True)
         rules_path = Path(path,"rules.pickle")
         file = open(rules_path,'wb+')
-        pickle.dump(self.rule_vocabulary,file)
+        pickle.dump(self.rule_vocabulary, file)
         file.close()
-        path_log = Path(path,"temp_log.txt")
-        with open(path_log, 'a') as file:
-            original_stdout = sys.stdout
-            sys.stdout = file
-            print(step_number)
-            for design in self.current_rewards:
-                print('rules:', *design[0])
-                control = design[2]
-                if control is None:
-                    print('control:', "no joints")
-                else:
-                    print('control:', control)
-                print('reward:', design[1])
-
+        path_temp_hist = Path(path,"temp_log.json")
+        with open(path_temp_hist, 'wb+') as file:
+            json.dump(self.rewards, file)
+            # original_stdout = sys.stdout
+            # sys.stdout = file
+            # print(step_number)
+            # for design in self.current_rewards:
+            #     print('rules:', *design[0])
+            #     control = design[2]
+            #     if control is None:
+            #         print('control:', "no joints")
+            #     else:
+            #         print('control:', control)
+            #     print('reward:', design[1])
+            #sys.stdout = original_stdout
+        path_temp_main = Path(path,"temp_main.txt")
+        with open(path_temp_main, 'w') as file:
             print()
             print('main_result:')
             print('rules:', *self.main_state.rule_list)
-            sys.stdout = original_stdout
+            
 
         self.current_rewards = []
         print(f'step {step_number} finished')
@@ -196,7 +232,7 @@ class MCTSReporter():
     def create_json_report(self, path):
         path = Path(path, 'report.json')
         file = open(path, 'w')
-        json.dump(self.rewards,file)
+        json.dump(self.rewards, file)
         file.close()
 
     def load_report(self, path):
@@ -229,7 +265,7 @@ class MCTSReporter():
         self.rule_vocabulary = pickle.load(rule_file)
         rule_file.close()
         rewards_file = Path(path, 'report.json')
-        with open(rewards_file,'r') as rewards:
+        with open(rewards_file,'r',encoding='utf-8') as rewards:
             self.rewards = json.load(rewards)
 
         self.seen_graphs = []
@@ -238,7 +274,7 @@ class MCTSReporter():
                 state = RobotState(robot[0])
                 graph = state.make_graph(self.rule_vocabulary)
                 reward = float(robot[1])
-                if hasattr(robot[2],'__iter__'): 
+                if hasattr(robot[2],'__iter__'):
                     control = [float(x) for x in robot[2]]
                 else:
                      control = float(robot[2])
