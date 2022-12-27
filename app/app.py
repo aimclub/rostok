@@ -73,7 +73,9 @@ graph_env = env.GraphVocabularyEnvironment(G, rule_vocabul, max_numbers_rules)
 
 graph_env.set_control_optimizer(control_optimizer)
 
-
+reporter = MCTSReporter.get_instance()
+reporter.rule_vocabulary = rule_vocabul
+reporter.initialize()
 
 #%% Run first algorithm
 iter = 0
@@ -82,14 +84,14 @@ while not finish:
     finish, final_graph = graph_env.step(action, False)
     iter += 1
     print(
-        f"number iteration: {iter}, counter actions: {graph_env.counter_action}, reward: {graph_env.reward}"
+        f"number iteration: {iter}, counter actions: {graph_env.counter_action}, reward: {reporter.get_best_info()[1]}"
     )
 
-reporter = MCTSReporter.get_instance()
+
 path = reporter.dump_results()
-# best_graph, best_control, reward = read_report(path, rule_vocabul)
+best_graph,  reward, best_control = reporter.get_best_info()
 # best_control = [float(x) for x in best_control]
-# func_reward = control_optimizer.create_reward_function(best_graph)
-# res = - func_reward(best_control, True)
-# plot_graph(best_graph)
-# print(res)
+func_reward = control_optimizer.create_reward_function(best_graph)
+res = - func_reward(best_control)
+plot_graph(best_graph)
+print(res)

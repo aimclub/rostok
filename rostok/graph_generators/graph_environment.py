@@ -197,10 +197,10 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         """
         super().__init__(initilize_graph, None, max_numbers_rules_non_terminal)
         self._actions = rule_vocabulary
-        self.state: RobotState = RobotState()
+        self.state: RobotState = RobotState(rule_vocabulary)
         self.movments_trajectory = None
         self.step_counter = 0
-        MCTSReporter.get_instance().set_rule_vocabulary(rule_vocabulary)
+        MCTSReporter.get_instance().rule_vocabulary = rule_vocabulary
 
     def getPossibleActions(self):
         """Getter possible actions for current state
@@ -228,16 +228,13 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         self.reward = - result_optimizer[0]
         self.movments_trajectory = result_optimizer[1]
         reporter.add_graph(self.graph, self.reward, self.movments_trajectory)
-        if isinstance(self.movments_trajectory, ndarray):
-            control = list(deepcopy(self.movments_trajectory))
-        else:
-            control = deepcopy(self.movments_trajectory)
-
-        reporter.add_reward(self.state, self.reward, control)
-        if self.reward > reporter.best_reward:
-            reporter.best_reward = self.reward
-            reporter.best_control = self.movments_trajectory
-            reporter.best_state = self.state
+        # if isinstance(self.movments_trajectory, ndarray):
+        #     control = list(deepcopy(self.movments_trajectory))
+        # else:
+        #     control = deepcopy(self.movments_trajectory)
+        reporter.add_reward(self.state, self.reward, self.movments_trajectory)
+        if self.reward > reporter.best_simulated_state.reward:
+            reporter.set_best_state(self.state, self.reward, self.movments_trajectory)
 
         print(self.reward)
         return self.reward
@@ -300,8 +297,9 @@ class GraphVocabularyEnvironment(GraphEnvironment):
             plt.show()
         path = None
         if done:
-            reporter.main_reward = self.getReward()
-            reporter.main_control = self.movments_trajectory
+            main_reward = self.getReward()
+            main_control = self.movments_trajectory
+            reporter.set_main_optimized_state(reporter.main_state,main_reward, main_control)
 
         return done, self.graph
 
