@@ -24,7 +24,7 @@ graph = get_terminal_graph_three_finger()
 
 # Create trajectory
 number_trq = num_joints(graph)
-const_torque_koef = [random.random()*0 for _ in range(number_trq)]
+const_torque_koef = [random.random() for _ in range(number_trq)]
 arr_trj = create_torque_traj_from_x(graph, const_torque_koef, MAX_TIME, TIME_STEP)
 
 # Create object to grasp with material props
@@ -32,7 +32,7 @@ mat = DefaultChronoMaterial()
 obj = BlockWrapper(ChronoBodyEnv,
                    shape=SimpleBody.BOX,
                    material=mat,
-                   pos=FrameTransform([0.0, 1, 0], [0.996, 0, 0, 0.087])) #[0, -0.048, 0.706, 0.706]
+                   pos=FrameTransform([0.0, 0.5, 0], [0.996, 0, 0, 0.087])) #[0, -0.048, 0.706, 0.706]
 
 # Configurate simulation
 config_sys = {"Set_G_acc": chrono.ChVectorD(0, -0, 0)}
