@@ -26,23 +26,21 @@ jobs:
         echo $CONDA/bin >> $GITHUB_PATH
   
     
-    - name: Update conda
-      run: |
-        conda update -n base -c defaults conda
+    # - name: Update conda
+    #   run: |
+    #     conda update -n base -c defaults conda
 
-    - name: Install dependencies
-      run: |
-        conda env update --file environment_no_gui.yml --name base
+    # - name: Install dependencies
+    #   run: |
+    #     conda env update --file environment_no_gui.yml --name base
 
-    - name: Install Rostok
-      run: |
-        pip3 install -e . 
+    # - name: Install Rostok
+    #   run: |
+    #     pip3 install -e . 
 
     - name: Install Chrono
       run: |
-        wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 
-        'https://docs.google.com/uc?export=download&id=1_oR7JfL4ct6Y0PL4Zpvb2Rbj85jYLT1b' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1_oR7JfL4ct6Y0PL4Zpvb2Rbj85jYLT1b" 
-        -O chrono_pckg_anaconda.tar.bz2 && rm -rf /tmp/cookies.txt
+        wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1_oR7JfL4ct6Y0PL4Zpvb2Rbj85jYLT1b' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1_oR7JfL4ct6Y0PL4Zpvb2Rbj85jYLT1b" -O chrono_pckg_anaconda.tar.bz2 && rm -rf /tmp/cookies.txt
         conda install chrono_pckg_anaconda.tar.bz2
 
     - name: Test with pytest
