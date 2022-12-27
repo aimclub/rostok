@@ -26,17 +26,17 @@ jobs:
         echo $CONDA/bin >> $GITHUB_PATH
   
     
-    # - name: Update conda
-    #   run: |
-    #     conda update -n base -c defaults conda
+    - name: Update conda
+      run: |
+        conda update -n base -c defaults conda
 
-    # - name: Install dependencies
-    #   run: |
-    #     conda env update --file environment_no_gui.yml --name base
+    - name: Install dependencies
+      run: |
+        conda env update --file environment_no_gui.yml --name base
 
-    # - name: Install Rostok
-    #   run: |
-    #     pip3 install -e . 
+    - name: Install Rostok
+      run: |
+        pip3 install -e . 
 
     - name: Install Chrono
       run: |
