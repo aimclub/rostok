@@ -40,8 +40,10 @@ jobs:
 
     - name: Install Chrono
       run: |
-        wget https://anaconda.org/projectchrono/pychrono/7.0.0/download/linux-64/pychrono-7.0.0-py39_2423.tar.bz2
-        conda install pychrono-7.0.0-py39_2423.tar.bz2
+        wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 
+        'https://docs.google.com/uc?export=download&id=1_oR7JfL4ct6Y0PL4Zpvb2Rbj85jYLT1b' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1_oR7JfL4ct6Y0PL4Zpvb2Rbj85jYLT1b" 
+        -O chrono_pckg_anaconda.tar.bz2 && rm -rf /tmp/cookies.txt
+        conda install chrono_pckg_anaconda.tar.bz2
 
     - name: Test with pytest
       run: |
