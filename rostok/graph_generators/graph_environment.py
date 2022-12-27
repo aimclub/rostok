@@ -3,7 +3,6 @@ from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 from rostok.graph_generators.graph_reward import Reward
 from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
 from rostok.utils.result_saver import MCTSReporter, RobotState
-from rostok.utils.result_saver import MCTSReporter
 
 
 def rule_is_terminal(rule: Rule):

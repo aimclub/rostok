@@ -18,6 +18,7 @@ import rostok.graph_grammar.rule_vocabulary as rule_vocabulary
 import rostok.criterion.criterion_calc as criterion
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
+from rostok.utils.result_saver import MCTSReporter
 from rostok.virtual_experiment.simulation_step import SimOut
 
 
@@ -137,12 +138,13 @@ class OpenChainGen:
         iter = 0
         finish = False
         searcher = mcts.mcts(iterationLimit=self.search_iteration)
+        reporter = MCTSReporter.get_instance()
         while not finish:
             action = searcher.search(initialState=self.graph_env)
             finish, final_graph, opt_trajectory = self.graph_env.step(action, visualaize)
             iter += 1
             print(
-                f"number iteration: {iter}, counter actions: {self.graph_env.counter_action}, best reward: {self.graph_env.reward}"
+                f"number iteration: {iter}, counter actions: {self.graph_env.counter_action}, best reward: {reporter.best_reward}"
             )
         return final_graph, opt_trajectory, self.graph_env.reward
 
