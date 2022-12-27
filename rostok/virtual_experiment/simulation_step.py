@@ -275,8 +275,9 @@ class SimulationStepOptimization:
                 self.grab_robot)
             current_data_sum_contact_forces = RobotSensor.sum_contact_forces_blocks(self.grab_robot)
             current_data_abs_coord_COG = RobotSensor.abs_coord_COG_blocks(self.grab_robot)
-            current_data_std_obj_force = RobotSensor.std_contact_forces_object(self.grasp_object)
 
+            # Get current variables from object            
+            current_data_std_obj_force = RobotSensor.std_contact_forces_object(self.grasp_object)
             current_data_cont_coord = RobotSensor.contact_coord(self.grasp_object)
             current_data_abs_coord_COG_obj = RobotSensor.abs_coord_COG_obj(self.grasp_object)
 

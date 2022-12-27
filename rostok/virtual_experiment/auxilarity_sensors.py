@@ -2,6 +2,7 @@ import pychrono as chrono
 import numpy as np
 from rostok.virtual_experiment.robot import Robot
 from rostok.block_builder.node_render import RobotBody, ChronoRevolveJoint
+from rostok.graph_grammar.node import BlockWrapper
 
 
 
@@ -106,14 +107,14 @@ class RobotSensor:
         return dict(joints_angle_block)
 
     @staticmethod
-    def std_contact_forces_object(obj):
+    def std_contact_forces_object(obj: BlockWrapper):
         """Sensor of standart deviation of contact forces that affect on object
 
         Args:
-            obj: Grasp object
+            obj (BlockWrapper): Grasp object
 
         Returns:
-            dict[int, float]: Dictionary which keys are id object and values of standart deviation of contact forces
+            dict[int, float]: Dictionary which keys are id of object and values of standart deviation of contact forces
         """
 
         if np.size(obj.list_n_forces) > 0:
@@ -124,14 +125,14 @@ class RobotSensor:
 
         
     @staticmethod
-    def contact_coord(obj):
+    def contact_coord(obj: BlockWrapper):
         """Sensor of COG of contact points
 
         Args:
-            obj : Grasp object
+            obj (BlockWrapper): Grasp object
 
         Returns:
-            dict[int, float]: Dictionary which keys are id object and values are COG of contact point volume in XYZ format
+            dict[int, float]: Dictionary which keys are id of object and values of COG of contact point volume in XYZ format
         """
         if np.size(obj.list_c_coord) > 0:
             coordinates = []
@@ -143,21 +144,20 @@ class RobotSensor:
                 coord_y += coord[1]
                 coord_z += coord[2]
             coordinates.append([coord_x/len(obj.list_c_coord), coord_y/len(obj.list_c_coord), coord_z/len(obj.list_c_coord)])
-            # return dict([(-1, coordinates)])
             return dict([(-1, [coord_x/len(obj.list_c_coord), coord_y/len(obj.list_c_coord), coord_z/len(obj.list_c_coord)])])
         else:
             return None
 
     @staticmethod
-    def abs_coord_COG_obj(obj):
-        """Sensor of absolute coordinates of the robot boides
+    def abs_coord_COG_obj(obj: BlockWrapper):
+        """Sensor of absolute coordinates of grasp object
 
         Args:
-            in_robot (Robot): Robot to measure
+            obj (BlockWrapper): Grasp object
 
         Returns:
-            dict[int, chrono.ChVectorD]: Dictionary which keys are id blocks of robot
-            boides and values are coordinates COG
+            dict[int, chrono.ChVectorD]: Dictionary which keys are id of object 
+            and value of object COG in XYZ format
         """
         if np.size(obj.list_c_coord) > 0:
             return dict([(-1, [obj.body.GetPos().x, obj.body.GetPos().y, obj.body.GetPos().z])])
