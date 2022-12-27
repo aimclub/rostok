@@ -93,8 +93,8 @@ class ContactReporter(chrono.ReportContactCallback):
                 self.__current_contact_coord = [pA.x, pA.y, pA.z]
                 self.__list_contact_coord.append(self.__current_contact_coord)
             elif(body_b == self._body):
-                self.__current_contact_coord = pB
-                self.__list_contact_coord.append(pB)
+                self.__current_contact_coord = [pB.x, pB.y, pB.z]
+                self.__list_contact_coord.append(self.__current_contact_coord)
                 
         return True
 
@@ -584,6 +584,7 @@ class ChronoBodyEnv(ChronoBody):
         pos_in_marker = chrono.ChVectorD(0, 0, 0)
         pos_out_marker = chrono.ChVectorD(0, 0, 0)
         super().__init__(builder, body, pos_in_marker, pos_out_marker, random_color)
+
 
     def set_coord(self, frame: FrameTransform):
         transform = ChronoTransform(self.builder, frame)
