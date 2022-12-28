@@ -16,7 +16,7 @@ from rostok.graph_grammar.node import BlockWrapper
 from rostok.trajectory_optimizer.control_optimizer import num_joints
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
-
+from rostok.block_builder import body_size
 
 mechs = [
     get_terminal_graph_three_finger, get_terminal_graph_no_joints, get_terminal_graph_two_finger
@@ -25,7 +25,7 @@ mechs = [
 for get_graph in mechs:
     # Constants
     MAX_TIME = 1
-    TIME_STEP = 1e-3
+    TIME_STEP = 3e-4
 
     graph = get_graph()
     
@@ -37,14 +37,17 @@ for get_graph in mechs:
     # Create object to grasp
     mat = DefaultChronoMaterial()
     mat.Friction = 0.65
-    mat.DampingF = 0.65
+    # mat.DampingF = 0.65
+    shape_graps = body_size.CylinderSize
+    shape_graps.radius = 0.3/2
+    shape_graps.height = 0.6
     obj = BlockWrapper(ChronoBodyEnv,
-                        shape=SimpleBody.BOX,
+                        shape=shape_graps,
                         material=mat,
                         pos=FrameTransform([0, 1, 0], [0, -0.048, 0.706, 0.706]))
 
     # Configurate simulation
-    config_sys = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
+    config_sys = {"Set_G_acc": chrono.ChVectorD(0, -9, 0)}
     flags = [FlagMaxTime(MAX_TIME)]
     
     sim = step.SimulationStepOptimization(arr_trj, graph, obj)

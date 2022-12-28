@@ -69,6 +69,8 @@ class DataObjectBlock(SimulationDataBlock):
     """
     obj_contact_forces: list[float]
     obj_amount_surf_forces: list[float]
+    obj_cont_coord: list[float]
+    obj_COG: list[float]
 
 
 """Type for output simulation. Store trajectory and block id"""
@@ -102,11 +104,28 @@ class SimulationStepOptimization:
         self.controller_joints = []
 
         # Create instance of chrono system and robot: grab mechanism
-        self.chrono_system = chrono.ChSystemNSC()
-        self.chrono_system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
-        self.chrono_system.SetSolverMaxIterations(100)
+        # self.chrono_system = chrono.ChSystemNSC()
+        # self.chrono_system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
+        # self.chrono_system.SetSolverMaxIterations(100)
+        # self.chrono_system.SetSolverForceTolerance(1e-6)
+        # self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
+        
+        self.chrono_system = chrono.ChSystemSMC()
+        self.chrono_system.UseMaterialProperties(False)
+        self.chrono_system.SetSolverType(chrono.ChSolver.Type_MINRES)
+        self.chrono_system.SetContactForceModel(chrono.ChSystemSMC.Hertz)
         self.chrono_system.SetSolverForceTolerance(1e-6)
-        self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
+        self.chrono_system.SetSolverMaxIterations(100)
+        timestepper = chrono.ChTimestepperHHT(self.chrono_system) #Hilber, Hughes and Taylor method 
+        self.chrono_system.SetTimestepper(timestepper)
+        
+        # For HHT timestepper only:
+        timestepper.SetAbsTolerances(1e-5)
+        timestepper.SetScaling(True)
+        timestepper.SetStepControl(True)
+        timestepper.SetMinStepSize(1e-4)
+        timestepper.SetAlpha(-0.2) # timestepper numerical damping parameter [-1/3; 0]; a = 0 there is no damping
+        timestepper.SetMaxiters(5)
 
         self.grasp_object = grasp_object.create_block(self.chrono_system)
 
@@ -230,10 +249,12 @@ class SimulationStepOptimization:
 
         arrays_simulation_data_obj_force = [(-1, [])]
         arrays_simulation_data_amount_obj_contact_surfaces = [(-1, [])]
+        arrays_simulation_data_cont_coord = [(-1, [])]
+        arrays_simulation_data_abs_coord_COG_obj = [(-1, [])]
 
         # Loop of simulation
-        while not self.condion_stop_simulation.flag_stop_simulation():
-            # while vis.Run():
+        # while not self.condion_stop_simulation.flag_stop_simulation():
+        while vis.Run():
             self.chrono_system.Update()
             self.chrono_system.DoStepDynamics(time_step)
             # Realtime for fixed step
@@ -254,10 +275,14 @@ class SimulationStepOptimization:
                 self.grab_robot)
             current_data_sum_contact_forces = RobotSensor.sum_contact_forces_blocks(self.grab_robot)
             current_data_abs_coord_COG = RobotSensor.abs_coord_COG_blocks(self.grab_robot)
+
+            # Get current variables from object            
             current_data_std_obj_force = RobotSensor.std_contact_forces_object(self.grasp_object)
+            current_data_cont_coord = RobotSensor.contact_coord(self.grasp_object)
+            current_data_abs_coord_COG_obj = RobotSensor.abs_coord_COG_obj(self.grasp_object)
 
             current_data_amount_obj_contact_surfaces = dict([
-                (-1, len([item for item in self.grasp_object.list_n_forces if item != 0]))
+                (-1, len([item for item in self.grasp_object.list_c_coord if item != 0]))
             ])
             # Append current data in output arries
             arrays_simulation_data_joint_angle = list(
@@ -280,9 +305,20 @@ class SimulationStepOptimization:
                 arrays_simulation_data_obj_force = map(append_arr_in_dict,
                                                        current_data_std_obj_force.items(),
                                                        arrays_simulation_data_obj_force)
+
             arrays_simulation_data_amount_obj_contact_surfaces = map(
                 append_arr_in_dict, current_data_amount_obj_contact_surfaces.items(),
                 arrays_simulation_data_amount_obj_contact_surfaces)
+
+            if current_data_cont_coord is not None:
+                arrays_simulation_data_cont_coord = list(map(
+                    append_arr_in_dict, current_data_cont_coord.items(),
+                    arrays_simulation_data_cont_coord))
+
+            if current_data_abs_coord_COG_obj is not None:
+                arrays_simulation_data_abs_coord_COG_obj = list(map(
+                    append_arr_in_dict, current_data_abs_coord_COG_obj.items(),
+                    arrays_simulation_data_abs_coord_COG_obj))
 
         if visualize:
             vis.GetDevice().closeDevice()
@@ -299,9 +335,12 @@ class SimulationStepOptimization:
                 arrays_simulation_data_amount_contact_surfaces))
 
         simulation_data_object: dict[int, DataObjectBlock] = dict(
-            map(lambda x, y: (x[0], DataObjectBlock(x[0], arrays_simulation_data_time, x[1], y[1])),
+            map(lambda x, y, z, w: (x[0], DataObjectBlock(x[0], arrays_simulation_data_time, x[1], y[1], z[1], w[1])),
                 arrays_simulation_data_obj_force,
-                arrays_simulation_data_amount_obj_contact_surfaces))
+                arrays_simulation_data_amount_obj_contact_surfaces,
+                arrays_simulation_data_cont_coord,
+                arrays_simulation_data_abs_coord_COG_obj))
+
         simulation_data_joint_angle.update(simulation_data_body)
         simulation_data_joint_angle.update(simulation_data_object)
 

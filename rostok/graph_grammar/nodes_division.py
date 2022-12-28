@@ -81,7 +81,9 @@ def traj_to_list(b_nodes, j_nodes, lb_nodes, rb_nodes, sim_out: dict):
             dict_b_temp = {
                 'id': b_node.id,
                 'amount_contact_surfaces': sim_out[b_node.id].amount_contact_surfaces,
-                'sum_contact_forces': sim_out[b_node.id].sum_contact_forces
+                'sum_contact_forces': sim_out[b_node.id].sum_contact_forces,
+                'abs_coord_cog': sim_out[b_node.id].abs_coord_COG,
+                'time': sim_out[b_node.id].time
             }
             list_b.append(dict_b_temp)
 
