@@ -5,6 +5,7 @@ import pychrono.irrlicht as chronoirr
 
 import rostok.block_builder.control as control
 from rostok.block_builder.node_render import ChronoRevolveJoint, RobotBody
+from rostok.block_builder.transform_srtucture import FrameTransform
 from rostok.criterion.flags_simualtions import (ConditionStopSimulation,
                                                 FlagStopSimualtions)
 from rostok.graph_grammar.node import BlockWrapper, GraphGrammar
@@ -96,10 +97,10 @@ class SimulationStepOptimization:
     """
 
     def __init__(self, control_trajectory, graph_mechanism: GraphGrammar,
-                 grasp_object: BlockWrapper):
+                 grasp_object: BlockWrapper, start_frame_robot: FrameTransform = FrameTransform([0,0,0],[1,0,0,0])):
         self.control_trajectory = control_trajectory
         self.graph_mechanism = graph_mechanism
-        self.controller_joints = []
+        self.controller_joints: list[list[control.ChronoControl]] = []
 
         # Create instance of chrono system and robot: grab mechanism
         self.chrono_system = chrono.ChSystemNSC()
@@ -110,7 +111,7 @@ class SimulationStepOptimization:
 
         self.grasp_object = grasp_object.create_block(self.chrono_system)
 
-        self.grab_robot = Robot(self.graph_mechanism, self.chrono_system)
+        self.grab_robot = Robot(self.graph_mechanism, self.chrono_system, start_frame_robot)
 
         # Add grasp object in system and set system without gravity
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))

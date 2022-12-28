@@ -47,7 +47,7 @@ for get_graph in mechs:
     config_sys = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
     flags = [FlagMaxTime(MAX_TIME)]
     
-    sim = step.SimulationStepOptimization(arr_trj, graph, obj)
+    sim = step.SimulationStepOptimization(arr_trj, graph, obj, FrameTransform([0, 1.5, 0], [0, 1,0,0]))
     sim.set_flags_stop_simulation(flags)
     sim.change_config_system(config_sys)
     
