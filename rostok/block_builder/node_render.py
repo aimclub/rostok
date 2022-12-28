@@ -560,15 +560,15 @@ class ChronoBodyEnv(ChronoBody):
 
         # Create body
         material = struct_material2object_material(material)
-        if shape is BoxSize:
+        if  isinstance(shape, BoxSize):
             body = chrono.ChBodyEasyBox(shape.width, shape.length, shape.height,
                                         1000, True, True, material)
-        elif shape is CylinderSize:
+        elif isinstance(shape, CylinderSize):
             body = chrono.ChBodyEasyCylinder(shape.radius, shape.height, 1000, True,
                                              True, material)
-        elif shape is SphereSize:
+        elif isinstance(shape, SphereSize):
             body = chrono.ChBodyEasySphere(shape.radius, 1000, True, True, material)
-        elif shape is EllipsoidSize:
+        elif isinstance(shape, EllipsoidSize):
             body = chrono.ChBodyEasyEllipsoid(
                 chrono.ChVectorD(shape.value.radius_a, shape.radius_b, shape.radius_c),
                 1000, True, True, material)
