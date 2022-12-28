@@ -1,5 +1,4 @@
 import open3d as o3d
-import trimesh as tm
 import pychrono as chrono
 import pychrono.irrlicht as irr
 from numpy import asarray
