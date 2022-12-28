@@ -157,8 +157,10 @@ def criterion_calc(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, ga
     if np.size(sim_output[-1].obj_cont_coord) > 0:
        for idx,_ in enumerate(sim_output[-1].obj_cont_coord):
             dist_list.append(distance.euclidean(sim_output[-1].obj_cont_coord[idx], sim_output[-1].obj_COG[idx]))
-    cog_crit = 1/np.mean(dist_list)
+    cog_crit = 1/(1+np.mean(dist_list))
 
-
-    return -weights[0] * force_crit - weights[1] * cont_surf_crit - weights[
+    if np.size(sim_output[-1].obj_contact_forces) == 0:
+        return 0
+    else:
+        return -weights[0] * force_crit - weights[1] * cont_surf_crit - weights[
         2] * distance_crit - weights[3] * time_crit - cog_crit
