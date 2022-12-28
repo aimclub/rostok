@@ -61,4 +61,4 @@ LJ_NODES_NEW = sort_left_right(sim.grab_robot, LM_MOUNTS, J_NODES)
 # Calculate reward value
 reward = criterion_calc(sim_output, B_NODES_NEW, J_NODES_NEW, LB_NODES_NEW, RB_NODES_NEW, WEIGHTS,
                         GAIT_PERIOD)
-print(reward+1)
+print(reward)
