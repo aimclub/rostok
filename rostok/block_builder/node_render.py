@@ -5,8 +5,7 @@ import random
 
 import pychrono.core as chrono
 
-from rostok.block_builder.body_size import BoxSize
-
+from rostok.block_builder.body_size import BoxSize, CylinderSize, EllipsoidSize, SphereSize
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
     DefaultChronoMaterial, Material, struct_material2object_material)
 from rostok.block_builder.transform_srtucture import FrameTransform
@@ -561,17 +560,17 @@ class ChronoBodyEnv(ChronoBody):
 
         # Create body
         material = struct_material2object_material(material)
-        if shape is SimpleBody.BOX:
-            body = chrono.ChBodyEasyBox(shape.value.width, shape.value.length, shape.value.height,
+        if shape is BoxSize:
+            body = chrono.ChBodyEasyBox(shape.width, shape.length, shape.height,
                                         1000, True, True, material)
-        elif shape is SimpleBody.CYLINDER:
-            body = chrono.ChBodyEasyCylinder(shape.value.radius, shape.value.height, 1000, True,
+        elif shape is CylinderSize:
+            body = chrono.ChBodyEasyCylinder(shape.radius, shape.height, 1000, True,
                                              True, material)
-        elif shape is SimpleBody.SPHERE:
-            body = chrono.ChBodyEasySphere(shape.value.radius, 1000, True, True, material)
-        elif shape is SimpleBody.ELLIPSOID:
+        elif shape is SphereSize:
+            body = chrono.ChBodyEasySphere(shape.radius, 1000, True, True, material)
+        elif shape is EllipsoidSize:
             body = chrono.ChBodyEasyEllipsoid(
-                chrono.ChVectorD(shape.value.radius_a, shape.value.radius_b, shape.value.radius_c),
+                chrono.ChVectorD(shape.value.radius_a, shape.radius_b, shape.radius_c),
                 1000, True, True, material)
         body.SetCollide(True)
         transform = ChronoTransform(builder, pos)
