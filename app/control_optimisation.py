@@ -20,6 +20,17 @@ def get_object_to_grasp():
 
     return obj
 
+def get_pipes():
+    matich = DefaultChronoMaterial()
+    matich.Friction = 0.65
+    matich.DampingF = 0.65
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=SimpleBody.BOX,
+                       material=matich,
+                       pos=FrameTransform([0, 0.5, 0], [0, -0.048, 0.706, 0.706]))
+
+    return obj
+
 
 def grab_crtitrion(sim_output: dict[int, SimOut], grab_robot, node_feature: list[list[Node]], gait,
                    weight):
