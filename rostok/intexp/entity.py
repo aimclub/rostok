@@ -7,8 +7,9 @@ import numpy as np
 class PhysicsParameters:
     mass: float = 0
     density: float = 0
-    mu_contact: float = 0
-    d_contact: float = 0.001
+    mu_contact: float = 0.8
+    kn_contact: float = 2e4
+    gn_contact: float = 1e6
 
 class TesteeObject():
     """Geometry and physical parameters of the testee object
@@ -119,10 +120,14 @@ class TesteeObject():
         xmlread_error = self.__check_xml_mu_contact( description_file.find('mu_contact') )
         if xmlread_error:
             raise Exception("Not found paramater <mu_contact>")
-        
-        xmlread_error = self.__check_xml_d_contact( description_file.find('d_contact') )
+
+        xmlread_error = self.__check_xml_kn_contact( description_file.find('kn_contact') )
         if xmlread_error:
-            raise Exception("Not found paramater <d_contact>")
+            raise Exception("Not found paramater <kn_contact>")
+
+        xmlread_error = self.__check_xml_gn_contact( description_file.find('gn_contact') )
+        if xmlread_error:
+            raise Exception("Not found paramater <gn_contact>")
 
         xmlread_error = self.__check_xml_grasping_poses( description_file.find('grasping_poses') )
         if xmlread_error:
@@ -190,8 +195,8 @@ class TesteeObject():
             return True
 
         return True
-    
-    def __check_xml_d_contact(self, xmlsubelem_friction) -> bool:
+
+    def __check_xml_kn_contact(self, xmlsubelem_friction) -> bool:
         """Checking the correctness of loaded parameters
 
         Args:
@@ -203,7 +208,26 @@ class TesteeObject():
         if xmlsubelem_friction is not None:
             value = float(xmlsubelem_friction.text)
             if (value > 0) or (value <= 1):
-                self.__parameters.d_contact = value
+                self.__parameters.kn_contact = value
+                return False
+
+            return True
+
+        return True
+
+    def __check_xml_gn_contact(self, xmlsubelem_friction) -> bool:
+        """Checking the correctness of loaded parameters
+
+        Args:
+            xmlsubelem_friction (lxmlsubelem): damping coefficient for surface
+
+        Returns:
+            error (bool): the presence of an error
+        """
+        if xmlsubelem_friction is not None:
+            value = float(xmlsubelem_friction.text)
+            if (value > 0) or (value <= 1):
+                self.__parameters.gn_contact = value
                 return False
 
             return True
@@ -350,26 +374,51 @@ class TesteeObject():
         raise Exception("Wrong mu friction value")
 
     @property
-    def d_contact(self) -> float:
+    def kn_contact(self) -> float:
         """Property of surface damping coefficient
 
         Returns:
             float: from 0 to 1
         """
-        if self.__parameters.d_contact:
-            return self.__parameters.d_contact
+        if self.__parameters.kn_contact:
+            return self.__parameters.kn_contact
 
         raise Exception("Damping contact not setup")
 
-    @d_contact.setter
-    def d_contact(self, d_val: float):
+    @kn_contact.setter
+    def kn_contact(self, d_val: float):
         """Setter of surface friction coefficient
 
         Args:
             d_val (float): from 0 to 1
         """
         if d_val > 0 and d_val <= 1.0:
-            self.__parameters.d_contact = d_val
+            self.__parameters.kn_contact = d_val
+            return
+
+        raise Exception("Wrong damping contact value")
+
+    @property
+    def gn_contact(self) -> float:
+        """Property of surface damping coefficient
+
+        Returns:
+            float: from 0 to 1
+        """
+        if self.__parameters.gn_contact:
+            return self.__parameters.gn_contact
+
+        raise Exception("Damping contact not setup")
+
+    @gn_contact.setter
+    def gn_contact(self, d_val: float):
+        """Setter of surface friction coefficient
+
+        Args:
+            d_val (float): from 0 to 1
+        """
+        if d_val > 0 and d_val <= 1.0:
+            self.__parameters.gn_contact = d_val
             return
 
         raise Exception("Wrong damping contact value")

@@ -18,7 +18,7 @@ class ChTesteeObject(TesteeObject):
 
         if (not obj_fname) and (not xml_fname):
             self.chrono_body: chrono.ChBodyEasyMesh = None
-            self.chrono_material: chrono.ChMaterialSurfaceNSC = None
+            self.chrono_material: chrono.ChMaterialSurfaceSMC = None
             return
 
         self.create_chrono_body_from_file(obj_fname, xml_fname)
@@ -35,9 +35,10 @@ class ChTesteeObject(TesteeObject):
         super().load_object_mesh(obj_fname)
         super().load_object_description(xml_fname)
 
-        self.chrono_material = chrono.ChMaterialSurfaceNSC()
-        self.chrono_material.SetFriction(super().mu_contact)
-        self.chrono_material.SetDampingF(super().d_contact)
+        self.chrono_material = chrono.ChMaterialSurfaceSMC()
+        self.chrono_material.SetFriction(self.mu_contact)
+        self.chrono_material.SetKn(self.kn_contact)
+        self.chrono_material.SetGn(self.gn_contact)
 
         self.chrono_body = chrono.ChBodyEasyMesh(o3d_to_chrono_trianglemesh(self.mesh),
                                                  self.density,
@@ -138,15 +139,18 @@ class ChCrutch(Crutch):
         self.__holded_object_place: chrono.ChFrameD = None
 
     def build_chrono_body(self, chrono_obj: ChTesteeObject,
-                          mu_contact: float = 0.25, d_contact: float = 0.001,
+                          mu_contact: float = 0.8,
+                          kn_contact: float = 2e4,
+                          gn_contact: float = 1e6,
                           density = 2700,
                           start_pos: list[float] = [0.0, 0.0, 0.0]):
 
         super().build_for_testee_object(chrono_obj.mesh)
 
-        self.chrono_material = chrono.ChMaterialSurfaceNSC()
+        self.chrono_material = chrono.ChMaterialSurfaceSMC()
         self.chrono_material.SetFriction(mu_contact)
-        self.chrono_material.SetDampingF(d_contact)
+        self.chrono_material.SetKn(kn_contact)
+        self.chrono_material.SetGn(gn_contact)
 
         self.chrono_body = chrono.ChBodyEasyMesh(o3d_to_chrono_trianglemesh(self.mesh),
                                                  density,
@@ -171,11 +175,11 @@ class ChCrutch(Crutch):
         desired_cog_to_abs = desired_ref_to_abs_point * cog_to_ref
         self.chrono_body.SetCoord(desired_cog_to_abs.GetPos(), desired_cog_to_abs.GetRot())
         self.chrono_body.SetNoSpeedNoAcceleration()
-        
+
     @property
     def place_for_object(self) -> chrono.ChFrameD:
         return self.__holded_object_place
-    
+
     @place_for_object.setter
     def place_for_object(self, new_place: chrono.ChFrameD):
         self.__holded_object_place = new_place

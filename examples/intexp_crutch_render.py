@@ -5,7 +5,7 @@ from numpy import asarray
 from rostok.intexp.chrono_api import ChTesteeObject, ChCrutch
 
 ''' Floor added for clarity '''
-floor = chrono.ChBodyEasyBox(1,0.005,1, 1000, True, True, chrono.ChMaterialSurfaceNSC())
+floor = chrono.ChBodyEasyBox(1,0.005,1, 1000, True, True, chrono.ChMaterialSurfaceSMC())
 floor.SetPos(chrono.ChVectorD(0,-0.1,0))
 floor.SetBodyFixed(True)
 floor.SetName('Floor')
@@ -24,7 +24,7 @@ holder.build_chrono_body(obj_db)
 
 obj_db.set_chrono_body_ref_frame_in_point(holder.place_for_object)
 
-system = chrono.ChSystemNSC()
+system = chrono.ChSystemSMC()
 system.Set_G_acc(chrono.ChVectorD(0,-9.8,0))
 system.Add(obj_db.chrono_body) # Chrono Testee Object added to simulation
 system.Add(floor)

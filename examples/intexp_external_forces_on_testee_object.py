@@ -30,18 +30,18 @@ IMPACTS_APPLICATION_POINT = [chrono.ChVectorD(0, 0, 0),
 
 # Switch timer of impact every 2 sec
 tracking_timer = intexp.chrono_api.ImpactTimerParameters(test_bound=len(IMPACTS_DIR),
-                                                         clock_bound=2.0, step = 1e-3)
+                                                         clock_bound=0.5, step = 1e-3)
 
 
 ''' Floor added for clarity '''
-floor = chrono.ChBodyEasyBox(1,0.005,1, 1000, True, True, chrono.ChMaterialSurfaceNSC())
+floor = chrono.ChBodyEasyBox(1,0.005,1, 1000, True, True, chrono.ChMaterialSurfaceSMC())
 floor.SetPos(chrono.ChVectorD(0,-0.005,0))
 floor.SetBodyFixed(True)
 floor.SetName('Floor')
 floor.GetVisualShape(0).SetColor(chrono.ChColor(80/255, 80/255, 80/255))
 
 ''' Simulation Solver '''
-system = chrono.ChSystemNSC()
+system = chrono.ChSystemSMC()
 system.Set_G_acc(chrono.ChVectorD(0,0,0))
 system.Add(obj_db.chrono_body) # Chrono Testee Object added to simulation
 system.Add(floor)
