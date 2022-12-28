@@ -89,6 +89,32 @@ class ControlOptimizer():
             return rew
 
         return reward
+    
+    def create_reward_function_pickup(self,
+                               generated_graph: GraphGrammar, start_frame_robot) -> Callable[[list[float]], float]:
+        """Create reward function
+
+        Args:
+            generated_graph (GraphGrammar):
+
+        Returns:
+            Callable[[list[float]], float]: Function of virtual experemnt that
+            returns reward based on criterion_callback
+        """
+
+        def reward(x, is_vis=False):
+            # Init object state
+            object_to_grab = self.cfg.get_rgab_object_callback()
+            arr_traj = self.cfg.params_to_timesiries_callback(generated_graph, x)
+            sim = SimulationStepOptimization(arr_traj, generated_graph, object_to_grab, start_frame_robot)
+            sim.set_flags_stop_simulation(self.cfg.flags)
+            sim.change_config_system(self.cfg.sim_config)
+            sim_output = sim.simulate_system(self.cfg.time_step, is_vis)
+            rew = self.cfg.criterion_callback(sim_output, sim.grab_robot)
+
+            return rew
+
+        return reward
 
     def start_optimisation(self, generated_graph: GraphGrammar) -> tuple[float, float]:
 

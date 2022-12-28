@@ -29,7 +29,7 @@ def get_pipes():
                        material=matich,
                        pos=FrameTransform([0, 0.5, 0], [0, -0.048, 0.706, 0.706]))
 
-    return obj
+    return obj, robot_frames
 
 
 def grab_crtitrion(sim_output: dict[int, SimOut], grab_robot, node_feature: list[list[Node]], gait,
