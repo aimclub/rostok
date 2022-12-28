@@ -188,6 +188,6 @@ def plot_traj(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, gait) -
 
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
-    ax.plot(x_coords[5], y_coords[5], z_coords[5], label='COG_trajectory')
+    ax.plot(x_coords[0], y_coords[0], z_coords[0], label='COG_trajectory')
     plt.show()
     return
