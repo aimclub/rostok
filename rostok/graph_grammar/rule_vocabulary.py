@@ -263,7 +263,7 @@ class RuleVocabulary():
             grammar.apply_rule(rule)
 
     def rule_vis(self, name: str):
-        rule: Rule = self.rule_dict.get(name, None)
+        rule: Rule = self.rule_dict.get(name)
         if rule is None:
             print("Attempt to visualize nonexisting rule, check rule name")
             return
@@ -295,10 +295,6 @@ class RuleVocabulary():
         ax2.axis("off")
         plt.show()
 
-
-
-
-
 if __name__ == '__main__':
     node_vocab = NodeVocabulary()
     node_vocab.add_node(ROOT)
@@ -320,7 +316,7 @@ if __name__ == '__main__':
     print(rule_vocab)
 
     rule_vocab.rule_vis("First_Rule")
-    
+
     # rule_vocab.check_rules()
     # G = GraphGrammar()
     # G.apply_rule(rule_vocab.get_rule("ROOT"))

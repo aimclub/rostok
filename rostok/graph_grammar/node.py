@@ -220,7 +220,7 @@ class GraphGrammar(nx.DiGraph):
             self._replace_node(id_closest, rule)
 
     def node_levels_bfs(self) -> list[list[int]]:
-        """Devide nodes into levels.
+        """Divide nodes into levels.
 
         Return a list of lists of nodes where each inner list is a
         level in respect to the \'root\', which is the node with no in edges.

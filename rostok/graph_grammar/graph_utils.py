@@ -13,7 +13,7 @@ def replace_nodes(graph: GraphGrammar, mapping: dict[Node, Node]):
 def plot_graph(graph: GraphGrammar):
     plt.figure()
     nx.draw_networkx(graph,
-                     pos=nx.planar_layout(graph, dim=2),
+                     pos=nx.kamada_kawai_layout(graph, dim=2),
                      node_size=600,
                      labels={n: graph.nodes[n]["Node"].label for n in graph})
     plt.show()
