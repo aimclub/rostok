@@ -27,7 +27,7 @@ There are four main blocks:
 ![project_general](./docs/images/general_scheme.jpg)
 ![project_algorithm](./docs/images/Algorithm_shceme.jpg)
 
-More detailed description of the [algorithms and methods](https://licaibeerlab.github.io/rostok/advanced_usage/algorithm.html).
+More detailed description of the [algorithms and methods](https://aimclub.github.io/rostok/advanced_usage/algorithm.html).
 
 ## Prerequisites
 
@@ -50,7 +50,7 @@ After the installation of the package one can get an error `Original error was: 
 
 ## Documentation
 
-The description of the project and tutorials are available [at project website](https://licaibeerlab.github.io/rostok).
+The description of the project and tutorials are available [at project website](https://aimclub.github.io/rostok/).
 
 ## Publications
 
