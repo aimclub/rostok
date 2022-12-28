@@ -27,14 +27,14 @@ hand_power_grasp_frame = chrono.ChFrameD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROT
 obj_db.set_chrono_body_on_pose(desired_poses[0], hand_power_grasp_frame) # Position object for grasp pose into point
 
 ''' Floor added for clarity '''
-floor = chrono.ChBodyEasyBox(1,0.005,1, 1000, True, False, chrono.ChMaterialSurfaceNSC())
+floor = chrono.ChBodyEasyBox(1,0.005,1, 1000, True, False, chrono.ChMaterialSurfaceSMC())
 floor.SetPos(chrono.ChVectorD(0,-0.005,0))
 floor.SetBodyFixed(True)
 floor.SetName('Floor')
 floor.GetVisualShape(0).SetColor(chrono.ChColor(80/255, 80/255, 80/255))
 
 ''' Simulation Solver '''
-system = chrono.ChSystemNSC()
+system = chrono.ChSystemSMC()
 system.Set_G_acc(chrono.ChVectorD(0,0,0))
 system.Add(obj_db.chrono_body) # Chrono Testee Object added to simulation
 system.Add(floor)
