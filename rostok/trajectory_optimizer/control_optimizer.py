@@ -91,7 +91,7 @@ class ControlOptimizer():
         return reward
     
     def create_reward_function_pickup(self,
-                               generated_graph: GraphGrammar, start_frame_robot) -> Callable[[list[float]], float]:
+                               generated_graph: GraphGrammar) -> Callable[[list[float]], float]:
         """Create reward function
 
         Args:
@@ -104,7 +104,7 @@ class ControlOptimizer():
 
         def reward(x, is_vis=False):
             # Init object state
-            object_to_grab = self.cfg.get_rgab_object_callback()
+            object_to_grab, start_frame_robot = self.cfg.get_rgab_object_callback()
             arr_traj = self.cfg.params_to_timesiries_callback(generated_graph, x)
             sim = SimulationStepOptimization(arr_traj, generated_graph, object_to_grab, start_frame_robot)
             sim.set_flags_stop_simulation(self.cfg.flags)
@@ -119,6 +119,15 @@ class ControlOptimizer():
     def start_optimisation(self, generated_graph: GraphGrammar) -> tuple[float, float]:
 
         reward_fun = self.create_reward_function(generated_graph)
+        multi_bound = create_multidimensional_bounds(generated_graph, self.cfg.bound)
+        if len(multi_bound) == 0:
+            return (0, 0)
+        result = direct(reward_fun, multi_bound, maxiter=self.cfg.iters)
+        return (result.fun, result.x)
+
+    def start_optimisation_pickup(self, generated_graph: GraphGrammar) -> tuple[float, float]:
+
+        reward_fun = self.create_reward_function_pickup(generated_graph)
         multi_bound = create_multidimensional_bounds(generated_graph, self.cfg.bound)
         if len(multi_bound) == 0:
             return (0, 0)

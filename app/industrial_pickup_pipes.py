@@ -11,7 +11,7 @@ from control_optimisation import create_grab_criterion_fun, create_traj_fun, get
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.trajectory_optimizer.control_optimizer import ConfigRewardFunction, ControlOptimizer
 from rostok.criterion.flags_simualtions import FlagMaxTime, FlagSlipout, FlagNotContact
-from rostok.utils.result_saver  import MCTSReporter, read_report
+from rostok.block_builder.transform_srtucture import FrameTransform
 
 import rostok.graph_generators.graph_environment as env
 
@@ -27,6 +27,7 @@ def plot_graph(graph: GraphGrammar):
 #
 length_link = [0.4, 0.6, 0.8]
 width_flat = [0.25, 0.35, 0.5]
+
 # %% Create extension rule vocabulary
 
 rule_vocabul, node_features = rule_extention.init_extension_rules(length_link, width_flat)
@@ -80,9 +81,9 @@ while not finish:
     )
 
 
-best_graph, best_control, reward = read_report(path, rule_vocabul)
-best_control = [float(x) for x in best_control]
-func_reward = control_optimizer.create_reward_function_pickup(best_graph)
-res = - func_reward(best_control, True)
-plot_graph(best_graph)
-print(res)
+# best_graph, best_control, reward = read_report(path, rule_vocabul)
+# best_control = [float(x) for x in best_control]
+# func_reward = control_optimizer.create_reward_function_pickup(best_graph, frames)
+# res = - func_reward(best_control, True)
+# plot_graph(best_graph)
+# print(res)

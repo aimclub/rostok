@@ -1,4 +1,5 @@
 import rostok.criterion.criterion_calc as criterion
+import rostok.block_builder.body_size as bs
 from rostok.block_builder.basic_node_block import SimpleBody
 from rostok.block_builder.node_render import (ChronoBodyEnv,
                                               DefaultChronoMaterial,
@@ -11,8 +12,8 @@ from rostok.virtual_experiment.simulation_step import SimOut
 
 def get_object_to_grasp():
     matich = DefaultChronoMaterial()
-    matich.Friction = 0.65
-    matich.DampingF = 0.65
+    # matich.Friction = 0.65
+    # matich.DampingF = 0.65
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=SimpleBody.BOX,
                        material=matich,
@@ -22,13 +23,16 @@ def get_object_to_grasp():
 
 def get_pipes():
     matich = DefaultChronoMaterial()
-    matich.Friction = 0.65
-    matich.DampingF = 0.65
+    # matich.Friction = 0.65
+    # matich.DampingF = 0.65
     obj = BlockWrapper(ChronoBodyEnv,
-                       shape=SimpleBody.BOX,
+                       shape=bs.BoxSize(10,1,1),
                        material=matich,
                        pos=FrameTransform([0, 0.5, 0], [0, -0.048, 0.706, 0.706]))
 
+    frame_1 = FrameTransform([-1, 0, 0],[0,1,0,0])
+    frame_2 = FrameTransform([1, 0, 0],[0,1,0,0])
+    robot_frames = [frame_1, frame_2]
     return obj, robot_frames
 
 
