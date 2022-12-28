@@ -445,7 +445,7 @@ class FlatChronoBody(ChronoBody, RobotBody):
                  builder,
                  length=2,
                  width=0.1,
-                 depth=0.3,
+                 depth=0.8,
                  random_color=True,
                  mass=1,
                  material=DefaultChronoMaterial(),
@@ -460,7 +460,7 @@ class FlatChronoBody(ChronoBody, RobotBody):
         body.AddVisualShape(box_asset)
         body.SetCollide(True)
 
-        body.SetMass(mass)
+        body.SetMass(0.1*mass)
 
         pos_input_marker = chrono.ChVectorD(0, -length / 2, 0)
         pos_out_marker = chrono.ChVectorD(0, length / 2, 0)
@@ -560,15 +560,15 @@ class ChronoBodyEnv(ChronoBody):
 
         # Create body
         material = struct_material2object_material(material)
-        if shape is BoxSize:
+        if  isinstance(shape, BoxSize):
             body = chrono.ChBodyEasyBox(shape.width, shape.length, shape.height,
                                         1000, True, True, material)
-        elif shape is CylinderSize:
+        elif isinstance(shape, CylinderSize):
             body = chrono.ChBodyEasyCylinder(shape.radius, shape.height, 1000, True,
                                              True, material)
-        elif shape is SphereSize:
+        elif isinstance(shape, SphereSize):
             body = chrono.ChBodyEasySphere(shape.radius, 1000, True, True, material)
-        elif shape is EllipsoidSize:
+        elif isinstance(shape, EllipsoidSize):
             body = chrono.ChBodyEasyEllipsoid(
                 chrono.ChVectorD(shape.value.radius_a, shape.radius_b, shape.radius_c),
                 1000, True, True, material)
