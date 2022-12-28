@@ -37,7 +37,7 @@ for get_graph in mechs:
     # Create object to grasp
     mat = DefaultChronoMaterial()
     mat.Friction = 0.65
-    mat.DampingF = 0.65
+    # mat.DampingF = 0.65
     shape_graps = body_size.CylinderSize
     shape_graps.radius = 0.3/2
     shape_graps.height = 0.6
