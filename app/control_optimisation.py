@@ -26,7 +26,7 @@ def get_pipes():
     # matich.Friction = 0.65
     # matich.DampingF = 0.65
     obj = BlockWrapper(ChronoBodyEnv,
-                       shape=bs.BoxSize(10,1,1),
+                       shape=bs.BoxSize(0.1,0.1,0.1),
                        material=matich,
                        pos=FrameTransform([0, 0.5, 0], [0, -0.048, 0.706, 0.706]))
 

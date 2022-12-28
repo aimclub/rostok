@@ -254,8 +254,8 @@ class SimulationStepOptimization:
         arrays_simulation_data_abs_coord_COG_obj = [(-1, [])]
 
         # Loop of simulation
-        # while not self.condion_stop_simulation.flag_stop_simulation():
-        while vis.Run():
+        while not self.condion_stop_simulation.flag_stop_simulation():
+        # while vis.Run():
             self.chrono_system.Update()
             self.chrono_system.DoStepDynamics(time_step)
             # Realtime for fixed step
