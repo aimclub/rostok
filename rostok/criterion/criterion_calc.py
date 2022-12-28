@@ -1,6 +1,8 @@
 from rostok.graph_grammar.nodes_division import *
 from scipy.spatial import distance
 import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
 def app_v_2_l(final: list, val: list):
@@ -164,3 +166,28 @@ def criterion_calc(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, ga
     else:
         return -weights[0] * force_crit - weights[1] * cont_surf_crit - weights[
         2] * distance_crit - weights[3] * time_crit - cog_crit
+
+
+def plot_traj(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, gait) -> None:
+    [b_nodes_sim, _, _,
+     _] = traj_to_list(b_nodes, j_nodes, lb_nodes, rb_nodes, sim_output)
+    x_coords = []
+    y_coords= []
+    z_coords= []
+    for nodes in b_nodes_sim:
+        temp_x = []
+        temp_y = []
+        temp_z = []
+        for cog in nodes['abs_coord_cog']:
+            temp_x.append(cog[0])
+            temp_y.append(cog[1])
+            temp_z.append(cog[2])
+        x_coords.append(temp_x)
+        y_coords.append(temp_y)
+        z_coords.append(temp_z)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+    ax.plot(x_coords[0], y_coords[0], z_coords[0], label='COG_trajectory')
+    plt.show()
+    return

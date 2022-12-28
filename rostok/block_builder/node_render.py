@@ -445,7 +445,7 @@ class FlatChronoBody(ChronoBody, RobotBody):
                  builder,
                  length=2,
                  width=0.1,
-                 depth=0.3,
+                 depth=0.8,
                  random_color=True,
                  mass=1,
                  material=DefaultChronoMaterial(),
@@ -460,7 +460,7 @@ class FlatChronoBody(ChronoBody, RobotBody):
         body.AddVisualShape(box_asset)
         body.SetCollide(True)
 
-        body.SetMass(mass)
+        body.SetMass(0.1*mass)
 
         pos_input_marker = chrono.ChVectorD(0, -length / 2, 0)
         pos_out_marker = chrono.ChVectorD(0, length / 2, 0)
