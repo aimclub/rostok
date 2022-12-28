@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<material name="Aluminium">
+    <obj_file>pipe.obj</obj_file>
+    <weight parameter="density">8000</weight>
+    <mu_contact>0.4</mu_contact>
+    <d_contact>0.01</d_contact>
+
+    <grasping_poses>
+	</grasping_poses></material>
