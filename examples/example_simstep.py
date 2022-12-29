@@ -41,9 +41,9 @@ for get_graph in mechs:
     mat = DefaultChronoMaterial()
     mat.Friction = 0.65
     # mat.DampingF = 0.65
-    shape_graps = body_size.CylinderSize
-    shape_graps.radius = 0.3/2
-    shape_graps.height = 0.6
+    shape_graps = body_size.CylinderSize(0.15, 0.6)
+    # shape_graps.radius = 0.3/2
+    # shape_graps.height = 0.6
     obj = BlockWrapper(ChronoBodyEnv,
                         shape=shape_graps,
                         material=mat,

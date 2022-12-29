@@ -157,7 +157,7 @@ def criterion_calc(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, ga
     # 5) Obj COG coordinats
     dist_list = []
     if np.size(sim_output[-1].obj_cont_coord) > 0:
-       for idx,_ in enumerate(sim_output[-1].obj_cont_coord):
+        for idx,_ in enumerate(sim_output[-1].obj_cont_coord):
             dist_list.append(distance.euclidean(sim_output[-1].obj_cont_coord[idx], sim_output[-1].obj_COG[idx]))
     cog_crit = 1/(1+np.mean(dist_list))
 
@@ -170,7 +170,7 @@ def criterion_calc(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, ga
 
 def plot_traj(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, gait) -> None:
     [b_nodes_sim, _, _,
-     _] = traj_to_list(b_nodes, j_nodes, lb_nodes, rb_nodes, sim_output)
+    _] = traj_to_list(b_nodes, j_nodes, lb_nodes, rb_nodes, sim_output)
     x_coords = []
     y_coords= []
     z_coords= []
@@ -188,6 +188,6 @@ def plot_traj(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, gait) -
 
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
-    ax.plot(x_coords[0], y_coords[0], z_coords[0], label='COG_trajectory')
+    ax.plot(x_coords[-1], y_coords[-1], z_coords[-1], label='trajectory')
     plt.show()
     return

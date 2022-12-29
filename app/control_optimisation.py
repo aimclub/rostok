@@ -12,7 +12,7 @@ from rostok.virtual_experiment.simulation_step import SimOut
 def get_object_to_grasp():
     matich = DefaultChronoMaterial()
     matich.Friction = 0.65
-    matich.DampingF = 0.65
+    #matich.DampingF = 0.65
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=SimpleBody.BOX,
                        material=matich,
