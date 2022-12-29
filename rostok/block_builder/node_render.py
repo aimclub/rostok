@@ -557,8 +557,7 @@ class ChronoBodyEnv(ChronoBody):
                  random_color=True,
                  mass=1,
                  material=DefaultChronoMaterial(),
-                 pos: FrameTransform = FrameTransform([0, 0.0, 0], [1, 0, 0, 0]),
-                 **kwargs):
+                 pos: FrameTransform = FrameTransform([0, 0.0, 0], [1, 0, 0, 0])):
 
         # Create body
         material = struct_material2object_material(material)

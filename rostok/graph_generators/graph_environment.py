@@ -4,7 +4,6 @@ from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 from rostok.graph_generators.graph_reward import Reward
 from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
 from rostok.utils.result_saver import MCTSReporter, RobotState
-from rostok.utils.result_saver import MCTSReporter
 
 
 
@@ -233,7 +232,9 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         # else:
         #     control = deepcopy(self.movments_trajectory)
         reporter.add_reward(self.state, self.reward, self.movments_trajectory)
-        if self.reward > reporter.best_simulated_state.reward:
+        
+
+        if reporter.best_simulated_state is None or self.reward > reporter.best_simulated_state.reward:
             reporter.set_best_state(self.state, self.reward, self.movments_trajectory)
 
         print(self.reward)

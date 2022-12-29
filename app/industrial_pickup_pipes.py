@@ -38,12 +38,12 @@ GAIT = 2.5
 WEIGHT = [3, 1, 1, 2]
 
 cfg = ConfigRewardFunction()
-cfg.bound = (2, 10)
+cfg.bound = (50, 100)
 cfg.iters = 5
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
 cfg.time_step = 0.001
 cfg.time_sim = 2
-cfg.flags = [FlagMaxTime(5), FlagNotContact(2), FlagSlipout(2, 0.5)]
+cfg.flags = [FlagMaxTime(5), FlagNotContact(5/4+0.2), FlagSlipout(5/4+0.2, 0.5)]
 
 criterion_callback = create_grab_criterion_fun(node_features, GAIT, WEIGHT)
 traj_generator_fun = create_traj_fun(cfg.time_sim, cfg.time_step)
