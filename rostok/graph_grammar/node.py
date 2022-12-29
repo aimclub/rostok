@@ -323,9 +323,19 @@ class GraphGrammar(nx.DiGraph):
 
         return list(dfs_preorder_nodes(self, self.get_root_id()))
 
-    def __eq__(self, __o) -> bool:
-        if isinstance(__o, GraphGrammar):
-            is_node_eq = __o.nodes == self.nodes
-            is_edge_eq = __o.edges == self.edges
-            return is_edge_eq and is_node_eq
+    def __eq__(self, __rhs) -> bool:
+        if isinstance(__rhs, GraphGrammar):
+            self_dfs_paths = self.graph_partition_dfs()
+            self_dfs_paths_lbl = []
+            for path in self_dfs_paths:
+                self_dfs_paths_lbl.append([self.get_node_by_id(x).label for x in path])
+
+            self_dfs_paths_lbl.sort(key = lambda x: "".join(x))
+            rhs_dfs_paths = __rhs.graph_partition_dfs()
+            rhs_dfs_paths_lbl = []
+            for path in rhs_dfs_paths:
+                rhs_dfs_paths_lbl.append([__rhs.get_node_by_id(x).label for x in path])
+
+            rhs_dfs_paths_lbl.sort(key = lambda x: "".join(x))
+            return self_dfs_paths_lbl == rhs_dfs_paths_lbl
         return False

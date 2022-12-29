@@ -1,19 +1,21 @@
-import rule_extention
-import mcts
 import matplotlib.pyplot as plt
+import mcts
 # imports from standard libs
 import networkx as nx
-
 # chrono imports
 import pychrono as chrono
-
-from control_optimisation import create_grab_criterion_fun, create_traj_fun, get_object_to_grasp
-from rostok.graph_grammar.node import GraphGrammar
-from rostok.trajectory_optimizer.control_optimizer import ConfigRewardFunction, ControlOptimizer
-from rostok.criterion.flags_simualtions import FlagMaxTime, FlagSlipout, FlagNotContact
-from rostok.utils.result_saver  import read_report
+import rule_extention
+from control_optimisation import (create_grab_criterion_fun, create_traj_fun,
+                                  get_object_to_grasp)
 
 import rostok.graph_generators.graph_environment as env
+from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact,
+                                                FlagSlipout)
+from rostok.graph_grammar.node import GraphGrammar
+from rostok.trajectory_optimizer.control_optimizer import (
+    ConfigRewardFunction, ControlOptimizer)
+#from rostok.utils.result_saver import read_report
+from rostok.utils.result_saver import MCTSReporter
 
 
 def plot_graph(graph: GraphGrammar):
@@ -22,7 +24,7 @@ def plot_graph(graph: GraphGrammar):
                      pos=nx.kamada_kawai_layout(graph, dim=2),
                      node_size=800,
                      labels={n: graph.nodes[n]["Node"].label for n in graph})
-    plt.savefig("./results/graph.jpg")
+    #plt.savefig("./results/graph.jpg")
     plt.show()
 
 
@@ -56,33 +58,38 @@ control_optimizer = ControlOptimizer(cfg)
 # %% Init mcts parameters
 
 # Hyperparameters mctss
-iteration_limit = 20
+iteration_limit = 2
 
 # Initialize MCTS
 searcher = mcts.mcts(iterationLimit=iteration_limit)
 finish = False
 
 G = GraphGrammar()
-max_numbers_rules = 10
+max_numbers_rules = 2
 # Create graph envirenments for algorithm (not gym)
 graph_env = env.GraphVocabularyEnvironment(G, rule_vocabul, max_numbers_rules)
 
 graph_env.set_control_optimizer(control_optimizer)
 
+reporter = MCTSReporter.get_instance()
+reporter.rule_vocabulary = rule_vocabul
+reporter.initialize()
+
 #%% Run first algorithm
 iter = 0
 while not finish:
     action = searcher.search(initialState=graph_env)
-    finish, final_graph, opt_trajectory, path = graph_env.step(action, False)
+    finish, final_graph = graph_env.step(action, False)
     iter += 1
     print(
-        f"number iteration: {iter}, counter actions: {graph_env.counter_action}, reward: {graph_env.reward}"
+        f"number iteration: {iter}, counter actions: {graph_env.counter_action}, reward: {reporter.get_best_info()[1]}"
     )
 
 
-best_graph, best_control, reward = read_report(path, rule_vocabul)
-best_control = [float(x) for x in best_control]
+path = reporter.dump_results()
+best_graph,  reward, best_control = reporter.get_best_info()
+# best_control = [float(x) for x in best_control]
 func_reward = control_optimizer.create_reward_function(best_graph)
-res = -func_reward(best_control, True)
+res = - func_reward(best_control)
 plot_graph(best_graph)
 print(res)
