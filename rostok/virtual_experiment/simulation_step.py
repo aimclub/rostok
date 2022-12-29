@@ -463,6 +463,8 @@ class SimulationStepOptimizationIndustrial(SimulationStepOptimization):
                 return (y[0], y[1] + [x[1]])
 
         FRAME_STEP = 1 / 30
+        
+        max_count_simulation_steps = round(self.condion_stop_simulation.flags[0].max_time/time_step)
         if visualize:
             # 30 fps
 
@@ -507,7 +509,7 @@ class SimulationStepOptimizationIndustrial(SimulationStepOptimization):
             # Realtime for fixed step
 
             if self.chrono_system.GetChTime() > self.condion_stop_simulation.flags[0].max_time /4:
-                self.chrono_system.Set_G_acc(chrono.ChVectorD(0,-9.8,0))
+                self.chrono_system.Set_G_acc(chrono.ChVectorD(0,-9.8/2,0))
 
             if self.chrono_system.GetStepcount() % int(FRAME_STEP / time_step) == 0:
                 if visualize:
@@ -572,7 +574,8 @@ class SimulationStepOptimizationIndustrial(SimulationStepOptimization):
 
         if visualize:
             vis.GetDevice().closeDevice()
-
+        
+        print(max_count_simulation_steps, self.chrono_system.GetStepcount())
         # Create instance output data and add in dictionary
         simulation_data_joint_angle: dict[int, DataJointBlock] = dict(
             map(lambda x: (x[0], DataJointBlock(x[0], arrays_simulation_data_time, x[1])),

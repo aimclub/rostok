@@ -102,7 +102,7 @@ class ControlOptimizer():
             returns reward based on criterion_callback
         """
 
-        def reward(x, is_vis=True):
+        def reward(x, is_vis=False):
             # Init object state
             object_to_grab, start_frame_robot = self.cfg.get_rgab_object_callback()
             arr_traj = self.cfg.params_to_timesiries_callback(generated_graph, x)

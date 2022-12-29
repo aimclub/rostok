@@ -1,0 +1,4 @@
+
+main_result:
+rules:
+ InitMechanism_3_L_A

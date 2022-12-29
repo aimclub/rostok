@@ -12,7 +12,7 @@ from rostok.graph_grammar.node import GraphGrammar
 from rostok.trajectory_optimizer.control_optimizer import ConfigRewardFunction, ControlOptimizer
 from rostok.criterion.flags_simualtions import FlagMaxTime, FlagSlipout, FlagNotContact
 from rostok.block_builder.transform_srtucture import FrameTransform
-
+from rostok.utils.result_saver import MCTSReporter
 import rostok.graph_generators.graph_environment as env
 
 
@@ -38,12 +38,12 @@ GAIT = 2.5
 WEIGHT = [3, 1, 1, 2]
 
 cfg = ConfigRewardFunction()
-cfg.bound = (50, 100)
-cfg.iters = 5
+cfg.bound = (750, 1000)
+cfg.iters = 2
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
 cfg.time_step = 0.001
-cfg.time_sim = 2
-cfg.flags = [FlagMaxTime(5), FlagNotContact(5/4+0.2), FlagSlipout(5/4+0.2, 0.5)]
+cfg.time_sim = 3
+cfg.flags = [FlagMaxTime(3), FlagNotContact(3/4-0.2), FlagSlipout(3/4+0.2, 0.2)]
 
 criterion_callback = create_grab_criterion_fun(node_features, GAIT, WEIGHT)
 traj_generator_fun = create_traj_fun(cfg.time_sim, cfg.time_step)
@@ -57,19 +57,22 @@ control_optimizer = ControlOptimizer(cfg)
 # %% Init mcts parameters
 
 # Hyperparameters mctss
-iteration_limit = 20
+iteration_limit = 3
 
 # Initialize MCTScl
 searcher = mcts.mcts(iterationLimit=iteration_limit)
 finish = False
 
 G = GraphGrammar()
-max_numbers_rules = 10
+max_numbers_rules = 5
 # Create graph envirenments for algorithm (not gym)
 graph_env = env.GraphVocabularyEnvironment(G, rule_vocabul, max_numbers_rules)
 
 graph_env.set_control_optimizer(control_optimizer)
 
+reporter = MCTSReporter.get_instance()
+reporter.rule_vocabulary = rule_vocabul
+reporter.initialize()
 #%% Run first algorithm
 iter = 0
 while not finish:
@@ -81,9 +84,10 @@ while not finish:
     )
 
 
-# best_graph, best_control, reward = read_report(path, rule_vocabul)
+path = reporter.dump_results()
+best_graph,  reward, best_control = reporter.get_best_info()
 # best_control = [float(x) for x in best_control]
-# func_reward = control_optimizer.create_reward_function_pickup(best_graph, frames)
-# res = - func_reward(best_control, True)
-# plot_graph(best_graph)
-# print(res)
+func_reward = control_optimizer.create_reward_function(best_graph)
+res = - func_reward(best_control)
+plot_graph(best_graph)
+print(res)

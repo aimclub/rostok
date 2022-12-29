@@ -302,7 +302,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
             main_control = self.movments_trajectory
             reporter.set_main_optimized_state(reporter.main_state,main_reward, main_control)
 
-        return done, self.graph
+        return done, self.graph, self.movments_trajectory, path
 
     def __deepcopy__(self, memo):
         cls = self.__class__
