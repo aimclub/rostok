@@ -5,6 +5,7 @@ import random
 
 import pychrono.core as chrono
 
+from rostok import intexp
 from rostok.block_builder.body_size import BoxSize, CylinderSize, EllipsoidSize, SphereSize
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
     DefaultChronoMaterial, Material, struct_material2object_material)
@@ -552,11 +553,12 @@ class ChronoBodyEnv(ChronoBody):
 
     def __init__(self,
                  builder,
-                 shape=SimpleBody.BOX,
+                 shape=None,
                  random_color=True,
                  mass=1,
                  material=DefaultChronoMaterial(),
-                 pos: FrameTransform = FrameTransform([0, 0.0, 0], [1, 0, 0, 0])):
+                 pos: FrameTransform = FrameTransform([0, 0.0, 0], [1, 0, 0, 0]),
+                 **kwargs):
 
         # Create body
         material = struct_material2object_material(material)
@@ -570,14 +572,20 @@ class ChronoBodyEnv(ChronoBody):
             body = chrono.ChBodyEasySphere(shape.radius, 1000, True, True, material)
         elif isinstance(shape, EllipsoidSize):
             body = chrono.ChBodyEasyEllipsoid(
-                chrono.ChVectorD(shape.value.radius_a, shape.radius_b, shape.radius_c),
+                chrono.ChVectorD(shape.radius_a, shape.radius_b, shape.radius_c),
                 1000, True, True, material)
-        body.SetCollide(True)
-        transform = ChronoTransform(builder, pos)
-        body.SetCoord(transform.transform)
-        body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
-        body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
-        body.SetMass(mass)
+        if shape is not None:
+            body.SetCollide(True)
+            transform = ChronoTransform(builder, pos)
+            body.SetCoord(transform.transform)
+            body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
+            body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
+            body.SetMass(mass)
+        else:
+            obj_db = intexp.chrono_api.ChTesteeObject()
+            obj_db.create_chrono_body_from_file('./examples/models/custom/pipe_mul_10.obj',
+                                    './examples/models/custom/pipe.xml')
+            body = obj_db.chrono_body
 
         # Create shape
         pos_in_marker = chrono.ChVectorD(0, 0, 0)
@@ -588,7 +596,6 @@ class ChronoBodyEnv(ChronoBody):
     def set_coord(self, frame: FrameTransform):
         transform = ChronoTransform(self.builder, frame)
         self.body.SetCoord(transform.transform)
-
 
 class ChronoRevolveJoint(BlockBridge):
     """The class representing revolute joint object in `pychrono <https://projectchrono.org/pychrono/>`_ physical

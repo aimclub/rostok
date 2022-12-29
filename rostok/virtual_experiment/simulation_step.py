@@ -117,16 +117,16 @@ class SimulationStepOptimization:
         self.chrono_system.SetContactForceModel(chrono.ChSystemSMC.Hertz)
         self.chrono_system.SetSolverForceTolerance(1e-6)
         self.chrono_system.SetSolverMaxIterations(100)
-        timestepper = chrono.ChTimestepperHHT(self.chrono_system) #Hilber, Hughes and Taylor method 
-        self.chrono_system.SetTimestepper(timestepper)
+        # timestepper = chrono.ChTimestepperHHT(self.chrono_system) #Hilber, Hughes and Taylor method 
+        # self.chrono_system.SetTimestepper(timestepper)
         
-        # For HHT timestepper only:
-        timestepper.SetAbsTolerances(1e-5)
-        timestepper.SetScaling(True)
-        timestepper.SetStepControl(True)
-        timestepper.SetMinStepSize(1e-4)
-        timestepper.SetAlpha(-0.2) # timestepper numerical damping parameter [-1/3; 0]; a = 0 there is no damping
-        timestepper.SetMaxiters(5)
+        # # For HHT timestepper only:
+        # timestepper.SetAbsTolerances(1e-5)
+        # timestepper.SetScaling(True)
+        # timestepper.SetStepControl(True)
+        # timestepper.SetMinStepSize(1e-4)
+        # timestepper.SetAlpha(-0.2) # timestepper numerical damping parameter [-1/3; 0]; a = 0 there is no damping
+        # timestepper.SetMaxiters(5)
 
         self.grasp_object = grasp_object.create_block(self.chrono_system)
 
@@ -215,6 +215,7 @@ class SimulationStepOptimization:
         def append_arr_in_dict(x, y):
             if x[0] == y[0]:
                 return (y[0], y[1] + [x[1]])
+
 
         FRAME_STEP = 1 / 30
         if visualize:
@@ -364,16 +365,16 @@ class SimulationStepOptimizationIndustrial(SimulationStepOptimization):
         self.chrono_system.SetContactForceModel(chrono.ChSystemSMC.Hertz)
         self.chrono_system.SetSolverForceTolerance(1e-6)
         self.chrono_system.SetSolverMaxIterations(100)
-        timestepper = chrono.ChTimestepperHHT(self.chrono_system) #Hilber, Hughes and Taylor method 
-        self.chrono_system.SetTimestepper(timestepper)
+        # timestepper = chrono.ChTimestepperHHT(self.chrono_system) #Hilber, Hughes and Taylor method 
+        # self.chrono_system.SetTimestepper(timestepper)
         
-        # For HHT timestepper only:
-        timestepper.SetAbsTolerances(1e-5)
-        timestepper.SetScaling(True)
-        timestepper.SetStepControl(True)
-        timestepper.SetMinStepSize(1e-4)
-        timestepper.SetAlpha(-0.2) # timestepper numerical damping parameter [-1/3; 0]; a = 0 there is no damping
-        timestepper.SetMaxiters(5)
+        # # For HHT timestepper only:
+        # timestepper.SetAbsTolerances(1e-5)
+        # timestepper.SetScaling(True)
+        # timestepper.SetStepControl(True)
+        # timestepper.SetMinStepSize(1e-4)
+        # timestepper.SetAlpha(-0.2) # timestepper numerical damping parameter [-1/3; 0]; a = 0 there is no damping
+        # timestepper.SetMaxiters(5)
 
         self.grasp_object = grasp_object.create_block(self.chrono_system)
 

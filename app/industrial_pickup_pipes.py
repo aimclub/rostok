@@ -41,9 +41,9 @@ cfg = ConfigRewardFunction()
 cfg.bound = (2, 10)
 cfg.iters = 5
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
-cfg.time_step = 0.005
+cfg.time_step = 0.001
 cfg.time_sim = 2
-cfg.flags = [FlagMaxTime(2), FlagNotContact(1), FlagSlipout(0.5, 0.5)]
+cfg.flags = [FlagMaxTime(5), FlagNotContact(2), FlagSlipout(2, 0.5)]
 
 criterion_callback = create_grab_criterion_fun(node_features, GAIT, WEIGHT)
 traj_generator_fun = create_traj_fun(cfg.time_sim, cfg.time_step)
@@ -59,7 +59,7 @@ control_optimizer = ControlOptimizer(cfg)
 # Hyperparameters mctss
 iteration_limit = 20
 
-# Initialize MCTS
+# Initialize MCTScl
 searcher = mcts.mcts(iterationLimit=iteration_limit)
 finish = False
 

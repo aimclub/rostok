@@ -8,6 +8,8 @@ from rostok.graph_grammar.node import BlockWrapper, GraphGrammar, Node
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
 from rostok.virtual_experiment.simulation_step import SimOut
+from rostok import intexp
+import numpy as np
 
 
 def get_object_to_grasp():
@@ -22,16 +24,16 @@ def get_object_to_grasp():
     return obj
 
 def get_pipes():
-    matich = DefaultChronoMaterial()
-    # matich.Friction = 0.65
-    # matich.DampingF = 0.65
-    obj = BlockWrapper(ChronoBodyEnv,
-                       shape=bs.BoxSize(0.1,0.1,0.1),
-                       material=matich,
-                       pos=FrameTransform([0, 0.5, 0], [0, -0.048, 0.706, 0.706]))
 
-    frame_1 = FrameTransform([-1, 0, 0],[0,1,0,0])
-    frame_2 = FrameTransform([1, 0, 0],[0,1,0,0])
+    # Create 3D mesh and setup parameters from files
+
+    obj = BlockWrapper(ChronoBodyEnv)
+    obj_db = intexp.chrono_api.ChTesteeObject()
+    obj_db.create_chrono_body_from_file('./examples/models/custom/pipe_mul_10.obj',
+                            './examples/models/custom/pipe.xml')
+    new_gen_poses = intexp.poses_generator.gen_cylindrical_surface_around_object_axis(obj_db, 1, 0.3, 2.5, 'z')
+    frame_1 = FrameTransform(new_gen_poses[1][0],[0,1,0,0])
+    frame_2 = FrameTransform(new_gen_poses[3][0],[0,1,0,0])
     robot_frames = [frame_1, frame_2]
     return obj, robot_frames
 
