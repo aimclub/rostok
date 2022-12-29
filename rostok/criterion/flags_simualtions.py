@@ -102,11 +102,12 @@ class FlagWithContact(FlagStopSimualtions, ABC):
         Returns:
             bool: True when contact is exsist
         """
-        blocks = self.robot.block_map.values()
-        body_block = filter(lambda x: isinstance(x, RobotBody), blocks)
-        array_normal_forces = map(lambda x: x.list_n_forces, body_block)
-        sum_contacts = reduce(lambda x, y: sum(x)
-                              if isinstance(x, list) else x + sum(y), array_normal_forces)
+        # blocks = self.robot.block_map.values()
+        # body_block = filter(lambda x: isinstance(x, RobotBody), blocks)
+        # array_normal_forces = map(lambda x: x.list_n_forces, body_block)
+        # sum_contacts = reduce(lambda x, y: sum(x)
+        #                       if isinstance(x, list) else x + sum(y), array_normal_forces)
+        sum_contacts= sum(self.obj.list_n_forces)
         return not sum_contacts == 0
 
 
