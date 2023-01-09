@@ -80,6 +80,11 @@ class Robot:
         base_id = self.__graph.closest_node_to_root(ids_blocks)
         self.block_map[base_id].body.SetBodyFixed(True)
 
+    def get_base_body(self):
+        ids_blocks = list(self.block_map.keys())
+        base_id = self.__graph.closest_node_to_root(ids_blocks)
+        return self.block_map[base_id]
+        
     @property
     def get_joints(self):
         """Create 2D-list joints from list of blocks. First index is the number
