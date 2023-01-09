@@ -74,6 +74,7 @@ def criterion_calc(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, ga
         l_sum_cog = []
         step_n = 0
         temp_dist = []
+        euc_dist = []
         #While coordinates exist
         while step_n < len(rb_nodes_sim[0][0]['abs_coord_cog']):
             # list, which contains values of euclidean distances between right and left fingers
@@ -148,7 +149,7 @@ def criterion_calc(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, ga
         distance_crit = 0
 
     #4) Time criterion
-    if np.size(j_nodes_sim) > 0:
+    if np.size(j_nodes_sim) > 0 and len(j_nodes_sim[0]['time']) > 0:
         time_crit = j_nodes_sim[0]['time'][-1] / gait
     else:
         time_crit = 0
