@@ -89,9 +89,10 @@ while not finish:
 
 
 path = reporter.dump_results()
-best_graph,  reward, best_control = reporter.get_best_info()
+best_graph, reward, best_control = reporter.get_best_info()
+plot_graph(best_graph)
 # best_control = [float(x) for x in best_control]
 func_reward = control_optimizer.create_reward_function(best_graph)
 res = - func_reward(best_control)
-plot_graph(best_graph)
+
 print(res)
