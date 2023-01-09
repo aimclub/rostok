@@ -1,3 +1,5 @@
+import pychrono as chrono
+
 import rostok.criterion.criterion_calc as criterion
 import rostok.block_builder.body_size as bs
 from rostok.block_builder.basic_node_block import SimpleBody
@@ -31,6 +33,8 @@ def get_pipes():
     obj_db = intexp.chrono_api.ChTesteeObject()
     obj_db.create_chrono_body_from_file('./examples/models/custom/pipe_mul_10.obj',
                             './examples/models/custom/pipe.xml')
+    obj_db.set_chrono_body_ref_frame_in_point(chrono.ChFrameD(chrono.ChVectorD(0, 0, -5),
+                                                          chrono.ChQuaternionD(1, 0, 0, 0)))
     new_gen_poses = intexp.poses_generator.gen_cylindrical_surface_around_object_axis(obj_db, 1, 0.3, 2.5, 'z')
     frame_1 = FrameTransform(new_gen_poses[1][0],[0,1,0,0])
     frame_2 = FrameTransform(new_gen_poses[3][0],[0,1,0,0])
