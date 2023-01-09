@@ -11,7 +11,7 @@ from rostok.criterion.flags_simualtions import (ConditionStopSimulation, FlagSto
 from rostok.graph_grammar.node import BlockWrapper, GraphGrammar
 from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
 from rostok.virtual_experiment.robot import Robot
-
+from rostok.intexp.chrono_api import ChTesteeObject, ChCrutch
 
 # Immutable classes with output simulation data for robot block
 @dataclass(frozen=True)
@@ -446,6 +446,23 @@ class SimulationStepOptimizationIndustrial(SimulationStepOptimization):
         except IndexError:
             raise IndexError("Arries control and joints aren't same shape")
 
+    # Setter flags of stop simulation
+    def set_flags_stop_simulation(self, flags_stop_simulation: list[FlagStopSimualtions]):
+        """Setter flags of stop simulation
+
+        Args:
+            flags_stop_simulation (list[FlagStopSimualtions]): List of desired checking flags.
+                You can see flags in module :py:mod:`flags_simualtions`.
+                Or create yours, that subclasses :py:class:`FlagStopSimualtions`
+        """
+        self.condion_stop_simulation = ConditionStopSimulation(self.chrono_system, self.grab_robot,
+                                                               self.grasp_object,
+                                                               flags_stop_simulation)
+        
+        self.condion_stop_simulation_extra = ConditionStopSimulation(self.chrono_system, self.grab_robot_extra,
+                                                               self.grasp_object,
+                                                               flags_stop_simulation)
+
     def simulate_system(self, time_step, visualize=False) -> SimOut:
         """Start the simulation and return data from it
 
@@ -463,6 +480,15 @@ class SimulationStepOptimizationIndustrial(SimulationStepOptimization):
                 return (y[0], y[1] + [x[1]])
 
         FRAME_STEP = 1 / 30
+        
+#         obj_db = ChTesteeObject() # Create Chrono Testee Object
+# # Create 3D mesh and setup parameters from files
+#         obj_db.create_chrono_body_from_file('./examples/models/custom/pipe_mul_10.obj',
+#                                         './examples/models/custom/pipe.xml')
+#         holder = ChCrutch(depth_k = 0.05)
+#         holder.build_chrono_body(obj_db)
+#         holder.chrono_body.SetPos(chrono.ChVectorD(0,-0.3,5))
+        # self.chrono_system.Add(holder.chrono_body)
         
         max_count_simulation_steps = round(self.condion_stop_simulation.flags[0].max_time/time_step)
         if visualize:
@@ -500,16 +526,17 @@ class SimulationStepOptimizationIndustrial(SimulationStepOptimization):
         arrays_simulation_data_amount_obj_contact_surfaces = [(-1, [])]
         arrays_simulation_data_cont_coord = [(-1, [])]
         arrays_simulation_data_abs_coord_COG_obj = [(-1, [])]
+        
 
         # Loop of simulation
-        while not self.condion_stop_simulation.flag_stop_simulation():
+        while not self.condion_stop_simulation.flag_stop_simulation() or not self.condion_stop_simulation_extra.flag_stop_simulation():
             # while vis.Run():
             self.chrono_system.Update()
             self.chrono_system.DoStepDynamics(time_step)
             # Realtime for fixed step
 
             if self.chrono_system.GetChTime() > self.condion_stop_simulation.flags[0].max_time /4:
-                self.chrono_system.Set_G_acc(chrono.ChVectorD(0,-9.8/2,0))
+                self.chrono_system.Set_G_acc(chrono.ChVectorD(0,-9.8*0.9,0))
 
             if self.chrono_system.GetStepcount() % int(FRAME_STEP / time_step) == 0:
                 if visualize:
@@ -519,63 +546,62 @@ class SimulationStepOptimizationIndustrial(SimulationStepOptimization):
                     vis.Render()
                     vis.EndScene()
 
-            arrays_simulation_data_time.append(self.chrono_system.GetChTime())
+            # arrays_simulation_data_time.append(self.chrono_system.GetChTime())
 
-            # Get current variables from robot blocks
-            current_data_joint_angle = RobotSensor.joints_angle(self.grab_robot)
-            current_data_amount_contact_surfaces = RobotSensor.amount_contact_surfaces_blocks(
-                self.grab_robot)
-            current_data_sum_contact_forces = RobotSensor.sum_contact_forces_blocks(self.grab_robot)
-            current_data_abs_coord_COG = RobotSensor.abs_coord_COG_blocks(self.grab_robot)
+            # # Get current variables from robot blocks
+            # current_data_joint_angle = RobotSensor.joints_angle(self.grab_robot)
+            # current_data_amount_contact_surfaces = RobotSensor.amount_contact_surfaces_blocks(
+            #     self.grab_robot)
+            # current_data_sum_contact_forces = RobotSensor.sum_contact_forces_blocks(self.grab_robot)
+            # current_data_abs_coord_COG = RobotSensor.abs_coord_COG_blocks(self.grab_robot)
 
-            # Get current variables from object
-            current_data_std_obj_force = RobotSensor.std_contact_forces_object(self.grasp_object)
-            current_data_cont_coord = RobotSensor.contact_coord(self.grasp_object)
-            current_data_abs_coord_COG_obj = RobotSensor.abs_coord_COG_obj(self.grasp_object)
+            # # Get current variables from object
+            # current_data_std_obj_force = RobotSensor.std_contact_forces_object(self.grasp_object)
+            # current_data_cont_coord = RobotSensor.contact_coord(self.grasp_object)
+            # current_data_abs_coord_COG_obj = RobotSensor.abs_coord_COG_obj(self.grasp_object)
 
-            current_data_amount_obj_contact_surfaces = dict([
-                (-1, len([item for item in self.grasp_object.list_c_coord if item != 0]))
-            ])
-            # Append current data in output arries
-            arrays_simulation_data_joint_angle = list(
-                map(append_arr_in_dict, current_data_joint_angle.items(),
-                    arrays_simulation_data_joint_angle))
+            # current_data_amount_obj_contact_surfaces = dict([
+            #     (-1, len([item for item in self.grasp_object.list_c_coord if item != 0]))
+            # ])
+            # # Append current data in output arries
+            # arrays_simulation_data_joint_angle = list(
+            #     map(append_arr_in_dict, current_data_joint_angle.items(),
+            #         arrays_simulation_data_joint_angle))
 
-            arrays_simulation_data_sum_contact_forces = list(
-                map(append_arr_in_dict, current_data_sum_contact_forces.items(),
-                    arrays_simulation_data_sum_contact_forces))
+            # arrays_simulation_data_sum_contact_forces = list(
+            #     map(append_arr_in_dict, current_data_sum_contact_forces.items(),
+            #         arrays_simulation_data_sum_contact_forces))
 
-            arrays_simulation_data_abs_coord_COG = list(
-                map(append_arr_in_dict, current_data_abs_coord_COG.items(),
-                    arrays_simulation_data_abs_coord_COG))
+            # arrays_simulation_data_abs_coord_COG = list(
+            #     map(append_arr_in_dict, current_data_abs_coord_COG.items(),
+            #         arrays_simulation_data_abs_coord_COG))
 
-            arrays_simulation_data_amount_contact_surfaces = list(
-                map(append_arr_in_dict, current_data_amount_contact_surfaces.items(),
-                    arrays_simulation_data_amount_contact_surfaces))
+            # arrays_simulation_data_amount_contact_surfaces = list(
+            #     map(append_arr_in_dict, current_data_amount_contact_surfaces.items(),
+            #         arrays_simulation_data_amount_contact_surfaces))
 
-            if current_data_std_obj_force is not None:
-                arrays_simulation_data_obj_force = map(append_arr_in_dict,
-                                                       current_data_std_obj_force.items(),
-                                                       arrays_simulation_data_obj_force)
+            # if current_data_std_obj_force is not None:
+            #     arrays_simulation_data_obj_force = map(append_arr_in_dict,
+            #                                            current_data_std_obj_force.items(),
+            #                                            arrays_simulation_data_obj_force)
 
-            arrays_simulation_data_amount_obj_contact_surfaces = map(
-                append_arr_in_dict, current_data_amount_obj_contact_surfaces.items(),
-                arrays_simulation_data_amount_obj_contact_surfaces)
+            # arrays_simulation_data_amount_obj_contact_surfaces = map(
+            #     append_arr_in_dict, current_data_amount_obj_contact_surfaces.items(),
+            #     arrays_simulation_data_amount_obj_contact_surfaces)
 
-            if current_data_cont_coord is not None:
-                arrays_simulation_data_cont_coord = list(
-                    map(append_arr_in_dict, current_data_cont_coord.items(),
-                        arrays_simulation_data_cont_coord))
+            # if current_data_cont_coord is not None:
+            #     arrays_simulation_data_cont_coord = list(
+            #         map(append_arr_in_dict, current_data_cont_coord.items(),
+            #             arrays_simulation_data_cont_coord))
 
-            if current_data_abs_coord_COG_obj is not None:
-                arrays_simulation_data_abs_coord_COG_obj = list(
-                    map(append_arr_in_dict, current_data_abs_coord_COG_obj.items(),
-                        arrays_simulation_data_abs_coord_COG_obj))
+            # if current_data_abs_coord_COG_obj is not None:
+            #     arrays_simulation_data_abs_coord_COG_obj = list(
+            #         map(append_arr_in_dict, current_data_abs_coord_COG_obj.items(),
+            #             arrays_simulation_data_abs_coord_COG_obj))
 
         if visualize:
             vis.GetDevice().closeDevice()
         
-        print(max_count_simulation_steps, self.chrono_system.GetStepcount())
         # Create instance output data and add in dictionary
         simulation_data_joint_angle: dict[int, DataJointBlock] = dict(
             map(lambda x: (x[0], DataJointBlock(x[0], arrays_simulation_data_time, x[1])),
