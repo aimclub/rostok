@@ -1,3 +1,4 @@
+import numpy as np
 import pychrono as chrono
 import pychrono.irrlicht as irr
 
@@ -16,7 +17,7 @@ obj_db.create_chrono_body_from_file('./examples/models/custom/pipe_mul_10.obj',
 if GENERATE_NEW_POSES:
     # new_gen_poses = intexp.poses_generator.gen_random_poses_around_line(20, 0.04, 0.06, 0.015, 0.18)
     # new_gen_poses = intexp.poses_generator.gen_cylindrical_surface_from_poses(20, 0.07, 0.015, 0.18)
-    new_gen_poses = intexp.poses_generator.gen_cylindrical_surface_around_object_axis(obj_db, 1, 0.3, 2.5, 'z')
+    new_gen_poses = intexp.poses_generator.gen_cylindrical_surface_around_object_axis(obj_db, 1, 0.5, 5, 'z')
     # new_gen_poses = intexp.poses_generator.gen_random_poses_around_object_axis(obj_db, 20, 0.07, 0.02, 'z')
     obj_db.rewrite_grasping_poses_list(new_gen_poses)
 

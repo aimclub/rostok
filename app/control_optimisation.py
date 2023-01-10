@@ -24,23 +24,6 @@ def get_object_to_grasp():
 
     return obj
 
-def get_pipes():
-
-    # Create 3D mesh and setup parameters from files
-
-    obj = BlockWrapper(ChronoBodyEnv)
-    obj_db = intexp.chrono_api.ChTesteeObject()
-    obj_db.create_chrono_body_from_file('./examples/models/custom/pipe_mul_10.obj',
-                            './examples/models/custom/pipe.xml')
-    obj_db.set_chrono_body_ref_frame_in_point(chrono.ChFrameD(chrono.ChVectorD(0, 0, -5),
-                                                          chrono.ChQuaternionD(1, 0, 0, 0)))
-    new_gen_poses = intexp.poses_generator.gen_cylindrical_surface_around_object_axis(obj_db, 1, 0.3, 2.5, 'z')
-    frame_1 = FrameTransform(new_gen_poses[1][0],[0,1,0,0])
-    frame_2 = FrameTransform(new_gen_poses[3][0],[0,1,0,0])
-    robot_frames = [frame_1, frame_2]
-    return obj, robot_frames
-
-
 def grab_crtitrion(sim_output: dict[int, SimOut], grab_robot, node_feature: list[list[Node]], gait,
                    weight):
     j_nodes = criterion.nodes_division(grab_robot, node_feature[1])
