@@ -29,8 +29,9 @@ def plot_graph(graph: GraphGrammar):
 
 
 # %% Create extension rule vocabulary
-
-rule_vocabul, node_features = rule_extention.init_extension_rules()
+width = [0.25, 0.35, 0.5]
+length_link = [0.4, 0.6, 0.8]
+rule_vocabul, node_features = rule_extention.init_extension_rules(length_link,width)
 
 # %% Create condig optimizing control
 
