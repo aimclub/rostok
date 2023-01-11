@@ -34,9 +34,7 @@ arr_trj = create_torque_traj_from_x(graph, const_torque_koef, MAX_TIME, TIME_STE
 
 # Create object to grasp with material props
 mat = DefaultChronoMaterial()
-shape_graps = body_size.CylinderSize
-shape_graps.radius = 0.3/2
-shape_graps.height = 0.6
+shape_graps = body_size.CylinderSize(0.3/2, 0.6)
 obj = BlockWrapper(ChronoBodyEnv,
                     shape=shape_graps,
                     material=mat,
