@@ -13,7 +13,7 @@ class ChTesteeObject(TesteeObject):
         - empty poses
     """
 
-    def __init__(self, obj_fname:str = "", xml_fname:str = "") -> None:
+    def __init__(self, obj_fname: str = "", xml_fname: str = "") -> None:
         super().__init__()
 
         if (not obj_fname) and (not xml_fname):

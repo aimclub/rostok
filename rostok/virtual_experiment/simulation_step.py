@@ -359,10 +359,7 @@ class SimulationStepOptimizationIndustrial(SimulationStepOptimization):
                  control_trajectory,
                  graph_mechanism: GraphGrammar,
                  grasp_object: BlockWrapper,
-                 start_frame_robot: list[FrameTransform] = [
-                     FrameTransform([0, 0, 0], [1, 0, 0, 0]),
-                     FrameTransform([0, 0, 0], [1, 0, 0, 0])
-                 ]):
+                 start_frame_robot: FrameTransform = FrameTransform([0, 0, 0], [1, 0, 0, 0])):
         self.control_trajectory = control_trajectory
         self.graph_mechanism = graph_mechanism
         self.controller_joints: list[list[control.ChronoControl]] = []
@@ -400,9 +397,7 @@ class SimulationStepOptimizationIndustrial(SimulationStepOptimization):
         # compensation_force_2.SetRelDir(force_dir_2)
         # compensation_force_2.SetMforce(force_magnitude / 2)
 
-        self.grab_robot = Robot(self.graph_mechanism, self.chrono_system, start_frame_robot[0])
-        self.grab_robot_extra = Robot(self.graph_mechanism, self.chrono_system,
-                                      start_frame_robot[1])
+        self.grab_robot = Robot(self.graph_mechanism, self.chrono_system, start_frame_robot)
 
         # Add grasp object in system and set system without gravity
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
@@ -412,10 +407,9 @@ class SimulationStepOptimizationIndustrial(SimulationStepOptimization):
 
     def fix_robot_base(self):
         # Fixation palm of grab mechanism
-        for grab_robot in (self.grab_robot, self.grab_robot_extra):
-            ids_blocks = list(grab_robot.block_map.keys())
-            base_id = self.graph_mechanism.closest_node_to_root(ids_blocks)
-            grab_robot.block_map[base_id].body.SetBodyFixed(True)
+        ids_blocks = list(self.grab_robot.block_map.keys())
+        base_id = self.graph_mechanism.closest_node_to_root(ids_blocks)
+        self.grab_robot.block_map[base_id].body.SetBodyFixed(True)
 
     def bind_trajectory(self, control_trajectory):
         """Create the controller joint from the control trajectory
@@ -430,13 +424,6 @@ class SimulationStepOptimizationIndustrial(SimulationStepOptimization):
         """
         try:
             for id_finger, finger in enumerate(self.grab_robot.get_joints):
-                finger_controller = []
-                for id_joint, joint in enumerate(finger):
-                    finger_controller.append(control.TrackingControl(joint))
-                    finger_controller[-1].set_des_positions(control_trajectory[id_finger][id_joint])
-                self.controller_joints.append(finger_controller)
-
-            for id_finger, finger in enumerate(self.grab_robot_extra.get_joints):
                 finger_controller = []
                 for id_joint, joint in enumerate(finger):
                     finger_controller.append(control.TrackingControl(joint))
@@ -458,10 +445,7 @@ class SimulationStepOptimizationIndustrial(SimulationStepOptimization):
         self.condion_stop_simulation = ConditionStopSimulation(self.chrono_system, self.grab_robot,
                                                                self.grasp_object,
                                                                flags_stop_simulation)
-        
-        self.condion_stop_simulation_extra = ConditionStopSimulation(self.chrono_system, self.grab_robot_extra,
-                                                               self.grasp_object,
-                                                               flags_stop_simulation)
+
 
     def simulate_system(self, time_step, visualize=False) -> SimOut:
         """Start the simulation and return data from it
@@ -480,15 +464,6 @@ class SimulationStepOptimizationIndustrial(SimulationStepOptimization):
                 return (y[0], y[1] + [x[1]])
 
         FRAME_STEP = 1 / 30
-        
-#         obj_db = ChTesteeObject() # Create Chrono Testee Object
-# # Create 3D mesh and setup parameters from files
-#         obj_db.create_chrono_body_from_file('./examples/models/custom/pipe_mul_10.obj',
-#                                         './examples/models/custom/pipe.xml')
-#         holder = ChCrutch(depth_k = 0.05)
-#         holder.build_chrono_body(obj_db)
-#         holder.chrono_body.SetPos(chrono.ChVectorD(0,-0.3,5))
-        # self.chrono_system.Add(holder.chrono_body)
         
         max_count_simulation_steps = round(self.condion_stop_simulation.flags[0].max_time/time_step)
         if visualize:
@@ -529,7 +504,7 @@ class SimulationStepOptimizationIndustrial(SimulationStepOptimization):
         
 
         # Loop of simulation
-        while not self.condion_stop_simulation.flag_stop_simulation() or not self.condion_stop_simulation_extra.flag_stop_simulation():
+        while not self.condion_stop_simulation.flag_stop_simulation():
             # while vis.Run():
             self.chrono_system.Update()
             self.chrono_system.DoStepDynamics(time_step)
@@ -538,13 +513,13 @@ class SimulationStepOptimizationIndustrial(SimulationStepOptimization):
             if self.chrono_system.GetChTime() > self.condion_stop_simulation.flags[0].max_time /4:
                 self.chrono_system.Set_G_acc(chrono.ChVectorD(0,-9.8*0.9,0))
 
-            if self.chrono_system.GetStepcount() % int(FRAME_STEP / time_step) == 0:
-                if visualize:
-
-                    vis.Run()
-                    vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
-                    vis.Render()
-                    vis.EndScene()
+            if visualize:
+                vis.Run()
+                vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
+                vis.Render()
+                vis.EndScene()
+                if self.chrono_system.GetStepcount() % int(FRAME_STEP / time_step) == 0:
+                    pass
 
             # arrays_simulation_data_time.append(self.chrono_system.GetChTime())
 

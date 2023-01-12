@@ -553,7 +553,7 @@ class ChronoBodyEnv(ChronoBody):
 
     def __init__(self,
                  builder,
-                 shape=None,
+                 shape=BoxSize(0.1,0.1,0.1),
                  random_color=True,
                  mass=1,
                  material=DefaultChronoMaterial(),
@@ -573,18 +573,22 @@ class ChronoBodyEnv(ChronoBody):
             body = chrono.ChBodyEasyEllipsoid(
                 chrono.ChVectorD(shape.radius_a, shape.radius_b, shape.radius_c),
                 1000, True, True, material)
-        if shape is not None:
+        elif isinstance(shape, tuple) and isinstance(shape[0], str):
+            obj_db = intexp.chrono_api.ChTesteeObject()
+            obj_db.create_chrono_body_from_file(shape[0],
+                                    shape[1])
+            body = obj_db.chrono_body
+            # obj_db.set_chrono_body_ref_frame_in_point(chrono.ChFrameD(chrono.ChVectorD(0,0.0,0),
+            #                                               chrono.ChQuaternionD(0,1,0,0)))
+            
+        if isinstance(shape, tuple):
             body.SetCollide(True)
             transform = ChronoTransform(builder, pos)
             body.SetCoord(transform.transform)
             body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
             body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
             body.SetMass(mass)
-        else:
-            obj_db = intexp.chrono_api.ChTesteeObject()
-            obj_db.create_chrono_body_from_file('./examples/models/custom/pipe_mul_10.obj',
-                                    './examples/models/custom/pipe.xml')
-            body = obj_db.chrono_body
+
 
         # Create shape
         pos_in_marker = chrono.ChVectorD(0, 0, 0)
@@ -633,12 +637,12 @@ class ChronoRevolveJoint(BlockBridge):
         X = chrono.Q_ROTATE_Z_TO_X
 
     def __init__(self,
-                 builder: chrono.ChSystem,
-                 axis: Axis = Axis.Z,
-                 type_of_input: InputType = InputType.POSITION,
-                 stiffness: float = 0.,
-                 damping: float = 0.,
-                 equilibrium_position: float = 0.):
+                builder: chrono.ChSystem,
+                axis: Axis = Axis.Z,
+                type_of_input: InputType = InputType.POSITION,
+                stiffness: float = 0.,
+                damping: float = 0.,
+                equilibrium_position: float = 0.):
         super().__init__(builder=builder)
         self.joint = None
         self.axis = axis

@@ -8,7 +8,7 @@ obj_db = intexp.chrono_api.ChTesteeObject() # Create Chrono Testee Object
 obj_db.create_chrono_body_from_file('./examples/models/custom/body1.obj',
                                     './examples/models/custom/body1.xml')
 obj_db.set_chrono_body_ref_frame_in_point(chrono.ChFrameD(chrono.ChVectorD(0,0.2,0),
-                                                          chrono.ChQuaternionD(1,0,0,0)))
+                                                          chrono.Q_ROTATE_Z_TO_Y))
 
 """ Impact on Testee Object """
 impact = chrono.ChForce()   # Create Impact
