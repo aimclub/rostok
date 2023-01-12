@@ -30,8 +30,6 @@ class DataJointBlock(SimulationDataBlock):
     """Immutable class with output simulation data for robot joint block (:py:class:`ChronoRevoluteJoint`).
 
         Attr:
-            id_block (int): id of robot block
-            time (list[float]): list of time of simulation
             angle_list (list[float]): list of angle of robot joint block
     """
     angle_list: list[float]
@@ -42,8 +40,6 @@ class DataBodyBlock(SimulationDataBlock):
     """Immutable class with output simulation data for robot body block (:py:class:`rostok.block_builder.node_render.BoxChronoBody`)
 
         Attr:
-            id_block (int): id of robot block
-            time (list[float]): list of time of simulation
             sum_contact_forces (list[float]): list of contact forces sum
             abs_coord_COG (list[float]): list of absolute coordinates of block
             amount_contact_surfaces (list[int]): list of number of contact surfaces
@@ -53,22 +49,20 @@ class DataBodyBlock(SimulationDataBlock):
     amount_contact_surfaces: list[int]
 
 
-"""Type for output simulation. Store trajectory and block id"""
-
-
 @dataclass(frozen=True)
 class DataObjectBlock(SimulationDataBlock):
     """Immutable class with output simulation data for object body (:py:class:`rostok.block_builder.node_render.ChronoBodyEnv`)
 
         Attr:
-            id_block (int): id of object block. Object id is less zero
-            time (list[float]): time array of simulation
-            sum_contact_forces (list[float]): list of summary contact forces
-            abs_coord_COG (list[float]): list of absolute coordinates of block
-            amount_contact_surfaces (list[int]): list of number of contact surfaces
+            obj_contact_forces (list[float]): list of contact forces that affect on object
+            obj_amount_surf_forces (list[float]): list of number of contact surfaces
+            obj_cont_coord (list[float]): list of summary contact forces
+            obj_COG (list[float]): COG of grasp object
     """
     obj_contact_forces: list[float]
     obj_amount_surf_forces: list[float]
+    obj_cont_coord: list[float]
+    obj_COG: list[float]
 
 
 """Type for output simulation. Store trajectory and block id"""
@@ -230,10 +224,11 @@ class SimulationStepOptimization:
 
         arrays_simulation_data_obj_force = [(-1, [])]
         arrays_simulation_data_amount_obj_contact_surfaces = [(-1, [])]
+        arrays_simulation_data_cont_coord = [(-1, [])]
+        arrays_simulation_data_abs_coord_COG_obj = [(-1, [])]
 
         # Loop of simulation
         while not self.condion_stop_simulation.flag_stop_simulation():
-            # while vis.Run():
             self.chrono_system.Update()
             self.chrono_system.DoStepDynamics(time_step)
             # Realtime for fixed step
@@ -254,7 +249,11 @@ class SimulationStepOptimization:
                 self.grab_robot)
             current_data_sum_contact_forces = RobotSensor.sum_contact_forces_blocks(self.grab_robot)
             current_data_abs_coord_COG = RobotSensor.abs_coord_COG_blocks(self.grab_robot)
+
+            # Get current variables from object
             current_data_std_obj_force = RobotSensor.std_contact_forces_object(self.grasp_object)
+            current_data_cont_coord = RobotSensor.contact_coord(self.grasp_object)
+            current_data_abs_coord_COG_obj = RobotSensor.abs_coord_COG_obj(self.grasp_object)
 
             current_data_amount_obj_contact_surfaces = dict([
                 (-1, len([item for item in self.grasp_object.list_n_forces if item != 0]))
@@ -280,9 +279,20 @@ class SimulationStepOptimization:
                 arrays_simulation_data_obj_force = map(append_arr_in_dict,
                                                        current_data_std_obj_force.items(),
                                                        arrays_simulation_data_obj_force)
+            
             arrays_simulation_data_amount_obj_contact_surfaces = map(
                 append_arr_in_dict, current_data_amount_obj_contact_surfaces.items(),
                 arrays_simulation_data_amount_obj_contact_surfaces)
+
+            if current_data_cont_coord is not None:
+                arrays_simulation_data_cont_coord = list(map(
+                    append_arr_in_dict, current_data_cont_coord.items(),
+                    arrays_simulation_data_cont_coord))
+
+            if current_data_abs_coord_COG_obj is not None:
+                arrays_simulation_data_abs_coord_COG_obj = list(map(
+                    append_arr_in_dict, current_data_abs_coord_COG_obj.items(),
+                    arrays_simulation_data_abs_coord_COG_obj))
 
         if visualize:
             vis.GetDevice().closeDevice()
@@ -291,6 +301,7 @@ class SimulationStepOptimization:
         simulation_data_joint_angle: dict[int, DataJointBlock] = dict(
             map(lambda x: (x[0], DataJointBlock(x[0], arrays_simulation_data_time, x[1])),
                 arrays_simulation_data_joint_angle))
+
         simulation_data_body: dict[int, DataBodyBlock] = dict(
             map(
                 lambda x, y, z:
@@ -299,9 +310,12 @@ class SimulationStepOptimization:
                 arrays_simulation_data_amount_contact_surfaces))
 
         simulation_data_object: dict[int, DataObjectBlock] = dict(
-            map(lambda x, y: (x[0], DataObjectBlock(x[0], arrays_simulation_data_time, x[1], y[1])),
+            map(lambda x, y, z, w: (x[0], DataObjectBlock(x[0], arrays_simulation_data_time, x[1], y[1], z[1], w[1])),
                 arrays_simulation_data_obj_force,
-                arrays_simulation_data_amount_obj_contact_surfaces))
+                arrays_simulation_data_amount_obj_contact_surfaces,
+                arrays_simulation_data_cont_coord,
+                arrays_simulation_data_abs_coord_COG_obj))
+
         simulation_data_joint_angle.update(simulation_data_body)
         simulation_data_joint_angle.update(simulation_data_object)
 
