@@ -1,16 +1,15 @@
 """Module includes classes and functions that control saving and reading data"""
-#import json
-from dataclasses import dataclass
+import os
 import pickle
-import shutil
 import sys
 from copy import deepcopy
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from statistics import mean
+from typing import Any
 
 import matplotlib.pyplot as plt
-import networkx as nx
 
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
@@ -27,7 +26,7 @@ class RobotState():
     Attributes:
         rule_list (list[str]): the list of rules that determines the state
 
-        rules (RuleVocabulary): the rule set that to use for the state 
+        rules (RuleVocabulary): the rule set that to use for the state
     """
     def __init__(self,  rules: RuleVocabulary, rule_list: list[str] = []):
         """Create an empty state or a state from the given rule list.
@@ -46,7 +45,7 @@ class RobotState():
         list_of_rules = rules.rule_dict.keys()
         for rule in rule_list:
             if rule not in list_of_rules:
-                raise Exception("Attempt to add to a state a rule that is absent in the rule_vocabulary")
+                raise Exception("Attempt to add a rule absent in the rule_vocabulary to a state")
         self.rule_list: list[str] = rule_list.copy()
 
     def add_rule(self, rule: str):
@@ -102,39 +101,18 @@ class RobotState():
         answer = answer.join(self.rule_list)
         return hash(answer)
 
-
+@dataclass
 class OptimizedState():
     """Class that represents the state with a calculated reward
 
     Attributes:
-        rules (RuleVocabulary): the rule vocabulary for the state
         state (RobotState): the state to calculate reward
         reward (float): the calculated reward of the state
         control (list[float]): the parameters of the optimized control"""
 
-    def __init__(self, state: RobotState, reward: float = 0, control = None):
-        """Create an object from the given state, reward and control"""
-
-        self.__rules = state.rules
-        self.__state = state
-        self.__reward = reward
-        self.__control = control
-
-    @property
-    def state(self):
-        return self.__state
-
-    @property
-    def reward(self):
-        return self.__reward
-
-    @property
-    def control(self):
-        return self.__control
-
-    @property
-    def rules(self):
-        return self.__rules
+    state: RobotState
+    reward: float
+    control: Any
 
 
 class OptimizedGraph():
@@ -160,7 +138,7 @@ class OptimizedGraph():
 
 class MCTSReporter():
     """A Singleton class to gather and dump information about MCTS search process
- 
+
     Attributes:
         instance: the instance of the class to call
         seen_graphs: list of graphs with already calculated rewards
@@ -186,7 +164,7 @@ class MCTSReporter():
                 "use get_instance method instead!")
 
         self.seen_graphs: list[OptimizedGraph] = []
-        self._rule_vocabulary = None
+        self.__rule_vocabulary = None
         self.current_rewards: list[OptimizedState] = []
         self.rewards:dict[int, list[OptimizedState]] = {}
         self.main_state = None
@@ -197,23 +175,28 @@ class MCTSReporter():
 
     @property
     def rule_vocabulary(self):
-        return self._rule_vocabulary
+        return self.__rule_vocabulary
 
     @rule_vocabulary.setter
     def rule_vocabulary(self, rules):
-        self._rule_vocabulary = rules
+        self.__rule_vocabulary = rules
 
     def initialize(self):
         """ Create and set initial values for main and best states
 
         Should be called after the rule vocabulary is set"""
 
-        if self._rule_vocabulary is None:
+        if self.rule_vocabulary is None:
             raise Exception("Attempt to initialize MCTSReporter without rule vocabulary")
 
         self.main_state = RobotState(rules=self.rule_vocabulary)
         self.main_simulated_state = OptimizedState(self.main_state, 0, None)
         self.best_simulated_state = OptimizedState(self.main_state, 0, None)
+        time = datetime.now()
+        time = str(time.date()) + "_" + str(time.hour) + "-" + str(time.minute) + "-" + str(
+            time.second)
+        self.path = Path(self.path, "MCTS_report_" + datetime.now().strftime("%yy_%mm_%dd_%HH_%MM"))
+        self.path.mkdir(parents=True, exist_ok=True)
 
     def set_best_state(self, state, reward, control):
         """Set the values for best state
@@ -266,25 +249,23 @@ class MCTSReporter():
 
     def check_graph(self, new_graph):
         """Check if the graph is already in seen_graphs
-        
+
         Args:
             new_graph: the graph to check"""
 
         if len(self.seen_graphs) > 0:
-            i = 0
             for optimized_graph in self.seen_graphs:
                 if optimized_graph.graph == new_graph:
                     reward = optimized_graph.reward
                     control = optimized_graph.control
                     print('seen reward:', reward)
                     return True, reward, control
-                i += 1
 
         return False, 0, []
 
-    def add_reward(self, state: RobotState, reward: float, control):
+    def add_state(self, state: RobotState, reward: float, control):
         """Add a state, reward and control to current_rewards
-        
+
         state: a new state to add
         reward: a new calculated reward
         control: control parameters for the new state
@@ -297,6 +278,8 @@ class MCTSReporter():
         control = list(control)
         new_optimized_state = OptimizedState(state, reward, control)
         self.current_rewards.append(new_optimized_state)
+        if reward > self.best_simulated_state.reward:
+            self.set_best_state(state, reward, control)
 
     def make_step(self, rule, step_number):
         """Save the information about the MCTS step
@@ -313,33 +296,10 @@ class MCTSReporter():
         else:
             self.main_state = RobotState(self.rule_vocabulary, [rule])
 
-        # create directory for the temp state
-        path = Path(self.path, "temp_state")
-        path.mkdir(parents=True, exist_ok=True)
-        # save the rule set
-        rules_path = Path(path,"rules.pickle")
-        file = open(rules_path,'wb+')
-        pickle.dump(self.rule_vocabulary, file)
-        file.close()
         # save current state of the reporter
-        path_temp_state = Path(path, "temp_state.pickle")
+        path_temp_state = Path(self.path, "temp_state.pickle")
         with open(path_temp_state, 'wb+') as file:
             pickle.dump(self, file)
-
-        #save temp list of seen graphs
-        path_temp_graphs = Path(path, "temp_graphs.pickle")
-        with open(path_temp_graphs, "wb+") as file:
-            pickle.dump(self.seen_graphs, file)
-
-        #save current main state in txt file
-        path_temp_main = Path(path,"temp_main.txt")
-        with open(path_temp_main, 'w', encoding='utf-8') as file:
-            original_stdout = sys.stdout
-            sys.stdout = file
-            print()
-            print('main_result:')
-            print('rules:\n', *self.main_state.rule_list)
-            sys.stdout = original_stdout
 
         self.current_rewards = []
         print(f'step {step_number} finished')
@@ -356,24 +316,11 @@ class MCTSReporter():
         plt.plot(mean_rewards)
         plt.show()
 
-    def dump_results(self):
-        """Save the state of the MCTSReporter and return the path to saved file"""
-
-        time = datetime.now()
-        time = str(time.date()) + "_" + str(time.hour) + "-" + str(time.minute) + "-" + str(
-            time.second)
-        path = Path(self.path, "MCTS_report_" + datetime.now().strftime("%yy_%mm_%dd_%HH_%MM"))
-        path.mkdir(parents=True, exist_ok=True)
-        rules_path = Path(path,"rules.pickle")
-        file = open(rules_path,'wb+')
-        pickle.dump(self.rule_vocabulary, file)
-        file.close()
-        path_to_file = Path(path, "mcts_result.txt")
+    def save_result(self):
+        path_to_file = Path(self.path, "mcts_result.txt")
         with open(path_to_file, 'w', encoding='utf-8') as file:
             original_stdout = sys.stdout
             sys.stdout = file
-            print('MCTS report generated at: ', str(time))
-            print()
             print('main_result:')
             print('rules:', *self.main_simulated_state.state.rule_list)
             print('control:', *self.main_simulated_state.control)
@@ -385,44 +332,52 @@ class MCTSReporter():
             print('reward:', self.best_simulated_state.reward)
             sys.stdout = original_stdout
 
-        path_seen_graphs = Path(path, "seen_graphs.pickle")
-        with open(path_seen_graphs, "wb+") as file:
-            pickle.dump(self.seen_graphs, file)
-
-        temp_path = self.path / "temp_state"
-        if temp_path.exists():
-            shutil.rmtree(temp_path)
-
-        self.save_object(path)
-        return path
+    def delete_temp(self):
+        path_temp_state = Path(self.path, "temp_state.pickle")
+        os.remove(path_temp_state)
 
     def get_best_info(self):
         """Get graph, reward and control for the best state"""
         graph = self.best_simulated_state.state.make_graph()
         return graph, self.best_simulated_state.reward, self.best_simulated_state.control
 
-    def save_object(self, path):
+    def save_reporter(self):
         """Saves the Reporter object to file
 
         Args:
             path: path to the directory where the Reporter should be saved"""
 
-        path = Path(path, 'reporter_state.pickle')
-        file = open(path, 'wb+')
-        pickle.dump(self, file)
-        file.close()
+        path = Path(self.path, 'reporter_state.pickle')
+        with open(path, 'wb+') as file:
+            pickle.dump(self, file)
+
+    def save_rule_vocabulary(self):
+        path = Path(self.path, "rules.pickle")
+        with open(path, 'wb+') as file:
+            pickle.dump(self.rule_vocabulary, file)
+    
+    def save_seen_graphs(self):
+        path = Path(self.path, "seen_graphs.pickle")
+        with open(path, "wb+") as file:
+            pickle.dump(self.seen_graphs)
 
     def load_rule_set(self, path):
         """Load a rule vocabulary to Reporter object
-        
+
         Args:
             path: path to directory with rule vocabulary saved"""
+
         rule_path = Path(path, "rules.pickle")
         rule_file = open(rule_path, 'rb')
         self.rule_vocabulary = pickle.load(rule_file)
         rule_file.close()
 
     def load_seen_graphs(self, path, temp = False):
+        """Load list of graphs with calculated rewards to Reporter object
+
+        Args:
+            path: path to directory with rule vocabulary saved"""
+
         if temp:
             graph_path = Path(path, "temp_graphs.pickle")
         else:
@@ -434,7 +389,7 @@ class MCTSReporter():
 
 def load_reporter(path, temp = False):
     """Creates a Reporter object using previously saved state
-    
+
     Args:
         path: path to the directory with saved reporter
         temp: flag to use the temp or total report"""

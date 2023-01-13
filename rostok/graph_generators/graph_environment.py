@@ -220,7 +220,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         if report[0]:
             self.reward = report[1]
             self.movments_trajectory = report[2]
-            reporter.add_reward(self.state, self.reward, self.movments_trajectory)
+            reporter.add_state(self.state, self.reward, self.movments_trajectory)
             print('seen reward:', self.reward)
             return self.reward
 
@@ -232,10 +232,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         #     control = list(deepcopy(self.movments_trajectory))
         # else:
         #     control = deepcopy(self.movments_trajectory)
-        reporter.add_reward(self.state, self.reward, self.movments_trajectory)
-        if self.reward > reporter.best_simulated_state.reward:
-            reporter.set_best_state(self.state, self.reward, self.movments_trajectory)
-
+        reporter.add_state(self.state, self.reward, self.movments_trajectory)
         print(self.reward)
         return self.reward
 
@@ -300,6 +297,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
             main_reward = self.getReward()
             main_control = self.movments_trajectory
             reporter.set_main_optimized_state(reporter.main_state,main_reward, main_control)
+            reporter.delete_temp()
 
         return done, self.graph
 

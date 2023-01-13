@@ -87,8 +87,8 @@ while not finish:
         f"number iteration: {iter}, counter actions: {graph_env.counter_action}, reward: {reporter.get_best_info()[1]}"
     )
 
-
-path = reporter.dump_results()
+reporter.save_result()
+reporter.save_reporter()
 best_graph, reward, best_control = reporter.get_best_info()
 plot_graph(best_graph)
 # best_control = [float(x) for x in best_control]

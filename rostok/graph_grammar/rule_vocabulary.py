@@ -211,13 +211,14 @@ class RuleVocabulary():
 
     def get_list_of_applicable_terminal_rules(self, grammar: GraphGrammar):
         """Return the list of terminal applicable rules for the current graph.
-        
+
         Args:
             grammar (GraphGrammar): a :py:class:`GraphGrammar` object analyze.
-            
+
         Returns:
             list of rule names for terminal rules that can be applied for the graph.
         """
+
         list_of_applicable_rules = []
         for rule_tuple in self.terminal_rule_dict.items():
             rule = rule_tuple[1]
@@ -232,10 +233,10 @@ class RuleVocabulary():
 
     def terminal_rules_for_node(self, node_name: str):
         """Return a list of the terminal rules for the node
-        
+
         Args:
             node_name (str): a node label for which function returns the list of the terminal rules.
-            
+
         Returns:
             The list of rule names for rules that can be applied to make a node terminal.
         """
@@ -246,10 +247,16 @@ class RuleVocabulary():
 
         return rule_list
 
+    def get_shortened_list_of_applicable_rules(self, graph: GraphGrammar):
+        dfs_nodes = graph.get_ids_in_dfs_order()
+        
+
+
     def make_graph_terminal(self, grammar: GraphGrammar):
         """Converts a graph into a graph with only terminal nodes.
+
         For each non-terminal node the function apply a random rule that make it terminal.
-        
+
         Args:
             grammar (GraphGrammar): :py:class:`GraphGrammar` object that should become terminal.
         """
