@@ -1,17 +1,17 @@
-from enum import Enum
-from abc import ABC
-from typing import Optional
 import random
+from abc import ABC
+from enum import Enum
+from typing import Optional
 
+import rostok.block_builder.envbody_shapes as envbody_shapes
 import pychrono.core as chrono
 
-from rostok.block_builder.body_size import BoxSize
+from rostok.block_builder.basic_node_block import (Block, BlockBody, BlockBridge, BlockTransform,
+                                                   BlockType, RobotBody)
 
+from rostok.block_builder.transform_srtucture import FrameTransform
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
     DefaultChronoMaterial, Material, struct_material2object_material)
-from rostok.block_builder.transform_srtucture import FrameTransform
-from rostok.block_builder.basic_node_block import (BlockBody, RobotBody, BlockBridge, BlockType,
-                                                   Block, BlockTransform, SimpleBody)
 
 
 class SpringTorque(chrono.TorqueFunctor):
@@ -57,7 +57,6 @@ class ContactReporter(chrono.ReportContactCallback):
         self.__current_normal_forces = None
         self.__list_normal_forces = []
         super().__init__()
-
 
     def OnReportContact(self, pA: chrono.ChVectorD, pB: chrono.ChVectorD,
                         plane_coord: chrono.ChMatrix33D, distance: float, eff_radius: float,
@@ -281,7 +280,7 @@ class BoxChronoBody(ChronoBody, RobotBody):
 
     def __init__(self,
                  builder: chrono.ChSystem,
-                 size: BoxSize = BoxSize(0.1, 0.1, 0.1),
+                 shape: envbody_shapes.ShapeTypes = envbody_shapes.Box(),
                  random_color: bool = True,
                  mass: float = 1,
                  material: Material = DefaultChronoMaterial(),
@@ -291,21 +290,21 @@ class BoxChronoBody(ChronoBody, RobotBody):
         body = chrono.ChBody()
 
         box_asset = chrono.ChBoxShape()
-        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(size.width / 2, size.length / 2,
-                                                           size.height / 2)
+        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(shape.width / 2, shape.length / 2,
+                                                           shape.height / 2)
         body.AddVisualShape(box_asset)
 
         body.SetMass(mass)
 
-        pos_in_marker = chrono.ChVectorD(0, -size.length / 2, 0)
-        pos_out_marker = chrono.ChVectorD(0, size.length / 2, 0)
+        pos_in_marker = chrono.ChVectorD(0, -shape.length / 2, 0)
+        pos_out_marker = chrono.ChVectorD(0, shape.length / 2, 0)
         super().__init__(builder,
                          body,
                          pos_in_marker,
                          pos_out_marker,
                          random_color,
                          is_collide=is_collide)
-        self._build_collision_model(material, size.width, size.length)
+        self._build_collision_box_model(material, shape.width, shape.length)
 
 
 class LinkChronoBody(ChronoBody, RobotBody):
@@ -514,26 +513,31 @@ class ChronoBodyEnv(ChronoBody):
 
     def __init__(self,
                  builder,
-                 shape=SimpleBody.BOX,
+                 shape: envbody_shapes.ShapeTypes = envbody_shapes.Box(),
                  random_color=True,
                  mass=1,
                  material=DefaultChronoMaterial(),
                  pos: FrameTransform = FrameTransform([0, 0.0, 0], [1, 0, 0, 0])):
 
+        # This parameter redefined by SetMass
+        MOCK_DENSITY: int = 1000  # pylint: disable=invalid-name
+
         # Create body
         material = struct_material2object_material(material)
-        if shape is SimpleBody.BOX:
-            body = chrono.ChBodyEasyBox(shape.value.width, shape.value.length, shape.value.height,
-                                        1000, True, True, material)
-        elif shape is SimpleBody.CYLINDER:
-            body = chrono.ChBodyEasyCylinder(shape.value.radius, shape.value.height, 1000, True,
-                                             True, material)
-        elif shape is SimpleBody.SPHERE:
-            body = chrono.ChBodyEasySphere(shape.value.radius, 1000, True, True, material)
-        elif shape is SimpleBody.ELLIPSOID:
+        if isinstance(shape, envbody_shapes.Box):
+            body = chrono.ChBodyEasyBox(shape.width, shape.length, shape.height, MOCK_DENSITY, True,
+                                        True, material)
+        elif isinstance(shape, envbody_shapes.Cylinder):
+            body = chrono.ChBodyEasyCylinder(shape.radius, shape.height, MOCK_DENSITY, True, True,
+                                             material)
+        elif isinstance(shape, envbody_shapes.Sphere):
+            body = chrono.ChBodyEasySphere(shape.radius, MOCK_DENSITY, True, True, material)
+        elif isinstance(shape, envbody_shapes.Ellipsoid):
             body = chrono.ChBodyEasyEllipsoid(
-                chrono.ChVectorD(shape.value.radius_a, shape.value.radius_b, shape.value.radius_c),
-                1000, True, True, material)
+                chrono.ChVectorD(shape.radius_a, shape.radius_b, shape.radius_c), MOCK_DENSITY,
+                True, True, material)
+        else:
+            raise Exception("Unknown shape for ChronoBodyEnv object")
         body.SetCollide(True)
         transform = ChronoTransform(builder, pos)
         body.SetCoord(transform.transform)
