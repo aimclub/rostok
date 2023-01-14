@@ -10,6 +10,7 @@ import pychrono as chrono
 
 from control_optimisation import create_grab_criterion_fun, create_traj_fun
 import rostok.intexp as intexp
+from rostok.graph_grammar.node import GraphGrammar
 from rostok.trajectory_optimizer.control_optimizer import ConfigRewardFunction, ControlOptimizer
 from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagSlipout, FlagNotContact,
                                                 FlagFlyingApart)
@@ -57,35 +58,35 @@ control_optimizer = ControlOptimizer(cfg)
 # # %% Init mcts parameters
 
 # Hyperparameters mctss
-# iteration_limit = 3
+iteration_limit = 3
 
-# # Initialize MCTScl
-# searcher = mcts.mcts(iterationLimit=iteration_limit)
-# finish = False
+# Initialize MCTScl
+searcher = mcts.mcts(iterationLimit=iteration_limit)
+finish = False
 
-# G = GraphGrammar()
-# max_numbers_rules = 5
-# # Create graph envirenments for algorithm (not gym)
-# graph_env = env.GraphVocabularyEnvironment(G, rule_vocabul, max_numbers_rules)
+G = GraphGrammar()
+max_numbers_rules = 5
+# Create graph envirenments for algorithm (not gym)
+graph_env = env.GraphVocabularyEnvironment(G, rule_vocabul, max_numbers_rules)
 
-# graph_env.set_control_optimizer(control_optimizer)
+graph_env.set_control_optimizer(control_optimizer)
 
 reporter = MCTSReporter.get_instance()
 reporter.rule_vocabulary = rule_vocabul
 reporter.initialize()
 
 # #%% Run first algorithm
-# iter = 0
-# while not finish:
-#     action = searcher.search(initialState=graph_env)
-#     finish, final_graph, opt_trajectory, path = graph_env.step(action, False)
-#     iter += 1
-#     print(f"number iteration: {iter}, counter actions: {graph_env.counter_action}")
+iter = 0
+while not finish:
+    action = searcher.search(initialState=graph_env)
+    finish, final_graph, opt_trajectory, path = graph_env.step(action, False)
+    iter += 1
+    print(f"number iteration: {iter}, counter actions: {graph_env.counter_action}")
 
-path = reporter.dump_results()
-reporter = load_reporter('results\MCTS_report_22y_12m_30d_03H_30M')
-best_graph, reward, best_control = reporter.get_best_info()
-# best_control = [float(x) for x in best_control]
-func_reward = control_optimizer.create_reward_function_pickup(best_graph)
-res = -func_reward(best_control)
-print(res)
+# path = reporter.dump_results()
+# reporter = load_reporter('results\MCTS_report_22y_12m_30d_03H_30M')
+# best_graph, reward, best_control = reporter.get_best_info()
+# # best_control = [float(x) for x in best_control]
+# func_reward = control_optimizer.create_reward_function_pickup(best_graph)
+# res = -func_reward(best_control)
+# print(res)

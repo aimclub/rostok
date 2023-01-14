@@ -445,8 +445,8 @@ class FlatChronoBody(ChronoBody, RobotBody):
     def __init__(self,
                  builder,
                  length=2,
-                 width=0.1,
-                 depth=0.8,
+                 width=5,
+                 depth=0.1,
                  random_color=True,
                  mass=1,
                  material=DefaultChronoMaterial(),
@@ -456,15 +456,15 @@ class FlatChronoBody(ChronoBody, RobotBody):
         body = chrono.ChBody()
 
         box_asset = chrono.ChBoxShape()
-        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width / 2, length / 2 - width / 32,
-                                                           depth / 2)
+        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width / 2, depth / 2,
+                                                           length / 2 - width / 32)
         body.AddVisualShape(box_asset)
         body.SetCollide(True)
 
         body.SetMass(0.1*mass)
 
-        pos_input_marker = chrono.ChVectorD(0, -length / 2, 0)
-        pos_out_marker = chrono.ChVectorD(0, length / 2, 0)
+        pos_input_marker = chrono.ChVectorD(0, 0, 0)
+        pos_out_marker = chrono.ChVectorD(0, 0, 0)
         super().__init__(builder,
                          body,
                          pos_input_marker,
@@ -475,8 +475,8 @@ class FlatChronoBody(ChronoBody, RobotBody):
         chrono_object_material = struct_material2object_material(material)
 
         self.body.GetCollisionModel().ClearModel()
-        self.body.GetCollisionModel().AddBox(chrono_object_material, width / 2,
-                                             length / 2 - width / 32, depth / 2)
+        self.body.GetCollisionModel().AddBox(chrono_object_material, width / 2, depth / 2,
+                                                           length / 2 - width / 32)
         self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
         self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
         self.body.GetCollisionModel().BuildModel()
@@ -578,10 +578,8 @@ class ChronoBodyEnv(ChronoBody):
             obj_db.create_chrono_body_from_file(shape[0],
                                     shape[1])
             body = obj_db.chrono_body
-            # obj_db.set_chrono_body_ref_frame_in_point(chrono.ChFrameD(chrono.ChVectorD(0,0.0,0),
-            #                                               chrono.ChQuaternionD(0,1,0,0)))
             
-        if isinstance(shape, tuple):
+        if not isinstance(shape, tuple):
             body.SetCollide(True)
             transform = ChronoTransform(builder, pos)
             body.SetCoord(transform.transform)

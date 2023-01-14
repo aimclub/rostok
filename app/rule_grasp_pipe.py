@@ -23,7 +23,7 @@ def plot_graph(graph):
 
 def create_rules_to_pickup_pipe(path_to_pipe_obj, path_to_pipe_xml):
 
-    COEFFICIENTS = np.array([0.5, 0.75, 1.2])
+    COEFFICIENTS = np.array([2, 3, 5])
 
     obj_db = intexp.entity.TesteeObject()
     obj_db.load_object_mesh(path_to_pipe_obj)
