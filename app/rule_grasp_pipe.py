@@ -31,9 +31,9 @@ def create_rules_to_pickup_pipe(path_to_pipe_obj, path_to_pipe_xml):
     long_dimension, short_dimension, axis = get_main_axis_pipe(obj_db)
 
     start_point_grasp = BlockWrapper(FlatChronoBody,
-                                     width=short_dimension[1] * 0.01,
-                                     length=short_dimension[1] * 0.01,
-                                     width=short_dimension[1] * 0.01,
+                                     width = short_dimension[1] * 0.01,
+                                     length = short_dimension[1] * 0.01,
+                                     depth = short_dimension[1] * 0.01,
                                      is_collide=False)
 
     flat = BlockWrapper(FlatChronoBody,
@@ -216,38 +216,35 @@ def create_rules_to_pickup_pipe(path_to_pipe_obj, path_to_pipe_xml):
         name_init_mechanism = grasp_node + '_InitMechanism_'
 
         rule_vocab.create_rule(name_init_mechanism + '2',
-                               ["ROOT"], [grasp_node, "SML", "SMR", "EM", "EM"], 0, 0, [(0, 1),
+                               [grasp_node], [grasp_node, "SML", "SMR", "EM", "EM"], 0, 0, [(0, 1),
                                                                                         (0, 2),
                                                                                         (1, 3),
                                                                                         (2, 4)])
 
-        rule_vocab.create_rule(name_init_mechanism + '3_R', ["ROOT"],
+        rule_vocab.create_rule(name_init_mechanism + '3_R', [grasp_node],
                                [grasp_node, "SML", "SMRP", "SMRM", "EM", "EM", "EM"], 0, 0,
                                [(0, 1), (0, 2), (0, 3), (1, 4), (2, 5), (3, 6)])
-        rule_vocab.create_rule(name_init_mechanism + '3_R_A', ["ROOT"],
+        rule_vocab.create_rule(name_init_mechanism + '3_R_A', [grasp_node],
                                [grasp_node, "SML", "SMRPA", "SMRMA", "EM", "EM", "EM"], 0, 0,
                                [(0, 1), (0, 2), (0, 3), (1, 4), (2, 5), (3, 6)])
-        rule_vocab.create_rule(name_init_mechanism + '3_L', ["ROOT"],
+        rule_vocab.create_rule(name_init_mechanism + '3_L', [grasp_node],
                                [grasp_node, "SMLP", "SMLM", "SMR", "EM", "EM", "EM"], 0, 0,
                                [(0, 1), (0, 2), (0, 3), (1, 4), (2, 5), (3, 6)])
-        rule_vocab.create_rule(name_init_mechanism + '3_L_A', ["ROOT"],
+        rule_vocab.create_rule(name_init_mechanism + '3_L_A', [grasp_node],
                                [grasp_node, "SMLPA", "SMLMA", "SMR", "EM", "EM", "EM"], 0, 0,
                                [(0, 1), (0, 2), (0, 3), (1, 4), (2, 5), (3, 6)])
-        rule_vocab.create_rule(name_init_mechanism + '4', ["ROOT"],
+        rule_vocab.create_rule(name_init_mechanism + '4', [grasp_node],
                                [grasp_node, "SMLP", "SMLM", "SMRP", "SMRM", "EM", "EM", "EM", "EM"],
                                0, 0, [(0, 1), (0, 2), (0, 3), (0, 4), (1, 5), (2, 6), (3, 7),
                                       (4, 8)])
         rule_vocab.create_rule(
-            name_init_mechanism + '4_A', ["ROOT"],
+            name_init_mechanism + '4_A', [grasp_node],
             [grasp_node, "SMLPA", "SMLMA", "SMRPA", "SMRMA", "EM", "EM", "EM", "EM"], 0, 0,
             [(0, 1), (0, 2), (0, 3), (0, 4), (1, 5), (2, 6), (3, 7), (4, 8)])
 
-    rule_vocab.create_rule("TerminalStartRightMechanism", ['GR'], ['TGR1', 'SPG1'], 0, 1, [(0, 1),
-                                                                                           (1, 2)])
-    rule_vocab.create_rule("TerminalStartLeftMechanism", ['GL'], ['TGL1', 'SPG1'], 0, 1, [(0, 1),
-                                                                                          (1, 2)])
-    rule_vocab.create_rule("TerminalStartCenterMechanism", ['GC'], ['TGC1', 'SPG1'], 0, 1, [(0, 1),
-                                                                                            (1, 2)])
+    rule_vocab.create_rule("TerminalStartRightMechanism", ['GR'], ['TGR1', 'SPG1'], 0, 1, [(0, 1)                                                                                         ])
+    rule_vocab.create_rule("TerminalStartLeftMechanism", ['GL'], ['TGL1', 'SPG1'], 0, 1, [(0, 1)])
+    rule_vocab.create_rule("TerminalStartCenterMechanism", ['GC'], ['TGC1', 'SPG1'], 0, 1, [(0, 1)])
 
     rule_vocab.create_rule("FingerUpper", ["EM"], ["J1", "L", "EM"], 0, 2, [(0, 1), (1, 2)])
 

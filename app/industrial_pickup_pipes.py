@@ -32,7 +32,7 @@ rule_vocabul, node_features = rule_grasp_pipe.create_rules_to_pickup_pipe(PATH_T
 GAIT = 2.5
 WEIGHT = [3, 1, 1, 2]
 
-max_time = 10
+max_time = 1
 cfg = ConfigRewardFunction()
 cfg.bound = (750, 1000)
 cfg.iters = 2
