@@ -6,7 +6,7 @@ from test_ruleset import (get_terminal_graph_no_joints, get_terminal_graph_three
 
 import rostok.virtual_experiment.simulation_step as step
 
-from rostok.block_builder.basic_node_block import SimpleBody
+from rostok.block_builder.envbody_shapes import Box
 from rostok.block_builder.node_render import (ChronoBodyEnv, DefaultChronoMaterial, FrameTransform)
 from rostok.criterion.flags_simualtions import FlagMaxTime
 from rostok.graph_grammar.node import BlockWrapper
@@ -38,9 +38,9 @@ def test_control_bind_and_create_sim():
 
         matich = DefaultChronoMaterial()
         matich.Friction = 0.65
-        matich.DampingF = 0.65
+ 
         obj = BlockWrapper(ChronoBodyEnv,
-                           shape=SimpleBody.ELLIPSOID,
+                           shape=Box(),
                            material=matich,
                            pos=FrameTransform([0, 1, 0], [0, -0.048, 0.706, 0.706]))
 
