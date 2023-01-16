@@ -1,29 +1,18 @@
 import random
 
 import pychrono as chrono
-from test_ruleset import (get_terminal_graph_no_joints,
-                          get_terminal_graph_three_finger,
+from test_ruleset import (get_terminal_graph_no_joints, get_terminal_graph_three_finger,
                           get_terminal_graph_two_finger)
 
 import rostok.virtual_experiment.simulation_step as step
-from test_ruleset import rule_vocab
-from rostok.graph_grammar import make_random_graph
+
 from rostok.block_builder.envbody_shapes import Box
-from rostok.block_builder.node_render import (ChronoBodyEnv,
-                                              DefaultChronoMaterial,
-                                              FrameTransform)
+from rostok.block_builder.node_render import (ChronoBodyEnv, DefaultChronoMaterial, FrameTransform)
 from rostok.criterion.flags_simualtions import FlagMaxTime
 from rostok.graph_grammar.node import BlockWrapper
 from rostok.trajectory_optimizer.control_optimizer import num_joints
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
-
-
-def test_create_graph():
-    """
-        Test for graph grammar and rule
-    """
-    graph = make_random_graph.make_random_graph(5, rule_vocab)
 
 
 def test_control_bind_and_create_sim():
