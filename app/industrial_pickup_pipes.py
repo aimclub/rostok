@@ -34,10 +34,10 @@ WEIGHT = [3, 1, 1, 2]
 
 max_time = 1
 cfg = ConfigRewardFunction()
-cfg.bound = (750, 1000)
+cfg.bound = (1, 2)
 cfg.iters = 2
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
-cfg.time_step = 0.0001
+cfg.time_step = 0.0005
 cfg.time_sim = max_time
 cfg.flags = [
     FlagMaxTime(max_time)]#,
@@ -65,7 +65,7 @@ searcher = mcts.mcts(iterationLimit=iteration_limit)
 finish = False
 
 G = GraphGrammar()
-max_numbers_rules = 5
+max_numbers_rules = 5*3+1
 # Create graph envirenments for algorithm (not gym)
 graph_env = env.GraphVocabularyEnvironment(G, rule_vocabul, max_numbers_rules)
 

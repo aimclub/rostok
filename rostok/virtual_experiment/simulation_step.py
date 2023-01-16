@@ -372,31 +372,6 @@ class SimulationStepOptimizationIndustrial(SimulationStepOptimization):
         self.chrono_system.SetSolverMaxIterations(100)
 
         self.grasp_object = grasp_object.create_block(self.chrono_system)
-        # point_force_1 = start_frame_robot[0].position
-        # point_force_2 = start_frame_robot[1].position
-
-        # ch_point_vector_force_1 = chrono.ChVectorD(point_force_1[0], point_force_1[1]-0.1,
-        #                                            point_force_1[2])
-        # ch_point_vector_force_2 = chrono.ChVectorD(point_force_2[0], point_force_2[1]-0.1,
-        #                                            point_force_2[2])
-
-        # self.grasp_object.body.RemoveAllForces()
-        # force_dir_1 = chrono.ChVectorD(0, 1, 0)
-        # force_dir_2 = chrono.ChVectorD(0, 1, 0)
-
-        # force_magnitude = self.grasp_object.body.GetMass() * gravity
-        # compensation_force_1 = chrono.ChForce()
-        # self.grasp_object.body.AddForce(compensation_force_1)
-        # compensation_force_1.SetVpoint(ch_point_vector_force_1)
-        # compensation_force_1.SetDir(force_dir_1)
-        # compensation_force_1.SetMforce(force_magnitude / 2)
-
-        # compensation_force_2 = chrono.ChForce()
-        # self.grasp_object.body.AddForce(compensation_force_2)
-        # compensation_force_2.SetVpoint(ch_point_vector_force_2)
-        # compensation_force_2.SetRelDir(force_dir_2)
-        # compensation_force_2.SetMforce(force_magnitude / 2)
-
         self.grab_robot = Robot(self.graph_mechanism, self.chrono_system, start_frame_robot)
 
         # Add grasp object in system and set system without gravity
@@ -521,58 +496,58 @@ class SimulationStepOptimizationIndustrial(SimulationStepOptimization):
                 if self.chrono_system.GetStepcount() % int(FRAME_STEP / time_step) == 0:
                     pass
 
-            # arrays_simulation_data_time.append(self.chrono_system.GetChTime())
+            arrays_simulation_data_time.append(self.chrono_system.GetChTime())
 
-            # # Get current variables from robot blocks
-            # current_data_joint_angle = RobotSensor.joints_angle(self.grab_robot)
-            # current_data_amount_contact_surfaces = RobotSensor.amount_contact_surfaces_blocks(
-            #     self.grab_robot)
-            # current_data_sum_contact_forces = RobotSensor.sum_contact_forces_blocks(self.grab_robot)
-            # current_data_abs_coord_COG = RobotSensor.abs_coord_COG_blocks(self.grab_robot)
+            # Get current variables from robot blocks
+            current_data_joint_angle = RobotSensor.joints_angle(self.grab_robot)
+            current_data_amount_contact_surfaces = RobotSensor.amount_contact_surfaces_blocks(
+                self.grab_robot)
+            current_data_sum_contact_forces = RobotSensor.sum_contact_forces_blocks(self.grab_robot)
+            current_data_abs_coord_COG = RobotSensor.abs_coord_COG_blocks(self.grab_robot)
 
-            # # Get current variables from object
-            # current_data_std_obj_force = RobotSensor.std_contact_forces_object(self.grasp_object)
-            # current_data_cont_coord = RobotSensor.contact_coord(self.grasp_object)
-            # current_data_abs_coord_COG_obj = RobotSensor.abs_coord_COG_obj(self.grasp_object)
+            # Get current variables from object
+            current_data_std_obj_force = RobotSensor.std_contact_forces_object(self.grasp_object)
+            current_data_cont_coord = RobotSensor.contact_coord(self.grasp_object)
+            current_data_abs_coord_COG_obj = RobotSensor.abs_coord_COG_obj(self.grasp_object)
 
-            # current_data_amount_obj_contact_surfaces = dict([
-            #     (-1, len([item for item in self.grasp_object.list_c_coord if item != 0]))
-            # ])
-            # # Append current data in output arries
-            # arrays_simulation_data_joint_angle = list(
-            #     map(append_arr_in_dict, current_data_joint_angle.items(),
-            #         arrays_simulation_data_joint_angle))
+            current_data_amount_obj_contact_surfaces = dict([
+                (-1, len([item for item in self.grasp_object.list_c_coord if item != 0]))
+            ])
+            # Append current data in output arries
+            arrays_simulation_data_joint_angle = list(
+                map(append_arr_in_dict, current_data_joint_angle.items(),
+                    arrays_simulation_data_joint_angle))
 
-            # arrays_simulation_data_sum_contact_forces = list(
-            #     map(append_arr_in_dict, current_data_sum_contact_forces.items(),
-            #         arrays_simulation_data_sum_contact_forces))
+            arrays_simulation_data_sum_contact_forces = list(
+                map(append_arr_in_dict, current_data_sum_contact_forces.items(),
+                    arrays_simulation_data_sum_contact_forces))
 
-            # arrays_simulation_data_abs_coord_COG = list(
-            #     map(append_arr_in_dict, current_data_abs_coord_COG.items(),
-            #         arrays_simulation_data_abs_coord_COG))
+            arrays_simulation_data_abs_coord_COG = list(
+                map(append_arr_in_dict, current_data_abs_coord_COG.items(),
+                    arrays_simulation_data_abs_coord_COG))
 
-            # arrays_simulation_data_amount_contact_surfaces = list(
-            #     map(append_arr_in_dict, current_data_amount_contact_surfaces.items(),
-            #         arrays_simulation_data_amount_contact_surfaces))
+            arrays_simulation_data_amount_contact_surfaces = list(
+                map(append_arr_in_dict, current_data_amount_contact_surfaces.items(),
+                    arrays_simulation_data_amount_contact_surfaces))
 
-            # if current_data_std_obj_force is not None:
-            #     arrays_simulation_data_obj_force = map(append_arr_in_dict,
-            #                                            current_data_std_obj_force.items(),
-            #                                            arrays_simulation_data_obj_force)
+            if current_data_std_obj_force is not None:
+                arrays_simulation_data_obj_force = map(append_arr_in_dict,
+                                                       current_data_std_obj_force.items(),
+                                                       arrays_simulation_data_obj_force)
 
-            # arrays_simulation_data_amount_obj_contact_surfaces = map(
-            #     append_arr_in_dict, current_data_amount_obj_contact_surfaces.items(),
-            #     arrays_simulation_data_amount_obj_contact_surfaces)
+            arrays_simulation_data_amount_obj_contact_surfaces = map(
+                append_arr_in_dict, current_data_amount_obj_contact_surfaces.items(),
+                arrays_simulation_data_amount_obj_contact_surfaces)
 
-            # if current_data_cont_coord is not None:
-            #     arrays_simulation_data_cont_coord = list(
-            #         map(append_arr_in_dict, current_data_cont_coord.items(),
-            #             arrays_simulation_data_cont_coord))
+            if current_data_cont_coord is not None:
+                arrays_simulation_data_cont_coord = list(
+                    map(append_arr_in_dict, current_data_cont_coord.items(),
+                        arrays_simulation_data_cont_coord))
 
-            # if current_data_abs_coord_COG_obj is not None:
-            #     arrays_simulation_data_abs_coord_COG_obj = list(
-            #         map(append_arr_in_dict, current_data_abs_coord_COG_obj.items(),
-            #             arrays_simulation_data_abs_coord_COG_obj))
+            if current_data_abs_coord_COG_obj is not None:
+                arrays_simulation_data_abs_coord_COG_obj = list(
+                    map(append_arr_in_dict, current_data_abs_coord_COG_obj.items(),
+                        arrays_simulation_data_abs_coord_COG_obj))
 
         if visualize:
             vis.GetDevice().closeDevice()

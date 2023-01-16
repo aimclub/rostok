@@ -1,3 +1,4 @@
+from time import sleep
 from numpy import ndarray
 from rostok.graph_grammar.node import *
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
@@ -6,6 +7,16 @@ from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
 from rostok.utils.result_saver import MCTSReporter, RobotState
 
 
+
+def plot_graph(graph):
+    plt.figure()
+    nx.draw_networkx(graph,
+                     pos=nx.kamada_kawai_layout(graph, dim=2),
+                     node_size=800,
+                     labels={n: graph.nodes[n]["Node"].label for n in graph})
+    plt.show()
+    sleep(2)
+    plt.close()
 
 def rule_is_terminal(rule: Rule):
     """Function finding non terminal rules
@@ -216,6 +227,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
     def getReward(self):
         reporter = MCTSReporter.get_instance()
         report = reporter.check_graph(self.graph)
+        # plot_graph(self.graph)
         if report[0]:
             self.reward = report[1]
             self.movments_trajectory = report[2]
