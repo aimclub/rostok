@@ -290,21 +290,21 @@ class BoxChronoBody(ChronoBody, RobotBody):
         body = chrono.ChBody()
 
         box_asset = chrono.ChBoxShape()
-        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(shape.width / 2, shape.length / 2,
-                                                           shape.height / 2)
+        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(shape.width_x / 2, shape.length_y / 2,
+                                                           shape.height_z / 2)
         body.AddVisualShape(box_asset)
 
         body.SetMass(mass)
 
-        pos_in_marker = chrono.ChVectorD(0, -shape.length / 2, 0)
-        pos_out_marker = chrono.ChVectorD(0, shape.length / 2, 0)
+        pos_in_marker = chrono.ChVectorD(0, -shape.length_y / 2, 0)
+        pos_out_marker = chrono.ChVectorD(0, shape.length_y / 2, 0)
         super().__init__(builder,
                          body,
                          pos_in_marker,
                          pos_out_marker,
                          random_color,
                          is_collide=is_collide)
-        self._build_collision_box_model(material, shape.width, shape.length)
+        self._build_collision_box_model(material, shape.width_x, shape.length_y)
 
 
 class LinkChronoBody(ChronoBody, RobotBody):
@@ -389,7 +389,7 @@ class FlatChronoBody(ChronoBody, RobotBody):
     
     Args:
         builder (chrono.ChSystem): Arg sets the system, which hosting the body
-        high_y (float): Length of the robot link. Defaults to 2.
+        height_y (float): Length of the robot link. Defaults to 2.
         width_x (float): Width of the robot link. Defaults to 0.1.
         depth_z (float): Height of the robot link. Defaults to 0.3.
         random_color (bool, optional): Flag of the random color of the body. Defaults to True.
@@ -400,22 +400,22 @@ class FlatChronoBody(ChronoBody, RobotBody):
         Defaults to True.
     """
 
-    def __init__(self, builder, width_x=0.1, high_y=2, depth_z=0.3, random_color=True, mass=1,
+    def __init__(self, builder, width_x=0.1, height_y=2, depth_z=0.3, random_color=True, mass=1,
                  material=DefaultChronoMaterial(), is_collide: bool = True):
         # Create body
 
         body = chrono.ChBody()
 
         box_asset = chrono.ChBoxShape()
-        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width_x / 2, high_y / 2 - width_x / 32,
+        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width_x / 2, height_y / 2 - width_x / 32,
                                                            depth_z / 2)
         body.AddVisualShape(box_asset)
         body.SetCollide(True)
 
         body.SetMass(mass)
 
-        pos_input_marker = chrono.ChVectorD(0, -high_y / 2, 0)
-        pos_out_marker = chrono.ChVectorD(0, high_y / 2, 0)
+        pos_input_marker = chrono.ChVectorD(0, -height_y / 2, 0)
+        pos_out_marker = chrono.ChVectorD(0, height_y / 2, 0)
         super().__init__(builder,
                          body,
                          pos_input_marker,
@@ -427,7 +427,7 @@ class FlatChronoBody(ChronoBody, RobotBody):
 
         self.body.GetCollisionModel().ClearModel()
         self.body.GetCollisionModel().AddBox(chrono_object_material, width_x / 2,
-                                             high_y / 2 - width_x / 32, depth_z / 2)
+                                             height_y / 2 - width_x / 32, depth_z / 2)
         self.body.GetCollisionModel().BuildModel()
 
 
@@ -505,7 +505,7 @@ class ChronoBodyEnv(ChronoBody):
         # Create body
         material = struct_material2object_material(material)
         if isinstance(shape, envbody_shapes.Box):
-            body = chrono.ChBodyEasyBox(shape.width, shape.length, shape.height, MOCK_DENSITY, True,
+            body = chrono.ChBodyEasyBox(shape.width_x, shape.length_y, shape.height_z, MOCK_DENSITY, True,
                                         True, material)
         elif isinstance(shape, envbody_shapes.Cylinder):
             body = chrono.ChBodyEasyCylinder(shape.radius, shape.height, MOCK_DENSITY, True, True,

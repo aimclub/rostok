@@ -20,8 +20,8 @@ mat.SetDampingF(0.1)
 link1 = BlockWrapper(LinkChronoBody, length_y=0.3)
 link2 = BlockWrapper(LinkChronoBody, length_y=0.2)
 
-flat1 = BlockWrapper(FlatChronoBody, width_x=0.4, high_y=0.1)
-flat2 = BlockWrapper(FlatChronoBody, width_x=0.7, high_y=0.1)
+flat1 = BlockWrapper(FlatChronoBody, width_x=0.4, height_y=0.1)
+flat2 = BlockWrapper(FlatChronoBody, width_x=0.7, height_y=0.1)
 
 u1 = BlockWrapper(MountChronoBody, width_x=0.1, length_y=0.1)
 

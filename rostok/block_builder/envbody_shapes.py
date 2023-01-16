@@ -4,9 +4,9 @@ from typing import Union
 
 @dataclass
 class Box:
-    width: float = 0.1
-    length: float = 0.2
-    height: float = 0.2
+    width_x: float = 0.1
+    length_y: float = 0.2
+    height_z: float = 0.2
 
 
 @dataclass

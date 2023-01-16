@@ -15,8 +15,8 @@ from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 link1 = BlockWrapper(LinkChronoBody, length_y=0.6)
 link2 = BlockWrapper(LinkChronoBody, length_y=0.4)
 
-flat1 = BlockWrapper(FlatChronoBody, width_x=0.4, high_y=0.2)
-flat2 = BlockWrapper(FlatChronoBody, width_x=0.7, high_y=0.2)
+flat1 = BlockWrapper(FlatChronoBody, width_x=0.4, height_y=0.2)
+flat2 = BlockWrapper(FlatChronoBody, width_x=0.7, height_y=0.2)
 
 u1 = BlockWrapper(MountChronoBody, width_x=0.1, length_y=0.1)
 
