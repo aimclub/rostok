@@ -1,11 +1,12 @@
-from numpy import ndarray
+from pathlib import Path
 from statistics import mean
-from rostok.utils.states import *
+
+from rostok.graph_generators.graph_reward import Reward
 from rostok.graph_grammar.node import *
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
-from rostok.graph_generators.graph_reward import Reward
 from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
-from rostok.utils.result_saver import MCTSReporter, RobotState
+from rostok.utils.pickle_save import OptimizedGraphReport, Saveable
+from rostok.utils.states import *
 
 
 def rule_is_terminal(rule: Rule):
@@ -179,14 +180,19 @@ class GraphEnvironment():
         return False
 
 
-class MCTSHelper():
-    
-    def __init__(self, rule_vocabulary, optimizer) -> None:
+class MCTSHelper(Saveable):
+    optimizer = None
+    @classmethod
+    def set_optimizer(cls, opt):
+        cls.optimizer = opt
+
+    def __init__(self, rule_vocabulary, optimizer, path = Path("./result")) -> None:
+        super().__init__(path, 'MCTS_data')
         self.actions: RuleVocabulary = rule_vocabulary
         self.step_counter = 0
-        self.seen_graphs: list[OptimizedGraph] = []
+        self.seen_graphs: OptimizedGraphReport = OptimizedGraphReport(path)
         self.seen_states: list[MCTSOptimizedState] = []
-        self.optimizer = optimizer
+        MCTSHelper.set_optimizer(optimizer)
         self.main_state = RobotState(rules=rule_vocabulary)
         self.main_simulated_state = OptimizedState(self.main_state, 0, None)
         self.best_simulated_state = OptimizedState(self.main_state, 0, None)
@@ -221,26 +227,14 @@ class MCTSHelper():
         control =  self.convert_control_to_list(control)
         self.main_simulated_state = OptimizedState(state, reward, control)
 
-    def add_graph(self, graph, reward, control):
-        """Add a graph, reward and control to seen_graph
-
-        Args:
-            graph (GraphGrammar): the state of the main design
-            reward (float): the main reward obtained during MCTS search
-            control: parameters of the control for main design"""
-
-        control =  self.convert_control_to_list(control)
-        new_optimized_graph = OptimizedGraph(graph, reward, control)
-        self.seen_graphs.append(new_optimized_graph)
-
     def check_graph(self, new_graph):
         """Check if the graph is already in seen_graphs
 
         Args:
             new_graph: the graph to check"""
 
-        if len(self.seen_graphs) > 0:
-            for optimized_graph in self.seen_graphs:
+        if len(self.seen_graphs.graph_list) > 0:
+            for optimized_graph in self.seen_graphs.graph_list:
                 if optimized_graph.graph == new_graph:
                     reward = optimized_graph.reward
                     control = optimized_graph.control
@@ -249,7 +243,7 @@ class MCTSHelper():
 
         return False, 0, []
 
-    def add_state(self, state: RobotState, reward: float, control, step_number: int):
+    def add_state(self, state: RobotState, reward: float, control):
         """Add a state, reward and control to current_rewards
 
         state: a new state to add
@@ -257,7 +251,7 @@ class MCTSHelper():
         control: control parameters for the new state
         """
         control =  self.convert_control_to_list(control)
-        new_optimized_state = MCTSOptimizedState(state, reward, control, step_number)
+        new_optimized_state = MCTSOptimizedState(state, reward, control, self.step_counter)
         self.seen_states.append(new_optimized_state)
         if reward > self.best_simulated_state.reward:
             self.set_best_state(state, reward, control)
@@ -267,7 +261,7 @@ class MCTSHelper():
         graph = self.best_simulated_state.state.make_graph()
         return graph, self.best_simulated_state.reward, self.best_simulated_state.control
 
-    def step(self, state, action: RuleAction, render=False):
+    def step(self, state, action: RuleAction):
         """Move current environment to new state
 
         Args:
@@ -356,7 +350,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         result_optimizer = self.helper.optimizer.start_optimisation(self.graph)    
         self.reward = - result_optimizer[0]
         self.movments_trajectory = result_optimizer[1]
-        self.helper.add_graph(self.graph, self.reward, self.movments_trajectory)
+        self.helper.seen_graphs.add_graph(self.graph, self.reward, self.movments_trajectory)
         self.helper.add_state(self.state, self.reward, self.movments_trajectory)
         print(self.reward)
         return self.reward
@@ -387,6 +381,8 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         for k, v in self.__dict__.items():
             if k != "helper":
                 setattr(result, k, deepcopy(v, memo))
+            else: 
+                setattr(result, k, v)
         return result
 
 

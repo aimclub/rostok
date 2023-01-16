@@ -71,12 +71,13 @@ max_numbers_rules = 2
 # Create graph envirenments for algorithm (not gym)
 mcts_helper = env.MCTSHelper(rule_vocabul, control_optimizer)
 graph_env = env.GraphVocabularyEnvironment(G, mcts_helper, max_numbers_rules)
+mcts_helper.seen_graphs.set_path(mcts_helper.make_time_dependent_path())
 
 #%% Run first algorithm
 iter = 0
 while not finish:
     action = searcher.search(initialState=graph_env)
-    finish, graph_env = mcts_helper.step(graph_env, action, False)
+    finish, graph_env = mcts_helper.step(graph_env, action)
     iter += 1
     print(
         f"number iteration: {iter}, counter actions: {graph_env.counter_action}, reward: {mcts_helper.get_best_info()[1]}"
@@ -90,3 +91,6 @@ func_reward = control_optimizer.create_reward_function(best_graph)
 res = - func_reward(best_control)
 
 print(res)
+mcts_helper.plot_means()
+mcts_helper.seen_graphs.save()
+mcts_helper.save()
