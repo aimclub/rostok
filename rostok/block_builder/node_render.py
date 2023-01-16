@@ -436,9 +436,9 @@ class MountChronoBody(ChronoBody, RobotBody):
     
     Args:
         builder (chrono.ChSystem): Arg sets the system, which hosting the body
-        length (float): Length of the robot link. Defaults to 0.1.
-        width (float): Width of the robot link. Defaults to 0.1.
-        depth (float): Height of the robot link. Defaults to 0.3.
+        length_y (float): Length of the robot link. Defaults to 0.1.
+        width_x (float): Width of the robot link. Defaults to 0.1.
+        depth_z (float): Height of the robot link. Defaults to 0.3.
         random_color (bool, optional): Flag of the random color of the body. Defaults to True.
         mass (float, optional): Value mass of the body box. Defaults to 1.
         material (Material, optional): Surface material, which define contact friction and etc.
@@ -447,27 +447,20 @@ class MountChronoBody(ChronoBody, RobotBody):
         Defaults to True.
     """
 
-    def __init__(self,
-                 builder,
-                 length=0.1,
-                 width=0.1,
-                 depth=0.3,
-                 random_color=True,
-                 mass=1,
-                 material=DefaultChronoMaterial(),
-                 is_collide: bool = True):
+    def __init__(self, builder, width_x=0.1, length_y=0.1, depth_z=0.3, random_color=True, mass=1,
+                 material=DefaultChronoMaterial(), is_collide: bool = True):
         # Create body
 
         body = chrono.ChBody()
 
         box_asset = chrono.ChBoxShape()
-        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width / 2, length / 2, depth / 2)
+        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width_x / 2, length_y / 2, depth_z / 2)
         body.AddVisualShape(box_asset)
 
         body.SetMass(mass)
 
-        pos_input_marker = chrono.ChVectorD(0, -length / 2, 0)
-        pos_out_marker = chrono.ChVectorD(0, length / 2, 0)
+        pos_input_marker = chrono.ChVectorD(0, -length_y / 2, 0)
+        pos_out_marker = chrono.ChVectorD(0, length_y / 2, 0)
         super().__init__(builder,
                          body,
                          pos_input_marker,
@@ -478,8 +471,8 @@ class MountChronoBody(ChronoBody, RobotBody):
         chrono_object_material = struct_material2object_material(material)
 
         self.body.GetCollisionModel().ClearModel()
-        self.body.GetCollisionModel().AddBox(chrono_object_material, width / 2, length / 2,
-                                             depth / 2)
+        self.body.GetCollisionModel().AddBox(chrono_object_material, width_x / 2, length_y / 2,
+                                             depth_z / 2)
         self.body.GetCollisionModel().BuildModel()
 
 

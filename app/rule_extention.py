@@ -37,8 +37,8 @@ def init_extension_rules():
                     length_link))
 
 
-    u1 = BlockWrapper(MountChronoBody, width=0.1, length=0.05)
-    u2 = BlockWrapper(MountChronoBody, width=0.2, length=0.1)
+    u1 = BlockWrapper(MountChronoBody, width_x=0.1, length_y=0.05)
+    u2 = BlockWrapper(MountChronoBody, width_x=0.2, length_y=0.1)
 
     # %% Tranform for extansions rules 
     # z_shift = [-0.3, 0, 0.3]

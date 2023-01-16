@@ -18,7 +18,7 @@ link2 = BlockWrapper(LinkChronoBody, length_y=0.4)
 flat1 = BlockWrapper(FlatChronoBody, width_x=0.4, high_y=0.2)
 flat2 = BlockWrapper(FlatChronoBody, width_x=0.7, high_y=0.2)
 
-u1 = BlockWrapper(MountChronoBody, width=0.1, length=0.1)
+u1 = BlockWrapper(MountChronoBody, width_x=0.1, length_y=0.1)
 
 # Transforms
 RZX = FrameTransform([0, 0, 0], [sqrt(2), 0, sqrt(2), 0])
