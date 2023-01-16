@@ -69,29 +69,23 @@ finish = False
 G = GraphGrammar()
 max_numbers_rules = 2
 # Create graph envirenments for algorithm (not gym)
-graph_env = env.GraphVocabularyEnvironment(G, rule_vocabul, max_numbers_rules)
-
-graph_env.set_control_optimizer(control_optimizer)
-
-reporter = MCTSReporter.get_instance()
-reporter.rule_vocabulary = rule_vocabul
-reporter.initialize()
+mcts_helper = env.MCTSHelper(rule_vocabul, control_optimizer)
+graph_env = env.GraphVocabularyEnvironment(G, mcts_helper, max_numbers_rules)
 
 #%% Run first algorithm
 iter = 0
 while not finish:
     action = searcher.search(initialState=graph_env)
-    finish, final_graph = graph_env.step(action, False)
+    finish, graph_env = mcts_helper.step(graph_env, action, False)
     iter += 1
     print(
-        f"number iteration: {iter}, counter actions: {graph_env.counter_action}, reward: {reporter.get_best_info()[1]}"
+        f"number iteration: {iter}, counter actions: {graph_env.counter_action}, reward: {mcts_helper.get_best_info()[1]}"
     )
 
-reporter.save_result()
-reporter.save_reporter()
-best_graph, reward, best_control = reporter.get_best_info()
+#reporter.save_result()
+#reporter.save_reporter()
+best_graph, reward, best_control = mcts_helper.get_best_info()
 plot_graph(best_graph)
-# best_control = [float(x) for x in best_control]
 func_reward = control_optimizer.create_reward_function(best_graph)
 res = - func_reward(best_control)
 

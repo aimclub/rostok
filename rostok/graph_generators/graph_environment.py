@@ -1,11 +1,11 @@
 from numpy import ndarray
+from statistics import mean
+from rostok.utils.states import *
 from rostok.graph_grammar.node import *
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 from rostok.graph_generators.graph_reward import Reward
 from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
 from rostok.utils.result_saver import MCTSReporter, RobotState
-from rostok.utils.result_saver import MCTSReporter
-
 
 
 def rule_is_terminal(rule: Rule):
@@ -179,11 +179,143 @@ class GraphEnvironment():
         return False
 
 
+class MCTSHelper():
+    
+    def __init__(self, rule_vocabulary, optimizer) -> None:
+        self.actions: RuleVocabulary = rule_vocabulary
+        self.step_counter = 0
+        self.seen_graphs: list[OptimizedGraph] = []
+        self.seen_states: list[MCTSOptimizedState] = []
+        self.optimizer = optimizer
+        self.main_state = RobotState(rules=rule_vocabulary)
+        self.main_simulated_state = OptimizedState(self.main_state, 0, None)
+        self.best_simulated_state = OptimizedState(self.main_state, 0, None)
+
+    def convert_control_to_list(self, control):
+        if control is None:
+            control = []
+        elif isinstance(control, (float,int)):
+            control = [control]
+
+        return list(control)
+
+    def set_best_state(self, state, reward, control):
+        """Set the values for best state
+
+        Args:
+            state (RobotState): the state of the best design
+            reward (float): the best reward obtained during MCTS search
+            control: parameters of the control for best design"""
+
+        control =  self.convert_control_to_list(control)
+        self.best_simulated_state = OptimizedState(state, reward, control)
+
+    def set_main_optimized_state(self, state, reward, control):
+        """Set the values for main state
+
+        Args:
+            state (RobotState): the state of the main design
+            reward (float): the main reward obtained during MCTS search
+            control: parameters of the control for main design"""
+
+        control =  self.convert_control_to_list(control)
+        self.main_simulated_state = OptimizedState(state, reward, control)
+
+    def add_graph(self, graph, reward, control):
+        """Add a graph, reward and control to seen_graph
+
+        Args:
+            graph (GraphGrammar): the state of the main design
+            reward (float): the main reward obtained during MCTS search
+            control: parameters of the control for main design"""
+
+        control =  self.convert_control_to_list(control)
+        new_optimized_graph = OptimizedGraph(graph, reward, control)
+        self.seen_graphs.append(new_optimized_graph)
+
+    def check_graph(self, new_graph):
+        """Check if the graph is already in seen_graphs
+
+        Args:
+            new_graph: the graph to check"""
+
+        if len(self.seen_graphs) > 0:
+            for optimized_graph in self.seen_graphs:
+                if optimized_graph.graph == new_graph:
+                    reward = optimized_graph.reward
+                    control = optimized_graph.control
+                    print('seen reward:', reward)
+                    return True, reward, control
+
+        return False, 0, []
+
+    def add_state(self, state: RobotState, reward: float, control, step_number: int):
+        """Add a state, reward and control to current_rewards
+
+        state: a new state to add
+        reward: a new calculated reward
+        control: control parameters for the new state
+        """
+        control =  self.convert_control_to_list(control)
+        new_optimized_state = MCTSOptimizedState(state, reward, control, step_number)
+        self.seen_states.append(new_optimized_state)
+        if reward > self.best_simulated_state.reward:
+            self.set_best_state(state, reward, control)
+
+    def get_best_info(self):
+        """Get graph, reward and control for the best state"""
+        graph = self.best_simulated_state.state.make_graph()
+        return graph, self.best_simulated_state.reward, self.best_simulated_state.control
+
+    def step(self, state, action: RuleAction, render=False):
+        """Move current environment to new state
+
+        Args:
+            action (RuleAction): Action is take
+            render (bool): Turn on render each step. Defaults to False.
+
+        Returns:
+            bool, GraphGrammar: Return state of graph. If it is terminal then finish generate
+            graph and new state graph.
+        """
+
+        rule_action = action.get_rule
+        rule_dict = self.actions.rule_dict
+        rule_name = list(rule_dict.keys())[list(rule_dict.values()).index(rule_action)]
+        self.main_state.add_rule(rule_name)
+        new_state = state.takeAction(action)
+        self.step_counter += 1
+        done = new_state.isTerminal()
+        if done:
+            main_reward = new_state.getReward()
+            main_control = new_state.movments_trajectory
+            self.set_main_optimized_state(new_state, main_reward, main_control)
+
+        return done, new_state
+
+    def plot_means(self):
+        """Plot the mean rewards for steps of MCTS search"""
+
+        rewards = []
+        for state in self.seen_states:
+            i = state.step
+            if len(rewards) == i:
+                rewards.append([state.reward])
+            else:
+                rewards[i].append(state.reward)
+
+            mean_rewards = [mean(on_step_rewards) for on_step_rewards in rewards]
+
+        plt.figure()
+        plt.plot(mean_rewards)
+        plt.show()
+
+
 class GraphVocabularyEnvironment(GraphEnvironment):
 
     def __init__(self,
                  initilize_graph: GraphGrammar,
-                 rule_vocabulary: RuleVocabulary,
+                 helper: MCTSHelper,
                  max_numbers_rules_non_terminal=20):
         """Subclass graph environment on rule vocabulary instead rules and with real reward on
         simulation and control optimizing
@@ -196,43 +328,36 @@ class GraphVocabularyEnvironment(GraphEnvironment):
             Defaults to 20.
         """
         super().__init__(initilize_graph, None, max_numbers_rules_non_terminal)
-        self._actions = rule_vocabulary
-        self.state: RobotState = RobotState(rule_vocabulary)
+        self.helper: MCTSHelper = helper
+        self.state: RobotState = RobotState(helper.actions)
         self.movments_trajectory = None
-        self.step_counter = 0
-        MCTSReporter.get_instance().rule_vocabulary = rule_vocabulary
 
     def getPossibleActions(self):
         """Getter possible actions for current state
         """
         if self.counter_action <= self.max_actions_not_terminal:
-            possible_rules_name = self._actions.get_list_of_applicable_rules(self.graph)
+            possible_rules_name = self.helper.actions.get_list_of_applicable_rules(self.graph)
         else:
-            possible_rules_name = self._actions.get_list_of_applicable_terminal_rules(self.graph)
+            possible_rules_name = self.helper.actions.get_list_of_applicable_terminal_rules(self.graph)
 
-        possible_rules = [self._actions.rule_dict[str_rule] for str_rule in possible_rules_name]
+        possible_rules = [self.helper.actions.rule_dict[str_rule] for str_rule in possible_rules_name]
         possible_actions = set(RuleAction(rule) for rule in possible_rules)
         return list(possible_actions)
 
     def getReward(self):
-        reporter = MCTSReporter.get_instance()
-        report = reporter.check_graph(self.graph)
+        report = self.helper.check_graph(self.graph)
         if report[0]:
             self.reward = report[1]
             self.movments_trajectory = report[2]
-            reporter.add_state(self.state, self.reward, self.movments_trajectory)
+            self.helper.add_state(self.state, self.reward, self.movments_trajectory)
             print('seen reward:', self.reward)
             return self.reward
 
-        result_optimizer = self.optimizer.start_optimisation(self.graph)
+        result_optimizer = self.helper.optimizer.start_optimisation(self.graph)    
         self.reward = - result_optimizer[0]
         self.movments_trajectory = result_optimizer[1]
-        reporter.add_graph(self.graph, self.reward, self.movments_trajectory)
-        # if isinstance(self.movments_trajectory, ndarray):
-        #     control = list(deepcopy(self.movments_trajectory))
-        # else:
-        #     control = deepcopy(self.movments_trajectory)
-        reporter.add_state(self.state, self.reward, self.movments_trajectory)
+        self.helper.add_graph(self.graph, self.reward, self.movments_trajectory)
+        self.helper.add_state(self.state, self.reward, self.movments_trajectory)
         print(self.reward)
         return self.reward
 
@@ -246,69 +371,24 @@ class GraphVocabularyEnvironment(GraphEnvironment):
             GraphEnvironment: New state environment after action taken
         """
         rule_action = action.get_rule
-        rule_dict = self._actions.rule_dict
+        rule_dict = self.helper.actions.rule_dict
         rule_name = list(rule_dict.keys())[list(rule_dict.values()).index(rule_action)]
         new_state = deepcopy(self)
         new_state.state.add_rule(rule_name)
         new_state.graph.apply_rule(rule_action)
-        new_state.optimizer = self.optimizer
         if not action.is_terminal():
             new_state.counter_action += 1
         return new_state
-
-    def set_control_optimizer(self, control_optimizer: ControlOptimizer):
-        self.optimizer = control_optimizer
-
-    def step(self, action: RuleAction, render=False):
-        """Move current environment to new state
-
-        Args:
-            action (RuleAction): Action is take
-            render (bool): Turn on render each step. Defaults to False.
-
-        Returns:
-            bool, GraphGrammar: Return state of graph. If it is terminal then finish generate
-            graph and new state graph.
-        """
-        rule_action = action.get_rule
-        rule_dict = self._actions.rule_dict
-        rule_name = list(rule_dict.keys())[list(rule_dict.values()).index(rule_action)]
-
-        new_state = self.takeAction(action)
-        self.graph = new_state.graph
-        self.reward = new_state.reward
-        self.counter_action = new_state.counter_action
-        self.movments_trajectory = new_state.movments_trajectory
-        self.state = new_state.state
-        self.step_counter += 1
-        reporter = MCTSReporter.get_instance()
-        reporter.make_step(rule_name, self.step_counter)
-        done = new_state.isTerminal()
-
-        if render:
-            plt.figure()
-            nx.draw_networkx(self.graph,
-                             pos=nx.kamada_kawai_layout(self.graph, dim=2),
-                             node_size=800,
-                             labels={n: self.graph.nodes[n]["Node"].label for n in self.graph})
-            plt.show()
-        path = None
-        if done:
-            main_reward = self.getReward()
-            main_control = self.movments_trajectory
-            reporter.set_main_optimized_state(reporter.main_state,main_reward, main_control)
-            reporter.delete_temp()
-
-        return done, self.graph
 
     def __deepcopy__(self, memo):
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
         for k, v in self.__dict__.items():
-            if k != "optimizer":
+            if k != "helper":
                 setattr(result, k, deepcopy(v, memo))
         return result
+
 
 
 class GraphStubsEnvironment(GraphEnvironment):
