@@ -30,10 +30,10 @@ def init_extension_rules():
     alpha_right = [180, 150, 120]
     length_link = [0.4, 0.6, 0.8]
 
-    flat = list(map(lambda x: BlockWrapper(FlatChronoBody, width=x, length=0.05, depth=0.8),
+    flat = list(map(lambda x: BlockWrapper(FlatChronoBody, width_x=x, high_y=0.05, depth_z=0.8),
                     width))
 
-    link = list(map(lambda x: BlockWrapper(LinkChronoBody, length=x),
+    link = list(map(lambda x: BlockWrapper(LinkChronoBody, length_y=x),
                     length_link))
 
 
