@@ -11,8 +11,10 @@ class Box:
 
 @dataclass
 class Cylinder:
+    """The cylinder is created along the Y axis and centered at the center of mass
+    """
     radius: float = 0.1
-    height: float = 0.5
+    height_y: float = 0.5
 
 
 @dataclass

@@ -508,7 +508,7 @@ class ChronoBodyEnv(ChronoBody):
             body = chrono.ChBodyEasyBox(shape.width_x, shape.length_y, shape.height_z, MOCK_DENSITY, True,
                                         True, material)
         elif isinstance(shape, envbody_shapes.Cylinder):
-            body = chrono.ChBodyEasyCylinder(shape.radius, shape.height, MOCK_DENSITY, True, True,
+            body = chrono.ChBodyEasyCylinder(shape.radius, shape.height_y, MOCK_DENSITY, True, True,
                                              material)
         elif isinstance(shape, envbody_shapes.Sphere):
             body = chrono.ChBodyEasySphere(shape.radius, MOCK_DENSITY, True, True, material)
