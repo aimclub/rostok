@@ -534,7 +534,7 @@ class ChronoBodyEnv(ChronoBody):
             body = chrono.ChBodyEasySphere(shape.radius, MOCK_DENSITY, True, True, material)
         elif isinstance(shape, envbody_shapes.Ellipsoid):
             body = chrono.ChBodyEasyEllipsoid(
-                chrono.ChVectorD(shape.radius_a, shape.radius_b, shape.radius_c), MOCK_DENSITY,
+                chrono.ChVectorD(shape.radius_x, shape.radius_y, shape.radius_z), MOCK_DENSITY,
                 True, True, material)
         else:
             raise Exception("Unknown shape for ChronoBodyEnv object")

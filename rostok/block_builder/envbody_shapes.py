@@ -22,9 +22,9 @@ class Sphere:
 
 @dataclass
 class Ellipsoid:
-    radius_a: float = 0.1
-    radius_b: float = 0.2
-    radius_c: float = 0.3
+    radius_x: float = 0.1
+    radius_y: float = 0.2
+    radius_z: float = 0.3
 
 # All types of shape
 ShapeTypes = Union[Box, Cylinder, Sphere, Ellipsoid]
