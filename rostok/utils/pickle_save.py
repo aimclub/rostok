@@ -4,6 +4,9 @@ from pathlib import Path
 from rostok.utils.states import OptimizedGraph, OptimizedState, MCTSOptimizedState, RobotState
 
 
+def load_saveable(path):
+    with open(path, "rb") as file:
+       return  pickle.load(file)
 
 class Saveable():
 

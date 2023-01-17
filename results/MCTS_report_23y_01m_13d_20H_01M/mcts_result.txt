@@ -1,9 +1,0 @@
-main_result:
-rules: InitMechanism_2 TerminalTransformLeft2 TerminalTransformRight1 TerminalFlat2 FingerUpper FingerUpper TerminalL1 TerminalL2 TerminalJoint TerminalEndLimb1 TerminalEndLimb1 TerminalJoint
-control: 4.222222222222222 9.555555555555555
-reward: 2.378253560500775
-
-best_result:
-rules: InitMechanism_2 TerminalTransformLeft2 TerminalTransformRight1 TerminalFlat2 FingerUpper FingerUpper TerminalL1 TerminalL1 TerminalEndLimb1 TerminalJoint TerminalJoint TerminalEndLimb1
-control: 8.666666666666666 9.555555555555555
-reward: 2.3838607737496327

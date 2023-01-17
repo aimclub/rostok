@@ -1,3 +1,5 @@
+import sys
+
 from pathlib import Path
 from statistics import mean
 
@@ -7,6 +9,7 @@ from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
 from rostok.utils.pickle_save import OptimizedGraphReport, Saveable, OptimizedMCTSStateReport
 from rostok.utils.states import *
+from rostok.graph_grammar.graph_utils import plot_graph_reward, save_graph_plot_reward
 
 
 def rule_is_terminal(rule: Rule):
@@ -194,9 +197,14 @@ class MCTSSaveable(Saveable):
         graph = self.best_simulated_state.state.make_graph()
         return graph, self.best_simulated_state.reward, self.best_simulated_state.control
 
-    def print_best_graph(self):
+    def get_main_info(self):
+        """Get graph, reward and control for the best state"""
+        graph = self.main_simulated_state.state.make_graph()
+        return graph, self.main_simulated_state.reward, self.main_simulated_state.control
+
+    def draw_best_graph(self):
         graph, reward, control = self.get_best_info()
-        
+        plot_graph_reward(graph, reward)
 
     def plot_means(self):
         """Plot the mean rewards for steps of MCTS search"""
@@ -215,14 +223,45 @@ class MCTSSaveable(Saveable):
         plt.plot(mean_rewards)
         plt.show()
 
+    def save_visuals(self):
+        path_to_file = Path(self.path, "mcts_result.txt")
+        with open(path_to_file, 'w', encoding='utf-8') as file:
+            original_stdout = sys.stdout
+            sys.stdout = file
+            print('main_result:')
+            print('rules:', *self.main_simulated_state.state.rule_list)
+            print('control:', *self.main_simulated_state.control)
+            print('reward:', self.main_simulated_state.reward)
+            print()
+            print('best_result:')
+            print('rules:', *self.best_simulated_state.state.rule_list)
+            print('control:', *self.best_simulated_state.control)
+            print('reward:', self.best_simulated_state.reward)
+            sys.stdout = original_stdout
+
+        path_to_best_graph = Path(self.path, "best_graph.jpg")
+        best_graph, reward, _ = self.get_best_info()
+        save_graph_plot_reward(best_graph, reward, path_to_best_graph)
+        path_to_main_graph = Path(self.path, "main_graph.jpg")
+        main_graph, reward, _ = self.get_main_info()
+        save_graph_plot_reward(main_graph, reward, path_to_main_graph)
+
+    def save_lists(self):
+        self.seen_graphs.set_path(self.path)
+        self.seen_graphs.save()
+        self.seen_states.set_path(self.path)
+        self.seen_states.save()
+
+    def save_all(self):
+        self.save_visuals()
+        self.save_lists()
 
 
-
-class MCTSHelper(Saveable):
+class MCTSHelper():
 
     def __init__(self, rule_vocabulary, optimizer, path = Path("./results")) -> None:
         self.actions: RuleVocabulary = rule_vocabulary
-        self.optimizer = optimizer
+        self.optimizer: ControlOptimizer = optimizer
         self.step_counter: int = 0
         self.report: MCTSSaveable = MCTSSaveable(rule_vocabulary, path)
 
@@ -265,8 +304,9 @@ class MCTSHelper(Saveable):
         """
         control =  self.convert_control_to_list(control)
         self.report.seen_states.add_state(state, reward, control, self.step_counter)
-        if reward > self.best_simulated_state.reward:
+        if reward > self.report.best_simulated_state.reward:
             self.set_best_state(state, reward, control)
+
     def step(self, state, action: RuleAction):
         """Move current environment to new state
 
@@ -283,13 +323,13 @@ class MCTSHelper(Saveable):
         rule_dict = self.actions.rule_dict
         rule_name = list(rule_dict.keys())[list(rule_dict.values()).index(rule_action)]
         self.report.main_state.add_rule(rule_name)
-        new_state = state.takeAction(action)
+        new_state: GraphVocabularyEnvironment = state.takeAction(action)
         self.step_counter += 1
         done = new_state.isTerminal()
         if done:
             main_reward = new_state.getReward()
             main_control = new_state.movments_trajectory
-            self.set_main_optimized_state(new_state, main_reward, main_control)
+            self.set_main_optimized_state(new_state.state, main_reward, main_control)
 
         return done, new_state
 
@@ -328,7 +368,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         return list(possible_actions)
 
     def getReward(self):
-        report = self.helper.report.check_graph(self.graph)
+        report = self.helper.report.seen_graphs.check_graph(self.graph)
         if report[0]:
             self.reward = report[1]
             self.movments_trajectory = report[2]
