@@ -8,7 +8,7 @@ from example_vocabulary import (B_NODES, J_NODES, LM_MOUNTS, RM_MOUNTS,
                                 get_terminal_graph_two_finger)
 
 import rostok.virtual_experiment.simulation_step as step
-from rostok.block_builder.basic_node_block import SimpleBody
+from rostok.block_builder.envbody_shapes import Box
 from rostok.block_builder.node_render import (ChronoBodyEnv,
                                               DefaultChronoMaterial,
                                               FrameTransform)
@@ -45,7 +45,7 @@ for get_graph in mechs:
     shape_graps.radius = 0.3/2
     shape_graps.height = 0.6
     obj = BlockWrapper(ChronoBodyEnv,
-                        shape=shape_graps,
+                        shape=Box(),
                         material=mat,
                         pos=FrameTransform([0, 1, 0], [0, -0.048, 0.706, 0.706]))
 

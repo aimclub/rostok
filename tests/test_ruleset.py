@@ -17,13 +17,13 @@ mat.SetFriction(0.5)
 mat.SetDampingF(0.1)
 
 # Bodies
-link1 = BlockWrapper(LinkChronoBody, length=0.3)
-link2 = BlockWrapper(LinkChronoBody, length=0.2)
+link1 = BlockWrapper(LinkChronoBody, length_y=0.3)
+link2 = BlockWrapper(LinkChronoBody, length_y=0.2)
 
-flat1 = BlockWrapper(FlatChronoBody, width=0.4, length=0.1)
-flat2 = BlockWrapper(FlatChronoBody, width=0.7, length=0.1)
+flat1 = BlockWrapper(FlatChronoBody, width_x=0.4, height_y=0.1)
+flat2 = BlockWrapper(FlatChronoBody, width_x=0.7, height_y=0.1)
 
-u1 = BlockWrapper(MountChronoBody, width=0.1, length=0.1)
+u1 = BlockWrapper(MountChronoBody, width_x=0.1, length_y=0.1)
 
 # Transforms
 RZX = FrameTransform([0, 0, 0], [sqrt(2), 0, sqrt(2), 0])
@@ -126,6 +126,14 @@ rule_action_terminal_no_joints = np.asarray(
 
 rule_action_no_joints = np.r_[rule_action_non_terminal_ladoshaka, rule_action_terminal_no_joints]
 
+rule_action_terminal_two_finger_mix = np.asarray([
+    "TerminalFlat1", "TerminalL1", "TerminalL1", "TerminalL1", "TerminalL2", "TerminalL2",
+    "TerminalTransformL", "TerminalTransformLZ", "TerminalEndLimb","TerminalJoint" ,"TerminalEndLimb",
+    "TerminalJoint", "TerminalJoint", "TerminalJoint", "TerminalJoint",
+])
+
+rule_action_two_finger_mix_terminal = np.r_[rule_action_non_terminal_two_finger, rule_action_terminal_two_finger_mix]
+
 
 def get_terminal_graph_three_finger():
     G = GraphGrammar()
@@ -151,5 +159,11 @@ def get_terminal_graph_two_finger():
 def get_nonterminal_graph_two_finger():
     G = GraphGrammar()
     for i in list(rule_action_non_terminal_two_finger):
+        G.apply_rule(rule_vocab.get_rule(i))
+    return G
+
+def get_terminal_graph_two_finger_mix():
+    G = GraphGrammar()
+    for i in list(rule_action_two_finger_mix_terminal):
         G.apply_rule(rule_vocab.get_rule(i))
     return G

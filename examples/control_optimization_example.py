@@ -2,7 +2,7 @@ import example_vocabulary
 import pychrono as chrono
 
 import rostok.criterion.criterion_calc as criterion
-from rostok.block_builder.basic_node_block import SimpleBody
+from rostok.block_builder.envbody_shapes import Cylinder
 from rostok.block_builder.node_render import (ChronoBodyEnv,
                                               DefaultChronoMaterial,
                                               FrameTransform)
@@ -20,7 +20,7 @@ def get_object_to_grasp():
     matich.Friction = 0.65
     matich.DampingF = 0.65
     obj = BlockWrapper(ChronoBodyEnv,
-                       shape=SimpleBody.CYLINDER,
+                       shape=Cylinder(),
                        material=matich,
                        pos=FrameTransform([0, 1, 0], [0, -0.048, 0.706, 0.706]))
 

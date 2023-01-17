@@ -30,15 +30,15 @@ def init_extension_rules(length_link, width):
     # alpha_right = [180, 150, 120]
     # length_link = [0.4, 0.6, 0.8]
 
-    flat = list(map(lambda x: BlockWrapper(FlatChronoBody, width=x+0.5, length=0.3, depth=0.8),
+    flat = list(map(lambda x: BlockWrapper(FlatChronoBody, width_x=x, height_y=0.05, depth_z=0.8),
                     width))
 
-    link = list(map(lambda x: BlockWrapper(LinkChronoBody, length=x),
+    link = list(map(lambda x: BlockWrapper(LinkChronoBody, length_y=x),
                     length_link))
 
 
-    u1 = BlockWrapper(MountChronoBody, width=0.1, length=0.05)
-    u2 = BlockWrapper(MountChronoBody, width=0.2, length=0.1)
+    u1 = BlockWrapper(MountChronoBody, width_x=0.1, length_y=0.05)
+    u2 = BlockWrapper(MountChronoBody, width_x=0.2, length_y=0.1)
 
     # %% Tranform for extansions rules 
     # z_shift = [-0.3, 0, 0.3]

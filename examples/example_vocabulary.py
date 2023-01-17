@@ -12,13 +12,13 @@ from rostok.graph_grammar.node_vocabulary import NodeVocabulary
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 
 # Bodies
-link1 = BlockWrapper(LinkChronoBody, length=0.6)
-link2 = BlockWrapper(LinkChronoBody, length=0.4)
+link1 = BlockWrapper(LinkChronoBody, length_y=0.6)
+link2 = BlockWrapper(LinkChronoBody, length_y=0.4)
 
-flat1 = BlockWrapper(FlatChronoBody, width=0.4, length=0.2)
-flat2 = BlockWrapper(FlatChronoBody, width=0.7, length=0.2)
+flat1 = BlockWrapper(FlatChronoBody, width_x=0.4, height_y=0.2)
+flat2 = BlockWrapper(FlatChronoBody, width_x=0.7, height_y=0.2)
 
-u1 = BlockWrapper(MountChronoBody, width=0.1, length=0.1)
+u1 = BlockWrapper(MountChronoBody, width_x=0.1, length_y=0.1)
 
 # Transforms
 RZX = FrameTransform([0, 0, 0], [sqrt(2), 0, sqrt(2), 0])
