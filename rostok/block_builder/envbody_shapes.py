@@ -28,5 +28,12 @@ class Ellipsoid:
     radius_y: float = 0.2
     radius_z: float = 0.3
 
+@dataclass
+class LoadedShape:
+    """A class with data about the upload shape in obj format and an xml file describing the material, inertial characteristics and grasping points
+    """
+    path_to_mesh_file: str = ""
+    path_to_xml_file: str = ""
+    
 # All types of shape
-ShapeTypes = Union[Box, Cylinder, Sphere, Ellipsoid]
+ShapeTypes = Union[Box, Cylinder, Sphere, Ellipsoid, LoadedShape]
