@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import mcts
+import pickle
 # imports from standard libs
 import networkx as nx
+from pathlib import Path
 # chrono imports
 import pychrono as chrono
 import rule_extention
@@ -56,7 +58,13 @@ cfg.get_rgab_object_callback = get_object_to_grasp
 cfg.params_to_timesiries_callback = traj_generator_fun
 
 control_optimizer = ControlOptimizer(cfg)
-
+with open(Path("./results", "cfg.pickle"), "wb+") as file:
+    for k, v in cfg.__dict__.items():
+        try:
+            print("attr:", k)
+            pickle.dump(v, file)
+        except:
+            print("attr:", k, "failed")
 # %% Init mcts parameters
 
 # Hyperparameters mctss

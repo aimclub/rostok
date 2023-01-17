@@ -31,7 +31,7 @@ class Saveable():
 def convert_control_to_list(control):
     if control is None:
         control = []
-    elif isinstance(control, (float,int)):
+    elif isinstance(control, (float, int)):
         control = [control]
 
     return list(control)

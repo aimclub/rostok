@@ -166,7 +166,7 @@ class MCTSReporter():
         self.seen_graphs: list[OptimizedGraph] = []
         self.__rule_vocabulary = None
         self.current_rewards: list[OptimizedState] = []
-        self.rewards:dict[int, list[OptimizedState]] = {}
+        self.rewards: dict[int, list[OptimizedState]] = {}
         self.main_state = None
         self.main_simulated_state = None
         self.best_simulated_state = None
