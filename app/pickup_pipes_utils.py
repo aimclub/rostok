@@ -5,6 +5,7 @@ import rostok.intexp as intexp
 from rostok.graph_grammar.node import BlockWrapper
 from rostok.block_builder.node_render import ChronoBodyEnv
 from rostok.block_builder.transform_srtucture import FrameTransform
+from rostok.block_builder.envbody_shapes import LoadedShape
 
 
 def get_main_axis_pipe(obj_db):
@@ -30,7 +31,7 @@ def create_builder_grab_object(path_to_pipe_obj = None,
 
         # Create 3D mesh and setup parameters from files
 
-        obj = BlockWrapper(ChronoBodyEnv, shape = (path_to_pipe_obj, path_to_pipe_xml))
+        obj = BlockWrapper(ChronoBodyEnv, LoadedShape(path_to_pipe_obj, path_to_pipe_xml))
         
         obj_db = intexp.entity.TesteeObject()
         obj_db.load_object_mesh(path_to_pipe_obj)

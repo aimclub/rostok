@@ -1,6 +1,7 @@
 from rostok.graph_grammar.node import BlockWrapper, ROOT
 from rostok.graph_grammar import node_vocabulary, rule_vocabulary
 from rostok.block_builder.node_render import *
+import rostok.intexp as intexp
 from pickup_pipes_utils import get_main_axis_pipe
 
 import pychrono as chrono
@@ -20,21 +21,21 @@ def create_rules_to_pickup_pipe(path_to_pipe_obj, path_to_pipe_xml):
     long_dimension, short_dimension, axis = get_main_axis_pipe(obj_db)
 
     start_point_grasp = BlockWrapper(FlatChronoBody,
-                                     width=short_dimension[1] * 0.01,
-                                     length=short_dimension[1] * 0.01,
-                                     depth=short_dimension[1] * 0.01,
+                                     height_y=short_dimension[1] * 0.01,
+                                     width_x=short_dimension[1] * 0.01,
+                                     depth_z=short_dimension[1] * 0.01,
                                      is_collide=False)
 
     flat = BlockWrapper(FlatChronoBody,
-                        width=short_dimension[1],
-                        length=long_dimension[1] * 0.6,
-                        depth=short_dimension[1] * 0.5)
+                        width_x=short_dimension[1],
+                        depth_z=long_dimension[1] * 0.6,
+                        height_y=short_dimension[1] * 0.5)
 
     link = list(
-        map(lambda x: BlockWrapper(LinkChronoBody, length=x, width = x/7.5, depth =x/2), COEFFICIENTS * short_dimension[1]))
+        map(lambda x: BlockWrapper(LinkChronoBody, length_y=x, width_x= x/7.5, depth_z =x/2), COEFFICIENTS * short_dimension[1]))
 
-    u1 = BlockWrapper(MountChronoBody, width=short_dimension[1]/1.5, length=short_dimension[1]/1.5)
-    u2 = BlockWrapper(MountChronoBody, width=short_dimension[1]/2, length=short_dimension[1]/1.5)
+    u1 = BlockWrapper(MountChronoBody, width_x=short_dimension[1]/1.5, depth_z=short_dimension[1]/1.5)
+    u2 = BlockWrapper(MountChronoBody, width_x=short_dimension[1]/2, depth_z=short_dimension[1]/1.5)
 
     def rotation(alpha):
         quat_Y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))

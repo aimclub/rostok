@@ -2,6 +2,7 @@ import random
 from abc import ABC
 from enum import Enum
 from typing import Optional
+from rostok import intexp
 
 import rostok.block_builder.envbody_shapes as envbody_shapes
 import pychrono.core as chrono
@@ -461,7 +462,7 @@ class FlatChronoBody(ChronoBody, RobotBody):
         self.body.GetCollisionModel().AddBox(chrono_object_material, width_x / 2,
                                              height_y / 2 - width_x / 32, depth_z / 2)
         self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
-      _z  self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
+        self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
         self.body.GetCollisionModel().BuildModel()
 
 
@@ -552,17 +553,18 @@ class ChronoBodyEnv(ChronoBody):
                 True, True, material)
         elif isinstance(shape, envbody_shapes.LoadedShape):
             obj_db = intexp.chrono_api.ChTesteeObject()
-            obj_db.create_chrono_body_from_file(shape[0],
-                                    shape[1])
+            obj_db.create_chrono_body_from_file(shape.path_to_mesh_file,
+                                    shape.path_to_xml_file)
             body = obj_db.chrono_body
         else:
             raise Exception("Unknown shape for ChronoBodyEnv object")
-        body.SetCollide(True)
-        transform = ChronoTransform(builder, pos)
-        body.SetCoord(transform.transform)
+        if not isinstance(shape, envbody_shapes.LoadedShape):
+            body.SetCollide(True)
+            transform = ChronoTransform(builder, pos)
+            body.SetCoord(transform.transform)
+            body.SetMass(mass)
         body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
         body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
-        body.SetMass(mass)
 
 
         # Create shape
