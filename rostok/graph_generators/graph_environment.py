@@ -5,7 +5,7 @@ from rostok.graph_generators.graph_reward import Reward
 from rostok.graph_grammar.node import *
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
-from rostok.utils.pickle_save import OptimizedGraphReport, Saveable
+from rostok.utils.pickle_save import OptimizedGraphReport, Saveable, OptimizedMCTSStateReport
 from rostok.utils.states import *
 
 
@@ -179,23 +179,52 @@ class GraphEnvironment():
             return is_graph_eq
         return False
 
+class MCTSSaveable(Saveable):
 
-class MCTSHelper(Saveable):
-    optimizer = None
-    @classmethod
-    def set_optimizer(cls, opt):
-        cls.optimizer = opt
-
-    def __init__(self, rule_vocabulary, optimizer, path = Path("./result")) -> None:
+    def __init__(self, rule_vocabulary, path) -> None:
         super().__init__(path, 'MCTS_data')
-        self.actions: RuleVocabulary = rule_vocabulary
-        self.step_counter = 0
         self.seen_graphs: OptimizedGraphReport = OptimizedGraphReport(path)
-        self.seen_states: list[MCTSOptimizedState] = []
-        MCTSHelper.set_optimizer(optimizer)
+        self.seen_states:  OptimizedMCTSStateReport = OptimizedMCTSStateReport(path)
         self.main_state = RobotState(rules=rule_vocabulary)
         self.main_simulated_state = OptimizedState(self.main_state, 0, None)
         self.best_simulated_state = OptimizedState(self.main_state, 0, None)
+
+    def get_best_info(self):
+        """Get graph, reward and control for the best state"""
+        graph = self.best_simulated_state.state.make_graph()
+        return graph, self.best_simulated_state.reward, self.best_simulated_state.control
+
+    def print_best_graph(self):
+        graph, reward, control = self.get_best_info()
+        
+
+    def plot_means(self):
+        """Plot the mean rewards for steps of MCTS search"""
+
+        rewards = []
+        for state in self.seen_states.state_list:
+            i = state.step
+            if len(rewards) == i:
+                rewards.append([state.reward])
+            else:
+                rewards[i].append(state.reward)
+
+            mean_rewards = [mean(on_step_rewards) for on_step_rewards in rewards]
+
+        plt.figure()
+        plt.plot(mean_rewards)
+        plt.show()
+
+
+
+
+class MCTSHelper(Saveable):
+
+    def __init__(self, rule_vocabulary, optimizer, path = Path("./results")) -> None:
+        self.actions: RuleVocabulary = rule_vocabulary
+        self.optimizer = optimizer
+        self.step_counter: int = 0
+        self.report: MCTSSaveable = MCTSSaveable(rule_vocabulary, path)
 
     def convert_control_to_list(self, control):
         if control is None:
@@ -214,7 +243,7 @@ class MCTSHelper(Saveable):
             control: parameters of the control for best design"""
 
         control =  self.convert_control_to_list(control)
-        self.best_simulated_state = OptimizedState(state, reward, control)
+        self.report.best_simulated_state = OptimizedState(state, reward, control)
 
     def set_main_optimized_state(self, state, reward, control):
         """Set the values for main state
@@ -225,23 +254,7 @@ class MCTSHelper(Saveable):
             control: parameters of the control for main design"""
 
         control =  self.convert_control_to_list(control)
-        self.main_simulated_state = OptimizedState(state, reward, control)
-
-    def check_graph(self, new_graph):
-        """Check if the graph is already in seen_graphs
-
-        Args:
-            new_graph: the graph to check"""
-
-        if len(self.seen_graphs.graph_list) > 0:
-            for optimized_graph in self.seen_graphs.graph_list:
-                if optimized_graph.graph == new_graph:
-                    reward = optimized_graph.reward
-                    control = optimized_graph.control
-                    print('seen reward:', reward)
-                    return True, reward, control
-
-        return False, 0, []
+        self.report.main_simulated_state = OptimizedState(state, reward, control)
 
     def add_state(self, state: RobotState, reward: float, control):
         """Add a state, reward and control to current_rewards
@@ -251,16 +264,9 @@ class MCTSHelper(Saveable):
         control: control parameters for the new state
         """
         control =  self.convert_control_to_list(control)
-        new_optimized_state = MCTSOptimizedState(state, reward, control, self.step_counter)
-        self.seen_states.append(new_optimized_state)
+        self.report.seen_states.add_state(state, reward, control, self.step_counter)
         if reward > self.best_simulated_state.reward:
             self.set_best_state(state, reward, control)
-
-    def get_best_info(self):
-        """Get graph, reward and control for the best state"""
-        graph = self.best_simulated_state.state.make_graph()
-        return graph, self.best_simulated_state.reward, self.best_simulated_state.control
-
     def step(self, state, action: RuleAction):
         """Move current environment to new state
 
@@ -276,7 +282,7 @@ class MCTSHelper(Saveable):
         rule_action = action.get_rule
         rule_dict = self.actions.rule_dict
         rule_name = list(rule_dict.keys())[list(rule_dict.values()).index(rule_action)]
-        self.main_state.add_rule(rule_name)
+        self.report.main_state.add_rule(rule_name)
         new_state = state.takeAction(action)
         self.step_counter += 1
         done = new_state.isTerminal()
@@ -286,23 +292,6 @@ class MCTSHelper(Saveable):
             self.set_main_optimized_state(new_state, main_reward, main_control)
 
         return done, new_state
-
-    def plot_means(self):
-        """Plot the mean rewards for steps of MCTS search"""
-
-        rewards = []
-        for state in self.seen_states:
-            i = state.step
-            if len(rewards) == i:
-                rewards.append([state.reward])
-            else:
-                rewards[i].append(state.reward)
-
-            mean_rewards = [mean(on_step_rewards) for on_step_rewards in rewards]
-
-        plt.figure()
-        plt.plot(mean_rewards)
-        plt.show()
 
 
 class GraphVocabularyEnvironment(GraphEnvironment):
@@ -339,7 +328,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         return list(possible_actions)
 
     def getReward(self):
-        report = self.helper.check_graph(self.graph)
+        report = self.helper.report.check_graph(self.graph)
         if report[0]:
             self.reward = report[1]
             self.movments_trajectory = report[2]
@@ -350,7 +339,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         result_optimizer = self.helper.optimizer.start_optimisation(self.graph)    
         self.reward = - result_optimizer[0]
         self.movments_trajectory = result_optimizer[1]
-        self.helper.seen_graphs.add_graph(self.graph, self.reward, self.movments_trajectory)
+        self.helper.report.seen_graphs.add_graph(self.graph, self.reward, self.movments_trajectory)
         self.helper.add_state(self.state, self.reward, self.movments_trajectory)
         print(self.reward)
         return self.reward
@@ -386,7 +375,6 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         return result
 
 
-
 class GraphStubsEnvironment(GraphEnvironment):
 
     def __init__(self, initilize_graph, rules, max_numbers_rules_non_terminal=20):
@@ -408,4 +396,3 @@ class GraphStubsEnvironment(GraphEnvironment):
         reward = self.function_reward(self.graph, self.map_nodes_reward)
         self.reward = reward
         return self.reward
-
