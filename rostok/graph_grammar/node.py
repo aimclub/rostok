@@ -325,17 +325,28 @@ class GraphGrammar(nx.DiGraph):
 
     def __eq__(self, __rhs) -> bool:
         if isinstance(__rhs, GraphGrammar):
-            self_dfs_paths = self.graph_partition_dfs()
-            self_dfs_paths_lbl = []
-            for path in self_dfs_paths:
-                self_dfs_paths_lbl.append([self.get_node_by_id(x).label for x in path])
-
-            self_dfs_paths_lbl.sort(key = lambda x: "".join(x))
-            rhs_dfs_paths = __rhs.graph_partition_dfs()
-            rhs_dfs_paths_lbl = []
-            for path in rhs_dfs_paths:
-                rhs_dfs_paths_lbl.append([__rhs.get_node_by_id(x).label for x in path])
-
-            rhs_dfs_paths_lbl.sort(key = lambda x: "".join(x))
+            self_dfs_paths_lbl = self.get_uniq_representation()
+            rhs_dfs_paths_lbl = __rhs.get_uniq_representation()
             return self_dfs_paths_lbl == rhs_dfs_paths_lbl
         return False
+
+    def get_uniq_representation(self) -> list[list[str]]:
+        """Returns dfs partition node labels. 
+        Where branches is sorted by lexicographic order
+
+        Returns:
+            list[list[str]]: dfs branches 
+        """
+
+        self_dfs_paths = self.graph_partition_dfs()
+        self_dfs_paths_lbl = []
+        for path in self_dfs_paths:
+            self_dfs_paths_lbl.append([self.get_node_by_id(x).label for x in path])
+
+        self_dfs_paths_lbl.sort(key=lambda x: "".join(x))
+        return self_dfs_paths_lbl
+    
+    
+    def __hash__(self) -> list[list[str]]:
+        self_dfs_paths_lbl = self.get_uniq_representation()
+        return hash(str(self_dfs_paths_lbl))

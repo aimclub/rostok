@@ -9,13 +9,13 @@ from rostok.block_builder.transform_srtucture import FrameTransform
 mysystem = chrono.ChSystemNSC()
 
 # Init body blocks
-body_1 = LinkChronoBody(mysystem, length=1)
-body_2 = LinkChronoBody(mysystem, length=0.5)
-body_3 = LinkChronoBody(mysystem, length=0.5)
-body_4 = LinkChronoBody(mysystem, length=0.5)
-body_5 = LinkChronoBody(mysystem, length=1)
-body_6 = LinkChronoBody(mysystem, length=1)
-body_7 = LinkChronoBody(mysystem, length=1)
+body_1 = LinkChronoBody(mysystem, length_y=1)
+body_2 = LinkChronoBody(mysystem, length_y=0.5)
+body_3 = LinkChronoBody(mysystem, length_y=0.5)
+body_4 = LinkChronoBody(mysystem, length_y=0.5)
+body_5 = LinkChronoBody(mysystem, length_y=1)
+body_6 = LinkChronoBody(mysystem, length_y=1)
+body_7 = LinkChronoBody(mysystem, length_y=1)
 
 # Init transforms
 cord_sys_1 = FrameTransform([0, 0, 0], [1, 0, 0, 0])
