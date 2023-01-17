@@ -1,9 +1,10 @@
+import pickle
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import mcts
-import pickle
 # imports from standard libs
 import networkx as nx
-from pathlib import Path
 # chrono imports
 import pychrono as chrono
 import rule_extention
@@ -16,8 +17,6 @@ from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact,
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.trajectory_optimizer.control_optimizer import (
     ConfigRewardFunction, ControlOptimizer)
-#from rostok.utils.result_saver import read_report
-from rostok.utils.result_saver import MCTSReporter
 
 
 def plot_graph(graph: GraphGrammar):
@@ -26,14 +25,9 @@ def plot_graph(graph: GraphGrammar):
                      pos=nx.kamada_kawai_layout(graph, dim=2),
                      node_size=800,
                      labels={n: graph.nodes[n]["Node"].label for n in graph})
-    #plt.savefig("./results/graph.jpg")
     plt.show()
 
-
 # %% Create extension rule vocabulary
-
-# %% Create extension rule vocabulary
-
 rule_vocabul, node_features = rule_extention.init_extension_rules()
 
 # %% Create condig optimizing control
@@ -58,13 +52,6 @@ cfg.get_rgab_object_callback = get_object_to_grasp
 cfg.params_to_timesiries_callback = traj_generator_fun
 
 control_optimizer = ControlOptimizer(cfg)
-with open(Path("./results", "cfg.pickle"), "wb+") as file:
-    for k, v in cfg.__dict__.items():
-        try:
-            print("attr:", k)
-            pickle.dump(v, file)
-        except:
-            print("attr:", k, "failed")
 # %% Init mcts parameters
 
 # Hyperparameters mctss
@@ -76,10 +63,9 @@ finish = False
 
 G = GraphGrammar()
 max_numbers_rules = 2
-# Create graph envirenments for algorithm (not gym)
+# Create graph environments for algorithm (not gym)
 mcts_helper = env.MCTSHelper(rule_vocabul, control_optimizer)
 graph_env = env.GraphVocabularyEnvironment(G, mcts_helper, max_numbers_rules)
-mcts_helper.seen_graphs.set_path(mcts_helper.make_time_dependent_path())
 
 #%% Run first algorithm
 iter = 0
@@ -88,17 +74,17 @@ while not finish:
     finish, graph_env = mcts_helper.step(graph_env, action)
     iter += 1
     print(
-        f"number iteration: {iter}, counter actions: {graph_env.counter_action}, reward: {mcts_helper.get_best_info()[1]}"
-    )
+        f"number iteration: {iter}, counter actions: {graph_env.counter_action}, reward: {mcts_helper.report.get_best_info()[1]}"
+        )
 
-#reporter.save_result()
-#reporter.save_reporter()
-best_graph, reward, best_control = mcts_helper.get_best_info()
-plot_graph(best_graph)
+report = mcts_helper.report
+report.draw_best_graph()
+best_graph, reward, best_control = mcts_helper.report.get_best_info()
 func_reward = control_optimizer.create_reward_function(best_graph)
 res = - func_reward(best_control)
-
 print(res)
-mcts_helper.plot_means()
-mcts_helper.seen_graphs.save()
-mcts_helper.save()
+report.plot_means()
+report.make_time_dependent_path()
+report.save()
+report.save_visuals()
+report.save_lists()
