@@ -14,6 +14,11 @@ from rostok.block_builder.basic_node_block import (BlockBody, RobotBody, BlockBr
                                                    Block, BlockTransform, SimpleBody)
 
 
+#Constants
+
+ENVELOPE = 0.001
+MARGIN = 0.0005
+
 class SpringTorque(chrono.TorqueFunctor):
 
     def __init__(self, spring_coef, damping_coef, rest_angle):
@@ -164,8 +169,8 @@ class ChronoBody(BlockBody, ABC):
         self.body.AddMarker(input_marker)
         self.body.AddMarker(out_marker)
         self.body.AddMarker(transformed_out_marker)
-        self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
-        self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
+        self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(ENVELOPE)
+        self.body.GetCollisionModel().SetDefaultSuggestedMargin(MARGIN)
         self.body.SetCollide(is_collide)
 
         input_marker.SetPos(in_pos_marker)
@@ -470,8 +475,8 @@ class FlatChronoBody(ChronoBody, RobotBody):
         self.body.GetCollisionModel().ClearModel()
         self.body.GetCollisionModel().AddBox(chrono_object_material, width / 2,
                                              length / 2 - width / 32, depth / 2)
-        self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
-        self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
+        self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(ENVELOPE)
+        self.body.GetCollisionModel().SetDefaultSuggestedMargin(MARGIN)
         self.body.GetCollisionModel().BuildModel()
 
 
@@ -524,8 +529,8 @@ class MountChronoBody(ChronoBody, RobotBody):
         self.body.GetCollisionModel().ClearModel()
         self.body.GetCollisionModel().AddBox(chrono_object_material, width / 2, length / 2,
                                              depth / 2)
-        self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
-        self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
+        self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(ENVELOPE)
+        self.body.GetCollisionModel().SetDefaultSuggestedMargin(MARGIN)
         self.body.GetCollisionModel().BuildModel()
 
 
@@ -569,10 +574,10 @@ class ChronoBodyEnv(ChronoBody):
         body.SetCollide(True)
         transform = ChronoTransform(builder, pos)
         body.SetCoord(transform.transform)
-        body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
-        body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
+        body.GetCollisionModel().SetDefaultSuggestedEnvelope(ENVELOPE)
+        body.GetCollisionModel().SetDefaultSuggestedMargin(MARGIN)
         body.SetMass(mass)
-        body.SetBodyFixed(True)
+
         # Create shape
         pos_in_marker = chrono.ChVectorD(0, 0, 0)
         pos_out_marker = chrono.ChVectorD(0, 0, 0)
