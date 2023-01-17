@@ -1,8 +1,7 @@
 import pychrono as chrono
 import numpy as np
 from rostok.virtual_experiment.robot import Robot
-from rostok.block_builder.node_render import RobotBody, ChronoRevolveJoint
-from rostok.graph_grammar.node import BlockWrapper
+from rostok.block_builder.node_render import RobotBody, ChronoRevolveJoint, ChronoBodyEnv
 
 
 
@@ -124,10 +123,10 @@ class RobotSensor:
             return None
 
     @staticmethod
-    def contact_coord(obj: BlockWrapper):
+    def contact_coord(obj: ChronoBodyEnv):
         """Sensor of COG of contact points
         Args:
-            obj (BlockWrapper): Grasp object
+            obj (ChronoBodyEnv): Grasp object
         Returns:
             dict[int, float]: Dictionary which keys are id of object and values of COG of contact point volume in XYZ format
         """
@@ -146,10 +145,10 @@ class RobotSensor:
             return None
 
     @staticmethod
-    def abs_coord_COG_obj(obj: BlockWrapper):
+    def abs_coord_COG_obj(obj: ChronoBodyEnv):
         """Sensor of absolute coordinates of grasp object
         Args:
-            obj (BlockWrapper): Grasp object
+            obj (ChronoBodyEnv): Grasp object
         Returns:
             dict[int, chrono.ChVectorD]: Dictionary which keys are id of object 
             and value of object COG in XYZ format
