@@ -1,8 +1,6 @@
 import rostok.criterion.criterion_calc as criterion
-from rostok.block_builder.basic_node_block import SimpleBody
-from rostok.block_builder.node_render import (ChronoBodyEnv,
-                                              DefaultChronoMaterial,
-                                              FrameTransform)
+import rostok.block_builder.envbody_shapes as env_shape
+from rostok.block_builder.node_render import (ChronoBodyEnv, DefaultChronoMaterial, FrameTransform)
 from rostok.graph_grammar.node import BlockWrapper, GraphGrammar, Node
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
@@ -14,7 +12,7 @@ def get_object_to_grasp():
     matich.Friction = 0.65
     matich.DampingF = 0.65
     obj = BlockWrapper(ChronoBodyEnv,
-                       shape=SimpleBody.BOX,
+                       shape=env_shape.Box(),
                        material=matich,
                        pos=FrameTransform([0, 1.5, 0], [0, -0.048, 0.706, 0.706]))
 
@@ -46,9 +44,8 @@ def create_traj_fun(stop_time: float, time_step: float):
 
     return fun
 
-def create_builder_grasp_object(shape,
-                                position,
-                                material):
+
+def create_builder_grasp_object(shape, position, material):
 
     def builder_grasp_object():
 

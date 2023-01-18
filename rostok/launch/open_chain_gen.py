@@ -5,7 +5,7 @@ import pychrono as chrono
 import mcts
 
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.block_builder.basic_node_block import SimpleBody
+import rostok.block_builder.envbody_shapes as env_shape
 from rostok.block_builder.node_render import Material, DefaultChronoMaterial
 from rostok.block_builder.transform_srtucture import FrameTransform
 from rostok.trajectory_optimizer.control_optimizer import ConfigRewardFunction, ControlOptimizer
@@ -57,7 +57,7 @@ class OpenChainGen:
         self._cfg_control_optimizer.get_rgab_object_callback = self._builder_grasp_object
 
     def set_grasp_object(self,
-                         shape: SimpleBody = SimpleBody.BOX,
+                         shape: env_shape.ShapeTypes = env_shape.Box(),
                          position: FrameTransform = FrameTransform([0, 1.5, 0],
                                                                    [0, -0.048, 0.706, 0.706]),
                          material: Material = DefaultChronoMaterial()):
