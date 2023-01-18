@@ -1,5 +1,5 @@
 import rostok.criterion.criterion_calc as criterion
-from rostok.block_builder.basic_node_block import SimpleBody
+from rostok.block_builder.envbody_shapes import Box
 from rostok.block_builder.node_render import (ChronoBodyEnv,
                                               DefaultChronoMaterial,
                                               FrameTransform)
@@ -13,8 +13,9 @@ def get_object_to_grasp():
     matich = DefaultChronoMaterial()
     matich.Friction = 0.65
     matich.DampingF = 0.65
+    shape_box = Box(0.1, 0.1, 0.1)
     obj = BlockWrapper(ChronoBodyEnv,
-                       shape=SimpleBody.BOX,
+                       shape=shape_box,
                        material=matich,
                        pos=FrameTransform([0, 0.5, 0], [0, -0.048, 0.706, 0.706]))
 

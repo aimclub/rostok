@@ -1,3 +1,4 @@
+import numpy as np
 from rostok.virtual_experiment.robot import Robot
 
 
@@ -110,4 +111,4 @@ def traj_to_list(b_nodes, j_nodes, lb_nodes, rb_nodes, sim_out: dict):
                 list_dict.append(dict_rb_temp)
         list_rb.append(list_dict)
 
-    return list_b, list_j, list_lb, list_rb
+    return np.asarray(list_b, dtype=object), np.asarray(list_j, dtype=object), np.asarray(list_lb, dtype=object), np.asarray(list_rb, dtype=object)
