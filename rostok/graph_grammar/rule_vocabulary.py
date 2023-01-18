@@ -247,11 +247,6 @@ class RuleVocabulary():
 
         return rule_list
 
-    def get_shortened_list_of_applicable_rules(self, graph: GraphGrammar):
-        dfs_nodes = graph.get_ids_in_dfs_order()
-        
-
-
     def make_graph_terminal(self, grammar: GraphGrammar):
         """Converts a graph into a graph with only terminal nodes.
 

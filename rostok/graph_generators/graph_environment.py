@@ -198,7 +198,7 @@ class MCTSSaveable(Saveable):
         return graph, self.best_simulated_state.reward, self.best_simulated_state.control
 
     def get_main_info(self):
-        """Get graph, reward and control for the best state"""
+        """Get graph, reward and control for the main state"""
         graph = self.main_simulated_state.state.make_graph()
         return graph, self.main_simulated_state.reward, self.main_simulated_state.control
 
