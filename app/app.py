@@ -65,13 +65,14 @@ max_numbers_rules = 2
 # Create graph environments for algorithm (not gym)
 graph_env = env.prepare_mcts_state_and_helper(G, rule_vocabul, control_optimizer, max_numbers_rules)
 mcts_helper = graph_env.helper
-iter = 0
+n_steps = 0
 #%% Run first algorithm
 while not finish:
-    finish, graph_env = env.make_mcts_step(searcher, graph_env, iter)
-    iter += 1
+    finish, graph_env = env.make_mcts_step(searcher, graph_env, n_steps)
+    n_steps += 1
     print(
-        f"number iteration: {iter}, counter actions: {graph_env.counter_action}, reward: {mcts_helper.report.get_best_info()[1]}"
+        f"number iteration: {iter}, counter actions: {graph_env.counter_action}"+ 
+        f"reward: {mcts_helper.report.get_best_info()[1]}"
         )
 
 report = mcts_helper.report

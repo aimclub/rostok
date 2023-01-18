@@ -75,7 +75,6 @@ class GraphEnvironment():
         self.counter_action = 0
 
     # Need override for mcts libary
-
     def getCurrentPlayer(self):
         return self.current_player
 
@@ -127,7 +126,6 @@ class GraphEnvironment():
         return sum(terminal_nodes) == len(terminal_nodes)
 
     # getter reward
-
     def getReward(self):
         """Reward in number (3) of nodes graph mechanism
 
@@ -181,6 +179,7 @@ class GraphEnvironment():
             is_graph_eq = __o.graph == self.graph
             return is_graph_eq
         return False
+
 
 class GraphVocabularyEnvironment(GraphEnvironment):
 
@@ -255,6 +254,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
 
         return result
 
+
 class GraphStubsEnvironment(GraphEnvironment):
 
     def __init__(self, initilize_graph, rules, max_numbers_rules_non_terminal=20):
@@ -298,7 +298,7 @@ class MCTSSaveable(Saveable):
         return graph, self.main_simulated_state.reward, self.main_simulated_state.control
 
     def draw_best_graph(self):
-        graph, reward, control = self.get_best_info()
+        graph, reward, _ = self.get_best_info()
         plot_graph_reward(graph, reward)
 
     def plot_means(self):
@@ -406,15 +406,15 @@ class MCTSHelper():
 class MCTSGraphEnviromnent(GraphVocabularyEnvironment):
 
     def __init__(self,
-                initilize_graph: GraphGrammar, 
+                initilize_graph: GraphGrammar,
                 helper: MCTSHelper,
                 graph_vocabulary,
                 optimizer,
                 max_numbers_rules_non_terminal=20):
 
-        super().__init__(initilize_graph, 
-                        graph_vocabulary, 
-                        optimizer, 
+        super().__init__(initilize_graph,
+                        graph_vocabulary,
+                        optimizer,
                         max_numbers_rules_non_terminal)
         self.helper: MCTSHelper = helper
 
@@ -427,7 +427,7 @@ class MCTSGraphEnviromnent(GraphVocabularyEnvironment):
             print('seen reward:', self.reward)
             return self.reward
 
-        result_optimizer = self.helper.optimizer.start_optimisation(self.graph)    
+        result_optimizer = self.helper.optimizer.start_optimisation(self.graph)
         self.reward = - result_optimizer[0]
         self.movments_trajectory = result_optimizer[1]
         self.helper.report.seen_graphs.add_graph(self.graph, self.reward, self.movments_trajectory)
@@ -452,6 +452,7 @@ def prepare_mcts_state_and_helper(graph:GraphGrammar,
                                 optimizer,
                                 num_of_rules:int, 
                                 path:Path = Path("./results")):
+
     mcts_helper = MCTSHelper(rule_vocabulary, optimizer, path)
     mcts_state = MCTSGraphEnviromnent(graph, mcts_helper, rule_vocabulary, optimizer, num_of_rules)
     return mcts_state
