@@ -1,15 +1,6 @@
 from enum import Enum
 from abc import ABC
 
-import rostok.block_builder.body_size as bs
-
-
-class SimpleBody(Enum):
-    BOX: bs.BoxSize = bs.BoxSize(0.1, 0.2, 0.3)
-    CYLINDER: bs.CylinderSize = bs.CylinderSize(0.1, 2)
-    SPHERE: bs.SphereSize = bs.SphereSize(0.1)
-    ELLIPSOID: bs.EllipsoidSize = bs.EllipsoidSize(0.2, 0.3, 0.5)
-
 
 class BlockType(str, Enum):
     TRANSFORM = "Transform"
