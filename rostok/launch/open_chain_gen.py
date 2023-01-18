@@ -17,6 +17,7 @@ from rostok.utils.result_saver import MCTSReporter
 import rostok.launch.control.control_optimisation as ctrl_opt
 from rostok.launch.open_chain_grasper_set_rules_ver_1 import get_234_fingers_mechanism_rules
 
+
 class OpenChainGen:
     """The main class manipulate settings and running generation open chain grab mechanism
     
@@ -39,8 +40,8 @@ class OpenChainGen:
         self.graph_env: Optional[env.GraphEnvironment] = None
         self.rule_vocabulary: rule_vocabulary.RuleVocabulary = rule_vocabulary.RuleVocabulary()
         self._node_features: list = [[]]
-        self._builder_grasp_object: Callable[[], Any] = None
-        self.stop_simulation_flags: Optional[list[flags.FlagStopSimualtions]] = list()
+        self._builder_grasp_object: Optional[Callable[[], Any]] = None
+        self.stop_simulation_flags: list[flags.FlagStopSimualtions] = list()
         self.search_iteration: int = 0
         self.max_numbers_non_terminal_rules: int = 0
 
@@ -68,7 +69,8 @@ class OpenChainGen:
         self._builder_grasp_object = ctrl_opt.create_builder_grasp_object(shape, position, material)
         self._cfg_control_optimizer.get_rgab_object_callback = self._builder_grasp_object
 
-    def set_settings_control_optimizer(self, bound, iterations, time_step, time_sim, gait, criterion_weights):
+    def set_settings_control_optimizer(self, bound, iterations, time_step, time_sim, gait,
+                                       criterion_weights):
         """Creating a control optimization object based on input data
 
         Args:
@@ -87,9 +89,10 @@ class OpenChainGen:
         self._cfg_control_optimizer.time_sim = time_sim
         self._cfg_control_optimizer.flags = self.stop_simulation_flags
 
-        criterion_callback = ctrl_opt.create_grab_criterion_fun(self._node_features, gait, criterion_weights)
+        criterion_callback = ctrl_opt.create_grab_criterion_fun(self._node_features, gait,
+                                                                criterion_weights)
         traj_generator_fun = ctrl_opt.create_traj_fun(self._cfg_control_optimizer.time_sim,
-                                             self._cfg_control_optimizer.time_step)
+                                                      self._cfg_control_optimizer.time_step)
 
         self._cfg_control_optimizer.criterion_callback = criterion_callback
         self._cfg_control_optimizer.get_rgab_object_callback = self._builder_grasp_object
@@ -162,34 +165,45 @@ def create_generator_by_config(config_file: str) -> OpenChainGen:
     config_links = config["Links"]
     config_flats = config["Flats"]
 
-    widths_flat = list(map(lambda x: float(x), config_flats["width"].split(",")))
-    lengths_link = list(map(lambda x: float(x), config_links["length"].split(",")))
-    model.rule_vocabulary, model._node_features = get_234_fingers_mechanism_rules(widths_flat, lengths_link)
+    widths_flat = [float(x) for x in config_flats["width"].split(",")]
+    lengths_link = [float(x) for x in config_links["length"].split(",")]
+    model.rule_vocabulary, model._node_features = get_234_fingers_mechanism_rules(
+        widths_flat, lengths_link)
 
     congif_opti_control = config["OptimizingControl"]
-    bound = (float(congif_opti_control["low_bound"]), float(congif_opti_control["up_bound"]))
+
+    low_bound = float(congif_opti_control["low_bound"])
+    up_bound = float(congif_opti_control["up_bound"])
+    bound = (low_bound, up_bound)
+
     iteration_opti_control = int(congif_opti_control["iteration"])
     time_step = float(congif_opti_control["time_step"])
     gait = float(congif_opti_control["gait"])
-    criterion_weights = list(map(lambda x: float(x), config_flats["weights"].split(",")))
-    
+    criterion_weights = [float(x) for x in config_flats["weights"].split(",")]
+
     flag_config = config["StopFlagSimulation"]
-    
+
+    stop_flags: list[flags.FlagStopSimualtions] = []
     for str_prefix_flag in flag_config["flags"].split(","):
-        str_prefix_flag = str_prefix_flag.replace(" ","")
+        str_prefix_flag = str_prefix_flag.replace(" ", "")
         if str_prefix_flag == "MaxTime":
-            model.stop_simulation_flags.append(flags.FlagMaxTime(float(flag_config["time_sim"])))
+            stop_flags.append(flags.FlagMaxTime(float(flag_config["time_sim"])))
             continue
         if str_prefix_flag == "Slipout":
-            model.stop_simulation_flags.append(flags.FlagSlipout(float(flag_config["time_with_no_contact"]), float(flag_config["time_slipout_error"])))
+            stop_flags.append(
+                flags.FlagSlipout(float(flag_config["time_with_no_contact"]),
+                                  float(flag_config["time_slipout_error"])))
             continue
         if str_prefix_flag == "NotContact":
-            model.stop_simulation_flags.append(flags.FlagNotContact(float(flag_config["time_with_no_contact"])))
+            stop_flags.append(flags.FlagNotContact(float(flag_config["time_with_no_contact"])))
             continue
-            
+
+    model.stop_simulation_flags = stop_flags
+
     time_sim = float(flag_config["time_sim"])
-    
-    model.set_settings_control_optimizer(bound, iteration_opti_control, time_step, time_sim, gait, criterion_weights)
+
+    model.set_settings_control_optimizer(bound, iteration_opti_control, time_step, time_sim, gait,
+                                         criterion_weights)
 
     config_search = config["MCTS"]
     model.search_iteration = int(config_search["iteration"])
