@@ -179,7 +179,7 @@ def create_generator_by_config(config_file: str) -> OpenChainGen:
     iteration_opti_control = int(congif_opti_control["iteration"])
     time_step = float(congif_opti_control["time_step"])
     gait = float(congif_opti_control["gait"])
-    criterion_weights = [float(x) for x in config_flats["weights"].split(",")]
+    criterion_weights = [float(x) for x in congif_opti_control["weights"].split(",")]
 
     flag_config = config["StopFlagSimulation"]
 

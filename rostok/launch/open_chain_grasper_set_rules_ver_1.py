@@ -1,5 +1,5 @@
 from rostok.graph_grammar.node import GraphGrammar, BlockWrapper, ROOT, Node
-from rostok.block_builder.basic_node_block import SimpleBody
+from rostok.block_builder.envbody_shapes import Box
 from rostok.block_builder.node_render import DefaultChronoMaterial
 from rostok.block_builder.transform_srtucture import FrameTransform, rotation
 from rostok.block_builder.node_render import (LinkChronoBody, MountChronoBody, ChronoTransform,
@@ -30,12 +30,12 @@ def get_234_fingers_mechanism_rules(width_flats: list[float], length_links: list
             "Read the description. In the current version, you need to add exactly three list items"
         )
     # %% Bodies for extansions rules
-    links = list(map(lambda x: BlockWrapper(LinkChronoBody, length=x), length_links))
+    links = list(map(lambda x: BlockWrapper(LinkChronoBody, length_y=x), length_links))
 
-    flats = list(map(lambda x: BlockWrapper(FlatChronoBody, width=x), width_flats))
+    flats = list(map(lambda x: BlockWrapper(FlatChronoBody, width_x=x, depth_z = x), width_flats))
 
-    u1 = BlockWrapper(MountChronoBody, width=0.1, length=0.05)
-    u2 = BlockWrapper(MountChronoBody, width=0.2, length=0.1)
+    u1 = BlockWrapper(MountChronoBody, width_x=0.1, length_y=0.05)
+    u2 = BlockWrapper(MountChronoBody, width_x=0.2, length_y=0.1)
 
     MOVE_TO_RIGHT_SIDE = map(lambda x: FrameTransform([x, 0, 0], [0, 0, 1, 0]), width_flats)
     MOVE_TO_RIGHT_SIDE_PLUS = map(lambda x: FrameTransform([x, 0, +0.3], [0, 0, 1, 0]), width_flats)
@@ -313,7 +313,7 @@ def create_traj_fun(stop_time: float, time_step: float):
     return fun
 
 
-def create_builder_grasp_object(shape=SimpleBody.BOX,
+def create_builder_grasp_object(shape=Box(),
                                 position=FrameTransform([0, 1.5, 0], [0, -0.048, 0.706, 0.706]),
                                 material=DefaultChronoMaterial()):
 

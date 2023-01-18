@@ -400,7 +400,7 @@ class FlatChronoBody(ChronoBody, RobotBody):
         Defaults to True.
     """
 
-    def __init__(self, builder, width_x=0.1, height_y=2, depth_z=0.3, random_color=True, mass=1,
+    def __init__(self, builder, width_x=0.1, height_y=0.1, depth_z=0.3, random_color=True, mass=1,
                  material=DefaultChronoMaterial(), is_collide: bool = True):
         # Create body
 
