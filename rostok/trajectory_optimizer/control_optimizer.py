@@ -7,7 +7,7 @@ from scipy.optimize import direct, shgo
 from rostok.block_builder.blocks_utils import NodeFeatures
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.virtual_experiment.robot import Robot
-from rostok.virtual_experiment.simulation_step import (SimOut, SimulationStepOptimization, SimulationStepOptimizationIndustrial)
+from rostok.virtual_experiment.simulation_step import (SimOut, SimulationStepOptimization)
 
 
 @dataclass
@@ -106,7 +106,7 @@ class ControlOptimizer():
             # Init object state
             object_to_grab, start_frame_robot = self.cfg.get_rgab_object_callback()
             arr_traj = self.cfg.params_to_timesiries_callback(generated_graph, x)
-            sim = SimulationStepOptimizationIndustrial(arr_traj, generated_graph, object_to_grab, start_frame_robot)
+            sim = SimulationStepOptimization(arr_traj, generated_graph, object_to_grab, start_frame_robot)
             sim.set_flags_stop_simulation(self.cfg.flags)
             sim.change_config_system(self.cfg.sim_config)
             sim_output = sim.simulate_system(self.cfg.time_step, is_vis)
