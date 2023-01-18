@@ -182,6 +182,101 @@ class GraphEnvironment():
             return is_graph_eq
         return False
 
+class GraphVocabularyEnvironment(GraphEnvironment):
+
+    def __init__(self,
+                 initilize_graph: GraphGrammar,
+                 graph_vocabulary,
+                 optimizer,
+                 max_numbers_rules_non_terminal=20):
+        """Subclass graph environment on rule vocabulary instead rules and with real reward on
+        simulation and control optimizing
+
+        Args:
+            initilize_graph (GraphGrammar): Initial state of the graph
+            rule_vocabulary (RuleVocabulary): Object of the rule vocabulary for manipulation on
+            graph
+            max_numbers_rules_non_terminal (int): Max amount of non-terminal rules.
+            Defaults to 20.
+        """
+        super().__init__(initilize_graph, None, max_numbers_rules_non_terminal)
+        self.actions:RuleVocabulary = graph_vocabulary
+        self.optimizer = optimizer
+        self.state: RobotState = RobotState(graph_vocabulary)
+        self.movments_trajectory = None
+
+    def getPossibleActions(self):
+        """Getter possible actions for current state
+        """
+        if self.counter_action <= self.max_actions_not_terminal:
+            possible_rules_name = self.actions.get_list_of_applicable_rules(self.graph)
+        else:
+            possible_rules_name = self.actions.get_list_of_applicable_terminal_rules(self.graph)
+
+        possible_rules = [self.actions.rule_dict[str_rule] for str_rule in possible_rules_name]
+        possible_actions = set(RuleAction(rule) for rule in possible_rules)
+        return list(possible_actions)
+
+    def getReward(self):
+        result_optimizer = self.optimizer.start_optimisation(self.graph)    
+        self.reward = - result_optimizer[0]
+        self.movments_trajectory = result_optimizer[1]
+        print(self.reward)
+        return self.reward
+
+    def takeAction(self, action):
+        """Take action and return new state environment
+
+        Args:
+            action (RuleAction): Action to take
+
+        Returns:
+            GraphEnvironment: New state environment after action taken
+        """
+        rule_action = action.get_rule
+        rule_dict = self.actions.rule_dict
+        rule_name = list(rule_dict.keys())[list(rule_dict.values()).index(rule_action)]
+        new_state = deepcopy(self)
+        new_state.state.add_rule(rule_name)
+        new_state.graph.apply_rule(rule_action)
+        if not action.is_terminal():
+            new_state.counter_action += 1
+        return new_state
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            if k in ["actions", "optimizer"]:
+                setattr(result, k, v)
+            else: 
+                setattr(result, k, deepcopy(v, memo))
+
+        return result
+
+class GraphStubsEnvironment(GraphEnvironment):
+
+    def __init__(self, initilize_graph, rules, max_numbers_rules_non_terminal=20):
+        """Subclass graph environment for testing on stubs reward
+
+        Args:
+            initilize_graph (GraphGrammar): Initial state of the graph
+            rules (list[Rule]): List of rules
+            max_numbers_rules_non_terminal (int): Max amount of non-terminal rules. Defaults to 20.
+        """
+        super().__init__(initilize_graph, rules, max_numbers_rules_non_terminal)
+        self.map_nodes_reward = {}
+
+    def set_node_rewards(self, map_of_reward: map, func_reward: Reward.complex):
+        self.map_nodes_reward = map_of_reward
+        self.function_reward = func_reward
+
+    def getReward(self):
+        reward = self.function_reward(self.graph, self.map_nodes_reward)
+        self.reward = reward
+        return self.reward
+
 class MCTSSaveable(Saveable):
 
     def __init__(self, rule_vocabulary, path) -> None:
@@ -307,65 +402,21 @@ class MCTSHelper():
         if reward > self.report.best_simulated_state.reward:
             self.set_best_state(state, reward, control)
 
-    def step(self, state, action: RuleAction):
-        """Move current environment to new state
 
-        Args:
-            action (RuleAction): Action is take
-            render (bool): Turn on render each step. Defaults to False.
-
-        Returns:
-            bool, GraphGrammar: Return state of graph. If it is terminal then finish generate
-            graph and new state graph.
-        """
-
-        rule_action = action.get_rule
-        rule_dict = self.actions.rule_dict
-        rule_name = list(rule_dict.keys())[list(rule_dict.values()).index(rule_action)]
-        self.report.main_state.add_rule(rule_name)
-        new_state: GraphVocabularyEnvironment = state.takeAction(action)
-        self.step_counter += 1
-        done = new_state.isTerminal()
-        if done:
-            main_reward = new_state.getReward()
-            main_control = new_state.movments_trajectory
-            self.set_main_optimized_state(new_state.state, main_reward, main_control)
-
-        return done, new_state
-
-
-class GraphVocabularyEnvironment(GraphEnvironment):
+class MCTSGraphEnviromnent(GraphVocabularyEnvironment):
 
     def __init__(self,
-                 initilize_graph: GraphGrammar,
-                 helper: MCTSHelper,
-                 max_numbers_rules_non_terminal=20):
-        """Subclass graph environment on rule vocabulary instead rules and with real reward on
-        simulation and control optimizing
+                initilize_graph: GraphGrammar, 
+                helper: MCTSHelper,
+                graph_vocabulary,
+                optimizer,
+                max_numbers_rules_non_terminal=20):
 
-        Args:
-            initilize_graph (GraphGrammar): Initial state of the graph
-            rule_vocabulary (RuleVocabulary): Object of the rule vocabulary for manipulation on
-            graph
-            max_numbers_rules_non_terminal (int): Max amount of non-terminal rules.
-            Defaults to 20.
-        """
-        super().__init__(initilize_graph, None, max_numbers_rules_non_terminal)
+        super().__init__(initilize_graph, 
+                        graph_vocabulary, 
+                        optimizer, 
+                        max_numbers_rules_non_terminal)
         self.helper: MCTSHelper = helper
-        self.state: RobotState = RobotState(helper.actions)
-        self.movments_trajectory = None
-
-    def getPossibleActions(self):
-        """Getter possible actions for current state
-        """
-        if self.counter_action <= self.max_actions_not_terminal:
-            possible_rules_name = self.helper.actions.get_list_of_applicable_rules(self.graph)
-        else:
-            possible_rules_name = self.helper.actions.get_list_of_applicable_terminal_rules(self.graph)
-
-        possible_rules = [self.helper.actions.rule_dict[str_rule] for str_rule in possible_rules_name]
-        possible_actions = set(RuleAction(rule) for rule in possible_rules)
-        return list(possible_actions)
 
     def getReward(self):
         report = self.helper.report.seen_graphs.check_graph(self.graph)
@@ -384,55 +435,39 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         print(self.reward)
         return self.reward
 
-    def takeAction(self, action):
-        """Take action and return new state environment
-
-        Args:
-            action (RuleAction): Action to take
-
-        Returns:
-            GraphEnvironment: New state environment after action taken
-        """
-        rule_action = action.get_rule
-        rule_dict = self.helper.actions.rule_dict
-        rule_name = list(rule_dict.keys())[list(rule_dict.values()).index(rule_action)]
-        new_state = deepcopy(self)
-        new_state.state.add_rule(rule_name)
-        new_state.graph.apply_rule(rule_action)
-        if not action.is_terminal():
-            new_state.counter_action += 1
-        return new_state
-
     def __deepcopy__(self, memo):
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
         for k, v in self.__dict__.items():
-            if k != "helper":
-                setattr(result, k, deepcopy(v, memo))
-            else: 
+            if k in ["actions", "optimizer", "helper"]:
                 setattr(result, k, v)
+            else: 
+                setattr(result, k, deepcopy(v, memo))
+
         return result
 
+def prepare_mcts_state_and_helper(graph:GraphGrammar,
+                                rule_vocabulary:RuleVocabulary,
+                                optimizer,
+                                num_of_rules:int, 
+                                path:Path = Path("./results")):
+    mcts_helper = MCTSHelper(rule_vocabulary, optimizer, path)
+    mcts_state = MCTSGraphEnviromnent(graph, mcts_helper, rule_vocabulary, optimizer, num_of_rules)
+    return mcts_state
 
-class GraphStubsEnvironment(GraphEnvironment):
+def make_mcts_step(searcher, state:MCTSGraphEnviromnent, counter):
+    state.helper.step_counter = counter
+    action = searcher.search(initialState=state)
+    rule_action = action.get_rule
+    rule_dict = state.actions.rule_dict
+    rule_name = list(rule_dict.keys())[list(rule_dict.values()).index(rule_action)]
+    state.helper.report.main_state.add_rule(rule_name)
+    new_state: GraphVocabularyEnvironment = state.takeAction(action)
+    done = new_state.isTerminal()
+    if done:
+        main_reward = new_state.getReward()
+        main_control = new_state.movments_trajectory
+        state.helper.set_main_optimized_state(new_state.state, main_reward, main_control)
 
-    def __init__(self, initilize_graph, rules, max_numbers_rules_non_terminal=20):
-        """Subclass graph environment for testing on stubs reward
-
-        Args:
-            initilize_graph (GraphGrammar): Initial state of the graph
-            rules (list[Rule]): List of rules
-            max_numbers_rules_non_terminal (int): Max amount of non-terminal rules. Defaults to 20.
-        """
-        super().__init__(initilize_graph, rules, max_numbers_rules_non_terminal)
-        self.map_nodes_reward = {}
-
-    def set_node_rewards(self, map_of_reward: map, func_reward: Reward.complex):
-        self.map_nodes_reward = map_of_reward
-        self.function_reward = func_reward
-
-    def getReward(self):
-        reward = self.function_reward(self.graph, self.map_nodes_reward)
-        self.reward = reward
-        return self.reward
+    return done, new_state
