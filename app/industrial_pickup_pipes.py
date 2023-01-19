@@ -25,7 +25,8 @@ PATH_TO_PIPE_XML = './examples/models/custom/pipe.xml'
 
 # # %% Create extension rule vocabulary
 
-rule_vocabul, node_features = rule_grasp_pipe.create_rules_to_pickup_pipe(PATH_TO_PIPE_OBJ, PATH_TO_PIPE_XML)
+rule_vocabul, node_features = rule_grasp_pipe.create_rules_to_pickup_pipe(
+    PATH_TO_PIPE_OBJ, PATH_TO_PIPE_XML)
 
 # # %% Create condig optimizing control
 
@@ -39,18 +40,17 @@ cfg.iters = 2
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
 cfg.time_step = 0.0005
 cfg.time_sim = max_time
-cfg.flags = [
-    FlagMaxTime(max_time)]#,
-    # FlagNotContact(max_time / 4 - 0.2),
-    # FlagSlipout(max_time / 4 + 0.2, 0.2),
-    # FlagFlyingApart(4)
+cfg.flags = [FlagMaxTime(max_time)]  #,
+# FlagNotContact(max_time / 4 - 0.2),
+# FlagSlipout(max_time / 4 + 0.2, 0.2),
+# FlagFlyingApart(4)
 # ]
 
 criterion_callback = create_grab_criterion_fun(node_features, GAIT, WEIGHT)
 traj_generator_fun = create_traj_fun(cfg.time_sim, cfg.time_step)
 
 cfg.criterion_callback = criterion_callback
-cfg.get_rgab_object_callback = ppu.create_builder_grab_object(PATH_TO_PIPE_OBJ,PATH_TO_PIPE_XML)
+cfg.get_rgab_object_callback = ppu.create_builder_grab_object(PATH_TO_PIPE_OBJ, PATH_TO_PIPE_XML)
 cfg.params_to_timesiries_callback = traj_generator_fun
 
 control_optimizer = ControlOptimizer(cfg)
@@ -65,7 +65,7 @@ searcher = mcts.mcts(iterationLimit=iteration_limit)
 finish = False
 
 G = GraphGrammar()
-max_numbers_rules = 5*3+1
+max_numbers_rules = 5 * 3 + 1
 # Create graph envirenments for algorithm (not gym)
 graph_env = env.GraphVocabularyEnvironment(G, rule_vocabul, max_numbers_rules)
 

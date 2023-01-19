@@ -22,6 +22,7 @@ class DefaultChronoMaterial(Material):
     Kn = 2e4
     Gn = 1e6
 
+
 def struct_material2object_material(struct_material: Material, prefix_setter: str = "Set"):
     """Convert dataclass Materal from struct_material to some object material
 

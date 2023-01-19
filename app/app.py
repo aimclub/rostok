@@ -5,15 +5,12 @@ import networkx as nx
 # chrono imports
 import pychrono as chrono
 import rule_extention
-from control_optimisation import (create_grab_criterion_fun, create_traj_fun,
-                                  get_object_to_grasp)
+from control_optimisation import (create_grab_criterion_fun, create_traj_fun, get_object_to_grasp)
 
 import rostok.graph_generators.graph_environment as env
-from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact,
-                                                FlagSlipout)
+from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact, FlagSlipout)
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.trajectory_optimizer.control_optimizer import (
-    ConfigRewardFunction, ControlOptimizer)
+from rostok.trajectory_optimizer.control_optimizer import (ConfigRewardFunction, ControlOptimizer)
 #from rostok.utils.result_saver import read_report
 from rostok.utils.result_saver import MCTSReporter
 
@@ -31,7 +28,7 @@ def plot_graph(graph: GraphGrammar):
 # %% Create extension rule vocabulary
 width = [0.25, 0.35, 0.5]
 length_link = [0.4, 0.6, 0.8]
-rule_vocabul, node_features = rule_extention.init_extension_rules(length_link,width)
+rule_vocabul, node_features = rule_extention.init_extension_rules(length_link, width)
 
 # %% Create condig optimizing control
 
@@ -87,11 +84,10 @@ while not finish:
         f"number iteration: {iter}, counter actions: {graph_env.counter_action}, reward: {reporter.get_best_info()[1]}"
     )
 
-
 path = reporter.dump_results()
-best_graph,  reward, best_control = reporter.get_best_info()
+best_graph, reward, best_control = reporter.get_best_info()
 # best_control = [float(x) for x in best_control]
 func_reward = control_optimizer.create_reward_function(best_graph)
-res = - func_reward(best_control)
+res = -func_reward(best_control)
 plot_graph(best_graph)
 print(res)

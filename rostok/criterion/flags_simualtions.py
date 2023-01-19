@@ -72,7 +72,8 @@ class FlagFlyingApart(FlagStopSimualtions):
         body_block = filter(lambda x: isinstance(x, RobotBody), blocks)
         abs_cog_frame_robot_bodies = map(lambda x: x.body.GetFrame_COG_to_abs(), body_block)
         rel_cog_frame_robot_bodies = map(lambda x: base_cog_frame * x, abs_cog_frame_robot_bodies)
-        body_distance_to_base = list(map(lambda x: x.GetPos().Length2(), rel_cog_frame_robot_bodies))
+        body_distance_to_base = list(map(lambda x: x.GetPos().Length2(),
+                                         rel_cog_frame_robot_bodies))
         self.flag_state = max(body_distance_to_base) >= self.max_distance
 
         return self.flag_state

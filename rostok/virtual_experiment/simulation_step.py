@@ -13,6 +13,7 @@ from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
 from rostok.virtual_experiment.robot import Robot
 from rostok.intexp.chrono_api import ChTesteeObject, ChCrutch
 
+
 # Immutable classes with output simulation data for robot block
 @dataclass(frozen=True)
 class SimulationDataBlock:
@@ -328,4 +329,3 @@ class SimulationStepOptimization:
         simulation_data_joint_angle.update(simulation_data_object)
 
         return simulation_data_joint_angle
-    

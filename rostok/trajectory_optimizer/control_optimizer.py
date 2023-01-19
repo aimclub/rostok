@@ -81,11 +81,14 @@ class ControlOptimizer():
             # Init object state
             out_get_func_grab_object = self.cfg.get_rgab_object_callback()
             arr_traj = self.cfg.params_to_timesiries_callback(generated_graph, x)
-            
+
             if isinstance(out_get_func_grab_object, tuple):
-                sim = SimulationStepOptimization(arr_traj, generated_graph, out_get_func_grab_object[0], out_get_func_grab_object[1])
+                sim = SimulationStepOptimization(arr_traj, generated_graph,
+                                                 out_get_func_grab_object[0],
+                                                 out_get_func_grab_object[1])
             else:
-                sim = SimulationStepOptimization(arr_traj, generated_graph, out_get_func_grab_object)
+                sim = SimulationStepOptimization(arr_traj, generated_graph,
+                                                 out_get_func_grab_object)
 
             sim.set_flags_stop_simulation(self.cfg.flags)
             sim.change_config_system(self.cfg.sim_config)

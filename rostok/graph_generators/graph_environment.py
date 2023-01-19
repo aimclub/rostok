@@ -7,7 +7,6 @@ from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
 from rostok.utils.result_saver import MCTSReporter, RobotState
 
 
-
 def plot_graph(graph):
     plt.figure()
     nx.draw_networkx(graph,
@@ -17,6 +16,7 @@ def plot_graph(graph):
     plt.show()
     sleep(2)
     plt.close()
+
 
 def rule_is_terminal(rule: Rule):
     """Function finding non terminal rules
@@ -244,7 +244,6 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         # else:
         #     control = deepcopy(self.movments_trajectory)
         reporter.add_reward(self.state, self.reward, self.movments_trajectory)
-        
 
         if reporter.best_simulated_state is None or self.reward > reporter.best_simulated_state.reward:
             reporter.set_best_state(self.state, self.reward, self.movments_trajectory)
@@ -312,7 +311,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
         if done:
             main_reward = self.getReward()
             main_control = self.movments_trajectory
-            reporter.set_main_optimized_state(reporter.main_state,main_reward, main_control)
+            reporter.set_main_optimized_state(reporter.main_state, main_reward, main_control)
 
         return done, self.graph, self.movments_trajectory, path
 
@@ -347,4 +346,3 @@ class GraphStubsEnvironment(GraphEnvironment):
         reward = self.function_reward(self.graph, self.map_nodes_reward)
         self.reward = reward
         return self.reward
-

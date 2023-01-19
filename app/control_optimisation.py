@@ -1,8 +1,6 @@
 import rostok.criterion.criterion_calc as criterion
 from rostok.block_builder.envbody_shapes import Box
-from rostok.block_builder.node_render import (ChronoBodyEnv,
-                                              DefaultChronoMaterial,
-                                              FrameTransform)
+from rostok.block_builder.node_render import (ChronoBodyEnv, DefaultChronoMaterial, FrameTransform)
 from rostok.graph_grammar.node import BlockWrapper, GraphGrammar, Node
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
@@ -20,6 +18,7 @@ def get_object_to_grasp():
                        pos=FrameTransform([0, 1.5, 0], [0, -0.048, 0.706, 0.706]))
 
     return obj
+
 
 def grab_crtitrion(sim_output: dict[int, SimOut], grab_robot, node_feature: list[list[Node]], gait,
                    weight):

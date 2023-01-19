@@ -345,9 +345,7 @@ class GraphGrammar(nx.DiGraph):
 
         self_dfs_paths_lbl.sort(key=lambda x: "".join(x))
         return self_dfs_paths_lbl
-    
-    
+
     def __hash__(self) -> list[list[str]]:
         self_dfs_paths_lbl = self.get_uniq_representation()
         return hash(str(self_dfs_paths_lbl))
- 
