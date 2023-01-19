@@ -13,7 +13,6 @@ from rostok import intexp
 def get_object_to_grasp():
     matich = DefaultChronoMaterial()
     matich.Friction = 0.65
-    matich.DampingF = 0.65
     shape_box = Box(0.1, 0.1, 0.1)
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=shape_box,
