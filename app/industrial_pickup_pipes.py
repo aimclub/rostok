@@ -87,6 +87,6 @@ while not finish:
 # reporter = load_reporter('results\MCTS_report_22y_12m_30d_03H_30M')
 # best_graph, reward, best_control = reporter.get_best_info()
 # # best_control = [float(x) for x in best_control]
-# func_reward = control_optimizer.create_reward_function_pickup(best_graph)
+# func_reward = control_optimizer.create_reward_function(best_graph)
 # res = -func_reward(best_control)
 # print(res)

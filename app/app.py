@@ -55,6 +55,7 @@ cfg.get_rgab_object_callback = get_object_to_grasp
 cfg.params_to_timesiries_callback = traj_generator_fun
 
 control_optimizer = ControlOptimizer(cfg)
+control_optimizer.is_visualize = True
 
 # %% Init mcts parameters
 
@@ -80,7 +81,7 @@ reporter.initialize()
 iter = 0
 while not finish:
     action = searcher.search(initialState=graph_env)
-    finish, final_graph = graph_env.step(action, False)
+    finish, final_graph, __, __ = graph_env.step(action, False)
     iter += 1
     print(
         f"number iteration: {iter}, counter actions: {graph_env.counter_action}, reward: {reporter.get_best_info()[1]}"

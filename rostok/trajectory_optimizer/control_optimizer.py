@@ -63,6 +63,7 @@ class ControlOptimizer():
 
     def __init__(self, cfg: ConfigRewardFunction) -> None:
         self.cfg = cfg
+        self.is_visualize = False
 
     def create_reward_function(self,
                                generated_graph: GraphGrammar) -> Callable[[list[float]], float]:
@@ -76,37 +77,16 @@ class ControlOptimizer():
             returns reward based on criterion_callback
         """
 
-        def reward(x, is_vis=True):
+        def reward(x, is_vis=self.is_visualize):
             # Init object state
-            object_to_grab = self.cfg.get_rgab_object_callback()
+            out_get_func_grab_object = self.cfg.get_rgab_object_callback()
             arr_traj = self.cfg.params_to_timesiries_callback(generated_graph, x)
-            sim = SimulationStepOptimization(arr_traj, generated_graph, object_to_grab)
-            sim.set_flags_stop_simulation(self.cfg.flags)
-            sim.change_config_system(self.cfg.sim_config)
-            sim_output = sim.simulate_system(self.cfg.time_step, is_vis)
-            rew = self.cfg.criterion_callback(sim_output, sim.grab_robot)
+            
+            if isinstance(out_get_func_grab_object, tuple):
+                sim = SimulationStepOptimization(arr_traj, generated_graph, out_get_func_grab_object[0], out_get_func_grab_object[1])
+            else:
+                sim = SimulationStepOptimization(arr_traj, generated_graph, out_get_func_grab_object)
 
-            return rew
-
-        return reward
-    
-    def create_reward_function_pickup(self,
-                               generated_graph: GraphGrammar) -> Callable[[list[float]], float]:
-        """Create reward function
-
-        Args:
-            generated_graph (GraphGrammar):
-
-        Returns:
-            Callable[[list[float]], float]: Function of virtual experemnt that
-            returns reward based on criterion_callback
-        """
-
-        def reward(x, is_vis=True):
-            # Init object state
-            object_to_grab, start_frame_robot = self.cfg.get_rgab_object_callback()
-            arr_traj = self.cfg.params_to_timesiries_callback(generated_graph, x)
-            sim = SimulationStepOptimization(arr_traj, generated_graph, object_to_grab, start_frame_robot)
             sim.set_flags_stop_simulation(self.cfg.flags)
             sim.change_config_system(self.cfg.sim_config)
             sim_output = sim.simulate_system(self.cfg.time_step, is_vis)
@@ -127,7 +107,7 @@ class ControlOptimizer():
 
     def start_optimisation_pickup(self, generated_graph: GraphGrammar) -> tuple[float, float]:
 
-        reward_fun = self.create_reward_function_pickup(generated_graph)
+        reward_fun = self.create_reward_function(generated_graph)
         multi_bound = create_multidimensional_bounds(generated_graph, self.cfg.bound)
         if len(multi_bound) == 0:
             return (0, 0)
