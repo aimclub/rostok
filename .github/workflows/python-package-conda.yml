@@ -28,7 +28,9 @@ jobs:
     
     - name: Update conda
       run: |
-        conda update -n base -c defaults conda
+        conda install conda-build
+        conda update conda-build
+        conda update conda-build
 
     - name: Install dependencies
       run: |
