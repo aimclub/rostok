@@ -9,8 +9,7 @@ channels:
   - defaults
 dependencies:
   - python=3.9.12
-  - pythonocc-core=7.4.1
-  - irrlicht
+  - irrlicht==1.8.5
   - numpy
   
   - pip:
