@@ -99,7 +99,7 @@ def create_rules_to_pickup_pipe(path_to_pipe_obj, path_to_pipe_xml):
 
     # Joints
     revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z, type_of_input,
-                            stiffness = 500, damping = 50, equilibrium_position = -chrono.CH_C_PI / 3.5)
+                            stiffness = 900, damping = 50, equilibrium_position = -chrono.CH_C_PI / 3)
 
     # Nodes
     node_vocab = node_vocabulary.NodeVocabulary()

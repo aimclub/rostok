@@ -29,7 +29,7 @@ WEIGHT = [3, 1, 1, 2]
 
 max_time = 2
 cfg = ConfigRewardFunction()
-cfg.bound = (300, 700)
+cfg.bound = (800, 1000)
 cfg.iters = 2
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
 cfg.time_step = 0.001
