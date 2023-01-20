@@ -68,7 +68,7 @@ n_steps = 0
 while not finish:
     finish, graph_env = make_mcts_step(searcher, graph_env, n_steps)
     n_steps += 1
-    print(f"number iteration: {n_steps}, counter actions: {graph_env.counter_action}" +
+    print(f"number iteration: {n_steps}, counter actions: {graph_env.counter_action} " +
           f"reward: {mcts_helper.report.get_best_info()[1]}")
 
 report = mcts_helper.report
