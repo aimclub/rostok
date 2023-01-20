@@ -8,7 +8,7 @@ import networkx as nx
 # chrono imports
 import pychrono as chrono
 
-from control_optimisation import create_grab_criterion_fun, create_traj_fun
+from app.control_optimisation import create_grab_criterion_fun, create_traj_fun
 import rostok.intexp as intexp
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.trajectory_optimizer.control_optimizer import ConfigRewardFunction, ControlOptimizer
@@ -54,7 +54,7 @@ cfg.get_rgab_object_callback = ppu.create_builder_grab_object(PATH_TO_PIPE_OBJ, 
 cfg.params_to_timesiries_callback = traj_generator_fun
 
 control_optimizer = ControlOptimizer(cfg)
-
+control_optimizer.is_visualize = False
 # # %% Init mcts parameters
 
 # Hyperparameters mctss
