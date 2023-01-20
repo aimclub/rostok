@@ -12,12 +12,12 @@ class RuleVocabulary():
     """The class that contains the rules for building the :py:class:`GraphGrammar` object.
     All rules for mechanism generation should be created with an instance of :py:class:`RuleVocabulary`.
     This class provides utility methods for the rules.
-    
+
     Attributes:
         node_vocab (NodeVocabulary): the node vocabulary that should contain all the nodes used in
             the rules.
         rule_dict (dict[str, Rule]): the dictionary of all rules with the rule names as keys.
-        
+
         nonterminal_rule_dict (dict[str, Rule]): the dictionary of only non-terminal rules.
         terminal_rule_dict (dict[str, Rule]): the dictionary of only terminal rules.
         rules_nonterminal_node_set (set(str)): the set of node labels that are used as the new nodes
@@ -50,11 +50,11 @@ class RuleVocabulary():
                     current_in_edges: int,
                     current_out_edges: int,
                     new_edges: list[tuple[int, int]] = [],
-                    current_links: list[(int, int)] = []):
+                    current_links: list[tuple[int, int]] = []):
         """Create a rule and add it to the dictionary.
         The method checks the created rule. There is no method to add already created rule to
         the vocabulary.
-        
+
         Args:
             name (str): name of the new rule.
             current_nodes (list[str]): list of the nodes to be replaced.
@@ -62,7 +62,7 @@ class RuleVocabulary():
             current_in_edges (int):the node to link the in edges of the replaced node.
             current_out_edges (int): the node to link the out edges of the replaced node.
             new_edges (list[(int, int)]):the edges of the inserting subgraph.
-            
+
         Raises:
             Exception: this name is already in the rule vocabulary!
             Exception: prohibited length of the current_nodes list, should be 1.
@@ -75,7 +75,7 @@ class RuleVocabulary():
         if name in self.rule_dict:
             raise Exception('This name is already in the rule vocabulary!')
 
-        # Currently the GraphGrammar class can only apply rules that replace one node with the 
+        # Currently the GraphGrammar class can only apply rules that replace one node with the
         # new system of nodes.
         # But in future we may apply replacement of the linked set of nodes
         if len(current_nodes) != 1:
@@ -161,7 +161,7 @@ class RuleVocabulary():
 
     def get_rule(self, name: str) -> Rule:
         """Return a rule with the corresponding name.
-        
+
         Args:
             name (str): the name of the rule to be returned.
         """
@@ -170,7 +170,7 @@ class RuleVocabulary():
     def get_list_of_applicable_rules(self, grammar: GraphGrammar):
         """Return the total list of applicable rules for the current graph.
         Args:
-            grammar (GraphGrammar): a :py:class:`GraphGrammar` object analyze.  
+            grammar (GraphGrammar): a :py:class:`GraphGrammar` object analyze.
         Returns:
             list of rule names for rules that can be applied for the graph.
         """
@@ -189,10 +189,10 @@ class RuleVocabulary():
 
     def get_list_of_applicable_nonterminal_rules(self, grammar: GraphGrammar):
         """Return the list of non-terminal applicable rules for the current graph.
-        
+
         Args:
             grammar (GraphGrammar): a :py:class:`GraphGrammar` object analyze.
-            
+
         Returns:
             list of rule names for non-terminal rules that can be applied for the graph.
         """
@@ -211,13 +211,14 @@ class RuleVocabulary():
 
     def get_list_of_applicable_terminal_rules(self, grammar: GraphGrammar):
         """Return the list of terminal applicable rules for the current graph.
-        
+
         Args:
             grammar (GraphGrammar): a :py:class:`GraphGrammar` object analyze.
-            
+
         Returns:
             list of rule names for terminal rules that can be applied for the graph.
         """
+
         list_of_applicable_rules = []
         for rule_tuple in self.terminal_rule_dict.items():
             rule = rule_tuple[1]
@@ -232,10 +233,10 @@ class RuleVocabulary():
 
     def terminal_rules_for_node(self, node_name: str):
         """Return a list of the terminal rules for the node
-        
+
         Args:
             node_name (str): a node label for which function returns the list of the terminal rules.
-            
+
         Returns:
             The list of rule names for rules that can be applied to make a node terminal.
         """
@@ -248,8 +249,9 @@ class RuleVocabulary():
 
     def make_graph_terminal(self, grammar: GraphGrammar):
         """Converts a graph into a graph with only terminal nodes.
+
         For each non-terminal node the function apply a random rule that make it terminal.
-        
+
         Args:
             grammar (GraphGrammar): :py:class:`GraphGrammar` object that should become terminal.
         """
