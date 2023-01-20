@@ -86,6 +86,7 @@ class ControlOptimizer():
                 sim = SimulationStepOptimization(arr_traj, generated_graph,
                                                  out_get_func_grab_object[0],
                                                  out_get_func_grab_object[1])
+                sim.turn_on_gravity = True
             else:
                 sim = SimulationStepOptimization(arr_traj, generated_graph,
                                                  out_get_func_grab_object)
