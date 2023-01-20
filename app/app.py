@@ -52,7 +52,7 @@ cfg.get_rgab_object_callback = get_object_to_grasp
 cfg.params_to_timesiries_callback = traj_generator_fun
 
 control_optimizer = ControlOptimizer(cfg)
-control_optimizer.is_visualize = True
+control_optimizer.is_visualize = False
 
 # %% Init mcts parameters
 
