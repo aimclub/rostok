@@ -29,7 +29,7 @@ WEIGHT = [3, 1, 1, 2]
 
 max_time = 2
 cfg = ConfigRewardFunction()
-cfg.bound = (1, 2)
+cfg.bound = (300, 700)
 cfg.iters = 2
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
 cfg.time_step = 0.001
@@ -47,7 +47,7 @@ cfg.get_rgab_object_callback = ppu.create_builder_grab_object(PATH_TO_PIPE_OBJ, 
 cfg.params_to_timesiries_callback = traj_generator_fun
 
 control_optimizer = ControlOptimizer(cfg)
-control_optimizer.is_visualize = False
+control_optimizer.is_visualize = True
 
 # # %% Init mcts parameters
 if __name__ == "__main__":
