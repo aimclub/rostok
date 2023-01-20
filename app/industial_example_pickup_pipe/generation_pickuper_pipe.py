@@ -48,38 +48,39 @@ cfg.params_to_timesiries_callback = traj_generator_fun
 
 control_optimizer = ControlOptimizer(cfg)
 control_optimizer.is_visualize = False
+
 # # %% Init mcts parameters
+if __name__ == "__main__":
+    # Hyperparameters mctss
+    iteration_limit = 3
 
-# Hyperparameters mctss
-iteration_limit = 3
+    # Initialize MCTScl
+    searcher = mcts.mcts(iterationLimit=iteration_limit)
+    finish = False
 
-# Initialize MCTScl
-searcher = mcts.mcts(iterationLimit=iteration_limit)
-finish = False
+    G = GraphGrammar()
+    max_numbers_rules = 5 * 3 + 1
 
-G = GraphGrammar()
-max_numbers_rules = 5 * 3 + 1
+    # Create graph environments for algorithm (not gym)
+    graph_env = prepare_mcts_state_and_helper(G, rule_vocabul, control_optimizer, max_numbers_rules,
+                                            Path("./results"))
+    mcts_helper = graph_env.helper
+    n_steps = 0
+    #%% Run first algorithm
+    while not finish:
+        finish, graph_env = make_mcts_step(searcher, graph_env, n_steps)
+        n_steps += 1
+        print(f"number iteration: {n_steps}, counter actions: {graph_env.counter_action} " +
+            f"reward: {mcts_helper.report.get_best_info()[1]}")
+        
+    # %% Save results
 
-# Create graph environments for algorithm (not gym)
-graph_env = prepare_mcts_state_and_helper(G, rule_vocabul, control_optimizer, max_numbers_rules,
-                                          Path("./results"))
-mcts_helper = graph_env.helper
-n_steps = 0
-#%% Run first algorithm
-while not finish:
-    finish, graph_env = make_mcts_step(searcher, graph_env, n_steps)
-    n_steps += 1
-    print(f"number iteration: {n_steps}, counter actions: {graph_env.counter_action} " +
-          f"reward: {mcts_helper.report.get_best_info()[1]}")
-    
-# %% Save results
-
-report = mcts_helper.report
-best_graph, reward, best_control = mcts_helper.report.get_best_info()
-func_reward = control_optimizer.create_reward_function(best_graph)
-res = -func_reward(best_control)
-report.plot_means()
-report.make_time_dependent_path()
-report.save()
-report.save_visuals()
-report.save_lists()
+    report = mcts_helper.report
+    best_graph, reward, best_control = mcts_helper.report.get_best_info()
+    func_reward = control_optimizer.create_reward_function(best_graph)
+    res = -func_reward(best_control)
+    report.plot_means()
+    report.make_time_dependent_path()
+    report.save()
+    report.save_visuals()
+    report.save_lists()
