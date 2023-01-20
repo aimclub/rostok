@@ -2,6 +2,7 @@ import random
 from abc import ABC
 from enum import Enum
 from typing import Optional
+from rostok import intexp
 
 import rostok.block_builder.envbody_shapes as envbody_shapes
 import pychrono.core as chrono
@@ -55,7 +56,9 @@ class ContactReporter(chrono.ReportContactCallback):
         """
         self._body = chrono_body
         self.__current_normal_forces = None
+        self.__current_contact_coord = None
         self.__list_normal_forces = []
+        self.__list_contact_coord = []
         super().__init__()
 
     def OnReportContact(self, pA: chrono.ChVectorD, pB: chrono.ChVectorD,
@@ -80,10 +83,19 @@ class ContactReporter(chrono.ReportContactCallback):
 
         body_a = chrono.CastToChBody(contactobjA)
         body_b = chrono.CastToChBody(contactobjB)
+
+
         if (body_a == self._body) or (body_b == self._body):
             self.__current_normal_forces = react_forces.x
             self.__list_normal_forces.append(react_forces.x)
 
+            if (body_a == self._body):
+                self.__current_contact_coord = [pA.x, pA.y, pA.z]
+                self.__list_contact_coord.append(self.__current_contact_coord)
+            elif(body_b == self._body):
+                self.__current_contact_coord = [pB.x, pB.y, pB.z]
+                self.__list_contact_coord.append(self.__current_contact_coord)
+                
         return True
 
     def is_empty(self):
@@ -91,12 +103,18 @@ class ContactReporter(chrono.ReportContactCallback):
 
     def list_clear(self):
         self.__list_normal_forces.clear()
+    
+    def list_cont_clear(self):
+        self.__list_contact_coord.clear()
 
     def get_normal_forces(self):
         return self.__current_normal_forces
 
     def get_list_n_forces(self):
         return self.__list_normal_forces
+
+    def get_list_c_coord(self):
+        return self.__list_contact_coord
 
 
 class ChronoBody(BlockBody, ABC):
@@ -262,6 +280,19 @@ class ChronoBody(BlockBody, ABC):
             container.ReportAllContacts(self.__contact_reporter)
         return self.__contact_reporter.get_list_n_forces()
 
+    @property
+    def list_c_coord(self) -> list:
+        """Return a list of all the contact forces.
+
+        Returns:
+            list: List normal forces of all the contacts points
+        """
+        container = self.builder.GetContactContainer()
+        contacts = container.GetNcontacts()
+        if contacts:
+            self.__contact_reporter.list_cont_clear()
+            container.ReportAllContacts(self.__contact_reporter)
+        return self.__contact_reporter.get_list_c_coord()
 
 class BoxChronoBody(ChronoBody, RobotBody):
     """Class of the simple box body shape of robot on pychrono engine. It
@@ -370,6 +401,8 @@ class LinkChronoBody(ChronoBody, RobotBody):
             chrono.ChVectorD(0, -length_y / 2 + gap_between_bodies + cylinder_r, 0),
             chrono.ChMatrix33D(chrono.Q_ROTATE_Z_TO_Y))
 
+        body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
+        body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
         body.GetCollisionModel().BuildModel()
 
         body.SetMass(mass)
@@ -412,7 +445,7 @@ class FlatChronoBody(ChronoBody, RobotBody):
         body.AddVisualShape(box_asset)
         body.SetCollide(True)
 
-        body.SetMass(mass)
+        body.SetMass(0.1*mass)
 
         pos_input_marker = chrono.ChVectorD(0, -height_y / 2, 0)
         pos_out_marker = chrono.ChVectorD(0, height_y / 2, 0)
@@ -428,6 +461,8 @@ class FlatChronoBody(ChronoBody, RobotBody):
         self.body.GetCollisionModel().ClearModel()
         self.body.GetCollisionModel().AddBox(chrono_object_material, width_x / 2,
                                              height_y / 2 - width_x / 32, depth_z / 2)
+        self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
+        self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
         self.body.GetCollisionModel().BuildModel()
 
 
@@ -516,24 +551,31 @@ class ChronoBodyEnv(ChronoBody):
             body = chrono.ChBodyEasyEllipsoid(
                 chrono.ChVectorD(shape.radius_x, shape.radius_y, shape.radius_z), MOCK_DENSITY,
                 True, True, material)
+        elif isinstance(shape, envbody_shapes.LoadedShape):
+            obj_db = intexp.chrono_api.ChTesteeObject()
+            obj_db.create_chrono_body_from_file(shape.path_to_mesh_file,
+                                    shape.path_to_xml_file)
+            body = obj_db.chrono_body
         else:
             raise Exception("Unknown shape for ChronoBodyEnv object")
-        body.SetCollide(True)
-        transform = ChronoTransform(builder, pos)
-        body.SetCoord(transform.transform)
+        if not isinstance(shape, envbody_shapes.LoadedShape):
+            body.SetCollide(True)
+            transform = ChronoTransform(builder, pos)
+            body.SetCoord(transform.transform)
+            body.SetMass(mass)
         body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
         body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
-        body.SetMass(mass)
+
 
         # Create shape
         pos_in_marker = chrono.ChVectorD(0, 0, 0)
         pos_out_marker = chrono.ChVectorD(0, 0, 0)
         super().__init__(builder, body, pos_in_marker, pos_out_marker, random_color)
 
+
     def set_coord(self, frame: FrameTransform):
         transform = ChronoTransform(self.builder, frame)
         self.body.SetCoord(transform.transform)
-
 
 class ChronoRevolveJoint(BlockBridge):
     """The class representing revolute joint object in `pychrono <https://projectchrono.org/pychrono/>`_ physical
@@ -572,12 +614,12 @@ class ChronoRevolveJoint(BlockBridge):
         X = chrono.Q_ROTATE_Z_TO_X
 
     def __init__(self,
-                 builder: chrono.ChSystem,
-                 axis: Axis = Axis.Z,
-                 type_of_input: InputType = InputType.POSITION,
-                 stiffness: float = 0.,
-                 damping: float = 0.,
-                 equilibrium_position: float = 0.):
+                builder: chrono.ChSystem,
+                axis: Axis = Axis.Z,
+                type_of_input: InputType = InputType.POSITION,
+                stiffness: float = 0.,
+                damping: float = 0.,
+                equilibrium_position: float = 0.):
         super().__init__(builder=builder)
         self.joint = None
         self.axis = axis

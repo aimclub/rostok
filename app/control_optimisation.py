@@ -1,18 +1,16 @@
 import rostok.criterion.criterion_calc as criterion
 from rostok.block_builder.envbody_shapes import Box
-from rostok.block_builder.node_render import (ChronoBodyEnv,
-                                              DefaultChronoMaterial,
-                                              FrameTransform)
+from rostok.block_builder.node_render import (ChronoBodyEnv, DefaultChronoMaterial, FrameTransform)
 from rostok.graph_grammar.node import BlockWrapper, GraphGrammar, Node
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
 from rostok.virtual_experiment.simulation_step import SimOut
+from rostok import intexp
 
 
 def get_object_to_grasp():
     matich = DefaultChronoMaterial()
     matich.Friction = 0.65
-    matich.DampingF = 0.65
     shape_box = Box(0.1, 0.1, 0.1)
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=shape_box,

@@ -22,13 +22,13 @@ def plot_graph(graph):
     
  
 
-def init_extension_rules():
+def init_extension_rules(length_link, width):
     # %% Bodies for extansions rules
-    width = [0.25, 0.35, 0.5]
-    alpha = 45
-    alpha_left = [0, 30, 60]
-    alpha_right = [180, 150, 120]
-    length_link = [0.4, 0.6, 0.8]
+    # width = [0.25, 0.35, 0.5]
+    # alpha = 45
+    # alpha_left = [0, 30, 60]
+    # alpha_right = [180, 150, 120]
+    # length_link = [0.4, 0.6, 0.8]
 
     flat = list(map(lambda x: BlockWrapper(FlatChronoBody, width_x=x, height_y=0.05, depth_z=0.8),
                     width))

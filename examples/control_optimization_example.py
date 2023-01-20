@@ -53,7 +53,7 @@ def create_traj_fun(stop_time: float, time_step: float):
     return fun
 
 
- 
+
 GAIT = 2.5
 WEIGHT = [5, 0, 1, 5]
 

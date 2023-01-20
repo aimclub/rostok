@@ -63,6 +63,7 @@ class ControlOptimizer():
 
     def __init__(self, cfg: ConfigRewardFunction) -> None:
         self.cfg = cfg
+        self.is_visualize = False
 
     def create_reward_function(self,
                                generated_graph: GraphGrammar) -> Callable[[list[float]], float]:
@@ -76,11 +77,20 @@ class ControlOptimizer():
             returns reward based on criterion_callback
         """
 
-        def reward(x, is_vis=False):
+        def reward(x, is_vis=self.is_visualize):
             # Init object state
-            object_to_grab = self.cfg.get_rgab_object_callback()
+            out_get_func_grab_object = self.cfg.get_rgab_object_callback()
             arr_traj = self.cfg.params_to_timesiries_callback(generated_graph, x)
-            sim = SimulationStepOptimization(arr_traj, generated_graph, object_to_grab)
+
+            if isinstance(out_get_func_grab_object, tuple):
+                sim = SimulationStepOptimization(arr_traj, generated_graph,
+                                                 out_get_func_grab_object[0],
+                                                 out_get_func_grab_object[1])
+                sim.turn_on_gravity = True
+            else:
+                sim = SimulationStepOptimization(arr_traj, generated_graph,
+                                                 out_get_func_grab_object)
+
             sim.set_flags_stop_simulation(self.cfg.flags)
             sim.change_config_system(self.cfg.sim_config)
             sim_output = sim.simulate_system(self.cfg.time_step, is_vis)
@@ -91,6 +101,15 @@ class ControlOptimizer():
         return reward
 
     def start_optimisation(self, generated_graph: GraphGrammar) -> tuple[float, float]:
+
+        reward_fun = self.create_reward_function(generated_graph)
+        multi_bound = create_multidimensional_bounds(generated_graph, self.cfg.bound)
+        if len(multi_bound) == 0:
+            return (0, 0)
+        result = direct(reward_fun, multi_bound, maxiter=self.cfg.iters)
+        return (result.fun, result.x)
+
+    def start_optimisation_pickup(self, generated_graph: GraphGrammar) -> tuple[float, float]:
 
         reward_fun = self.create_reward_function(generated_graph)
         multi_bound = create_multidimensional_bounds(generated_graph, self.cfg.bound)

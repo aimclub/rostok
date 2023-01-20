@@ -57,6 +57,28 @@ class FlagStopSimualtions(ABC):
         return self.flag_state
 
 
+class FlagFlyingApart(FlagStopSimualtions):
+
+    def __init__(self, max_distance):
+        super().__init__()
+        self.max_distance = max_distance
+
+    def get_flag_state(self):
+        base_body = self.robot.get_base_body()
+        base_cog_frame = base_body.body.GetFrame_COG_to_abs()
+
+        blocks = self.robot.block_map.values()
+
+        body_block = filter(lambda x: isinstance(x, RobotBody), blocks)
+        abs_cog_frame_robot_bodies = map(lambda x: x.body.GetFrame_COG_to_abs(), body_block)
+        rel_cog_frame_robot_bodies = map(lambda x: base_cog_frame * x, abs_cog_frame_robot_bodies)
+        body_distance_to_base = list(map(lambda x: x.GetPos().Length2(),
+                                         rel_cog_frame_robot_bodies))
+        self.flag_state = max(body_distance_to_base) >= self.max_distance
+
+        return self.flag_state
+
+
 class FlagMaxTime(FlagStopSimualtions):
     """Flag to stop simulation in case of maximum time
 
@@ -102,11 +124,12 @@ class FlagWithContact(FlagStopSimualtions, ABC):
         Returns:
             bool: True when contact is exsist
         """
-        blocks = self.robot.block_map.values()
-        body_block = filter(lambda x: isinstance(x, RobotBody), blocks)
-        array_normal_forces = map(lambda x: x.list_n_forces, body_block)
-        sum_contacts = reduce(lambda x, y: sum(x)
-                              if isinstance(x, list) else x + sum(y), array_normal_forces)
+        # blocks = self.robot.block_map.values()
+        # body_block = filter(lambda x: isinstance(x, RobotBody), blocks)
+        # array_normal_forces = map(lambda x: x.list_n_forces, body_block)
+        # sum_contacts = reduce(lambda x, y: sum(x)
+        #                       if isinstance(x, list) else x + sum(y), array_normal_forces)
+        sum_contacts = sum(self.obj.list_n_forces)
         return not sum_contacts == 0
 
 

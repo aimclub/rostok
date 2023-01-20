@@ -2,14 +2,16 @@ from dataclasses import dataclass
 
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
+from rostok import intexp
 
 import rostok.block_builder.control as control
 from rostok.block_builder.node_render import ChronoRevolveJoint, RobotBody
-from rostok.criterion.flags_simualtions import (ConditionStopSimulation,
-                                                FlagStopSimualtions)
+from rostok.block_builder.transform_srtucture import FrameTransform
+from rostok.criterion.flags_simualtions import (ConditionStopSimulation, FlagStopSimualtions)
 from rostok.graph_grammar.node import BlockWrapper, GraphGrammar
 from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
 from rostok.virtual_experiment.robot import Robot
+from rostok.intexp.chrono_api import ChTesteeObject, ChCrutch
 
 
 # Immutable classes with output simulation data for robot block
@@ -69,6 +71,8 @@ class DataObjectBlock(SimulationDataBlock):
     """
     obj_contact_forces: list[float]
     obj_amount_surf_forces: list[float]
+    obj_cont_coord: list[float]
+    obj_COG: list[float]
 
 
 """Type for output simulation. Store trajectory and block id"""
@@ -95,22 +99,26 @@ class SimulationStepOptimization:
             This is the object that the robot grabs.
     """
 
-    def __init__(self, control_trajectory, graph_mechanism: GraphGrammar,
-                 grasp_object: BlockWrapper):
+    def __init__(self,
+                 control_trajectory,
+                 graph_mechanism: GraphGrammar,
+                 grasp_object: BlockWrapper,
+                 start_frame_robot: FrameTransform = FrameTransform([0, 0, 0], [1, 0, 0, 0])):
         self.control_trajectory = control_trajectory
         self.graph_mechanism = graph_mechanism
-        self.controller_joints = []
+        self.controller_joints: list[list[control.ChronoControl]] = []
 
-        # Create instance of chrono system and robot: grab mechanism
-        self.chrono_system = chrono.ChSystemNSC()
-        self.chrono_system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
-        self.chrono_system.SetSolverMaxIterations(100)
+        self.turn_on_gravity = False
+        self.chrono_system = chrono.ChSystemSMC()
+        self.chrono_system.UseMaterialProperties(False)
+        self.chrono_system.SetSolverType(chrono.ChSolver.Type_MINRES)
+        self.chrono_system.SetContactForceModel(chrono.ChSystemSMC.Hertz)
         self.chrono_system.SetSolverForceTolerance(1e-6)
-        self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
+        self.chrono_system.SetSolverMaxIterations(100)
 
         self.grasp_object = grasp_object.create_block(self.chrono_system)
 
-        self.grab_robot = Robot(self.graph_mechanism, self.chrono_system)
+        self.grab_robot = Robot(self.graph_mechanism, self.chrono_system, start_frame_robot)
 
         # Add grasp object in system and set system without gravity
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
@@ -175,9 +183,7 @@ class SimulationStepOptimization:
                 metod_system = getattr(self.chrono_system, str_method)
                 metod_system(input)
             except AttributeError:
-                raise AttributeError(
-                    "Chrono system doesn't have method {0}".format(str_method))
-
+                raise AttributeError("Chrono system doesn't have method {0}".format(str_method))
 
     # Run simulation
     def simulate_system(self, time_step, visualize=False) -> SimOut:
@@ -230,6 +236,8 @@ class SimulationStepOptimization:
 
         arrays_simulation_data_obj_force = [(-1, [])]
         arrays_simulation_data_amount_obj_contact_surfaces = [(-1, [])]
+        arrays_simulation_data_cont_coord = [(-1, [])]
+        arrays_simulation_data_abs_coord_COG_obj = [(-1, [])]
 
         # Loop of simulation
         while not self.condion_stop_simulation.flag_stop_simulation():
@@ -237,14 +245,17 @@ class SimulationStepOptimization:
             self.chrono_system.Update()
             self.chrono_system.DoStepDynamics(time_step)
             # Realtime for fixed step
-
-            if self.chrono_system.GetStepcount() % int(FRAME_STEP / time_step) == 0:
-                if visualize:
-
-                    vis.Run()
-                    vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
-                    vis.Render()
-                    vis.EndScene()
+            if visualize:
+                vis.Run()
+                vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
+                vis.Render()
+                vis.EndScene()
+            simulation_time = self.chrono_system.GetChTime()
+            if self.turn_on_gravity and simulation_time < self.condion_stop_simulation.flags[
+                    0].max_time / 4:
+                y_gravity = -9.8 * simulation_time / self.condion_stop_simulation.flags[0].max_time * 4
+                vector_gravity = chrono.ChVectorD(0, y_gravity,0)
+                self.chrono_system.Set_G_acc(vector_gravity)
 
             arrays_simulation_data_time.append(self.chrono_system.GetChTime())
 
@@ -254,10 +265,14 @@ class SimulationStepOptimization:
                 self.grab_robot)
             current_data_sum_contact_forces = RobotSensor.sum_contact_forces_blocks(self.grab_robot)
             current_data_abs_coord_COG = RobotSensor.abs_coord_COG_blocks(self.grab_robot)
+
+            # Get current variables from object
             current_data_std_obj_force = RobotSensor.std_contact_forces_object(self.grasp_object)
+            current_data_cont_coord = RobotSensor.contact_coord(self.grasp_object)
+            current_data_abs_coord_COG_obj = RobotSensor.abs_coord_COG_obj(self.grasp_object)
 
             current_data_amount_obj_contact_surfaces = dict([
-                (-1, len([item for item in self.grasp_object.list_n_forces if item != 0]))
+                (-1, len([item for item in self.grasp_object.list_c_coord if item != 0]))
             ])
             # Append current data in output arries
             arrays_simulation_data_joint_angle = list(
@@ -280,9 +295,20 @@ class SimulationStepOptimization:
                 arrays_simulation_data_obj_force = map(append_arr_in_dict,
                                                        current_data_std_obj_force.items(),
                                                        arrays_simulation_data_obj_force)
+
             arrays_simulation_data_amount_obj_contact_surfaces = map(
                 append_arr_in_dict, current_data_amount_obj_contact_surfaces.items(),
                 arrays_simulation_data_amount_obj_contact_surfaces)
+
+            if current_data_cont_coord is not None:
+                arrays_simulation_data_cont_coord = list(
+                    map(append_arr_in_dict, current_data_cont_coord.items(),
+                        arrays_simulation_data_cont_coord))
+
+            if current_data_abs_coord_COG_obj is not None:
+                arrays_simulation_data_abs_coord_COG_obj = list(
+                    map(append_arr_in_dict, current_data_abs_coord_COG_obj.items(),
+                        arrays_simulation_data_abs_coord_COG_obj))
 
         if visualize:
             vis.GetDevice().closeDevice()
@@ -299,9 +325,13 @@ class SimulationStepOptimization:
                 arrays_simulation_data_amount_contact_surfaces))
 
         simulation_data_object: dict[int, DataObjectBlock] = dict(
-            map(lambda x, y: (x[0], DataObjectBlock(x[0], arrays_simulation_data_time, x[1], y[1])),
+            map(
+                lambda x, y, z, w:
+                (x[0], DataObjectBlock(x[0], arrays_simulation_data_time, x[1], y[1], z[1], w[1])),
                 arrays_simulation_data_obj_force,
-                arrays_simulation_data_amount_obj_contact_surfaces))
+                arrays_simulation_data_amount_obj_contact_surfaces,
+                arrays_simulation_data_cont_coord, arrays_simulation_data_abs_coord_COG_obj))
+
         simulation_data_joint_angle.update(simulation_data_body)
         simulation_data_joint_angle.update(simulation_data_object)
 

@@ -1,6 +1,8 @@
 from rostok.graph_grammar.nodes_division import *
 from scipy.spatial import distance
 import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
 def app_v_2_l(final: list, val: list):
@@ -72,6 +74,7 @@ def criterion_calc(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, ga
         l_sum_cog = []
         step_n = 0
         temp_dist = []
+        euc_dist = []
         #While coordinates exist
         while step_n < len(rb_nodes_sim[0][0]['abs_coord_cog']):
             # list, which contains values of euclidean distances between right and left fingers
@@ -146,10 +149,46 @@ def criterion_calc(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, ga
         distance_crit = 0
 
     #4) Time criterion
-    if np.size(j_nodes_sim) > 0:
+    if np.size(j_nodes_sim) > 0 and len(j_nodes_sim[0]['time']) > 0:
         time_crit = j_nodes_sim[0]['time'][-1] / gait
     else:
         time_crit = 0
 
-    return -weights[0] * force_crit - weights[1] * cont_surf_crit - weights[
-        2] * distance_crit - weights[3] * time_crit
+
+    # 5) Obj COG coordinats
+    dist_list = []
+    if np.size(sim_output[-1].obj_cont_coord) > 0:
+       for idx,_ in enumerate(sim_output[-1].obj_cont_coord):
+            dist_list.append(distance.euclidean(sim_output[-1].obj_cont_coord[idx], sim_output[-1].obj_COG[idx]))
+    cog_crit = 1/(1+np.mean(dist_list))
+
+    if np.size(sim_output[-1].obj_contact_forces) == 0:
+        return 0
+    else:
+        return -weights[0] * force_crit - weights[1] * cont_surf_crit - weights[
+        2] * distance_crit - weights[3] * time_crit - cog_crit
+
+
+def plot_traj(sim_output, b_nodes, j_nodes, lb_nodes, rb_nodes, weights, gait) -> None:
+    [b_nodes_sim, _, _,
+     _] = traj_to_list(b_nodes, j_nodes, lb_nodes, rb_nodes, sim_output)
+    x_coords = []
+    y_coords= []
+    z_coords= []
+    for nodes in b_nodes_sim:
+        temp_x = []
+        temp_y = []
+        temp_z = []
+        for cog in nodes['abs_coord_cog']:
+            temp_x.append(cog[0])
+            temp_y.append(cog[1])
+            temp_z.append(cog[2])
+        x_coords.append(temp_x)
+        y_coords.append(temp_y)
+        z_coords.append(temp_z)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+    ax.plot(x_coords[0], y_coords[0], z_coords[0], label='COG_trajectory')
+    plt.show()
+    return
