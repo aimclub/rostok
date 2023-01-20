@@ -250,10 +250,13 @@ class SimulationStepOptimization:
                 vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
                 vis.Render()
                 vis.EndScene()
-                
-            if self.turn_on_gravity and self.chrono_system.GetChTime() > self.condion_stop_simulation.flags[0].max_time /4:
-                self.chrono_system.Set_G_acc(chrono.ChVectorD(0,-9.8*0.9,0))
-                
+            simulation_time = self.chrono_system.GetChTime()
+            if self.turn_on_gravity and simulation_time < self.condion_stop_simulation.flags[
+                    0].max_time / 4:
+                y_gravity = -9.8 * simulation_time / self.condion_stop_simulation.flags[0].max_time * 4
+                vector_gravity = chrono.ChVectorD(0, y_gravity,0)
+                self.chrono_system.Set_G_acc(vector_gravity)
+
             arrays_simulation_data_time.append(self.chrono_system.GetChTime())
 
             # Get current variables from robot blocks
