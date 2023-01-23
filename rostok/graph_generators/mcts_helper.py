@@ -18,6 +18,11 @@ from rostok.utils.states import (MCTSOptimizedState, OptimizedGraph,
 
 
 def convert_control_to_list(control):
+    """Turn control parameters into list.
+    
+    Args:
+        control: control parameters in the form returned by ControlOptimizer
+    """
     if control is None:
         control = []
     elif isinstance(control, (float, int)):
@@ -27,29 +32,41 @@ def convert_control_to_list(control):
 
 
 class OptimizedGraphReport(Saveable):
-
+    """Class to contain and update the list of OptimizedGraph objects
+    
+    Attributes:
+        path (Path): a path to directory for saving the object
+        file_name (str): name of the file to save the object
+        graph_list (list[OptimizedGraph]): list of graphs"""
     def __init__(self, path=Path("./results")) -> None:
+        """Create an object with empty graph_list.
+        
+        Args:
+            path (Path): path for saving the object"""
         super().__init__(path, 'optimized_graph_report')
         self.graph_list: list[OptimizedGraph] = []
 
     def add_graph(self, graph, reward, control):
-        """Add a graph, reward and control to seen_graph
+        """Add a graph, reward and control to graph_list
+
+        The function does not check if the graph is already in list, use check_graph
+        to check if a graph is already in graph_list
 
         Args:
             graph (GraphGrammar): the state of the main design
             reward (float): the main reward obtained during MCTS search
-            control: parameters of the control for main design"""
-
+            control: parameters of the control for main design
+        """
         control = convert_control_to_list(control)
         new_optimized_graph = OptimizedGraph(graph, reward, control)
         self.graph_list.append(new_optimized_graph)
 
     def check_graph(self, new_graph):
-        """Check if the graph is already in seen_graphs
+        """Check if the graph is already in graph_list
 
         Args:
-            new_graph: the graph to check"""
-
+            new_graph: the graph to check
+        """
         if len(self.graph_list) > 0:
             for optimized_graph in self.graph_list:
                 if optimized_graph.graph == new_graph:
@@ -62,8 +79,19 @@ class OptimizedGraphReport(Saveable):
 
 
 class OptimizedMCTSStateReport(Saveable):
+    """Class to contain and update the list of MCTSOptimizedState objects
+
+    Attributes:
+        path (Path): a path to directory for saving the object
+        file_name (str): name of the file to save the object
+        graph_list (list[MCTSOptimizedState]): list of states
+    """
 
     def __init__(self, path=Path("./results")) -> None:
+        """Create an object with empty graph_list.
+        
+        Args:
+            path (Path): path for saving the object"""
         super().__init__(path, 'optimized_MCTS_state_report')
         self.state_list: list[MCTSOptimizedState] = []
 
@@ -80,12 +108,19 @@ class OptimizedMCTSStateReport(Saveable):
 
 
 class MCTSSaveable(Saveable):
-
+    """Class include all the information that should be saved as a result of MCTS search.
+    
+    Attributes:
+        seen_graphs (OptimizedGraphReport): graphs obtained in the search
+        seen_states (OptimizedMCTSStateReport): states obtained in the search
+        main_state (RobotState): the main state of the MCTS search
+        
+    """
     def __init__(self, rule_vocabulary, path) -> None:
         super().__init__(path, 'MCTS_data')
         self.seen_graphs: OptimizedGraphReport = OptimizedGraphReport(path)
         self.seen_states: OptimizedMCTSStateReport = OptimizedMCTSStateReport(path)
-        self.main_state = RobotState(rules=rule_vocabulary)
+        self.main_state: RobotState = RobotState(rules=rule_vocabulary)
         self.main_simulated_state = OptimizedState(self.main_state, 0, None)
         self.best_simulated_state = OptimizedState(self.main_state, 0, None)
 

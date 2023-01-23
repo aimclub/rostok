@@ -122,7 +122,13 @@ class MCTSOptimizedState():
     step: int
 
 class OptimizedGraph():
-    """Class that represents the graph with a calculated reward"""
+    """Class that represents the graph with a calculated reward
+    
+        Attributes:
+        graph (RobotState): the graph to calculate reward
+        reward (float): the calculated reward of the state
+        control (list[float]): the parameters of the optimized control
+    """
 
     def __init__(self, graph, reward, control):
         self.__graph = deepcopy(graph)
