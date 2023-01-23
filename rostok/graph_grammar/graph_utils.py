@@ -13,9 +13,9 @@ def replace_nodes(graph: GraphGrammar, mapping: dict[Node, Node]):
 def plot_graph(graph: GraphGrammar):
     plt.figure()
     nx.draw_networkx(graph,
-                     font_size=7,
+                     font_size=8,
                      pos=nx.spring_layout(graph, dim=2),
-                     node_size=100,
+                     node_size=200,
                      labels={n: graph.nodes[n]["Node"].label for n in graph})
     plt.show()
 
