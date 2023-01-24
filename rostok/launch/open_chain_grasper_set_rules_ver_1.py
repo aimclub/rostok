@@ -85,7 +85,6 @@ def get_234_fingers_mechanism_rules(width_flats: list[float], length_links: list
     # Nodes
     node_vocab = node_vocabulary.NodeVocabulary()
     node_vocab.add_node(ROOT)
-    node_vocab.create_node("J")
     node_vocab.create_node("L")
     node_vocab.create_node("F")
     node_vocab.create_node("M")
@@ -218,7 +217,7 @@ def get_234_fingers_mechanism_rules(width_flats: list[float], length_links: list
                            ["F", "SMLPA", "SMLMA", "SMR", "EM", "EM", "EM"], 0, 0, [(0, 1), (0, 2),
                                                                                     (0, 3), (1, 4),
                                                                                     (2, 5), (3, 6)])
-    rule_vocab.create_rule("FingerUpper", ["EM"], ["J", "L", "EM"], 0, 2, [(0, 1), (1, 2)])
+    rule_vocab.create_rule("FingerUpper", ["EM"], ["J1", "L", "EM"], 0, 2, [(0, 1), (1, 2)])
 
     rule_vocab.create_rule("TerminalFlat1", ["F"], ["F1"], 0, 0)
     rule_vocab.create_rule("TerminalFlat2", ["F"], ["F2"], 0, 0)
