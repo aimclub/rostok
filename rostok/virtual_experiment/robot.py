@@ -51,11 +51,9 @@ class Robot:
 
             blocks.append(block_line)
 
-        chrono_vector_position = ChVectorD(start_frame.position[0], start_frame.position[1],
-                                           start_frame.position[2])
+        chrono_vector_position = ChVectorD(*start_frame.position)
 
-        chrono_quat_rotation = ChQuaternionD(start_frame.rotation[0], start_frame.rotation[1],
-                                             start_frame.rotation[2], start_frame.rotation[3])
+        chrono_quat_rotation = ChQuaternionD(*start_frame.rotation)
 
         ids_blocks = list(uniq_blocks)
 
