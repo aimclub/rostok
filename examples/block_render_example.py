@@ -3,7 +3,7 @@ import pychrono.irrlicht as chronoirr
 
 from rostok.block_builder.node_render import (ChronoRevolveJoint, ChronoTransform, LinkChronoBody,
                                               connect_blocks)
-from rostok.block_builder.transform_srtucture import FrameTransform
+from rostok.block_builder.transform_srtucture import FrameTransform, OriginWorldFrame
 
 # Create Chrono system instance
 mysystem = chrono.ChSystemNSC()
@@ -18,7 +18,7 @@ body_6 = LinkChronoBody(mysystem, length_y=1)
 body_7 = LinkChronoBody(mysystem, length_y=1)
 
 # Init transforms
-cord_sys_1 = FrameTransform([0, 0, 0], [1, 0, 0, 0])
+cord_sys_1 = OriginWorldFrame
 transform1 = ChronoTransform(mysystem, cord_sys_1)
 
 quat_z_y = chrono.Q_ROTATE_Z_TO_Y
