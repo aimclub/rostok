@@ -6,7 +6,7 @@ from pychrono.core import ChVectorD, ChQuaternionD
 from rostok.block_builder.blocks_utils import NodeFeatures
 from rostok.block_builder.node_render import (Block, connect_blocks)
 from rostok.graph_grammar.node import GraphGrammar, Node, WrapperTuple
-from rostok.block_builder.transform_srtucture import FrameTransform
+from rostok.block_builder.transform_srtucture import FrameTransform, OriginWorldFrame
 
 
 @dataclass
@@ -22,7 +22,7 @@ class Robot:
     def __init__(self,
                  robot_graph: GraphGrammar,
                  simulation,
-                 start_frame: FrameTransform = FrameTransform([0, 0, 0], [1, 0, 0, 0])):
+                 start_frame: FrameTransform = OriginWorldFrame):
         self.__graph = deepcopy(robot_graph)
         self.__simulation = simulation
         wrapper_tuple_array = self.__graph.build_terminal_wrapper_array()
