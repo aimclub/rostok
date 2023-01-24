@@ -65,7 +65,7 @@ class ControlOptimizer():
         self.cfg = cfg
 
     def create_reward_function(self,
-                               generated_graph: GraphGrammar) -> Callable[[list[float]], float]:
+                               generated_graph: GraphGrammar, visualize = False) -> Callable[[list[float]], float]:
         """Create reward function
 
         Args:
@@ -75,8 +75,8 @@ class ControlOptimizer():
             Callable[[list[float]], float]: Function of virtual experemnt that
             returns reward based on criterion_callback
         """
-
-        def reward(x, is_vis=True):
+        is_vis = visualize
+        def reward(x, is_vis=is_vis):
             # Init object state
             object_to_grab = self.cfg.get_rgab_object_callback()
             arr_traj = self.cfg.params_to_timesiries_callback(generated_graph, x)

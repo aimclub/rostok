@@ -104,19 +104,6 @@ class OpenChainGen:
     def set_config_control_optimizer(self, config: ConfigRewardFunction):
         self._cfg_control_optimizer = config
 
-    def create_environment(self, max_number_rules=None):
-        """Create environment of searching grab construction.
-        MCTS optimizing environment state with a view to maximizing the reward. 
-        Creating an object generating gripping structures. 
-        In the `run_generation` method, MCTS optimizes the action
-        in the environment in order to maximize the reward
-        """
-        grap_grammar = GraphGrammar()
-        if max_number_rules is not None:
-            self.max_numbers_non_terminal_rules = max_number_rules
-        self.graph_env = env.GraphVocabularyEnvironment(grap_grammar, self.rule_vocabulary,
-                                                        self.max_numbers_non_terminal_rules)
-
     def run_generation(self, max_search_iteration: int = 0, visualaize: bool = False):
         """Launches the gripping robot generation algorithm.
 
@@ -148,26 +135,27 @@ class OpenChainGen:
         finish = False
         searcher = mcts.mcts(iterationLimit=self.search_iteration)
         while not finish:
-            finish, graph_env = make_mcts_step(searcher, self.graph_env, n_steps)
+            finish, self.graph_env = make_mcts_step(searcher, self.graph_env, n_steps)
             n_steps += 1
-            print(f"number iteration: {n_steps}, counter actions: {graph_env.counter_action} " +
-                  f"reward: {mcts_helper.report.get_best_info()[1]}")
+            print(
+                f"number iteration: {n_steps}, counter actions: {self.graph_env.counter_action} " +
+                f"reward: {mcts_helper.report.get_best_info()[1]}")
         self.__complete_generation = True
         return mcts_helper.report
 
     def visualize_result(self):
         if not self.__complete_generation:
             raise Exception("Don't have results. Before visualize results you must run algorithm")
-        reporter = self.graph_env.mcts_helper.report
+        reporter = self.graph_env.helper.report
         reporter.draw_best_graph()
         reporter.plot_means()
         best_graph, reward, best_control = reporter.get_best_info()
-        func_reward = ControlOptimizer(
-            self._cfg_control_optimizer).create_reward_function(best_graph)
+        ctrl_opt = ControlOptimizer(self._cfg_control_optimizer)
+        func_reward = ctrl_opt.create_reward_function(best_graph, True)
         func_reward(best_control)
 
     def save_result(self):
-        reporter = self.graph_env.mcts_helper.report
+        reporter = self.graph_env.helper.report
         reporter.make_time_dependent_path()
         reporter.save()
         reporter.save_all()
@@ -235,6 +223,5 @@ def create_generator_by_config(config_file: str) -> OpenChainGen:
     config_search = config["MCTS"]
     model.search_iteration = int(config_search["iteration"])
     model.max_numbers_non_terminal_rules = int(config_search["max_non_terminal_rules"])
-    model.create_environment()
 
     return model
