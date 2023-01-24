@@ -13,7 +13,8 @@ class BlockWrapper:
     The interface allows you to create an interpretation of terminal nodes in the simulation.
     Interpretation classes is in :py:mod:`node_render`.
     The instance must be specified when creating the node.
-    When assembling a robot from a graph, an object is created by the :py:meth:`BlockWrapper.create_block` method.
+    When assembling a robot from a graph, an object is created by the 
+    :py:meth:`BlockWrapper.create_block` method.
     When the object is created, the desired arguments of the interpretation object are set.
 
     Args:
@@ -152,7 +153,7 @@ class GraphGrammar(nx.DiGraph):
 
         relabel_in_rule = \
             {rule.id_node_connect_child: id_node_connect_child_graph,
-             rule.id_node_connect_parent: id_node_connect_parent_graph}
+            rule.id_node_connect_parent: id_node_connect_parent_graph}
 
         for raw_nodes in rule.graph_insert.nodes.items():
             raw_node_id = raw_nodes[0]
@@ -220,7 +221,7 @@ class GraphGrammar(nx.DiGraph):
             self._replace_node(id_closest, rule)
 
     def node_levels_bfs(self) -> list[list[int]]:
-        """Devide nodes into levels.
+        """Divide nodes into levels.
 
         Return a list of lists of nodes where each inner list is a
         level in respect to the \'root\', which is the node with no in edges.
@@ -345,9 +346,8 @@ class GraphGrammar(nx.DiGraph):
 
         self_dfs_paths_lbl.sort(key=lambda x: "".join(x))
         return self_dfs_paths_lbl
-    
-    
+
+
     def __hash__(self) -> list[list[str]]:
         self_dfs_paths_lbl = self.get_uniq_representation()
         return hash(str(self_dfs_paths_lbl))
- 
