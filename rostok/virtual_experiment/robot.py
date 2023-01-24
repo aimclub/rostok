@@ -19,7 +19,10 @@ class RobotNode:
 class Robot:
     __fixed = False
 
-    def __init__(self, robot_graph: GraphGrammar, simulation, start_frame: FrameTransform = FrameTransform([0,0,0],[1,0,0,0])):
+    def __init__(self,
+                 robot_graph: GraphGrammar,
+                 simulation,
+                 start_frame: FrameTransform = FrameTransform([0, 0, 0], [1, 0, 0, 0])):
         self.__graph = deepcopy(robot_graph)
         self.__simulation = simulation
         wrapper_tuple_array = self.__graph.build_terminal_wrapper_array()
@@ -27,7 +30,8 @@ class Robot:
         self.block_map = self.__build_robot(wrapper_tuple_array, start_frame)
         self.__bind_blocks_to_graph()
 
-    def __build_robot(self, wrapper_tuple_array: list[list[WrapperTuple]], start_frame: FrameTransform) -> dict[int, Block]:
+    def __build_robot(self, wrapper_tuple_array: list[list[WrapperTuple]],
+                      start_frame: FrameTransform) -> dict[int, Block]:
         blocks = []
         uniq_blocks = {}
         for wrapper_tuple_line in wrapper_tuple_array:
@@ -44,24 +48,21 @@ class Robot:
                 else:
                     block_buf = uniq_blocks[id]
                     block_line.append(block_buf)
-                    
+
             blocks.append(block_line)
 
-        chrono_vector_position = ChVectorD(start_frame.position[0],
-                                           start_frame.position[1],
+        chrono_vector_position = ChVectorD(start_frame.position[0], start_frame.position[1],
                                            start_frame.position[2])
-        
-        chrono_quat_rotation = ChQuaternionD(start_frame.rotation[0],
-                                             start_frame.rotation[1],
-                                             start_frame.rotation[2],
-                                             start_frame.rotation[3])
-        
+
+        chrono_quat_rotation = ChQuaternionD(start_frame.rotation[0], start_frame.rotation[1],
+                                             start_frame.rotation[2], start_frame.rotation[3])
+
         ids_blocks = list(uniq_blocks)
-        
+
         base_id = self.__graph.closest_node_to_root(ids_blocks)
         uniq_blocks[base_id].body.SetPos(chrono_vector_position)
         uniq_blocks[base_id].body.SetRot(chrono_quat_rotation)
-        
+
         for line in blocks:
             connect_blocks(line)
 
@@ -84,7 +85,7 @@ class Robot:
         ids_blocks = list(self.block_map.keys())
         base_id = self.__graph.closest_node_to_root(ids_blocks)
         return self.block_map[base_id]
-        
+
     @property
     def get_joints(self):
         """Create 2D-list joints from list of blocks. First index is the number

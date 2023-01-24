@@ -6,8 +6,7 @@ import pychrono.irrlicht as chronoirr
 import rostok.block_builder.control as control
 from rostok.block_builder.node_render import ChronoRevolveJoint, RobotBody
 from rostok.block_builder.transform_srtucture import FrameTransform
-from rostok.criterion.flags_simualtions import (ConditionStopSimulation,
-                                                FlagStopSimualtions)
+from rostok.criterion.flags_simualtions import (ConditionStopSimulation, FlagStopSimualtions)
 from rostok.graph_grammar.node import BlockWrapper, GraphGrammar
 from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
 from rostok.virtual_experiment.robot import Robot
@@ -96,8 +95,11 @@ class SimulationStepOptimization:
             This is the object that the robot grabs.
     """
 
-    def __init__(self, control_trajectory, graph_mechanism: GraphGrammar,
-                 grasp_object: BlockWrapper, start_frame_robot: FrameTransform = FrameTransform([0,0,0],[1,0,0,0])):
+    def __init__(self,
+                 control_trajectory,
+                 graph_mechanism: GraphGrammar,
+                 grasp_object: BlockWrapper,
+                 start_frame_robot: FrameTransform = FrameTransform([0, 0, 0], [1, 0, 0, 0])):
         self.control_trajectory = control_trajectory
         self.graph_mechanism = graph_mechanism
         self.controller_joints: list[list[control.ChronoControl]] = []
@@ -176,9 +178,7 @@ class SimulationStepOptimization:
                 metod_system = getattr(self.chrono_system, str_method)
                 metod_system(input)
             except AttributeError:
-                raise AttributeError(
-                    "Chrono system doesn't have method {0}".format(str_method))
-
+                raise AttributeError("Chrono system doesn't have method {0}".format(str_method))
 
     # Run simulation
     def simulate_system(self, time_step, visualize=False) -> SimOut:
