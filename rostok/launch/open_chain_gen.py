@@ -1,4 +1,5 @@
 import configparser
+from pathlib import Path
 from typing import Callable, Optional, Any
 
 import pychrono as chrono
@@ -12,7 +13,7 @@ from rostok.trajectory_optimizer.control_optimizer import ConfigRewardFunction, 
 import rostok.criterion.flags_simualtions as flags
 import rostok.graph_generators.graph_environment as env
 import rostok.graph_grammar.rule_vocabulary as rule_vocabulary
-from rostok.utils.result_saver import MCTSReporter
+from rostok.graph_generators.mcts_helper import MCTSGraphEnviromnent, prepare_mcts_state_and_helper, make_mcts_step
 
 import rostok.launch.control.control_optimisation as ctrl_opt
 from rostok.launch.open_chain_grasper_set_rules_ver_1 import get_234_fingers_mechanism_rules
@@ -28,7 +29,7 @@ class OpenChainGen:
     Further, there are minimalistic descriptive arguments of the class.
 
     Attributes:
-        graph_env (GraphEnvironment): Object manipulate MCTS environment. Defaults to None.
+        graph_env (MCTSGraphEnviromnent): Object manipulate MCTS environment. Defaults to None.
         rule_vocabulary (RuleVocabulary): Vocabulary of graph grammar rules. Defaults to None.
         stop_simulation_flags (StopSimulationFlags): Flags for stopping simulation by some condition. Defaults to empty list.
         search_iteration (int):  The maximum number of non-terminal rules that can be applied. Defaults to 0.
@@ -36,14 +37,16 @@ class OpenChainGen:
     """
 
     def __init__(self) -> None:
+        self.__complete_generation = False
         self._cfg_control_optimizer: ConfigRewardFunction = ConfigRewardFunction()
-        self.graph_env: Optional[env.GraphEnvironment] = None
+        self.graph_env: Optional[MCTSGraphEnviromnent] = None
         self.rule_vocabulary: rule_vocabulary.RuleVocabulary = rule_vocabulary.RuleVocabulary()
         self._node_features: list = [[]]
         self._builder_grasp_object: Optional[Callable[[], Any]] = None
         self.stop_simulation_flags: list[flags.FlagStopSimualtions] = list()
         self.search_iteration: int = 0
         self.max_numbers_non_terminal_rules: int = 0
+        self.path_to_result: Path = Path("./results")
 
     @property
     def cfg_control_optimizer(self):
@@ -79,7 +82,7 @@ class OpenChainGen:
             time_step (float): Step width of simulation for optimizing control
             time_sim (float): Define maximum time of simulation for optimizing control
             gait (float): Time value of grasping's gait period
-            weights_criterion (list[float]): 
+            weights_criterion (list[float]):
         """
         self._cfg_control_optimizer = ConfigRewardFunction()
         self._cfg_control_optimizer.bound = bound
@@ -102,8 +105,11 @@ class OpenChainGen:
         self._cfg_control_optimizer = config
 
     def create_environment(self, max_number_rules=None):
-        """Create environment of searching grab construction. MCTS optimizing environment state with a view to maximizing the reward. 
-        Creating an object generating gripping structures. In the `run_generation` method, MCTS optimizes the action in the environment in order to maximize the reward
+        """Create environment of searching grab construction.
+        MCTS optimizing environment state with a view to maximizing the reward. 
+        Creating an object generating gripping structures. 
+        In the `run_generation` method, MCTS optimizes the action
+        in the environment in order to maximize the reward
         """
         grap_grammar = GraphGrammar()
         if max_number_rules is not None:
@@ -124,7 +130,7 @@ class OpenChainGen:
         Returns:
             tuple: Tuple of generating result: generate grab mechanism, control trajectory and reward.
         """
-        self.graph_env.set_control_optimizer(ControlOptimizer(self._cfg_control_optimizer))
+        control_optimizer = ControlOptimizer(self._cfg_control_optimizer)
 
         if self._builder_grasp_object is None:
             raise Exception("Object to grasp wasn't set")
@@ -132,18 +138,39 @@ class OpenChainGen:
         if max_search_iteration != 0:
             self.search_iteration = max_search_iteration
 
-        iter = 0
+        self.graph_env = prepare_mcts_state_and_helper(GraphGrammar(), self.rule_vocabulary,
+                                                       control_optimizer,
+                                                       self.max_numbers_non_terminal_rules,
+                                                       self.path_to_result)
+        mcts_helper = self.graph_env.helper
+
+        n_steps = 0
         finish = False
         searcher = mcts.mcts(iterationLimit=self.search_iteration)
-        reporter = MCTSReporter.get_instance()
         while not finish:
-            action = searcher.search(initialState=self.graph_env)
-            finish, final_graph, opt_trajectory = self.graph_env.step(action, visualaize)
-            iter += 1
-            print(
-                f"number iteration: {iter}, counter actions: {self.graph_env.counter_action}, best reward: {reporter.best_reward}"
-            )
-        return final_graph, opt_trajectory, self.graph_env.reward
+            finish, graph_env = make_mcts_step(searcher, self.graph_env, n_steps)
+            n_steps += 1
+            print(f"number iteration: {n_steps}, counter actions: {graph_env.counter_action} " +
+                  f"reward: {mcts_helper.report.get_best_info()[1]}")
+        self.__complete_generation = True
+        return mcts_helper.report
+
+    def visualize_result(self):
+        if not self.__complete_generation:
+            raise Exception("Don't have results. Before visualize results you must run algorithm")
+        reporter = self.graph_env.mcts_helper.report
+        reporter.draw_best_graph()
+        reporter.plot_means()
+        best_graph, reward, best_control = reporter.get_best_info()
+        func_reward = ControlOptimizer(
+            self._cfg_control_optimizer).create_reward_function(best_graph)
+        func_reward(best_control)
+
+    def save_result(self):
+        reporter = self.graph_env.mcts_helper.report
+        reporter.make_time_dependent_path()
+        reporter.save()
+        reporter.save_all()
 
 
 def create_generator_by_config(config_file: str) -> OpenChainGen:
