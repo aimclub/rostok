@@ -2,7 +2,6 @@ from copy import deepcopy
 from typing import Tuple
 from rostok.graph_grammar.node import GraphGrammar, Rule
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
- 
 
 
 def create_graph_from_seq(seq: list[Rule]) -> GraphGrammar:
@@ -52,13 +51,15 @@ def _ruleset_explorer(set_uniq_graphs: set[GraphGrammar],
 
     if (current_number_non_terminal >= limit_non_terminal):
         rule_names = rule_vocab.get_list_of_applicable_terminal_rules(current_graph)
-        
+
     else:
         rule_names = rule_vocab.get_list_of_applicable_rules(current_graph)
-    
+
+    # If graph grow not available
     if len(rule_names) == 0:
-            set_uniq_graphs.add(current_graph)
-            mutable_counter[0] += 1
+        set_uniq_graphs.add(current_graph)
+        mutable_counter[0] += 1
+        return current_graph
 
     for rule_name in rule_names:
         rule = rule_vocab.get_rule(rule_name)
@@ -68,10 +69,9 @@ def _ruleset_explorer(set_uniq_graphs: set[GraphGrammar],
         _ruleset_explorer(set_uniq_graphs, limit_non_terminal, rule_vocab, mutable_counter,
                           number_nt_rules, seq_rule_one)
 
-    return current_graph
 
-
-def ruleset_explorer(limit_non_terminal: int, rule_vocab: RuleVocabulary) -> Tuple[set[GraphGrammar], int]:
+def ruleset_explorer(limit_non_terminal: int,
+                     rule_vocab: RuleVocabulary) -> Tuple[set[GraphGrammar], int]:
     """Recursive iterate over all posible graph in rule_vocab with limitation on non-terminal rules.
     Counts all non-uniq graphs
 
@@ -98,10 +98,8 @@ def ruleset_explorer(limit_non_terminal: int, rule_vocab: RuleVocabulary) -> Tup
     current_number_non_terminal: int = 0
     seq_rule: list[Rule] = []
     mutable_counter = [0]
- 
-    _ruleset_explorer(set_uniq_graphs, limit_non_terminal, rule_vocab, mutable_counter, current_number_non_terminal,
-                      seq_rule)
+
+    _ruleset_explorer(set_uniq_graphs, limit_non_terminal, rule_vocab, mutable_counter,
+                      current_number_non_terminal, seq_rule)
 
     return set_uniq_graphs, mutable_counter[0]
-
-
