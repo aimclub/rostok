@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="./docs/images/logo_rostok_long.png" width="600">
+    <img src="/docs/images/logo_rostok_long.png" width="600">
 </p>
 
 
@@ -12,7 +12,7 @@ A user can utilize the entire framework as a pipeline to generate a set of subop
 Currently the framework allows to perform co-design of open chain linkage mechanisms. Co-design consists in simultaneously searching for the mechanical structure and the trajectories of the robot to get the best possible performance.
 
 <p align="center">
-    <img src="./docs/images/brick_anim.gif" width="700">
+    <img src="/docs/images/brick_anim.gif" width="700">
 </p>
 
 ## Project desription
