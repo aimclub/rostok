@@ -38,6 +38,7 @@ class OptimizedGraphReport(Saveable):
         path (Path): a path to directory for saving the object
         file_name (str): name of the file to save the object
         graph_list (list[OptimizedGraph]): list of graphs"""
+
     def __init__(self, path=Path("./results")) -> None:
         """Create an object with empty graph_list.
 
@@ -116,6 +117,7 @@ class MCTSSaveable(Saveable):
         main_state (RobotState): the main state of the MCTS search
 
     """
+
     def __init__(self, rule_vocabulary, path) -> None:
         super().__init__(path, 'MCTS_data')
         self.seen_graphs: OptimizedGraphReport = OptimizedGraphReport(path)
@@ -205,10 +207,11 @@ class MCTSHelper():
         report (MCTSSaveable): a saveable object that contains all information about graphs, 
             states and rewards obtained in the MCTS run
     """
-    def __init__(self, 
-                rule_vocabulary: RuleVocabulary, 
-                optimizer: ControlOptimizer, 
-                path=Path("./results")) -> None:
+
+    def __init__(self,
+                 rule_vocabulary: RuleVocabulary,
+                 optimizer: ControlOptimizer,
+                 path=Path("./results")) -> None:
         """Initialize empty instance of the MCTSHelper.
 
         Args:
@@ -274,12 +277,13 @@ class MCTSGraphEnvironment(GraphVocabularyEnvironment):
         actions (RuleVocabulary): rules for the search
         optimizer (ControlOptimizer): optimizer for simulation of the mechanism
         max_actions_not_terminal (int): max number of non-terminal rules for the MCTS run"""
+
     def __init__(self,
                  initial_graph: GraphGrammar,
                  helper: MCTSHelper,
                  graph_vocabulary: RuleVocabulary,
                  optimizer: ControlOptimizer,
-                 max_numbers_rules_non_terminal: int=20):
+                 max_numbers_rules_non_terminal: int = 20):
         """Create state from the graph
 
         Args:
@@ -289,8 +293,7 @@ class MCTSGraphEnvironment(GraphVocabularyEnvironment):
         optimizer (ControlOptimizer): optimizer for simulation of the mechanism
         max_numbers_rules_non_terminal (int): max number of non-terminal rules for the MCTS run
         """
-        super().__init__(initial_graph, graph_vocabulary, optimizer,
-                         max_numbers_rules_non_terminal)
+        super().__init__(initial_graph, graph_vocabulary, optimizer, max_numbers_rules_non_terminal)
         self.helper: MCTSHelper = helper
 
     def getReward(self):
@@ -333,7 +336,7 @@ def prepare_mcts_state_and_helper(graph: GraphGrammar,
                                   num_of_rules: int,
                                   path: Path = Path("./results")):
     """Set the MCTSHelper and initial MCTSGraphEnvironment
-    
+
     Args:
         graph (GraphGrammar): initial graph for the MCTS run
         rule_vocabulary (RuleVocabulary): rule set for the MCTS run
@@ -348,7 +351,7 @@ def prepare_mcts_state_and_helper(graph: GraphGrammar,
 
 def make_mcts_step(searcher, state: MCTSGraphEnvironment, counter):
     """Start MCTS search for the state and return the new state corresponding to the action
-    
+
     Args:
         searcher: search algorithm
         state (MCTSGraphEnvironment): starting state for the search
