@@ -19,7 +19,7 @@ from rostok.utils.states import (MCTSOptimizedState, OptimizedGraph,
 
 def convert_control_to_list(control):
     """Turn control parameters into list.
-    
+
     Args:
         control: control parameters in the form returned by ControlOptimizer
     """
@@ -33,14 +33,14 @@ def convert_control_to_list(control):
 
 class OptimizedGraphReport(Saveable):
     """Class to contain and update the list of OptimizedGraph objects
-    
+
     Attributes:
         path (Path): a path to directory for saving the object
         file_name (str): name of the file to save the object
         graph_list (list[OptimizedGraph]): list of graphs"""
     def __init__(self, path=Path("./results")) -> None:
         """Create an object with empty graph_list.
-        
+
         Args:
             path (Path): path for saving the object"""
         super().__init__(path, 'optimized_graph_report')
@@ -89,7 +89,7 @@ class OptimizedMCTSStateReport(Saveable):
 
     def __init__(self, path=Path("./results")) -> None:
         """Create an object with empty graph_list.
-        
+
         Args:
             path (Path): path for saving the object"""
         super().__init__(path, 'optimized_MCTS_state_report')
@@ -109,12 +109,12 @@ class OptimizedMCTSStateReport(Saveable):
 
 class MCTSSaveable(Saveable):
     """Class include all the information that should be saved as a result of MCTS search.
-    
+
     Attributes:
         seen_graphs (OptimizedGraphReport): graphs obtained in the search
         seen_states (OptimizedMCTSStateReport): states obtained in the search
         main_state (RobotState): the main state of the MCTS search
-        
+
     """
     def __init__(self, rule_vocabulary, path) -> None:
         super().__init__(path, 'MCTS_data')
@@ -125,21 +125,22 @@ class MCTSSaveable(Saveable):
         self.best_simulated_state = OptimizedState(self.main_state, 0, None)
 
     def get_best_info(self):
-        """Get graph, reward and control for the best state"""
+        """Get graph, reward and control for the best state."""
         graph = self.best_simulated_state.state.make_graph()
         return graph, self.best_simulated_state.reward, self.best_simulated_state.control
 
     def get_main_info(self):
-        """Get graph, reward and control for the main state"""
+        """Get graph, reward and control for the main state."""
         graph = self.main_simulated_state.state.make_graph()
         return graph, self.main_simulated_state.reward, self.main_simulated_state.control
 
     def draw_best_graph(self):
+        """Draw best graph with plot title based on the reward."""
         graph, reward, _ = self.get_best_info()
         plot_graph_reward(graph, reward)
 
     def plot_means(self):
-        """Plot the mean rewards for steps of MCTS search"""
+        """Plot the mean rewards for steps of MCTS search."""
 
         rewards = []
         for state in self.seen_states.state_list:
@@ -156,6 +157,7 @@ class MCTSSaveable(Saveable):
         plt.show()
 
     def save_visuals(self):
+        """Saves graphs and info for main and best states."""
         path_to_file = Path(self.path, "mcts_result.txt")
         with open(path_to_file, 'w', encoding='utf-8') as file:
             original_stdout = sys.stdout
@@ -179,25 +181,48 @@ class MCTSSaveable(Saveable):
         save_graph_plot_reward(main_graph, reward, path_to_main_graph)
 
     def save_lists(self):
+        """Saves lists of graphs and states."""
         self.seen_graphs.set_path(self.path)
         self.seen_graphs.save()
         self.seen_states.set_path(self.path)
         self.seen_states.save()
 
     def save_all(self):
+        """Save all information in the object but not object itself."""
         self.save_visuals()
         self.save_lists()
 
 
 class MCTSHelper():
+    """Class that accumulates information about the MCTS search process.
+    
+    The instance of a class should be created for each MCTS run.
 
-    def __init__(self, rule_vocabulary, optimizer, path=Path("./results")) -> None:
+    Attributes:
+        actions (RuleVocabulary): the rule_vocabulary used in the MCTS run
+        optimizer (ControlOptimizer): the optimizer used in the MCTS run
+        step_counter (int): counter of MCTS steps
+        report (MCTSSaveable): a saveable object that contains all information about graphs, 
+            states and rewards obtained in the MCTS run
+    """
+    def __init__(self, 
+                rule_vocabulary: RuleVocabulary, 
+                optimizer: ControlOptimizer, 
+                path=Path("./results")) -> None:
+        """Initialize empty instance of the MCTSHelper.
+
+        Args:
+            rule_vocabulary (RuleVocabulary): should be the same as one used in the MCTS search
+            optimizer (ControlOptimizer): should be the same as one used in the MCTS search
+            path (Path): path to save the results of the MCTS run
+        """
         self.actions: RuleVocabulary = rule_vocabulary
         self.optimizer: ControlOptimizer = optimizer
         self.step_counter: int = 0
         self.report: MCTSSaveable = MCTSSaveable(rule_vocabulary, path)
 
     def convert_control_to_list(self, control):
+        """Convert control to the form acceptable for pickle."""
         if control is None:
             control = []
         elif isinstance(control, (float, int)):
@@ -240,25 +265,44 @@ class MCTSHelper():
             self.set_best_state(state, reward, control)
 
 
-class MCTSGraphEnviromnent(GraphVocabularyEnvironment):
+class MCTSGraphEnvironment(GraphVocabularyEnvironment):
+    """Class that represents the state with methods and attributes required by MCTS algorithm
 
+    Attributes:
+        init_graph (GraphGrammar): the initial graph for MCTS search
+        helper (MCTSHelper): helper object for the state
+        actions (RuleVocabulary): rules for the search
+        optimizer (ControlOptimizer): optimizer for simulation of the mechanism
+        max_actions_not_terminal (int): max number of non-terminal rules for the MCTS run"""
     def __init__(self,
-                 initilize_graph: GraphGrammar,
+                 initial_graph: GraphGrammar,
                  helper: MCTSHelper,
-                 graph_vocabulary,
-                 optimizer,
-                 max_numbers_rules_non_terminal=20):
+                 graph_vocabulary: RuleVocabulary,
+                 optimizer: ControlOptimizer,
+                 max_numbers_rules_non_terminal: int=20):
+        """Create state from the graph
 
-        super().__init__(initilize_graph, graph_vocabulary, optimizer,
+        Args:
+            initial_graph (GraphGrammar): initial graph for the state
+        helper (MCTSHelper): helper object for the state
+        graph_vocabulary (RuleVocabulary): rules for the search
+        optimizer (ControlOptimizer): optimizer for simulation of the mechanism
+        max_numbers_rules_non_terminal (int): max number of non-terminal rules for the MCTS run
+        """
+        super().__init__(initial_graph, graph_vocabulary, optimizer,
                          max_numbers_rules_non_terminal)
         self.helper: MCTSHelper = helper
 
     def getReward(self):
+        """Make optimization and calculate reward for the graph of the state.
+        
+        It also adds the graph to the seen_graph of the helper.report object
+        """
         report = self.helper.report.seen_graphs.check_graph(self.graph)
         if report[0]:
             self.reward = report[1]
-            self.movments_trajectory = report[2]
-            self.helper.add_state(self.state, self.reward, self.movments_trajectory)
+            self.movements_trajectory = report[2]
+            self.helper.add_state(self.state, self.reward, self.movements_trajectory)
             print('seen reward:', self.reward)
             return self.reward
 
@@ -285,16 +329,31 @@ class MCTSGraphEnviromnent(GraphVocabularyEnvironment):
 
 def prepare_mcts_state_and_helper(graph: GraphGrammar,
                                   rule_vocabulary: RuleVocabulary,
-                                  optimizer,
+                                  optimizer: ControlOptimizer,
                                   num_of_rules: int,
                                   path: Path = Path("./results")):
-
+    """Set the MCTSHelper and initial MCTSGraphEnvironment
+    
+    Args:
+        graph (GraphGrammar): initial graph for the MCTS run
+        rule_vocabulary (RuleVocabulary): rule set for the MCTS run
+        optimizer (ControlOptimizer): simulation tool for the graph
+        num_of_rules (int): number of non-terminal rules for MCTS
+        path (Path): path for saving the MCTS run information
+    """
     mcts_helper = MCTSHelper(rule_vocabulary, optimizer, path)
-    mcts_state = MCTSGraphEnviromnent(graph, mcts_helper, rule_vocabulary, optimizer, num_of_rules)
+    mcts_state = MCTSGraphEnvironment(graph, mcts_helper, rule_vocabulary, optimizer, num_of_rules)
     return mcts_state
 
 
-def make_mcts_step(searcher, state: MCTSGraphEnviromnent, counter):
+def make_mcts_step(searcher, state: MCTSGraphEnvironment, counter):
+    """Start MCTS search for the state and return the new state corresponding to the action
+    
+    Args:
+        searcher: search algorithm
+        state (MCTSGraphEnvironment): starting state for the search
+        counter: counter of the steps
+    """
     state.helper.step_counter = counter
     action = searcher.search(initialState=state)
     rule_action = action.get_rule
