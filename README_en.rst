@@ -63,7 +63,7 @@ Examples of usage of independent modules is in `rostok\examples` directory.
 
 ## Acknowledgments
 
-<img src="./docs/images/logo.png" width="200">
+<img src="/docs/images/logo.png" width="200">
 
 ### Affiliation
 
