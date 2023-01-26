@@ -6,8 +6,6 @@ channels:
   - defaults
 dependencies:
   - python=3.9.12
-  - pychrono=7.*
-  - irrlicht=1.8.5
   - numpy
   - yapf
   - mypy
@@ -20,3 +18,5 @@ dependencies:
     - scipy
     - mcts==1.0.4
     - pytest
+  - pychrono=7.*
+  - irrlicht=1.8.5
