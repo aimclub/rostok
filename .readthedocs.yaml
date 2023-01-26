@@ -6,6 +6,7 @@ build:
     python: "miniconda3-4.7"
   jobs:
     pre_create_environment:
+    - conda init bash
     - conda deactivate
     post_create_environment:
     - conda activate rostok
