@@ -5,7 +5,7 @@ channels:
   - projectchrono
   - defaults
 dependencies:
-  - python==3.9.15
+  - python==3.9.12
   - numpy
   - yapf
   - mypy
