@@ -1,3 +1,4 @@
+version: 1
 
 build:
   os: ubuntu-20.04
