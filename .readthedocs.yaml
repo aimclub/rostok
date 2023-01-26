@@ -1,0 +1,19 @@
+
+build:
+  os: ubuntu-20.04
+  tools:
+    python: "miniconda3-4.7"
+  jobs:
+    post_create_environment:
+    - conda activate rostok
+
+conda:
+  environment: environment.yml
+
+sphinx:
+  configuration: docs/conf.py
+
+python:
+  install:
+  - method: pip
+    path: .
