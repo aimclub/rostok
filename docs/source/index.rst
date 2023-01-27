@@ -22,6 +22,7 @@ Content
 
    project_description
    introduction/install
+   introduction/quickstart
    introduction/tutorials
    advanced_usage/algorithm
    modules/index
