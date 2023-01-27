@@ -11,5 +11,5 @@ Criterion calculation
 Flag stop simulation
 ====================
 
-.. automodule:: rostok.criterion.flags_simulations
+.. automodule:: rostok.criterion.flags_simualtions
     :members:

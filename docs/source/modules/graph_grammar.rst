@@ -11,7 +11,7 @@ Node
 Nodes division
 ==============
 
-.. automodule:: rostok.graph_grammar.node_division
+.. automodule:: rostok.graph_grammar.nodes_division
     :members:
 
 Node Vocabulary
@@ -36,10 +36,4 @@ Random graph
 ============
 
 .. automodule:: rostok.graph_grammar.make_random_graph
-    :members:
-
-Utils
-=====
-
-.. automodule:: rostok.graph_grammar.graph_utils
     :members:

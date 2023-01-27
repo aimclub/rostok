@@ -5,7 +5,7 @@ Modules
 That is about modules into rostok
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    graph_grammar
    block_builder

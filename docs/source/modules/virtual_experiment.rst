@@ -5,17 +5,17 @@ Virtual experiment
 Robot
 =====
 
-.. automodule:: rostok.utils.robot
+.. automodule:: rostok.virtual_experiment.robot
     :members:
 
 Simulation step
 ===============
 
-.. automodule:: rostok.utils.simulation_step
+.. automodule:: rostok.virtual_experiment.simulation_step
     :members:
 
 Auxilarity sensors
 ==================
 
-.. automodule:: rostok.utils.auxilarity_sensors
+.. automodule:: rostok.virtual_experiment.auxilarity_sensors
     :members:

@@ -9,8 +9,8 @@ from rostok.graph_grammar.node_vocabulary import NodeVocabulary
 
 
 class RuleVocabulary():
-    """The class that contains the rules for building the :py:class:`GraphGrammar` object.
-    All rules for mechanism generation should be created with an instance of :py:class:`RuleVocabulary`.
+    """The class that contains the rules for building the :py:class:`rostok.graph_grammar.node.GraphGrammar` object.
+    All rules for mechanism generation should be created with an instance of :py:class:`rostok.graph_grammar.rule_vocabulary.RuleVocabulary`.
     This class provides utility methods for the rules.
 
     Attributes:
@@ -170,7 +170,7 @@ class RuleVocabulary():
     def get_list_of_applicable_rules(self, grammar: GraphGrammar):
         """Return the total list of applicable rules for the current graph.
         Args:
-            grammar (GraphGrammar): a :py:class:`GraphGrammar` object analyze.
+            grammar (GraphGrammar): a :py:class:`rostok.graph_grammar.node.GraphGrammar` object analyze.
         Returns:
             list of rule names for rules that can be applied for the graph.
         """
@@ -191,7 +191,7 @@ class RuleVocabulary():
         """Return the list of non-terminal applicable rules for the current graph.
 
         Args:
-            grammar (GraphGrammar): a :py:class:`GraphGrammar` object analyze.
+            grammar (GraphGrammar): a :py:class:`rostok.graph_grammar.node.GraphGrammar` object analyze.
 
         Returns:
             list of rule names for non-terminal rules that can be applied for the graph.
@@ -213,7 +213,7 @@ class RuleVocabulary():
         """Return the list of terminal applicable rules for the current graph.
 
         Args:
-            grammar (GraphGrammar): a :py:class:`GraphGrammar` object analyze.
+            grammar (GraphGrammar): a :py:class:`rostok.graph_grammar.node.GraphGrammar` object analyze.
 
         Returns:
             list of rule names for terminal rules that can be applied for the graph.
@@ -253,7 +253,7 @@ class RuleVocabulary():
         For each non-terminal node the function apply a random rule that make it terminal.
 
         Args:
-            grammar (GraphGrammar): :py:class:`GraphGrammar` object that should become terminal.
+            grammar (GraphGrammar): :py:class:`rostok.graph_grammar.node.GraphGrammar` object that should become terminal.
         """
         rule_list = []
         for node in grammar.nodes.items():
