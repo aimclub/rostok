@@ -3,12 +3,14 @@ channels:
   - intel
   - conda-forge
 dependencies:
-  - python==3.9.15
+  - python=3.9.12
+  - projectchrono::pychrono=7.*
+  - irrlicht=1.8.5
   - numpy
   - yapf
   - mypy
   - pylint
-  - tk==8.6.12
+  - tk=8.6.10
   - pip
   - pip:
     - networkx==2.8.6
@@ -16,5 +18,3 @@ dependencies:
     - scipy
     - mcts==1.0.4
     - pytest
-  - projectchrono::pychrono=7
-  - irrlicht=1.8.5
