@@ -5,5 +5,6 @@ from rostok.launch.open_chain_gen import create_generator_by_config
 model = create_generator_by_config("rostok/launch/config.ini")
 model.set_grasp_object(Sphere())
 reporter = model.run_generation()
+reporter.get_best_info()
 model.save_result()
 model.visualize_result()
