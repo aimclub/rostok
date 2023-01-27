@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / '../../'))
+sys.path.insert(0, str(Path(__file__).parent / '../../rostok'))
 
 #The master toctree document
 master_doc = 'index'
@@ -29,8 +30,12 @@ release = '0.0.1'
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon','sphinx.ext.githubpages']
 
+
+napoleon_google_docstring = False
+napoleon_use_param = False
+napoleon_use_ivar = True
+
 templates_path = ['_templates']
-exclude_patterns = []
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

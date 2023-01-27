@@ -1,0 +1,2 @@
+.. automodule::rostok
+    :members:
