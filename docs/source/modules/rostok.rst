@@ -1,2 +1,6 @@
+======
+Rostok
+======
+
 .. automodule::rostok
     :members:
