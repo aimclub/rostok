@@ -13,3 +13,4 @@ That is about modules into rostok
    simulation/simulation_step
    simulation/flag_simulations
    trajectory_simulation
+   rostok
