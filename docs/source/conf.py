@@ -37,5 +37,4 @@ exclude_patterns = []
 
 html_theme = 'alabaster'
 html_static_path = ['_static']
-html_extra_path = ['introduction']
 html_logo = '../images/logo_rostok.jpg'
