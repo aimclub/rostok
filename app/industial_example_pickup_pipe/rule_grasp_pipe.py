@@ -285,7 +285,7 @@ def create_rules_to_pickup_pipe(path_to_pipe_obj, path_to_pipe_xml):
 
 def create_rules_to_pickup_pipe_ver_2(path_to_pipe_obj, path_to_pipe_xml):
     with_angle = False
-    COEFFICIENTS = np.array([2, 3, 5])
+    COEFFICIENTS = np.array([2, 1.5, 2.5])
 
     obj_db = intexp.entity.TesteeObject()
     obj_db.load_object_mesh(path_to_pipe_obj)
@@ -304,7 +304,7 @@ def create_rules_to_pickup_pipe_ver_2(path_to_pipe_obj, path_to_pipe_xml):
                         height_y=short_dimension[1] * 0.5)
 
     link = list(
-        map(lambda x: BlockWrapper(LinkChronoBody, length_y=x, width_x= x/7.5, depth_z =x/2), COEFFICIENTS * short_dimension[1]))
+        map(lambda x: BlockWrapper(LinkChronoBody, length_y=x, width_x= short_dimension[1]/7.5, depth_z = short_dimension[1]), COEFFICIENTS * short_dimension[1]))
 
     u1 = BlockWrapper(MountChronoBody, width_x=short_dimension[1]/1.5, depth_z=short_dimension[1]/1.5)
     u2 = BlockWrapper(MountChronoBody, width_x=short_dimension[1]/2, depth_z=short_dimension[1]/1.5)
@@ -321,21 +321,21 @@ def create_rules_to_pickup_pipe_ver_2(path_to_pipe_obj, path_to_pipe_xml):
 
     MOVE_TO_RIGHT_SIDE = FrameTransform([short_dimension[1], 0, 0], [0, 0, 1, 0])
 
-    MOVE_TO_RIGHT_SIDE_PLUS = FrameTransform([short_dimension[1], 0, +0.3], [0, 0, 1, 0])
+    MOVE_TO_RIGHT_SIDE_PLUS = FrameTransform([short_dimension[1], 0, +0.4], [0, 0, 1, 0])
 
-    MOVE_TO_RIGHT_SIDE_PLUS_ANGLE = FrameTransform([short_dimension[1], 0, +0.3], rotation(150))
+    MOVE_TO_RIGHT_SIDE_PLUS_ANGLE = FrameTransform([short_dimension[1], 0, +0.4], rotation(150))
 
-    MOVE_TO_RIGHT_SIDE_MINUS = FrameTransform([short_dimension[1], 0, -0.3], [0, 0, 1, 0])
+    MOVE_TO_RIGHT_SIDE_MINUS = FrameTransform([short_dimension[1], 0, -0.4], [0, 0, 1, 0])
 
-    MOVE_TO_RIGHT_SIDE_MINUS_ANGLE = FrameTransform([short_dimension[1], 0, -0.3], rotation(210))
+    MOVE_TO_RIGHT_SIDE_MINUS_ANGLE = FrameTransform([short_dimension[1], 0, -0.4], rotation(210))
 
     MOVE_TO_LEFT_SIDE = FrameTransform([-short_dimension[1], 0, 0], [1, 0, 0, 0])
 
-    MOVE_TO_LEFT_SIDE_PLUS = FrameTransform([-short_dimension[1], 0, +0.3], [1, 0, 0, 0])
-    MOVE_TO_LEFT_SIDE_PLUS_ANGLE = FrameTransform([-short_dimension[1], 0, +0.3], rotation(30))
+    MOVE_TO_LEFT_SIDE_PLUS = FrameTransform([-short_dimension[1], 0, +0.4], [1, 0, 0, 0])
+    MOVE_TO_LEFT_SIDE_PLUS_ANGLE = FrameTransform([-short_dimension[1], 0, +0.4], rotation(30))
 
-    MOVE_TO_LEFT_SIDE_MINUS = FrameTransform([-short_dimension[1], 0, -0.3], [1, 0, 0, 0])
-    MOVE_TO_LEFT_SIDE_MINUS_ANGLE = FrameTransform([-short_dimension[1], 0, -0.3], rotation(-30))
+    MOVE_TO_LEFT_SIDE_MINUS = FrameTransform([-short_dimension[1], 0, -0.4], [1, 0, 0, 0])
+    MOVE_TO_LEFT_SIDE_MINUS_ANGLE = FrameTransform([-short_dimension[1], 0, -0.4], rotation(-30))
 
     transform_to_right_mechanims = BlockWrapper(ChronoTransform, MOVE_TO_RIGHT_GRASP)
 
@@ -467,7 +467,7 @@ def create_rules_to_pickup_pipe_ver_2(path_to_pipe_obj, path_to_pipe_xml):
 
     # Define rules of initilize topology grasp mechanisms
     rule_vocab.create_rule("InitilizeGrab_1", ["ROOT"], [
-        "F",
+        "F1",
         "GL",
         "GR",
     ], 0, 0, [(0, 1), (0, 2)])

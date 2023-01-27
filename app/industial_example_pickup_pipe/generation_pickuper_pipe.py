@@ -19,7 +19,7 @@ PATH_TO_PIPE_XML = './examples/models/custom/pipe.xml'
 
 # # %% Create extension rule vocabulary
 
-rule_vocabul, node_features = rule_grasp_pipe.create_rules_to_pickup_pipe(
+rule_vocabul, node_features = rule_grasp_pipe.create_rules_to_pickup_pipe_ver_2(
     PATH_TO_PIPE_OBJ, PATH_TO_PIPE_XML)
 
 # # %% Create condig optimizing control
