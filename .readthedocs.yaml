@@ -6,7 +6,7 @@ build:
     python: "mambaforge-4.10"
 
 conda:
-  environment: environment.yml
+  environment: docs_environment.yml
 
 sphinx:
   configuration: docs/source/conf.py
