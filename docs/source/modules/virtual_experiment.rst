@@ -2,12 +2,6 @@
 Virtual experiment
 ==================
 
-Robot
-=====
-
-.. automodule:: rostok.virtual_experiment.robot
-    :members:
-
 Simulation step
 ===============
 
