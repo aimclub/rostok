@@ -3,5 +3,4 @@
 /examples/__pycache__
 *.pyc
 /html/
-/docs/source/
 /rostok.egg-info/

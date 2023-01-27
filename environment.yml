@@ -1,18 +1,17 @@
 name: rostok
 channels:
-  - https://conda.anaconda.org/intel
-  - https://conda.anaconda.org/conda-forge
-  - projectchrono
-  - defaults
+  - intel
+  - conda-forge
 dependencies:
   - python=3.9.12
-  - pychrono=7.*
+  - projectchrono::pychrono=7.*
   - irrlicht=1.8.5
   - numpy
   - yapf
   - mypy
   - pylint
   - tk=8.6.10
+  - pip
   - pip:
     - networkx==2.8.6
     - matplotlib==3.6.0

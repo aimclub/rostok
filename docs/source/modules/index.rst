@@ -5,11 +5,14 @@ Modules
 That is about modules into rostok
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
-   graph_grammar/node_rule_vocabulary
-   graph_grammar/graph_grammar
-   graph_grammar/graph_builder
-   simulation/simulation_step
-   simulation/flag_simulations
-   trajectory_simulation
+   graph_grammar
+   block_builder
+   graph_generators
+   criterion
+   trajectory_optimizer
+   virtual_experiment
+   utils
+
+
