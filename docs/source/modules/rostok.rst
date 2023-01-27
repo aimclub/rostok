@@ -1,6 +1,6 @@
-======
-Rostok
-======
+=============
+Block builder
+=============
 
-.. automodule::rostok
+.. automodule::rostok.block_builder
     :members:
