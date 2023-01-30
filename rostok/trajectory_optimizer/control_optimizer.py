@@ -95,21 +95,12 @@ class ControlOptimizer():
             sim.change_config_system(self.cfg.sim_config)
             sim_output = sim.simulate_system(self.cfg.time_step, is_vis)
             rew = self.cfg.criterion_callback(sim_output, sim.grab_robot)
-
+            print(f"Control optimization, reward {rew}")
             return rew
 
         return reward
 
     def start_optimisation(self, generated_graph: GraphGrammar) -> tuple[float, float]:
-
-        reward_fun = self.create_reward_function(generated_graph)
-        multi_bound = create_multidimensional_bounds(generated_graph, self.cfg.bound)
-        if len(multi_bound) == 0:
-            return (0, 0)
-        result = direct(reward_fun, multi_bound, maxiter=self.cfg.iters)
-        return (result.fun, result.x)
-
-    def start_optimisation_pickup(self, generated_graph: GraphGrammar) -> tuple[float, float]:
 
         reward_fun = self.create_reward_function(generated_graph)
         multi_bound = create_multidimensional_bounds(generated_graph, self.cfg.bound)
