@@ -324,8 +324,14 @@ class LinkChronoBody(ChronoBody, RobotBody):
         Defaults to True.
     """
 
-    def __init__(self, builder: chrono.ChSystem, width_x: float = 0.1, length_y: float = 2, depth_z: float = 0.3,
-                 random_color: bool = True, mass: float = 1, material: Material = DefaultChronoMaterial(),
+    def __init__(self,
+                 builder: chrono.ChSystem,
+                 width_x: float = 0.1,
+                 length_y: float = 2,
+                 depth_z: float = 0.3,
+                 random_color: bool = True,
+                 mass: float = 1,
+                 material: Material = DefaultChronoMaterial(),
                  is_collide: bool = True):
 
         # Create body
@@ -340,7 +346,8 @@ class LinkChronoBody(ChronoBody, RobotBody):
 
         if (length_minus_gap < 0):
             raise Exception(
-                f"Soo short link length: {length_y} Need: length > width / 2 + {gap_between_bodies}")
+                f"Soo short link length: {length_y} Need: length > width / 2 + {gap_between_bodies}"
+            )
 
         # Add box visual
         box_asset = chrono.ChBoxShape()
@@ -352,8 +359,10 @@ class LinkChronoBody(ChronoBody, RobotBody):
 
         # Add cylinder visual
         cylinder = chrono.ChCylinder()
-        cylinder.p2 = chrono.ChVectorD(0, -length_y / 2 + gap_between_bodies + cylinder_r, depth_z / 2)
-        cylinder.p1 = chrono.ChVectorD(0, -length_y / 2 + gap_between_bodies + cylinder_r, -depth_z / 2)
+        cylinder.p2 = chrono.ChVectorD(0, -length_y / 2 + gap_between_bodies + cylinder_r,
+                                       depth_z / 2)
+        cylinder.p1 = chrono.ChVectorD(0, -length_y / 2 + gap_between_bodies + cylinder_r,
+                                       -depth_z / 2)
         cylinder.rad = cylinder_r
         cylinder_asset = chrono.ChCylinderShape(cylinder)
         body.AddVisualShape(cylinder_asset)
@@ -400,8 +409,15 @@ class FlatChronoBody(ChronoBody, RobotBody):
         Defaults to True.
     """
 
-    def __init__(self, builder, width_x=0.1, height_y=2, depth_z=0.3, random_color=True, mass=1,
-                 material=DefaultChronoMaterial(), is_collide: bool = True):
+    def __init__(self,
+                 builder,
+                 width_x=0.1,
+                 height_y=2,
+                 depth_z=0.3,
+                 random_color=True,
+                 mass=1,
+                 material=DefaultChronoMaterial(),
+                 is_collide: bool = True):
         # Create body
 
         body = chrono.ChBody()
@@ -447,8 +463,15 @@ class MountChronoBody(ChronoBody, RobotBody):
         Defaults to True.
     """
 
-    def __init__(self, builder, width_x=0.1, length_y=0.1, depth_z=0.3, random_color=True, mass=1,
-                 material=DefaultChronoMaterial(), is_collide: bool = True):
+    def __init__(self,
+                 builder,
+                 width_x=0.1,
+                 length_y=0.1,
+                 depth_z=0.3,
+                 random_color=True,
+                 mass=1,
+                 material=DefaultChronoMaterial(),
+                 is_collide: bool = True):
         # Create body
 
         body = chrono.ChBody()
@@ -505,8 +528,8 @@ class ChronoBodyEnv(ChronoBody):
         # Create body
         material = struct_material2object_material(material)
         if isinstance(shape, envbody_shapes.Box):
-            body = chrono.ChBodyEasyBox(shape.width_x, shape.length_y, shape.height_z, MOCK_DENSITY, True,
-                                        True, material)
+            body = chrono.ChBodyEasyBox(shape.width_x, shape.length_y, shape.height_z, MOCK_DENSITY,
+                                        True, True, material)
         elif isinstance(shape, envbody_shapes.Cylinder):
             body = chrono.ChBodyEasyCylinder(shape.radius, shape.height_y, MOCK_DENSITY, True, True,
                                              material)
@@ -657,7 +680,7 @@ def find_body_from_two_previous_blocks(sequence: list[Block], it: int) -> Option
 
 def find_body_from_two_after_blocks(sequence: list[Block], it: int) -> Optional[Block]:
     # b->t->j->t->b Longest sequence
-    for block in sequence[it:it + 2]:
+    for block in sequence[it + 1:it + 3]:
         if block.block_type == BlockType.BODY:
             return block
     return None

@@ -185,7 +185,7 @@ class RuleVocabulary():
                 if label_to_replace == node[1]['Node'].label:
                     list_of_applicable_rules.append(rule_name)
 
-        return list_of_applicable_rules
+        return list(set(list_of_applicable_rules))
 
     def get_list_of_applicable_nonterminal_rules(self, grammar: GraphGrammar):
         """Return the list of non-terminal applicable rules for the current graph.
@@ -207,7 +207,7 @@ class RuleVocabulary():
                 if label_to_replace == node[1]['Node'].label:
                     list_of_applicable_rules.append(rule_name)
 
-        return list_of_applicable_rules
+        return list(set(list_of_applicable_rules))
 
     def get_list_of_applicable_terminal_rules(self, grammar: GraphGrammar):
         """Return the list of terminal applicable rules for the current graph.
@@ -229,7 +229,7 @@ class RuleVocabulary():
                 if label_to_replace == node[1]['Node'].label:
                     list_of_applicable_rules.append(rule_name)
 
-        return list_of_applicable_rules
+        return list(set(list_of_applicable_rules))
 
     def terminal_rules_for_node(self, node_name: str):
         """Return a list of the terminal rules for the node

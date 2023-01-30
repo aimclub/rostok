@@ -204,7 +204,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
     def getPossibleActions(self):
         """Getter possible actions for current state
         """
-        if self.counter_action <= self.max_actions_not_terminal:
+        if self.counter_action < self.max_actions_not_terminal:
             possible_rules_name = self.actions.get_list_of_applicable_rules(self.graph)
         else:
             possible_rules_name = self.actions.get_list_of_applicable_terminal_rules(self.graph)

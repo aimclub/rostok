@@ -88,6 +88,8 @@ class MCTSSaveable(Saveable):
         self.main_state = RobotState(rules=rule_vocabulary)
         self.main_simulated_state = OptimizedState(self.main_state, 0, None)
         self.best_simulated_state = OptimizedState(self.main_state, 0, None)
+        self.non_terminal_rules_limit: int = 0
+        self.search_parameter = 0
 
     def get_best_info(self):
         """Get graph, reward and control for the best state"""
@@ -134,6 +136,9 @@ class MCTSSaveable(Saveable):
             print('rules:', *self.best_simulated_state.state.rule_list)
             print('control:', *self.best_simulated_state.control)
             print('reward:', self.best_simulated_state.reward)
+            print()
+            print('max number of non-terminal rules:', self.non_terminal_rules_limit, 
+            'search parameter:', self.search_parameter)
             sys.stdout = original_stdout
 
         path_to_best_graph = Path(self.path, "best_graph.jpg")
