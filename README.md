@@ -30,7 +30,7 @@ Rostok - это  open source Python framework для генеративного 
 ![project_general](/docs/images/general_scheme.jpg)
 ![project_algorithm](/docs/images/Algorithm_shceme.jpg)
 
-Более подробное описание [алгоритмов и методов](https://aimclub.github.io/rostok/advanced_usage/algorithm.html).
+Более подробное описание [алгоритмов и методов](https://rostok.readthedocs.io/en/latest/advanced_usage/algorithm.html).
 
 ## Необходимые инструменты
 
@@ -51,9 +51,9 @@ Rostok - это  open source Python framework для генеративного 
 
 После установки пакета может появиться ошибка «Исходная ошибка: Ошибка загрузки DLL при импорте _multiarray_umath: указанный модуль не найден», попробуйте переустановить numpy в среде rostok
 
-## Документация
+## Документация [![Documentation Status](https://readthedocs.org/projects/rostok/badge/?version=latest)](https://rostok.readthedocs.io/en/latest/?badge=latest)
 
-Описание проекта и туториалы доступны [на сайте проекта](https://aimclub.github.io/rostok/).
+Описание проекта и туториалы доступны [на сайте проекта](https://rostok.readthedocs.io/en/latest/) .
 
 ## Публикации
 
