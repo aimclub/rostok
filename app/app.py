@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import time
 import matplotlib.pyplot as plt
 import mcts
 # imports from standard libs
@@ -52,33 +52,39 @@ control_optimizer = ControlOptimizer(cfg)
 # %% Init mcts parameters
 
 # Hyperparameters mctss
-iteration_limit = 2
+iteration_limit = 20
 
 # Initialize MCTS
 searcher = mcts.mcts(iterationLimit=iteration_limit)
 finish = False
 
 G = GraphGrammar()
-max_numbers_rules = 2
+max_numbers_rules = 3
 # Create graph environments for algorithm (not gym)
 graph_env = prepare_mcts_state_and_helper(G, rule_vocabul, control_optimizer, max_numbers_rules, Path("./results"))
 mcts_helper = graph_env.helper
+mcts_helper.report.non_terminal_rules_limit = max_numbers_rules
+mcts_helper.report.search_parameter = iteration_limit
 n_steps = 0
 #%% Run first algorithm
+start = time.time()
 while not finish:
     finish, graph_env = make_mcts_step(searcher, graph_env, n_steps)
     n_steps += 1
     print(f"number iteration: {n_steps}, counter actions: {graph_env.counter_action} " +
           f"reward: {mcts_helper.report.get_best_info()[1]}")
-
+ex = time.time() - start
+print(f"time :{ex}")
 report = mcts_helper.report
 report.draw_best_graph()
 best_graph, reward, best_control = mcts_helper.report.get_best_info()
 func_reward = control_optimizer.create_reward_function(best_graph)
 res = -func_reward(best_control)
-print(res)
-report.plot_means()
+print("Best reward obtained in the MCTS search:", res)
 report.make_time_dependent_path()
 report.save()
 report.save_visuals()
 report.save_lists()
+print(len(report.seen_graphs.graph_list))
+print(len(report.seen_states.state_list))
+report.plot_means()
