@@ -1,4 +1,5 @@
 from copy import deepcopy
+from time import sleep
 
 from matplotlib import pyplot as plt
 import networkx as nx
