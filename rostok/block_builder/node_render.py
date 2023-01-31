@@ -218,7 +218,7 @@ class ChronoBody(BlockBody, ABC):
         state."""
         self.transformed_frame_out.SetCoord(self._ref_frame_out.GetCoord())
 
-    def apply_transform(self, in_block: BlockTransform):
+    def apply_transform(self, transform: chrono.ChCoordsysD):
         """Applied input transformation to the output frame of the body.
 
         Args:
@@ -226,7 +226,7 @@ class ChronoBody(BlockBody, ABC):
         """
         self.reset_transformed_frame_out()
         frame_coord = self.transformed_frame_out.GetCoord()
-        frame_coord = frame_coord * in_block.transform
+        frame_coord = frame_coord * transform
         self.transformed_frame_out.SetCoord(frame_coord)
 
     @property
@@ -690,7 +690,6 @@ def connect_blocks(sequence: list[Block]):
     # Make body and apply transform
     previous_body_block = None
     need_fix_joint = False
-
     for it, block in enumerate(sequence):
         if block.block_type is BlockType.BODY:
             # First body
@@ -709,7 +708,22 @@ def connect_blocks(sequence: list[Block]):
             need_fix_joint = False
 
         elif block.block_type is BlockType.TRANSFORM:
-            sequence[it - 1].apply_transform(block)
+            i=0
+            transform = True
+            while transform:
+                i+=1
+                if sequence[it - i] is BlockType.BODY:
+                    transform = False
+                    current_transform = chrono.ChCoordsysD()
+                    for i in range (it-i+1, it+1):
+                        current_transform * block.transform
+
+                    sequence[it - i].apply_transform(current_transform)
+
+                elif sequence[it - i] is BlockType.BRIDGE:
+                    raise Exception("Transform after joint!!!")
+
+                else: continue
 
     for it, block in enumerate(sequence):  # NOQA
         if block.block_type == BlockType.BRIDGE:
