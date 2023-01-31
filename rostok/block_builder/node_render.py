@@ -678,11 +678,27 @@ def find_body_from_two_previous_blocks(sequence: list[Block], it: int) -> Option
     return None
 
 
+def find_body_in_previous_blocks(sequence: list[Block], it: int) -> Optional[Block]:
+    for i in reversed(range(it)):
+    #for i in range(it - 1, -1, -1):
+        if sequence[i].block_type == BlockType.BODY:
+            return sequence[i]
+
+    return None
+
+
 def find_body_from_two_after_blocks(sequence: list[Block], it: int) -> Optional[Block]:
     # b->t->j->t->b Longest sequence
     for block in sequence[it + 1:it + 3]:
         if block.block_type == BlockType.BODY:
             return block
+    return None
+
+
+def find_body_from_one_after_blocks(sequence: list[Block], it: int) -> Optional[Block]:
+    if sequence[it + 1].block_type == BlockType.BODY:
+        return sequence[it + 1]
+
     return None
 
 
@@ -708,28 +724,29 @@ def connect_blocks(sequence: list[Block]):
             need_fix_joint = False
 
         elif block.block_type is BlockType.TRANSFORM:
-            i=0
+            i = 0
             transform = True
             while transform:
-                i+=1
-                if sequence[it - i] is BlockType.BODY:
+                i += 1
+                if sequence[it - i].block_type is BlockType.BODY:
                     transform = False
                     current_transform = chrono.ChCoordsysD()
-                    for i in range (it-i+1, it+1):
-                        current_transform * block.transform
+                    for i in range(it - i + 1, it + 1):
+                        current_transform = current_transform * sequence[i].transform
 
                     sequence[it - i].apply_transform(current_transform)
 
-                elif sequence[it - i] is BlockType.BRIDGE:
+                elif sequence[it - i].block_type is BlockType.BRIDGE:
                     raise Exception("Transform after joint!!!")
 
-                else: continue
+                else:
+                    continue
 
     for it, block in enumerate(sequence):  # NOQA
         if block.block_type == BlockType.BRIDGE:
 
-            block_in = find_body_from_two_previous_blocks(sequence, it)
-            block_out = find_body_from_two_after_blocks(sequence, it)
+            block_in = find_body_in_previous_blocks(sequence, it)
+            block_out = find_body_from_one_after_blocks(sequence, it)
 
             if block_in is None:
                 raise Exception('Bridge block require body block before')
