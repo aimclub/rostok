@@ -43,3 +43,9 @@ dfs_patrion_node = [[get_node(node_id) for node_id in branch] for branch in dfs_
 
 # Iterate over dfs_patrion_node and form massive from suitable branch
 branchs_with_special_t = list(filter(branch_filter, dfs_patrion_node))
+
+
+from rostok.graph_grammar.graph_utils import plot_graph, plot_graph_ids
+print(graph_grab_torque_robot.get_node_by_id(29))
+print(graph_grab_torque_robot.get_root_based_paths())
+plot_graph_ids(graph_grab_torque_robot)

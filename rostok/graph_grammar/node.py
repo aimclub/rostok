@@ -295,7 +295,8 @@ class GraphGrammar(nx.DiGraph):
             list[list[WrapperTuple]]:
         """
 
-        paths = self.graph_partition_dfs()
+        #paths = self.graph_partition_dfs()
+        paths = self.get_root_based_paths()
         wrapper_array = []
 
         for path in paths:
@@ -310,6 +311,30 @@ class GraphGrammar(nx.DiGraph):
             wrapper_array.append(wrapper.copy())
 
         return wrapper_array
+
+    def get_root_based_paths(self):
+        root_id = self.get_root_id()
+        paths = [[root_id]]
+        final_paths = []
+        i = 0
+        while len(paths)>0 and i<100:
+            i+=1
+            new_paths = []
+            for path in paths:
+                end_id_path = path[-1]
+                # neighbors in digraph returns list of children nodes
+                children = list(self.neighbors(end_id_path))
+                if len(children) == 0:
+                    # no children <==> end of a path 
+                    final_paths.append(path)
+                    continue
+                else:
+                    for child in children:
+                        new_paths.append(path+[child])
+
+            paths = new_paths
+
+        return final_paths
 
     def get_node_by_id(self, node_id: int) -> Node:
         return self.nodes[node_id]["Node"]
