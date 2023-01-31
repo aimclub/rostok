@@ -13,11 +13,11 @@ def get_object_to_grasp():
     matich = DefaultChronoMaterial()
     matich.Friction = 0.65
     matich.DampingF = 0.65
-    shape_box = Box(0.1, 0.1, 0.1)
+    shape_box = Box(0.2, 0.2, 0.5)
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=shape_box,
                        material=matich,
-                       pos=FrameTransform([0, 1.5, 0], [0, -0.048, 0.706, 0.706]))
+                       pos=FrameTransform([0, 0.5, 0], [0, -0.048, 0.706, 0.706]))
 
     return obj
 

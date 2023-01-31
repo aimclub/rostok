@@ -27,7 +27,7 @@ There are four main blocks:
 ![project_general](/docs/images/general_scheme.jpg)
 ![project_algorithm](/docs/images/Algorithm_shceme.jpg)
 
-More detailed description of the [algorithms and methods](https://aimclub.github.io/rostok/advanced_usage/algorithm.html).
+More detailed description of the [algorithms and methods](https://rostok.readthedocs.io/en/latest/advanced_usage/algorithm.html).
 
 ## Prerequisites
 
@@ -48,9 +48,9 @@ At some PC's one can see a problem with the tcl module `version conflict for pac
 
 After the installation of the package one can get an error `Original error was: DLL load failed while importing _multiarray_umath: The specified module could not be found`, try to reinstall numpy in the rostok environment
 
-## Documentation
+## Documentation [![Documentation Status](https://readthedocs.org/projects/rostok/badge/?version=latest)](https://rostok.readthedocs.io/en/latest/?badge=latest)
 
-The description of the project and tutorials are available [at project website](https://aimclub.github.io/rostok/).
+The description of the project and tutorials are available [at project website](https://rostok.readthedocs.io/en/latest/?badge=latest).
 
 ## Publications
 
