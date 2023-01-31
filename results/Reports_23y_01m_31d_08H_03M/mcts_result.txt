@@ -1,0 +1,9 @@
+main_result:
+rules: InitilizeGrab_1 GR_InitMechanism_3_R FingerUpper1 FingerUpper0 TerminalStub_GL_InitMechanism_ FingerUpper2 FingerUpper0 FingerUpper1 FingerUpper0 FingerUpper2 FingerUpper0 FingerUpper0 FingerUpper2 TerminalTransformLeft1 TerminalEndLimb2 TerminalEndLimb1 TerminalEndLimb1 TerminalTransformRightMinus1 TerminalTransformRightPlus1
+control: 900.0 900.0 900.0 900.0 900.0 900.0 966.6666666666666 966.6666666666666 900.0 900.0
+reward: 4.80889149486734
+
+best_result:
+rules: InitilizeGrab_1 GR_InitMechanism_3_R FingerUpper1 FingerUpper0 TerminalEndLimb1 GL_InitMechanism_3_R FingerUpper1 FingerUpper0 FingerUpper0 FingerUpper2 TerminalEndLimb2 FingerUpper1 TerminalEndLimb2 TerminalEndLimb2 TerminalEndLimb2 FingerUpper1 FingerUpper1 TerminalTransformRightMinus1 TerminalTransformRightPlus1 TerminalEndLimb1 TerminalTransformRightMinus1 TerminalTransformRightPlus1 TerminalTransformLeft1 TerminalTransformLeft1
+control: 900.0 900.0 900.0 966.6666666666666 966.6666666666666 900.0 900.0 900.0 900.0
+reward: 9.656429659696945

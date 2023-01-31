@@ -27,16 +27,16 @@ rule_vocabul, node_features = rule_grasp_pipe.create_rules_to_pickup_pipe_ver_2(
 GAIT = 2.5
 WEIGHT = [3, 1, 1, 2]
 
-max_time = 2
+max_time = 1
 cfg = ConfigRewardFunction()
 cfg.bound = (800, 1000)
-cfg.iters = 3
+cfg.iters = 2
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
 cfg.time_step = 0.001
 cfg.time_sim = max_time
 cfg.flags = [FlagMaxTime(max_time),
-            FlagNotContact(max_time / 4 - 0.2),
-            FlagSlipout(max_time / 4 + 0.2, 0.2),
+            FlagNotContact(max_time / 2 - 0.2),
+            FlagSlipout(max_time / 2 + 0.2, 0.2),
             FlagFlyingApart(20)]
 
 criterion_callback = create_grab_criterion_fun(node_features, GAIT, WEIGHT)
@@ -47,19 +47,19 @@ cfg.get_rgab_object_callback = ppu.create_builder_grab_object(PATH_TO_PIPE_OBJ, 
 cfg.params_to_timesiries_callback = traj_generator_fun
 
 control_optimizer = ControlOptimizer(cfg)
-control_optimizer.is_visualize = True
+control_optimizer.is_visualize = False
 
 # # %% Init mcts parameters
 if __name__ == "__main__":
     # Hyperparameters mctss
-    iteration_limit = 3
+    iteration_limit = 4
 
     # Initialize MCTScl
     searcher = mcts.mcts(iterationLimit=iteration_limit)
     finish = False
 
     G = GraphGrammar()
-    max_numbers_rules = 5 * 3 + 1
+    max_numbers_rules = 11
 
     # Create graph environments for algorithm (not gym)
     graph_env = prepare_mcts_state_and_helper(G, rule_vocabul, control_optimizer, max_numbers_rules,
