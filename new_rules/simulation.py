@@ -59,8 +59,7 @@ control_optimizer = ControlOptimizer(cfg)
 G = GraphGrammar()
 # ,"TerminalEndLimb1","TerminalEndLimb1", "TerminalEndLimb1", "TerminalFlat1", "TerminalTransformRight1","TerminalRoundTransform","TerminalRoundTransform"
 #rules = ["InitMechanism", "Add_First_Mount", "FirstLink","FirstLink", "FingerUpper"]
-rules = ["InitMechanism", "Add_First_Mount", "Add_Mount", "Add_Mount", "Add_Mount", "Add_Mount","FingerUpper","FingerUpper","FingerUpper",
-"FingerUpper","FingerUpper","FingerUpper","FingerUpper","FingerUpper","FingerUpper","FingerUpper","FingerUpper","FingerUpper"]
+rules = ["InitMechanism", "Add_First_Mount", "Add_Mount", "Add_Mount", "Add_Mount", "Add_Mount"]
 for rule in rules:
     G.apply_rule(rule_vocabul.get_rule(rule))
     #plot_graph(G)

@@ -22,11 +22,11 @@ def create_rules():
 
     u1 = BlockWrapper(MountChronoBody, width_x=0.1, length_y=0.05)
     u2 = BlockWrapper(MountChronoBody, width_x=0.2, length_y=0.1)
-    MOVE_TO_RIGHT_SIDE = map(lambda x: FrameTransform([x*10, 0, 0], [1,0,0,0]), width)
+    MOVE_TO_RIGHT_SIDE = map(lambda x: FrameTransform([x*10, 0, 0], [0,0,1,0]), width)
     def rotation(alpha):
         quat_Y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))
         return [quat_Y_ang_alpha.e0, quat_Y_ang_alpha.e1, quat_Y_ang_alpha.e2,quat_Y_ang_alpha.e3]
-    MOVE = FrameTransform([-1/2, 0, 1/2*3**0.5], rotation(-60))
+    MOVE = FrameTransform([1/2, 0, 1/2*3**0.5], rotation(60))
     #MOVE = FrameTransform([1, 0, 0], rotation(45))
     transform_to_right_mount = list(map(lambda x: BlockWrapper(ChronoTransform, x),
                     MOVE_TO_RIGHT_SIDE))
