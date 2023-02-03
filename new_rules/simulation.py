@@ -59,15 +59,21 @@ control_optimizer = ControlOptimizer(cfg)
 G = GraphGrammar()
 # ,"TerminalEndLimb1","TerminalEndLimb1", "TerminalEndLimb1", "TerminalFlat1", "TerminalTransformRight1","TerminalRoundTransform","TerminalRoundTransform"
 #rules = ["InitMechanism", "Add_First_Mount", "FirstLink","FirstLink", "FingerUpper"]
-rules = ["InitMechanism", "Add_First_Mount", "Add_Mount", "Add_Mount", "Add_Mount", "Add_Mount"]
+#rules = ["InitMechanism", "FingerUpper", "FingerSplitter"]
+rules = ["InitMechanism", "DoubleFinger"]
+
+# rules = ["InitMechanism", "Add_First_Mount", "Add_Mount", "Add_Mount","Add_Mount","Add_Mount","Add_Mount","Add_Mount", "Add_Mount","Add_Mount","Add_Mount","Add_Mount","Add_Mount", "Add_Mount","Add_Mount","Add_Mount","Add_Mount","Add_Mount", "Add_Mount","Add_Mount","Add_Mount","Add_Mount"]
+# for i in range(50):
+#     rules.append("Add_Mount")
 for rule in rules:
     G.apply_rule(rule_vocabul.get_rule(rule))
     #plot_graph(G)
 
 plot_graph_ids(G)
 print(G.get_root_based_paths())
+plot_graph(G)
 rule_vocabul.make_graph_terminal(G)
-#plot_graph(G)
+
 result_optimizer = control_optimizer.start_optimisation(G)
 print(result_optimizer[0])
 cfg = ConfigRewardFunction()

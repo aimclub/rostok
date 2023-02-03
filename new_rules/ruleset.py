@@ -23,10 +23,15 @@ def create_rules():
     u1 = BlockWrapper(MountChronoBody, width_x=0.1, length_y=0.05)
     u2 = BlockWrapper(MountChronoBody, width_x=0.2, length_y=0.1)
     MOVE_TO_RIGHT_SIDE = map(lambda x: FrameTransform([x*10, 0, 0], [0,0,1,0]), width)
-    def rotation(alpha):
+    def rotation_y(alpha):
         quat_Y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))
         return [quat_Y_ang_alpha.e0, quat_Y_ang_alpha.e1, quat_Y_ang_alpha.e2,quat_Y_ang_alpha.e3]
-    MOVE = FrameTransform([1/2, 0, 1/2*3**0.5], rotation(60))
+    
+    def rotation_z(alpha):
+        quat_Z_ang_alpha = chrono.Q_from_AngZ(np.deg2rad(alpha))
+        return [quat_Z_ang_alpha.e0, quat_Z_ang_alpha.e1, quat_Z_ang_alpha.e2,quat_Z_ang_alpha.e3]
+    #MOVE = FrameTransform([1/2, 0, 1/2*3**0.5], rotation_y(60))
+    MOVE = FrameTransform([1, 1, 1], rotation_z(0))
     #MOVE = FrameTransform([1, 0, 0], rotation(45))
     transform_to_right_mount = list(map(lambda x: BlockWrapper(ChronoTransform, x),
                     MOVE_TO_RIGHT_SIDE))
@@ -71,14 +76,16 @@ def create_rules():
     rule_vocab.create_rule("Add_Mount", ["M"], ["T1", "M", "EM"], 0 , 0,[(0,1),(1, 2)])
     #rule_vocab.create_rule("FirstLink", ["FS"], ["U1","J1", "L","EM"], 0 , 3, [(0,1),(1, 2), (2,3)])
     rule_vocab.create_rule("FingerUpper", ["EM"], ["J1", "L","EM"], 0 , 2, [(0,1),(1, 2)])
+    rule_vocab.create_rule("FingerSplitter", ["L"], ["L", "M", "L", "EM"], 0 , 0, [(0, 1), (1, 2), (2, 3)])
+    rule_vocab.create_rule("DoubleFinger", ["EM"], ["L", "M", "M", "EM"], 0 , 0, [(0, 1), (1, 2),(2,3)])
 
     rule_vocab.create_rule("TerminalFlat1", ["F"], ["F1"], 0 , 0)
-    rule_vocab.create_rule("TerminalFlat2", ["F"], ["F2"], 0 , 0)
-    rule_vocab.create_rule("TerminalFlat3", ["F"], ["F3"], 0 , 0)
+    #rule_vocab.create_rule("TerminalFlat2", ["F"], ["F2"], 0 , 0)
+    #rule_vocab.create_rule("TerminalFlat3", ["F"], ["F3"], 0 , 0)
 
-    rule_vocab.create_rule("TerminalL1", ["L"], ["L1"], 0 , 0)
+    #rule_vocab.create_rule("TerminalL1", ["L"], ["L1"], 0 , 0)
     rule_vocab.create_rule("TerminalL2", ["L"], ["L2"], 0 , 0)
-    rule_vocab.create_rule("TerminalL3", ["L"], ["L3"], 0 , 0)
+    #rule_vocab.create_rule("TerminalL3", ["L"], ["L3"], 0 , 0)
 
     rule_vocab.create_rule("TerminalTransformRight1", ["T"], ["ET1"], 0 , 0)
     rule_vocab.create_rule("TerminalRoundTransform", ["M"], ["T1"], 0 , 0)
@@ -86,7 +93,7 @@ def create_rules():
 
     rule_vocab.create_rule("TerminalEndLimb1", ["EM"], ["U1"], 0 , 0)
     #rule_vocab.create_rule("FingerStartTerminal", ["FS"], ["U1"], 0 , 0)
-    rule_vocab.create_rule("TerminalEndLimb2", ["EM"], ["U2"], 0 , 0)
+    #rule_vocab.create_rule("TerminalEndLimb2", ["EM"], ["U2"], 0 , 0)
     #rule_vocab.create_rule("TerminalJoint", ["J"], ["J1"], 0 , 0)
 
 

@@ -25,10 +25,12 @@ class Robot:
                  start_frame: FrameTransform = OriginWorldFrame):
         self.__graph = deepcopy(robot_graph)
         self.__simulation = simulation
+        self.bridge_set: set[int] = set()
         wrapper_tuple_array = self.__graph.build_terminal_wrapper_array()
         # Map { id from graph : block }
         self.block_map = self.__build_robot(wrapper_tuple_array, start_frame)
         self.__bind_blocks_to_graph()
+        
 
     def __build_robot(self, wrapper_tuple_array: list[list[WrapperTuple]],
                       start_frame: FrameTransform) -> dict[int, Block]:
@@ -62,7 +64,7 @@ class Robot:
         uniq_blocks[base_id].body.SetRot(chrono_quat_rotation)
 
         for line in blocks:
-            connect_blocks(line)
+            connect_blocks(line, self.bridge_set)
 
         return uniq_blocks
 

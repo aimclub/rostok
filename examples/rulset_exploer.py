@@ -12,4 +12,3 @@ ex = time.time() - start
 print(f"time :{ex}")
 print(f"Non-uniq graphs :{out[1]}")
 print(f"Uniq graphs :{len(out[0])}")
- 

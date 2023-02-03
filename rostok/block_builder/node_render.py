@@ -702,7 +702,7 @@ def find_body_from_one_after_blocks(sequence: list[Block], it: int) -> Optional[
     return None
 
 
-def connect_blocks(sequence: list[Block]):
+def connect_blocks(sequence: list[Block], bridge_set):
     # Make body and apply transform
     previous_body_block = None
     need_fix_joint = False
@@ -742,9 +742,13 @@ def connect_blocks(sequence: list[Block]):
                 else:
                     continue
 
+    
     for it, block in enumerate(sequence):  # NOQA
-        if block.block_type == BlockType.BRIDGE:
+        if block.block_type is BlockType.BRIDGE:
+            if it in bridge_set:
+                continue
 
+            bridge_set.add(it)
             block_in = find_body_in_previous_blocks(sequence, it)
             block_out = find_body_from_one_after_blocks(sequence, it)
 
