@@ -190,16 +190,16 @@ class ChronoBody(BlockBody, ABC):
         Args:
             in_block (Block): The block defines relative movming to output frame
         """
+        # updates the markers according to abs coordinate system
         self.builder.Update()
         local_coord_in_frame = self._ref_frame_in.GetCoord()
         abs_coord_out_frame = in_block.transformed_frame_out.GetAbsCoord()
-
         trans = chrono.ChFrameD(local_coord_in_frame)
         trans = trans.GetInverse()
         trans = trans.GetCoord()
         coord = abs_coord_out_frame * trans
-
         self.body.SetCoord(coord)
+        self.builder.Update()
 
     def make_fix_joint(self, in_block):
         """Create weld joint (fixing relative posiotion and orientation)
@@ -731,18 +731,15 @@ def connect_blocks(sequence: list[Block], bridge_set):
                 if sequence[it - i].block_type is BlockType.BODY:
                     transform = False
                     current_transform = chrono.ChCoordsysD()
-                    for i in range(it - i + 1, it + 1):
-                        current_transform = current_transform * sequence[i].transform
+                    for k in range(it - i + 1, it + 1):
+                        current_transform = current_transform * sequence[k].transform
 
                     sequence[it - i].apply_transform(current_transform)
-
                 elif sequence[it - i].block_type is BlockType.BRIDGE:
                     raise Exception("Transform after joint!!!")
-
                 else:
                     continue
 
-    
     for it, block in enumerate(sequence):  # NOQA
         if block.block_type is BlockType.BRIDGE:
             if it in bridge_set:
