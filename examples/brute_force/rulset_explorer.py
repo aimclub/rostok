@@ -1,28 +1,21 @@
+import sys
 import time
 from pathlib import Path
-import sys
 
-import networkx as nx
 # chrono imports
 import pychrono as chrono
 import rule_extention
-from control_optimisation import (create_grab_criterion_fun, create_traj_fun,
-                                  get_object_to_grasp)
-from example_vocabulary import rule_vocab
+from control_optimisation import (create_grab_criterion_fun, create_traj_fun, get_object_to_grasp)
 
-from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact,
-                                                FlagSlipout)
+from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact, FlagSlipout)
 from rostok.graph_generators.mcts_helper import OptimizedGraphReport
 from rostok.graph_grammar.graphgrammar_explorer import ruleset_explorer
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.trajectory_optimizer.control_optimizer import (
-    ConfigRewardFunction, ControlOptimizer)
+from rostok.trajectory_optimizer.control_optimizer import (ConfigRewardFunction, ControlOptimizer)
 
-rule_vocabul, node_features = new_type_rulset.rulset()
+rule_vocabul, node_features = rule_extention.init_extension_rules()
 start = time.time()
 out = ruleset_explorer(2, rule_vocabul)
-# for i in out[0]:
-#     print(i.nodes(True))
 ex = time.time() - start
 
 print(f"time :{ex}")
@@ -30,7 +23,6 @@ print(f"Non-uniq graphs :{out[1]}")
 print(f"Uniq graphs :{len(out[0])}")
 
 # %% Create extension rule vocabulary
-
 
 # %% Create condig optimizing control
 
@@ -65,16 +57,16 @@ with open(Path(path, "counter.txt"), 'w') as file:
     print(f"Uniq graphs :{len(out[0])}")
     sys.stdout = original_stdout
 
-reward_list=[]
-i=0
+reward_list = []
+i = 0
 for graph in out[0]:
     result_optimizer = control_optimizer.start_optimisation(graph)
     reward = -result_optimizer[0]
     movments_trajectory = result_optimizer[1]
-    report.add_graph(graph,reward, movments_trajectory)
+    report.add_graph(graph, reward, movments_trajectory)
     reward_list.append(reward)
-    i+=1
-    if i%100==0:
+    i += 1
+    if i % 100 == 0:
         print(i)
 
     # print(reward)
