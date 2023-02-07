@@ -51,7 +51,6 @@ def _ruleset_explorer(set_uniq_graphs: set[GraphGrammar],
 
     if (current_number_non_terminal >= limit_non_terminal):
         rule_names = rule_vocab.get_list_of_applicable_terminal_rules(current_graph)
-
     else:
         rule_names = rule_vocab.get_list_of_applicable_rules(current_graph)
 
@@ -59,6 +58,8 @@ def _ruleset_explorer(set_uniq_graphs: set[GraphGrammar],
     if len(rule_names) == 0:
         set_uniq_graphs.add(current_graph)
         mutable_counter[0] += 1
+        if mutable_counter[0]%1000 == 0:
+            print(mutable_counter[0])
         return current_graph
 
     for rule_name in rule_names:
