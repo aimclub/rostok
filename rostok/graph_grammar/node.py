@@ -313,12 +313,22 @@ class GraphGrammar(nx.DiGraph):
         return wrapper_array
 
     def get_root_based_paths(self):
+        """Form the paths of node ids from root to each leaf
+        
+        Raises:
+            Exception: the number of paths reached the limit
+
+        Returns:
+            list[list[int]]: list of paths, each path is a list of node ids
+        """
         root_id = self.get_root_id()
         paths = [[root_id]]
         final_paths = []
-        i = 0
-        while len(paths)>0 and i<100:
-            i+=1
+        counter = 0
+        while len(paths)>0:
+            if counter > 1000:
+                raise Exception("Reached the iteration limit in number of paths in a graph")
+            counter+=1
             new_paths = []
             for path in paths:
                 end_id_path = path[-1]
