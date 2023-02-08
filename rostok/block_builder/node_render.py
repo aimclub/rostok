@@ -673,31 +673,31 @@ class ChronoTransform(BlockTransform):
 def find_body_from_two_previous_blocks(sequence: list[Block], it: int) -> Optional[Block]:
     # b->t->j->t->b Longest sequence
     for i in reversed(range(it)[-2:]):
-        if sequence[i].block_type == BlockType.BODY:
-            return sequence[i]
+        if sequence[i][1].block_type == BlockType.BODY:
+            return sequence[i][1]
     return None
 
 
 def find_body_in_previous_blocks(sequence: list[Block], it: int) -> Optional[Block]:
     for i in reversed(range(it)):
     #for i in range(it - 1, -1, -1):
-        if sequence[i].block_type == BlockType.BODY:
-            return sequence[i]
+        if sequence[i][1].block_type == BlockType.BODY:
+            return sequence[i][1]
 
     return None
 
 
 def find_body_from_two_after_blocks(sequence: list[Block], it: int) -> Optional[Block]:
     # b->t->j->t->b Longest sequence
-    for block in sequence[it + 1:it + 3]:
-        if block.block_type == BlockType.BODY:
+    for block_tuple in sequence[it + 1:it + 3]:
+        if block_tuple[1].block_type == BlockType.BODY:
             return block
     return None
 
 
 def find_body_from_one_after_blocks(sequence: list[Block], it: int) -> Optional[Block]:
-    if sequence[it + 1].block_type == BlockType.BODY:
-        return sequence[it + 1]
+    if sequence[it + 1][1].block_type == BlockType.BODY:
+        return sequence[it + 1][1]
 
     return None
 
@@ -706,7 +706,8 @@ def connect_blocks(sequence: list[Block], bridge_set):
     # Make body and apply transform
     previous_body_block = None
     need_fix_joint = False
-    for it, block in enumerate(sequence):
+    for it, block_tuple in enumerate(sequence):
+        block = block_tuple[1]
         if block.block_type is BlockType.BODY:
             # First body
             if previous_body_block is None:
@@ -728,24 +729,26 @@ def connect_blocks(sequence: list[Block], bridge_set):
             transform = True
             while transform:
                 i += 1
-                if sequence[it - i].block_type is BlockType.BODY:
+                if sequence[it - i][1].block_type is BlockType.BODY:
                     transform = False
                     current_transform = chrono.ChCoordsysD()
                     for k in range(it - i + 1, it + 1):
-                        current_transform = current_transform * sequence[k].transform
+                        current_transform = current_transform * sequence[k][1].transform
 
-                    sequence[it - i].apply_transform(current_transform)
-                elif sequence[it - i].block_type is BlockType.BRIDGE:
+                    sequence[it - i][1].apply_transform(current_transform)
+                elif sequence[it - i][1].block_type is BlockType.BRIDGE:
                     raise Exception("Transform after joint!!!")
                 else:
                     continue
 
-    for it, block in enumerate(sequence):  # NOQA
+    for it, block_tuple in enumerate(sequence):  # NOQA
+        graph_id  = block_tuple[0]
+        block = block_tuple[1]
         if block.block_type is BlockType.BRIDGE:
-            if it in bridge_set:
+            if graph_id in bridge_set:
                 continue
 
-            bridge_set.add(it)
+            bridge_set.add(graph_id)
             block_in = find_body_in_previous_blocks(sequence, it)
             block_out = find_body_from_one_after_blocks(sequence, it)
 

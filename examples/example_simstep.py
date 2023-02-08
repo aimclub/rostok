@@ -13,18 +13,17 @@ from rostok.graph_grammar.node import BlockWrapper
 from rostok.trajectory_optimizer.control_optimizer import num_joints
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
+from rostok.graph_grammar.graph_utils import plot_graph
 
 mechs = [
     get_terminal_graph_three_finger, get_terminal_graph_no_joints, get_terminal_graph_two_finger
 ]
-
 for get_graph in mechs:
     # Constants
     MAX_TIME = 1
     TIME_STEP = 1e-3
 
     graph = get_graph()
-
     # Create trajectory
     number_trq = num_joints(graph)
     const_torque_koef = [random.random() for _ in range(number_trq)]

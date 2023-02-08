@@ -45,11 +45,11 @@ class Robot:
 
                 if not (id in uniq_blocks.keys()):
                     block_buf = wrapper.create_block(self.__simulation)
-                    block_line.append(block_buf)
+                    block_line.append((id, block_buf))
                     uniq_blocks[id] = block_buf
                 else:
                     block_buf = uniq_blocks[id]
-                    block_line.append(block_buf)
+                    block_line.append((id, block_buf))
 
             blocks.append(block_line)
 
