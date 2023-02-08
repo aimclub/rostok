@@ -673,53 +673,54 @@ class ChronoTransform(BlockTransform):
 def find_body_from_two_previous_blocks(sequence: list[Block], it: int) -> Optional[Block]:
     # b->t->j->t->b Longest sequence
     for i in reversed(range(it)[-2:]):
-        if sequence[i][1].block_type == BlockType.BODY:
-            return sequence[i][1]
+        if sequence[i].block_type == BlockType.BODY:
+            return sequence[i]
     return None
 
 
 def find_body_in_previous_blocks(sequence: list[Block], it: int) -> Optional[Block]:
     for i in reversed(range(it)):
     #for i in range(it - 1, -1, -1):
-        if sequence[i][1].block_type == BlockType.BODY:
-            return sequence[i][1]
+        if sequence[i].block_type == BlockType.BODY:
+            return sequence[i]
 
     return None
 
 
 def find_body_from_two_after_blocks(sequence: list[Block], it: int) -> Optional[Block]:
     # b->t->j->t->b Longest sequence
-    for block_tuple in sequence[it + 1:it + 3]:
-        if block_tuple[1].block_type == BlockType.BODY:
+    for block in sequence[it + 1:it + 3]:
+        if block.block_type == BlockType.BODY:
             return block
     return None
 
 
 def find_body_from_one_after_blocks(sequence: list[Block], it: int) -> Optional[Block]:
-    if sequence[it + 1][1].block_type == BlockType.BODY:
-        return sequence[it + 1][1]
+    if sequence[it + 1].block_type == BlockType.BODY:
+        return sequence[it + 1]
 
     return None
 
-
-def connect_blocks(sequence: list[Block], bridge_set):
+def connect_blocks(sequence: list[Block]):
     # Make body and apply transform
     previous_body_block = None
     need_fix_joint = False
-    for it, block_tuple in enumerate(sequence):
-        block = block_tuple[1]
+    for it, block in enumerate(sequence):
         if block.block_type is BlockType.BODY:
             # First body
             if previous_body_block is None:
                 need_fix_joint = True
                 previous_body_block = block
             else:
-                block.move_to_out_frame(previous_body_block)  # NOQA gryazuka
-                if need_fix_joint:
-                    block.make_fix_joint(previous_body_block)  # NOQA
+                if not block.is_build:
+                    block.move_to_out_frame(previous_body_block)  # NOQA gryazuka
+                    if need_fix_joint:
+                        block.make_fix_joint(previous_body_block)  # NOQA
 
                 need_fix_joint = True
                 previous_body_block = block
+
+            block.is_build = True
 
         elif block.block_type is BlockType.BRIDGE:
             need_fix_joint = False
@@ -729,26 +730,24 @@ def connect_blocks(sequence: list[Block], bridge_set):
             transform = True
             while transform:
                 i += 1
-                if sequence[it - i][1].block_type is BlockType.BODY:
+                if sequence[it - i].block_type is BlockType.BODY:
                     transform = False
                     current_transform = chrono.ChCoordsysD()
                     for k in range(it - i + 1, it + 1):
-                        current_transform = current_transform * sequence[k][1].transform
+                        current_transform = current_transform * sequence[k].transform
 
-                    sequence[it - i][1].apply_transform(current_transform)
-                elif sequence[it - i][1].block_type is BlockType.BRIDGE:
+                    sequence[it - i].apply_transform(current_transform)
+                elif sequence[it - i].block_type is BlockType.BRIDGE:
                     raise Exception("Transform after joint!!!")
                 else:
                     continue
 
-    for it, block_tuple in enumerate(sequence):  # NOQA
-        graph_id  = block_tuple[0]
-        block = block_tuple[1]
+    for it, block in enumerate(sequence):  # NOQA
         if block.block_type is BlockType.BRIDGE:
-            if graph_id in bridge_set:
+            if block.is_build:
                 continue
 
-            bridge_set.add(graph_id)
+            block.is_build = True
             block_in = find_body_in_previous_blocks(sequence, it)
             block_out = find_body_from_one_after_blocks(sequence, it)
 

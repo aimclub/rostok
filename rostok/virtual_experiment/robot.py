@@ -45,11 +45,11 @@ class Robot:
 
                 if not (id in uniq_blocks.keys()):
                     block_buf = wrapper.create_block(self.__simulation)
-                    block_line.append((id, block_buf))
+                    block_line.append(block_buf)
                     uniq_blocks[id] = block_buf
                 else:
                     block_buf = uniq_blocks[id]
-                    block_line.append((id, block_buf))
+                    block_line.append(block_buf)
 
             blocks.append(block_line)
 
@@ -64,7 +64,7 @@ class Robot:
         uniq_blocks[base_id].body.SetRot(chrono_quat_rotation)
 
         for line in blocks:
-            connect_blocks(line, self.bridge_set)
+            connect_blocks(line)
 
         return uniq_blocks
 
