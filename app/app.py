@@ -61,7 +61,6 @@ control_optimizer = ControlOptimizer(cfg)
 base_iteration_limit = 50
 
 # Initialize MCTS
-#searcher = mcts.mcts(iterationLimit=iteration_limit)
 finish = False
 
 initial_graph = GraphGrammar()
@@ -75,8 +74,10 @@ mcts_helper.report.search_parameter = base_iteration_limit
 n_steps = 0
 #%% Run first algorithm
 start = time.time()
+# the constant that determines how we reduce the number of iterations in the MCTS search
+iteration_reduction_rate = 0.7
 while not finish:
-    iteration_limit = base_iteration_limit - int(graph_env.counter_action/max_numbers_rules * (base_iteration_limit*0.7))
+    iteration_limit = base_iteration_limit - int(graph_env.counter_action/max_numbers_rules * (base_iteration_limit*iteration_reduction_rate))
     searcher = mcts.mcts(iterationLimit=iteration_limit)
     finish, graph_env = make_mcts_step(searcher, graph_env, n_steps)
     n_steps += 1
