@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 from rostok.gym_rostok.envs.graph_grammar import GraphGrammarEnv
-from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
+from rostok.trajectory_optimizer.control_optimizer import ConfigRewardFunction, ControlOptimizer
 
 
 class GGrammarControlOpimizingEnv(GraphGrammarEnv):
@@ -26,9 +26,10 @@ class GGrammarControlOpimizingEnv(GraphGrammarEnv):
         It is setted :meth:`set_max_number_nonterminal_rules`. 
         Default by infity.
     """
+
     def __init__(self,
-                 rule_vocabulary: RuleVocabulary=None,
-                 controller: ControlOptimizer=None,
+                 rule_vocabulary: RuleVocabulary = RuleVocabulary(),
+                 controller: ControlOptimizer = ControlOptimizer(ConfigRewardFunction()),
                  render_mode=None):
         """Class gym graph grammar environment. Instead using controller, aplies control optimization.
 

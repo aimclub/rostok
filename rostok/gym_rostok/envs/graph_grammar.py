@@ -60,7 +60,10 @@ class GraphGrammarEnv(gym.Env, ABC):
     """
     metadata = {"render_modes": ["grammar", "simulation", "grammar&simulation"], "render_fps": 4}
 
-    def __init__(self, rule_vocabulary: RuleVocabulary = None, controller=None, render_mode=None):
+    def __init__(self,
+                 rule_vocabulary: RuleVocabulary = RuleVocabulary(),
+                 controller=None,
+                 render_mode=None):
         """Abstract class gym graph grammar environment project rostok.
 
         Args:
