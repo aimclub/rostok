@@ -1,7 +1,6 @@
 # chrono imports
 import pychrono as chrono
 
-from stable_baselines3 import PPO
 import gymnasium as gym
 import rostok.gym_rostok
 
@@ -37,29 +36,6 @@ cfg.get_rgab_object_callback = get_object_to_grasp
 cfg.params_to_timesiries_callback = traj_generator_fun
 
 control_optimizer = ControlOptimizer(cfg)
-
-# Create gym for algorithm
-# graph_env = env.GGrammarControlOpimizingEnv(rule_vocabul,
-#                                             control_optimizer,
-#                                             render_mode="grammar")
-
-# # %%
-
-# model = PPO("MlpPolicy", graph_env)
-# model.learn(total_timesteps=100)
-# vec_env = model.get_env()
-# obs = vec_env.reset()
-
-# # %% Run first algorithm
-
-# graph_env.set_max_number_nonterminal_rules(5)
-# for id in range(100):
-#     print(f"___{id}___")
-#     action, _space = model.predict(obs)
-#     s, r, done_iteration, w, info = graph_env.step(action)
-#     print(f"{action=:2}: {r=:0.2f}, {done_iteration=}, {info=}")
-#     if done_iteration:
-#         graph_env.reset()
 
 # %%  Testing module gym
 

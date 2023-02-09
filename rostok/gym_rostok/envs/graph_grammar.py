@@ -2,7 +2,7 @@ from copy import deepcopy
 from abc import ABC
 
 import gymnasium as gym
-import gymnasium.spaces as spaces
+from gymnasium import spaces
 
 import networkx as nx
 import numpy as np
