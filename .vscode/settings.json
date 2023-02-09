@@ -15,6 +15,14 @@
     "python.linting.pylintArgs": [
         "--max-line-length=100",
         "--disable=C0114, C0115, C0116"
-    ]
+    ],
+    "isort.check": true,
+    "isort.importStrategy": "fromEnvironment",
+    "esbonio.sphinx.confDir": "",
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
     
 }

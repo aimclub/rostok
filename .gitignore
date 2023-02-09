@@ -3,4 +3,5 @@
 /examples/__pycache__
 *.pyc
 #/gym-examples
-
+/html/
+/rostok.egg-info/

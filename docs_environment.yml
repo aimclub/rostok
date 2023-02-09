@@ -1,0 +1,20 @@
+name: rostok
+channels:
+  - intel
+  - conda-forge
+dependencies:
+  - python==3.9.15
+  - numpy
+  - yapf
+  - mypy
+  - pylint
+  - tk==8.6.12
+  - pip
+  - pip:
+    - networkx==2.8.6
+    - matplotlib==3.6.0
+    - scipy
+    - mcts==1.0.4
+    - pytest
+  - projectchrono::pychrono=7
+  - irrlicht=1.8.5

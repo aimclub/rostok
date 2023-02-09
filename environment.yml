@@ -1,15 +1,17 @@
-name: lic_ai
+name: rostok
 channels:
-  - https://conda.anaconda.org/intel
-  - https://conda.anaconda.org/conda-forge
-  - defaults
+  - intel
+  - conda-forge
 dependencies:
   - python=3.9.12
+  - projectchrono::pychrono=7.*
   - irrlicht=1.8.5
   - numpy
   - yapf
   - mypy
   - pylint
+  - tk=8.6.10
+  - pip
   - pip:
     - networkx==2.8.6
     - matplotlib==3.6.0
@@ -17,3 +19,4 @@ dependencies:
     - mcts==1.0.4
     - gym==0.26.2
     - gymnasium==0.26.3
+    - pytest

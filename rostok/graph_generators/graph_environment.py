@@ -1,11 +1,16 @@
-from rostok.graph_grammar.node import *
-from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
+from copy import deepcopy
+
+from matplotlib import pyplot as plt
+import networkx as nx
 from rostok.graph_generators.graph_reward import Reward
+from rostok.graph_grammar.node import GraphGrammar, Rule
+from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
+from rostok.utils.states import RobotState
 
 
 def rule_is_terminal(rule: Rule):
-    """Function finding non terminal rules 
+    """Function finding non terminal rules
 
     Args:
         rule (Rule): Input rule to checking
@@ -51,23 +56,22 @@ class RuleAction:
 class GraphEnvironment():
 
     def __init__(self, initilize_graph, rules, max_numbers_rules_non_terminal=20):
-        """Class of "environment" of graph grammar 
+        """Class of "environment" of graph grammar
 
         Args:
             initilize_graph (GraphGrammar): Initial state of the graph
-            rules (list[Rule]): List of rules 
+            rules (list[Rule]): List of rules
             max_numbers_rules_non_terminal (int): Max amount of non-terminal rules. Defaults to 20.
         """
         self.init_graph = deepcopy(initilize_graph)
         self.graph = deepcopy(initilize_graph)
-        self._actions = [RuleAction(r) for r in rules] if not rules is None else None
+        self._actions = [RuleAction(r) for r in rules] if rules is not None else None
         self.max_actions_not_terminal = max_numbers_rules_non_terminal
         self.current_player = 1
         self.reward = 0
         self.counter_action = 0
 
     # Need override for mcts libary
-
     def getCurrentPlayer(self):
         return self.current_player
 
@@ -119,7 +123,6 @@ class GraphEnvironment():
         return sum(terminal_nodes) == len(terminal_nodes)
 
     # getter reward
-
     def getReward(self):
         """Reward in number (3) of nodes graph mechanism
 
@@ -138,7 +141,8 @@ class GraphEnvironment():
             render (bool): Turn on render each step. Defaults to False.
 
         Returns:
-            bool, GraphGrammar: Return state of graph. If it is terminal then finish generate graph and new state graph.
+            bool, GraphGrammar: Return state of graph. If it is terminal then finish generate graph
+            and new state graph.
         """
         new_state = self.takeAction(action)
         self.graph = new_state.graph
@@ -178,39 +182,41 @@ class GraphVocabularyEnvironment(GraphEnvironment):
 
     def __init__(self,
                  initilize_graph: GraphGrammar,
-                 rule_vocabulary: RuleVocabulary,
-                 max_numbers_rules_non_terminal=20):
-        """Subclass graph environment on rule vocabulary instead rules and with real reward on simulation and control optimizing
+                 graph_vocabulary: RuleVocabulary,
+                 optimizer: ControlOptimizer,
+                 max_numbers_rules_non_terminal: int = 20):
+        """Subclass graph environment on rule vocabulary instead rules and with real reward on
+        simulation and control optimizing
 
         Args:
             initilize_graph (GraphGrammar): Initial state of the graph
-            rule_vocabulary (RuleVocabulary): Object of the rule vocabulary for manipulation on graph 
-            max_numbers_rules_non_terminal (int): Max amount of non-terminal rules. Defaults to 20.
+            rule_vocabulary (RuleVocabulary): Object of the rule vocabulary for manipulation on
+            graph
+            max_numbers_rules_non_terminal (int): Max amount of non-terminal rules.
+            Defaults to 20.
         """
         super().__init__(initilize_graph, None, max_numbers_rules_non_terminal)
-        self._actions = rule_vocabulary
+        self.actions: RuleVocabulary = graph_vocabulary
+        self.optimizer = optimizer
+        self.state: RobotState = RobotState(graph_vocabulary)
         self.movments_trajectory = None
 
     def getPossibleActions(self):
         """Getter possible actions for current state
         """
-        if self.counter_action <= self.max_actions_not_terminal:
-            possible_rules_name = self._actions.get_list_of_applicable_rules(self.graph)
+        if self.counter_action < self.max_actions_not_terminal:
+            possible_rules_name = self.actions.get_list_of_applicable_rules(self.graph)
         else:
-            possible_rules_name = self._actions.get_list_of_applicable_terminal_rules(self.graph)
+            possible_rules_name = self.actions.get_list_of_applicable_terminal_rules(self.graph)
 
-        possible_rules = [self._actions.rule_dict[str_rule] for str_rule in possible_rules_name]
-        possible_actions = [RuleAction(rule) for rule in possible_rules]
-        return possible_actions
+        possible_rules = [self.actions.rule_dict[str_rule] for str_rule in possible_rules_name]
+        possible_actions = set(RuleAction(rule) for rule in possible_rules)
+        return list(possible_actions)
 
     def getReward(self):
-        #try:
         result_optimizer = self.optimizer.start_optimisation(self.graph)
         self.reward = -result_optimizer[0]
         self.movments_trajectory = result_optimizer[1]
-        func_reward = self.optimizer.create_reward_function(self.graph)
-        func_reward(self.movments_trajectory, True)
-
         print(self.reward)
         return self.reward
 
@@ -224,49 +230,25 @@ class GraphVocabularyEnvironment(GraphEnvironment):
             GraphEnvironment: New state environment after action taken
         """
         rule_action = action.get_rule
+        rule_dict = self.actions.rule_dict
+        rule_name = list(rule_dict.keys())[list(rule_dict.values()).index(rule_action)]
         new_state = deepcopy(self)
+        new_state.state.add_rule(rule_name)
         new_state.graph.apply_rule(rule_action)
-        new_state.optimizer = self.optimizer
         if not action.is_terminal():
             new_state.counter_action += 1
         return new_state
-
-    def set_control_optimizer(self, control_optimizer: ControlOptimizer):
-        self.optimizer = control_optimizer
-
-    def step(self, action: RuleAction, render=False):
-        """Move current environment to new state
-
-        Args:
-            action (RuleAction): Action is take
-            render (bool): Turn on render each step. Defaults to False.
-
-        Returns:
-            bool, GraphGrammar: Return state of graph. If it is terminal then finish generate graph and new state graph.
-        """
-        new_state = self.takeAction(action)
-        self.graph = new_state.graph
-        self.reward = new_state.reward
-        self.counter_action = new_state.counter_action
-        self.movments_trajectory = new_state.movments_trajectory
-        done = new_state.isTerminal()
-
-        if render:
-            plt.figure()
-            nx.draw_networkx(self.graph,
-                             pos=nx.kamada_kawai_layout(self.graph, dim=2),
-                             node_size=800,
-                             labels={n: self.graph.nodes[n]["Node"].label for n in self.graph})
-            plt.show()
-        return done, self.graph, self.movments_trajectory
 
     def __deepcopy__(self, memo):
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
         for k, v in self.__dict__.items():
-            if k != "optimizer":
+            if k in ["actions", "optimizer"]:
+                setattr(result, k, v)
+            else:
                 setattr(result, k, deepcopy(v, memo))
+
         return result
 
 
@@ -277,7 +259,7 @@ class GraphStubsEnvironment(GraphEnvironment):
 
         Args:
             initilize_graph (GraphGrammar): Initial state of the graph
-            rules (list[Rule]): List of rules 
+            rules (list[Rule]): List of rules
             max_numbers_rules_non_terminal (int): Max amount of non-terminal rules. Defaults to 20.
         """
         super().__init__(initilize_graph, rules, max_numbers_rules_non_terminal)
