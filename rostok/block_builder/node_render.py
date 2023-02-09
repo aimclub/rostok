@@ -190,16 +190,16 @@ class ChronoBody(BlockBody, ABC):
         Args:
             in_block (Block): The block defines relative movming to output frame
         """
+        # updates the markers according to abs coordinate system
         self.builder.Update()
         local_coord_in_frame = self._ref_frame_in.GetCoord()
         abs_coord_out_frame = in_block.transformed_frame_out.GetAbsCoord()
-
         trans = chrono.ChFrameD(local_coord_in_frame)
         trans = trans.GetInverse()
         trans = trans.GetCoord()
         coord = abs_coord_out_frame * trans
-
         self.body.SetCoord(coord)
+        self.builder.Update()
 
     def make_fix_joint(self, in_block):
         """Create weld joint (fixing relative posiotion and orientation)
@@ -218,7 +218,7 @@ class ChronoBody(BlockBody, ABC):
         state."""
         self.transformed_frame_out.SetCoord(self._ref_frame_out.GetCoord())
 
-    def apply_transform(self, in_block: BlockTransform):
+    def apply_transform(self, transform: chrono.ChCoordsysD):
         """Applied input transformation to the output frame of the body.
 
         Args:
@@ -226,7 +226,7 @@ class ChronoBody(BlockBody, ABC):
         """
         self.reset_transformed_frame_out()
         frame_coord = self.transformed_frame_out.GetCoord()
-        frame_coord = frame_coord * in_block.transform
+        frame_coord = frame_coord * transform
         self.transformed_frame_out.SetCoord(frame_coord)
 
     @property
@@ -678,6 +678,15 @@ def find_body_from_two_previous_blocks(sequence: list[Block], it: int) -> Option
     return None
 
 
+def find_body_in_previous_blocks(sequence: list[Block], it: int) -> Optional[Block]:
+    for i in reversed(range(it)):
+    #for i in range(it - 1, -1, -1):
+        if sequence[i].block_type == BlockType.BODY:
+            return sequence[i]
+
+    return None
+
+
 def find_body_from_two_after_blocks(sequence: list[Block], it: int) -> Optional[Block]:
     # b->t->j->t->b Longest sequence
     for block in sequence[it + 1:it + 3]:
@@ -686,11 +695,16 @@ def find_body_from_two_after_blocks(sequence: list[Block], it: int) -> Optional[
     return None
 
 
+def find_body_from_one_after_blocks(sequence: list[Block], it: int) -> Optional[Block]:
+    if sequence[it + 1].block_type == BlockType.BODY:
+        return sequence[it + 1]
+
+    return None
+
 def connect_blocks(sequence: list[Block]):
     # Make body and apply transform
     previous_body_block = None
     need_fix_joint = False
-
     for it, block in enumerate(sequence):
         if block.block_type is BlockType.BODY:
             # First body
@@ -698,24 +712,44 @@ def connect_blocks(sequence: list[Block]):
                 need_fix_joint = True
                 previous_body_block = block
             else:
-                block.move_to_out_frame(previous_body_block)  # NOQA gryazuka
-                if need_fix_joint:
-                    block.make_fix_joint(previous_body_block)  # NOQA
+                if not block.is_build:
+                    block.move_to_out_frame(previous_body_block)  # NOQA gryazuka
+                    if need_fix_joint:
+                        block.make_fix_joint(previous_body_block)  # NOQA
 
                 need_fix_joint = True
                 previous_body_block = block
+
+            block.is_build = True
 
         elif block.block_type is BlockType.BRIDGE:
             need_fix_joint = False
 
         elif block.block_type is BlockType.TRANSFORM:
-            sequence[it - 1].apply_transform(block)
+            i = 0
+            transform = True
+            while transform:
+                i += 1
+                if sequence[it - i].block_type is BlockType.BODY:
+                    transform = False
+                    current_transform = chrono.ChCoordsysD()
+                    for k in range(it - i + 1, it + 1):
+                        current_transform = current_transform * sequence[k].transform
+
+                    sequence[it - i].apply_transform(current_transform)
+                elif sequence[it - i].block_type is BlockType.BRIDGE:
+                    raise Exception("Transform after joint!!!")
+                else:
+                    continue
 
     for it, block in enumerate(sequence):  # NOQA
-        if block.block_type == BlockType.BRIDGE:
+        if block.block_type is BlockType.BRIDGE:
+            if block.is_build:
+                continue
 
-            block_in = find_body_from_two_previous_blocks(sequence, it)
-            block_out = find_body_from_two_after_blocks(sequence, it)
+            block.is_build = True
+            block_in = find_body_in_previous_blocks(sequence, it)
+            block_out = find_body_from_one_after_blocks(sequence, it)
 
             if block_in is None:
                 raise Exception('Bridge block require body block before')

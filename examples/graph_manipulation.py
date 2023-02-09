@@ -43,3 +43,4 @@ dfs_patrion_node = [[get_node(node_id) for node_id in branch] for branch in dfs_
 
 # Iterate over dfs_patrion_node and form massive from suitable branch
 branchs_with_special_t = list(filter(branch_filter, dfs_patrion_node))
+
