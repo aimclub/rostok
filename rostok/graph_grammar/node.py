@@ -286,7 +286,7 @@ class GraphGrammar(nx.DiGraph):
         return paths
 
     def build_terminal_wrapper_array(self) -> list[list[WrapperTuple]]:
-        """Returns a 2-d array of the shape dfs_partition
+        """Returns a 2-d array of paths from root to each leaf
 
         Raises:
             Exception: Graph contain non-terminal elements
