@@ -19,6 +19,14 @@ def plot_graph(graph: GraphGrammar):
                      labels={n: graph.nodes[n]["Node"].label for n in graph})
     plt.show()
 
+def plot_graph_ids(graph: GraphGrammar):
+    plt.figure()
+    nx.draw_networkx(graph,
+                     font_size=8,
+                     pos=nx.spring_layout(graph, dim=2),
+                     node_size=200)
+    plt.show()
+
 def plot_graph_reward(graph: GraphGrammar, reward):
     plt.figure()
     plt.title('reward of the graph: ' + str(reward))

@@ -286,7 +286,7 @@ class GraphGrammar(nx.DiGraph):
         return paths
 
     def build_terminal_wrapper_array(self) -> list[list[WrapperTuple]]:
-        """Returns a 2-d array of the shape dfs_partition
+        """Returns a 2-d array of paths from root to each leaf
 
         Raises:
             Exception: Graph contain non-terminal elements
@@ -295,7 +295,8 @@ class GraphGrammar(nx.DiGraph):
             list[list[WrapperTuple]]:
         """
 
-        paths = self.graph_partition_dfs()
+        #paths = self.graph_partition_dfs()
+        paths = self.get_root_based_paths()
         wrapper_array = []
 
         for path in paths:
@@ -310,6 +311,40 @@ class GraphGrammar(nx.DiGraph):
             wrapper_array.append(wrapper.copy())
 
         return wrapper_array
+
+    def get_root_based_paths(self):
+        """Form the paths of node ids from root to each leaf
+        
+        Raises:
+            Exception: the number of paths reached the limit
+
+        Returns:
+            list[list[int]]: list of paths, each path is a list of node ids
+        """
+        root_id = self.get_root_id()
+        paths = [[root_id]]
+        final_paths = []
+        counter = 0
+        while len(paths)>0:
+            if counter > 1000:
+                raise Exception("Reached the iteration limit in number of paths in a graph")
+            counter+=1
+            new_paths = []
+            for path in paths:
+                end_id_path = path[-1]
+                # neighbors in digraph returns list of children nodes
+                children = list(self.neighbors(end_id_path))
+                if len(children) == 0:
+                    # no children <==> end of a path 
+                    final_paths.append(path)
+                    continue
+                else:
+                    for child in children:
+                        new_paths.append(path+[child])
+
+            paths = new_paths
+
+        return final_paths
 
     def get_node_by_id(self, node_id: int) -> Node:
         return self.nodes[node_id]["Node"]
