@@ -122,6 +122,26 @@ class MCTSSaveable(Saveable):
         plt.plot(mean_rewards)
         plt.show()
 
+    def save_means(self):
+        """Plot the mean rewards for steps of MCTS search"""
+
+        rewards = []
+        for state in self.seen_states.state_list:
+            i = state.step
+            if len(rewards) == i:
+                rewards.append([state.reward])
+            else:
+                rewards[i].append(state.reward)
+
+            mean_rewards = [mean(on_step_rewards) for on_step_rewards in rewards]
+
+        plt.figure()
+        plt.plot(mean_rewards)
+        plt.title(f'Iterations: {self.search_parameter}. Non-terminal rules: {self.non_terminal_rules_limit}')
+        plt.xlabel('Steps')
+        plt.ylabel('Rewards')
+        plt.savefig(Path(self.path, "step_means.png"))
+
     def save_visuals(self):
         path_to_file = Path(self.path, "mcts_result.txt")
         with open(path_to_file, 'w', encoding='utf-8') as file:
@@ -139,12 +159,15 @@ class MCTSSaveable(Saveable):
             print()
             print('max number of non-terminal rules:', self.non_terminal_rules_limit, 
             'search parameter:', self.search_parameter)
+            print()
+            print("Number of unique mechanisms tested in current MCTS run: ", len(self.seen_graphs.graph_list))
+            print("Number of states ", len(self.seen_states.state_list))
             sys.stdout = original_stdout
 
-        path_to_best_graph = Path(self.path, "best_graph.jpg")
+        path_to_best_graph = Path(self.path, "best_graph.png")
         best_graph, reward, _ = self.get_best_info()
         save_graph_plot_reward(best_graph, reward, path_to_best_graph)
-        path_to_main_graph = Path(self.path, "main_graph.jpg")
+        path_to_main_graph = Path(self.path, "main_graph.png")
         main_graph, reward, _ = self.get_main_info()
         save_graph_plot_reward(main_graph, reward, path_to_main_graph)
 

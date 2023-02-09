@@ -116,7 +116,6 @@ def init_extension_rules():
     # Nodes
     node_vocab = node_vocabulary.NodeVocabulary()
     node_vocab.add_node(ROOT)
-    node_vocab.create_node("J")
     node_vocab.create_node("L")
     node_vocab.create_node("F")
     node_vocab.create_node("M")
@@ -187,7 +186,7 @@ def init_extension_rules():
     rule_vocab.create_rule("InitMechanism_3_L_A", ["ROOT"], ["F", "SMLPA","SMLMA", "SMR","EM","EM","EM"], 0 , 0, [(0,1),(0,2),(0,3),(1,4),(2,5),(3,6)])
     rule_vocab.create_rule("InitMechanism_4", ["ROOT"], ["F", "SMLP","SMLM", "SMRP","SMRM","EM","EM","EM","EM"], 0 , 0, [(0,1),(0,2),(0,3),(0,4),(1,5),(2,6),(3,7),(4,8)])
     rule_vocab.create_rule("InitMechanism_4_A", ["ROOT"], ["F", "SMLPA","SMLMA", "SMRPA","SMRMA","EM","EM","EM","EM"], 0 , 0, [(0,1),(0,2),(0,3),(0,4),(1,5),(2,6),(3,7),(4,8)])
-    rule_vocab.create_rule("FingerUpper", ["EM"], ["J", "L","EM"], 0 , 2, [(0,1),(1, 2)])
+    rule_vocab.create_rule("FingerUpper", ["EM"], ["J1", "L","EM"], 0 , 2, [(0,1),(1, 2)])
 
     rule_vocab.create_rule("TerminalFlat1", ["F"], ["F1"], 0 , 0)
     rule_vocab.create_rule("TerminalFlat2", ["F"], ["F2"], 0 , 0)
@@ -239,8 +238,6 @@ def init_extension_rules():
 
     rule_vocab.create_rule("TerminalEndLimb1", ["EM"], ["U1"], 0 , 0)
     rule_vocab.create_rule("TerminalEndLimb2", ["EM"], ["U2"], 0 , 0)
-    rule_vocab.create_rule("TerminalJoint", ["J"], ["J1"], 0 , 0)
-
 
     list_J = node_vocab.get_list_of_nodes(["J1"])
     list_RM = node_vocab.get_list_of_nodes(["TR1", "TR2", "TR3","TRP1", "TRP2", "TRP3","TRM1", "TRM2", "TRM3", "TRPA1", "TRPA2", "TRPA3","TRMA1", "TRMA2", "TRMA3"])
