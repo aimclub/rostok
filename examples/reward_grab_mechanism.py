@@ -48,7 +48,7 @@ sim.change_config_system(config_sys)
 sim_output = sim.simulate_system(TIME_STEP, True)
 
 # Weight coefficients for reward function
-WEIGHTS = [5, 1, 1, 5]
+WEIGHTS = [1, 5, 2]
 # Time to grasp object
 GAIT_PERIOD = 2.5
 
