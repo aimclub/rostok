@@ -1,5 +1,6 @@
 from copy import deepcopy
 from typing import Tuple
+
 from rostok.graph_grammar.node import GraphGrammar, Rule
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 
@@ -7,14 +8,11 @@ from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 def create_graph_from_seq(seq: list[Rule]) -> GraphGrammar:
     """Applies the rules from the list in direct order 
 
-    Parameters
-    ----------
-    seq : list[Rule] list of rules
+    Args:
+        seq (list[Rule]): list of rules
 
-    Returns
-    -------
-    GraphGrammar
-        graph
+    Returns:
+        GraphGrammar: graph
     """
     G = GraphGrammar()
     for i in seq:
@@ -26,15 +24,11 @@ def number_of_non_terminal_rules(seq: list[Rule]) -> int:
     """Calculate number of nonterminal rules
     by using is_terminal method from class graph_grammar.Rule
 
-    Parameters
-    ----------
-    seq : list[Rule]
-         list of rules
+    Args:
+        seq (list[Rule]): list of rules
 
-    Returns
-    -------
-    int
-        number of nonterminal rules in list
+    Returns:
+        int : number of nonterminal rules in list
     """
     is_terminal = lambda rule: not rule.is_terminal
     return len(list(filter(is_terminal, seq)))
@@ -55,10 +49,11 @@ def _ruleset_explorer(set_uniq_graphs: set[GraphGrammar],
         rule_names = rule_vocab.get_list_of_applicable_rules(current_graph)
 
     # If graph grow not available
+    vis_const: int = 1000
     if len(rule_names) == 0:
         set_uniq_graphs.add(current_graph)
         mutable_counter[0] += 1
-        if mutable_counter[0]%1000 == 0:
+        if mutable_counter[0] % vis_const == 0:
             print(mutable_counter[0])
         return current_graph
 
@@ -74,26 +69,15 @@ def _ruleset_explorer(set_uniq_graphs: set[GraphGrammar],
 def ruleset_explorer(limit_non_terminal: int,
                      rule_vocab: RuleVocabulary) -> Tuple[set[GraphGrammar], int]:
     """Recursive iterate over all posible graph in rule_vocab with limitation on non-terminal rules.
+    
     Counts all non-uniq graphs
+    
+    Args:
+        limit_non_terminal (int): limit of non-terminal rules for the graphs
+        rule_vocab (RuleVocabulary): rule vocabulary for the exploration process
 
-    Parameters
-    ----------
-    limit_non_terminal : int
-        
-    rule_vocab : RuleVocabulary
-
-    Parameters
-    ----------
-    limit_non_terminal : int
-        
-    rule_vocab : RuleVocabulary
-        
-
-    Returns
-    -------
-    Tuple[set[GraphGrammar], int]
-        first is set of uniq graphs
-        last is counter of uniq graphs
+    Returns:
+        Tuple (list[set[GraphGrammar], int]: first is set of uniq graphs, last is counter of uniq graphs
     """
     set_uniq_graphs: set[GraphGrammar] = set()
     current_number_non_terminal: int = 0
