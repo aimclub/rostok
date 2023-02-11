@@ -86,7 +86,7 @@ def create_control_from_graph(graph: GraphGrammar, torque_dict: dict[Node, float
         row_out = []
         for one_j in row:
             value = torque_dict[one_j]
-            traj = create_step_traj(value, stop_time, time_step, start= 1)
+            traj = create_const_traj(value, stop_time, time_step)
             row_out.append(traj)
 
         dfs_traj_out.append(np.array(row_out))
