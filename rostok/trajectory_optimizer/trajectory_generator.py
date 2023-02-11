@@ -7,10 +7,24 @@ from rostok.graph_grammar.node import GraphGrammar, Node
 from typing import Any
 from functools import partial
 
+
 def create_const_traj(torque_value, stop_time: float, time_step: float):
     timeseries_traj = []
     timeseries = list(np.arange(0, stop_time, time_step))
-    traj = [torque_value for _ in timeseries]
+    traj = [torque_value for t in timeseries]
+    timeseries_traj.append(timeseries)
+    timeseries_traj.append(traj)
+    return timeseries_traj
+
+
+def create_step_traj(torque_value,
+                     stop_time: float,
+                     time_step: float,
+                     start: float = 0,
+                     before_start_value: float = 0):
+    timeseries_traj = []
+    timeseries = list(np.arange(0, stop_time, time_step))
+    traj = [torque_value if t > start else before_start_value for t in timeseries]
     timeseries_traj.append(timeseries)
     timeseries_traj.append(traj)
     return timeseries_traj
@@ -55,14 +69,14 @@ def flat_to_dfs_joint(graph: GraphGrammar, flat: list[Any]) -> list[list[Any]]:
 
 
 def create_torque_traj_from_x(graph: GraphGrammar, x: list[float], stop_time: float,
-                              time_step: float):
+                              time_step: float) -> list[list[Any]]:
 
-    torque_traj = partial(create_const_traj, stop_time = stop_time, time_step=time_step)
+    torque_traj = partial(create_const_traj, stop_time=stop_time, time_step=time_step)
     torque_trajs_flat = list(map(torque_traj, x))
     torque_trajs_dfs = flat_to_dfs_joint(graph, torque_trajs_flat)
-    
 
     return torque_trajs_dfs
+
 
 def create_control_from_graph(graph: GraphGrammar, torque_dict: dict[Node, float], stop_time: float,
                               time_step: float):
