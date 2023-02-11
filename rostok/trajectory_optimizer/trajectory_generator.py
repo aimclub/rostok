@@ -63,3 +63,17 @@ def create_torque_traj_from_x(graph: GraphGrammar, x: list[float], stop_time: fl
     
 
     return torque_trajs_dfs
+
+def create_control_from_graph(graph: GraphGrammar, torque_dict: dict[Node, float], stop_time: float,
+                              time_step: float):
+    dfs_j = create_dfs_joint(graph)
+    dfs_traj_out = []
+    for row in dfs_j:
+        row_out = []
+        for one_j in row:
+            value = torque_dict[one_j]
+            traj = create_step_traj(value, stop_time, time_step, start= 1)
+            row_out.append(traj)
+
+        dfs_traj_out.append(np.array(row_out))
+    return dfs_traj_out
