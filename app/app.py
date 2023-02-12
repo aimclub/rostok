@@ -10,15 +10,12 @@ import networkx as nx
 import pychrono as chrono
 import rule_extention
 from control_optimisation import (create_grab_criterion_fun, create_traj_fun,
-                                  get_object_to_grasp)
+                                  get_object_to_grasp_box)
 
-from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact,
-                                                FlagSlipout)
-from rostok.graph_generators.mcts_helper import (make_mcts_step,
-                                                 prepare_mcts_state_and_helper)
+from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact, FlagSlipout)
+from rostok.graph_generators.mcts_helper import (make_mcts_step, prepare_mcts_state_and_helper)
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.trajectory_optimizer.control_optimizer import (
-    ConfigRewardFunction, ControlOptimizer)
+from rostok.trajectory_optimizer.control_optimizer import (ConfigConstTorque, ControlOptimizer)
 
 
 def plot_graph(graph: GraphGrammar):
@@ -31,14 +28,14 @@ def plot_graph(graph: GraphGrammar):
 
 
 # %% Create extension rule vocabulary
-rule_vocabul, node_features = rule_extention.init_extension_rules()
+rule_vocabul, node_features, _ = rule_extention.init_extension_rules()
 
 # %% Create condig optimizing control
 
 GAIT = 2.5
 WEIGHT = [3, 1, 1, 2]
 
-cfg = ConfigRewardFunction()
+cfg = ConfigConstTorque()
 cfg.bound = (2, 10)
 cfg.iters = 5
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
@@ -51,7 +48,7 @@ criterion_callback = create_grab_criterion_fun(node_features, GAIT, WEIGHT)
 traj_generator_fun = create_traj_fun(cfg.time_sim, cfg.time_step)
 
 cfg.criterion_callback = criterion_callback
-cfg.get_rgab_object_callback = get_object_to_grasp
+cfg.get_rgab_object_callback = get_object_to_grasp_box
 cfg.params_to_timesiries_callback = traj_generator_fun
 
 control_optimizer = ControlOptimizer(cfg)
@@ -94,7 +91,7 @@ report.save_lists()
 report.save_means()
 # additions to the file
 with open(Path(path, "mcts_result.txt"), "a") as file:
-    gb_params = get_object_to_grasp().kwargs
+    gb_params = get_object_to_grasp_box().kwargs
     original_stdout = sys.stdout
     sys.stdout = file
     print()
