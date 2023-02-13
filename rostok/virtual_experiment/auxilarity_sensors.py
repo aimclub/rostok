@@ -123,6 +123,23 @@ class RobotSensor:
             return None
 
     @staticmethod
+    def amount_contact_forces_object(obj):
+        """Sensor of standart deviation of contact forces that affect on object
+
+        Args:
+            in_robot (Robot): Robot to measure sum of contact forces
+
+        Returns:
+            dict[int, float]: Dictionary which keys are id object and values of standart deviation of contact forces
+        """
+
+        if np.size(obj.list_n_forces) > 0:
+            amount_contact_force_obj = np.size(obj.list_n_forces)
+            return dict([(-1, amount_contact_force_obj)])
+        else:
+            return None
+
+    @staticmethod
     def contact_coord(obj: ChronoBodyEnv):
         """Sensor of COG of contact points
         Args:

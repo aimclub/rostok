@@ -263,11 +263,13 @@ class SimulationStepOptimization:
             current_data_std_obj_force = RobotSensor.std_contact_forces_object(self.grasp_object)
             current_data_cont_coord = RobotSensor.contact_coord(self.grasp_object)
             current_data_abs_coord_COG_obj = RobotSensor.abs_coord_COG_obj(self.grasp_object)            
+            current_data_amount_obj_contact_surfaces = RobotSensor.amount_contact_forces_object(self.grasp_object)
 
-            current_data_amount_obj_contact_surfaces = dict([
-                (-1, len([item for item in self.grasp_object.list_n_forces if item != 0]))
-            ])
-            # Append current data in output arries
+
+            # current_data_amount_obj_contact_surfaces = dict([
+            #     (-1, len([item for item in self.grasp_object.list_n_forces if item != 0]))
+            # ])
+            # Append current data in output arries amount_contact_forces_object(obj)
             arrays_simulation_data_joint_angle = list(
                 map(append_arr_in_dict, current_data_joint_angle.items(),
                     arrays_simulation_data_joint_angle))
@@ -289,9 +291,10 @@ class SimulationStepOptimization:
                                                        current_data_std_obj_force.items(),
                                                        arrays_simulation_data_obj_force)
 
-            arrays_simulation_data_amount_obj_contact_surfaces = map(
-                append_arr_in_dict, current_data_amount_obj_contact_surfaces.items(),
-                arrays_simulation_data_amount_obj_contact_surfaces)
+            if current_data_amount_obj_contact_surfaces is not None:
+                arrays_simulation_data_amount_obj_contact_surfaces = map(
+                    append_arr_in_dict, current_data_amount_obj_contact_surfaces.items(),
+                    arrays_simulation_data_amount_obj_contact_surfaces)
 
             if current_data_cont_coord is not None:
                 arrays_simulation_data_cont_coord = list(map(
