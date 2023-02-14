@@ -236,7 +236,6 @@ class SimulationStepOptimization:
 
         # Loop of simulation
         while not self.condion_stop_simulation.flag_stop_simulation():
-            # while vis.Run():
             self.chrono_system.Update()
             self.chrono_system.DoStepDynamics(time_step)
             # Realtime for fixed step
