@@ -1,3 +1,4 @@
+# %%
 import networkx as nx
 
 import numpy as np
@@ -7,10 +8,12 @@ from tqdm import tqdm
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_vocabulary import NodeVocabulary
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
-import app.rule_extention as re
+import rule_without_chrono as re
+
+# %%
 
 def get_input_layer(node, dict_id_label_nodes):
-    input = torch.zeros(len(dict_id_label_nodes)).float()
+    input = torch.zeros(len(dict_id_label_nodes)).long()
     input[node] = 1
     return input
 
@@ -21,7 +24,7 @@ def vocabulary2batch_graph(rule_vocabulary: RuleVocabulary, max_rules: int):
     for _ in range(amount_rules):
         rules = rule_vocabulary.get_list_of_applicable_rules(batch_graph)
         if len(rules) > 0:
-            rule = rule_vocab.get_rule(rules[np.random.choice(len(rules))])
+            rule = rule_vocabulary.get_rule(rules[np.random.choice(len(rules))])
             batch_graph.apply_rule(rule)
         else:
             break
@@ -38,18 +41,7 @@ def random_batch(skip_grams):
 
     return random_inputs, random_labels
 
-
-def embbed(graph: GraphGrammar):
-
-    sorted_id_nodes = nx.lexicographical_topological_sort(
-        graph, key=lambda x: graph.get_node_by_id(x).label)
-    sorted_name_nodes = list(map(lambda x: graph.get_node_by_id(x).label, sorted_id_nodes))
-
-    laplacian_matrix = nx.directed_laplacian_matrix(graph, nodelist=sorted_id_nodes)
-    adjacency_matrix = nx.to_numpy_array(graph, nodelist=sorted_id_nodes)
-
-    return sorted_id_nodes, laplacian_matrix, adjacency_matrix
-
+# %%
 
 class skipgramm_model(torch.nn.Module):
 
@@ -62,7 +54,7 @@ class skipgramm_model(torch.nn.Module):
 
     def forward(self, x):
         embdedings = self.embedding(x)
-        hidden_layer = torch.nn.functionla.relu(self.W(embdedings))
+        hidden_layer = torch.nn.functional.relu(self.W(embdedings))
         output_layer = self.WT(hidden_layer)
 
         return output_layer
@@ -99,32 +91,33 @@ def create_dict_node_labels(node_vocabulary: NodeVocabulary):
 
     return dict_id_label_nodes, dict_label_id_nodes
 
+# %%
+rule_vocab = re.init_extension_rules()
+node_vocabulary = rule_vocab.node_vocab
 
-if __name__ == '__main__':
-    rule_vocab, __ = re.init_extension_rules()
-    node_vocabulary = rule_vocab.node_vocab
+id2label, label2id = create_dict_node_labels(node_vocabulary)
 
-    id2label, label2id = create_dict_node_labels(node_vocabulary)
+model = skipgramm_model(len(id2label), 2)
 
-    model = skipgramm_model(len(id2label), 2)
+criterion = torch.nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
-    criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-    
-    graph = vocabulary2batch_graph(rule_vocab, 15)
-    pairs = skipgram(graph)
-    for epoch in tqdm(range(150000), total=len(pairs)):
-        input_batch, target_batch = random_batch(pairs)
-        input_batch = get_input_layer(input_batch, id2label)
-        target_batch = get_input_layer(target_batch, id2label)
+graph = vocabulary2batch_graph(rule_vocab, 15)
+pairs = skipgram(graph.get_uniq_representation(),label2id)
+for epoch in tqdm(range(150000), total=len(pairs)):
+    input_batch, target_batch = random_batch(pairs)
+    input_batch = get_input_layer(input_batch, id2label)
+    target_batch = get_input_layer(target_batch, id2label)
 
-        optimizer.zero_grad()
-        output = model(input_batch)
+    optimizer.zero_grad()
+    output = model(input_batch)
 
-        # output : [batch_size, voc_size], target_batch : [batch_size] (LongTensor, not one-hot)
-        loss = criterion(output, target_batch)
-        if (epoch + 1) % 10000 == 0:
-            print('Epoch:', '%04d' % (epoch + 1), 'cost =', '{:.6f}'.format(loss))
+    # output : [batch_size, voc_size], target_batch : [batch_size] (LongTensor, not one-hot)
+    loss = criterion(output, target_batch)
+    if (epoch + 1) % 10000 == 0:
+        print('Epoch:', '%04d' % (epoch + 1), ' cost =', '{:.6f}'.format(loss))
 
-        loss.backward(retain_graph=True)
-        optimizer.step()
+    loss.backward(retain_graph=True)
+    optimizer.step()
+
+

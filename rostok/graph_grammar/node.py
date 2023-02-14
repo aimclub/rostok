@@ -3,7 +3,6 @@ from dataclasses import dataclass
 
 import matplotlib.pyplot as plt
 import networkx as nx
-import pychrono as chrono
 from networkx.algorithms.traversal import dfs_preorder_nodes
 
 
@@ -367,11 +366,11 @@ class GraphGrammar(nx.DiGraph):
         return False
 
     def get_uniq_representation(self) -> list[list[str]]:
-        """Returns dfs partition node labels. 
+        """Returns dfs partition node labels.
         Where branches is sorted by lexicographic order
 
         Returns:
-            list[list[str]]: dfs branches 
+            list[list[str]]: dfs branches
         """
 
         self_dfs_paths = self.graph_partition_dfs()
