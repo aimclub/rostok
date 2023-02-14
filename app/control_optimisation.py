@@ -22,20 +22,16 @@ def get_object_to_grasp():
     return obj
 
 
-def grab_crtitrion(sim_output: dict[int, SimOut], grab_robot, node_feature: list[list[Node]], gait,
+def grab_crtitrion(sim_output: dict[int, SimOut],
                    weight):
-    j_nodes = criterion.nodes_division(grab_robot, node_feature[1])
-    b_nodes = criterion.nodes_division(grab_robot, node_feature[0])
-    rb_nodes = criterion.sort_left_right(grab_robot, node_feature[3], node_feature[0])
-    lb_nodes = criterion.sort_left_right(grab_robot, node_feature[2], node_feature[0])
 
-    return criterion.criterion_calc(sim_output, b_nodes, j_nodes, rb_nodes, lb_nodes, weight, gait)
+    return criterion.criterion_calc(sim_output, weight)
 
 
-def create_grab_criterion_fun(node_features, gait, weight):
+def create_grab_criterion_fun(weight):
 
-    def fun(sim_output, grab_robot):
-        return grab_crtitrion(sim_output, grab_robot, node_features, gait, weight)
+    def fun(sim_output):
+        return grab_crtitrion(sim_output, weight)
 
     return fun
 

@@ -1,8 +1,8 @@
 import random
+import pickle 
 
 import pychrono as chrono
-from example_vocabulary import (B_NODES, J_NODES, LM_MOUNTS, RM_MOUNTS,
-                                get_terminal_graph_three_finger)
+from example_vocabulary import (get_terminal_graph_three_finger)
 
 import rostok.virtual_experiment.simulation_step as step
 from rostok.block_builder.envbody_shapes import Box
@@ -49,20 +49,16 @@ sim.change_config_system(config_sys)
 # Start simulation
 sim_output = sim.simulate_system(TIME_STEP, True)
 
-# Weight coefficients for reward function
-WEIGHTS = [5, 10, 1]
-# Time to grasp object
-GAIT_PERIOD = 2.5
+#Save dictionary
+f = open('simout.bin', 'wb')
+pickle.dump(sim_output[-1], f)
+f.close()
 
-#Applying supportive functions to division nodes of graph onto different types
-J_NODES_NEW = nodes_division(sim.grab_robot, J_NODES)
-B_NODES_NEW = nodes_division(sim.grab_robot, B_NODES)
-RB_NODES_NEW = sort_left_right(sim.grab_robot, RM_MOUNTS, B_NODES)
-LB_NODES_NEW = sort_left_right(sim.grab_robot, LM_MOUNTS, B_NODES)
-RJ_NODES_NEW = sort_left_right(sim.grab_robot, RM_MOUNTS, J_NODES)
-LJ_NODES_NEW = sort_left_right(sim.grab_robot, LM_MOUNTS, J_NODES)
+# Weight coefficients for reward function
+WEIGHTS = [5, 10, 2]
+
 
 # Calculate reward value
-reward = criterion_calc(sim_output, B_NODES_NEW, J_NODES_NEW, LB_NODES_NEW, RB_NODES_NEW, WEIGHTS,
-                        GAIT_PERIOD)
+reward = criterion_calc(sim_output, WEIGHTS)
 print(reward)
+

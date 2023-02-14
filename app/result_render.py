@@ -32,8 +32,8 @@ best_graph, best_control, reward = read_report(path, rule_vocabul)
 
 # %% Create condig optimizing control
 
-GAIT = 2.5
-WEIGHT = [3, 1, 1, 2]
+
+WEIGHT = [5, 10, 2]
 
 cfg = ConfigRewardFunction()
 cfg.bound = (2, 10)
@@ -44,7 +44,7 @@ cfg.time_sim = 2
 cfg.flags = [FlagMaxTime(2), FlagNotContact(1), FlagSlipout(0.5, 0.5)]
 """Wraps function call"""
 
-criterion_callback = create_grab_criterion_fun(node_features, GAIT, WEIGHT)
+criterion_callback = create_grab_criterion_fun(node_features, WEIGHT)
 traj_generator_fun = create_traj_fun(cfg.time_sim, cfg.time_step)
 
 cfg.criterion_callback = criterion_callback
