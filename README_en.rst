@@ -75,7 +75,7 @@ The framework was developed in [ITMO University](https://en.itmo.ru/).
 * Kirill Zharkov - team leader
 * Yefim Osipov - developer
 * Dmitriy Ivolga - developer
-* Kirill Nasonov - developer, Q&A Engineer
+* Kirill Nasonov - developer
 * Sergey Kolyubin - chief scientist
 <!-- * Mikhail Chaikovskii - reaserch developer -->
 
