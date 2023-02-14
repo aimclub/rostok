@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 import pychrono as chrono
-from scipy.optimize import direct, shgo
+from scipy.optimize import direct, shgo, dual_annealing
 
 from rostok.block_builder.blocks_utils import NodeFeatures
 from rostok.graph_grammar.node import GraphGrammar
@@ -26,9 +26,9 @@ class ConfigRewardFunction:
             (GraphGrammar, list[float]) -> list[list] in dfs form, See class SimulationStepOptimization
     """
     bound: tuple[float, float] = (-1, 1)
-    iters: int = 10
+    iters: int = 20
     sim_config: dict[str, str] = field(default_factory=dict)
-    time_step: float = 0.001
+    time_step: float = 0.005
     time_sim: float = 2
     flags: list = field(default_factory=list)
     criterion_callback: Callable[[SimOut, Robot], float] = None
@@ -78,14 +78,15 @@ class ControlOptimizer():
 
         def reward(x, is_vis=False):
             # Init object state
+            x = [round(elem, 3) for elem in x]
             object_to_grab = self.cfg.get_rgab_object_callback()
             arr_traj = self.cfg.params_to_timesiries_callback(generated_graph, x)
             sim = SimulationStepOptimization(arr_traj, generated_graph, object_to_grab)
             sim.set_flags_stop_simulation(self.cfg.flags)
             sim.change_config_system(self.cfg.sim_config)
             sim_output = sim.simulate_system(self.cfg.time_step, is_vis)
-            rew = self.cfg.criterion_callback(sim_output, sim.grab_robot)
-
+            rew = self.cfg.criterion_callback(sim_output)
+            print('Reward:',rew, 'Vec:', x)
             return rew
 
         return reward
@@ -96,5 +97,5 @@ class ControlOptimizer():
         multi_bound = create_multidimensional_bounds(generated_graph, self.cfg.bound)
         if len(multi_bound) == 0:
             return (0, 0)
-        result = direct(reward_fun, multi_bound, maxiter=self.cfg.iters)
+        result = dual_annealing(reward_fun, multi_bound, maxiter=self.cfg.iters)
         return (result.fun, result.x)
