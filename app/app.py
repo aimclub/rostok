@@ -31,23 +31,22 @@ def plot_graph(graph: GraphGrammar):
 
 
 # %% Create extension rule vocabulary
-rule_vocabul, node_features = rule_extention.init_extension_rules()
+rule_vocabul, _ = rule_extention.init_extension_rules()
 
 # %% Create condig optimizing control
 
-GAIT = 2.5
-WEIGHT = [3, 1, 1, 2]
+WEIGHT = [5, 10, 2]
 
 cfg = ConfigRewardFunction()
-cfg.bound = (2, 10)
-cfg.iters = 5
+cfg.bound = (-7, 7)
+cfg.iters = 20
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
 cfg.time_step = 0.005
 cfg.time_sim = 2
-cfg.flags = [FlagMaxTime(2), FlagNotContact(1), FlagSlipout(0.5, 0.5)]
+cfg.flags = [FlagMaxTime(cfg.time_sim), FlagNotContact(1), FlagSlipout(0.5, 0.5)]
 """Wraps function call"""
 
-criterion_callback = create_grab_criterion_fun(node_features, GAIT, WEIGHT)
+criterion_callback = create_grab_criterion_fun(WEIGHT)
 traj_generator_fun = create_traj_fun(cfg.time_sim, cfg.time_step)
 
 cfg.criterion_callback = criterion_callback
