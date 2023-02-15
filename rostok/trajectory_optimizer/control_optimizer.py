@@ -86,7 +86,6 @@ class ControlOptimizer():
             sim.change_config_system(self.cfg.sim_config)
             sim_output = sim.simulate_system(self.cfg.time_step, is_vis)
             rew = self.cfg.criterion_callback(sim_output)
-            print('Reward:',rew, 'Vec:', x)
             return rew
 
         return reward

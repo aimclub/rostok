@@ -44,7 +44,7 @@ cfg.time_sim = 2
 cfg.flags = [FlagMaxTime(2), FlagNotContact(1), FlagSlipout(0.5, 0.5)]
 """Wraps function call"""
 
-criterion_callback = create_grab_criterion_fun(node_features, WEIGHT)
+criterion_callback = create_grab_criterion_fun(WEIGHT)
 traj_generator_fun = create_traj_fun(cfg.time_sim, cfg.time_step)
 
 cfg.criterion_callback = criterion_callback
