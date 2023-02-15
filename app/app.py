@@ -33,13 +33,15 @@ def plot_graph(graph: GraphGrammar):
 # %% Create extension rule vocabulary
 rule_vocabul, _ = rule_extention.init_extension_rules()
 
-# %% Create condig optimizing control
+# %% Create config optimizing control
 
+# List of weights for each criterion (force, time, COG)
 WEIGHT = [5, 10, 2]
 
+# At least 20 iterations are needed for good results
 cfg = ConfigRewardFunction()
 cfg.bound = (-7, 7)
-cfg.iters = 20
+cfg.iters = 20 
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
 cfg.time_step = 0.005
 cfg.time_sim = 2
