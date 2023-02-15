@@ -55,7 +55,9 @@ class ContactReporter(chrono.ReportContactCallback):
         """
         self._body = chrono_body
         self.__current_normal_forces = None
+        self.__current_contact_coord = None
         self.__list_normal_forces = []
+        self.__list_contact_coord = []
         super().__init__()
 
     def OnReportContact(self, pA: chrono.ChVectorD, pB: chrono.ChVectorD,
@@ -84,6 +86,13 @@ class ContactReporter(chrono.ReportContactCallback):
             self.__current_normal_forces = react_forces.x
             self.__list_normal_forces.append(react_forces.x)
 
+            if (body_a == self._body):
+                self.__current_contact_coord = [pA.x, pA.y, pA.z]
+                self.__list_contact_coord.append(self.__current_contact_coord)
+            elif(body_b == self._body):
+                self.__current_contact_coord = [pB.x, pB.y, pB.z]
+                self.__list_contact_coord.append(self.__current_contact_coord)
+
         return True
 
     def is_empty(self):
@@ -91,12 +100,18 @@ class ContactReporter(chrono.ReportContactCallback):
 
     def list_clear(self):
         self.__list_normal_forces.clear()
+    
+    def list_cont_clear(self):
+        self.__list_contact_coord.clear()
 
     def get_normal_forces(self):
         return self.__current_normal_forces
 
     def get_list_n_forces(self):
         return self.__list_normal_forces
+
+    def get_list_c_coord(self):
+        return self.__list_contact_coord    
 
 
 class ChronoBody(BlockBody, ABC):
@@ -261,6 +276,19 @@ class ChronoBody(BlockBody, ABC):
             self.__contact_reporter.list_clear()
             container.ReportAllContacts(self.__contact_reporter)
         return self.__contact_reporter.get_list_n_forces()
+
+    @property
+    def list_c_coord(self) -> list:
+        """Return a list of all the contact forces.
+        Returns:
+            list: List normal forces of all the contacts points
+        """
+        container = self.builder.GetContactContainer()
+        contacts = container.GetNcontacts()
+        if contacts:
+            self.__contact_reporter.list_cont_clear()
+            container.ReportAllContacts(self.__contact_reporter)
+        return self.__contact_reporter.get_list_c_coord()
 
 
 class BoxChronoBody(ChronoBody, RobotBody):

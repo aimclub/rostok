@@ -5,8 +5,8 @@ from typing import Union
 @dataclass
 class Box:
     width_x: float = 0.1
-    length_y: float = 0.2
-    height_z: float = 0.2
+    length_y: float = 0.5
+    height_z: float = 0.1
 
 
 @dataclass

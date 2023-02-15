@@ -6,7 +6,7 @@ from rostok.block_builder.envbody_shapes import Cylinder
 from rostok.block_builder.node_render import (ChronoBodyEnv,
                                               DefaultChronoMaterial,
                                               FrameTransform)
-from rostok.criterion.flags_simualtions import FlagMaxTime, FlagNotContact
+from rostok.criterion.flags_simualtions import FlagMaxTime, FlagNotContact, FlagSlipout
 from rostok.graph_grammar.node import BlockWrapper, GraphGrammar, Node
 from rostok.trajectory_optimizer.control_optimizer import (
     ConfigRewardFunction, ControlOptimizer)
@@ -22,25 +22,21 @@ def get_object_to_grasp():
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=Cylinder(),
                        material=matich,
-                       pos=FrameTransform([0, 1, 0], [0, -0.048, 0.706, 0.706]))
+                       pos=FrameTransform([0, 0.6, 0], [0, -0.048, 0.706, 0.706]))
 
     return obj
 
 # Calculate criterion of grabing
-def grab_crtitrion(sim_output: dict[int, SimOut], grab_robot, node_feature: list[list[Node]], gait,
+def grab_crtitrion(sim_output: dict[int, SimOut],
                    weight):
-    j_nodes = criterion.nodes_division(grab_robot, node_feature[1])
-    b_nodes = criterion.nodes_division(grab_robot, node_feature[0])
-    rb_nodes = criterion.sort_left_right(grab_robot, node_feature[3], node_feature[0])
-    lb_nodes = criterion.sort_left_right(grab_robot, node_feature[2], node_feature[0])
 
-    return criterion.criterion_calc(sim_output, b_nodes, j_nodes, rb_nodes, lb_nodes, weight, gait)
+    return criterion.criterion_calc(sim_output, weight)
 
 # Create criterion function
-def create_grab_criterion_fun(node_features, gait, weight):
+def create_grab_criterion_fun(weight):
 
-    def fun(sim_output, grab_robot):
-        return grab_crtitrion(sim_output, grab_robot, node_features, gait, weight)
+    def fun(sim_output):
+        return grab_crtitrion(sim_output, weight)
 
     return fun
 
@@ -52,22 +48,19 @@ def create_traj_fun(stop_time: float, time_step: float):
 
     return fun
 
-
- 
-GAIT = 2.5
-WEIGHT = [5, 0, 1, 5]
+WEIGHT = [5, 10, 2]
 
 # Init configuration of control optimizing
 cfg = ConfigRewardFunction()
-cfg.bound = (-5, 5)
-cfg.iters = 2
+cfg.bound = (-7, 7)
+cfg.iters = 20
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
 cfg.time_step = 0.005
-cfg.time_sim = 2
-cfg.flags = [FlagMaxTime(cfg.time_sim)]
+cfg.time_sim = 3
+cfg.flags = [FlagMaxTime(cfg.time_sim), FlagNotContact(1), FlagSlipout(0.5, 0.5)]
 """Wraps function call"""
 
-criterion_callback = create_grab_criterion_fun(example_vocabulary.NODE_FEATURES, GAIT, WEIGHT)
+criterion_callback = create_grab_criterion_fun(WEIGHT)
 traj_generator_fun = create_traj_fun(cfg.time_sim, cfg.time_step)
 
 cfg.criterion_callback = criterion_callback
@@ -81,3 +74,8 @@ graph = example_vocabulary.get_terminal_graph_three_finger()
 # Run optimization
 res = control_optimizer.start_optimisation(graph)
 print(res)
+
+# Print result with visualisation
+rew_func = control_optimizer.create_reward_function(graph)
+rew_func(res[1], True)
+pass
