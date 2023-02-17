@@ -12,7 +12,7 @@ import numpy as np
 def plot_graph(graph):
     plt.figure()
     nx.draw_networkx(graph, pos=nx.kamada_kawai_layout(graph, dim=2), node_size=800,
-                    labels={n: graph.nodes[n]["Node"].label for n in G})
+                    labels={n: graph.nodes[n]["Node"].label for n in graph})
     #plt.figure()
     #nx.draw_networkx(graph, pos=nx.kamada_kawai_layout(G, dim=2), node_size=800)
     plt.show()
@@ -32,8 +32,6 @@ def init_extension_rules():
     node_vocab.create_node("J")
     node_vocab.create_node("L")
     node_vocab.create_node("F")
-    node_vocab.create_node("M")
-    node_vocab.create_node("EF")
     node_vocab.create_node("EM")
     node_vocab.create_node("SML")
     node_vocab.create_node("SMR")
@@ -155,5 +153,3 @@ def init_extension_rules():
     rule_vocab.create_rule("TerminalJoint", ["J"], ["J1"], 0 , 0)
 
     return rule_vocab
-
-
