@@ -1,9 +1,6 @@
-from copy import deepcopy
 from dataclasses import dataclass
 
-import matplotlib.pyplot as plt
 import networkx as nx
-import pychrono as chrono
 from networkx.algorithms.traversal import dfs_preorder_nodes
 
 
