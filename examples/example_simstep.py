@@ -14,13 +14,11 @@ from rostok.trajectory_optimizer.control_optimizer import num_joints
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
 from rostok.graph_grammar.graph_utils import plot_graph
-import open3d
-import pathlib
 from rostok.block_builder import envbody_shapes
 
  
 
-badi = envbody_shapes.FromMesh("examples\Ocpocmaqs_scaled12.obj")
+
 
 
 mechs = [
@@ -38,13 +36,14 @@ for get_graph in mechs:
     arr_trj = create_torque_traj_from_x(graph, const_torque_koef, MAX_TIME, TIME_STEP)
 
     # Create object to grasp
+    shape = envbody_shapes.FromMesh("examples\obj_grasp\Ocpocmaqs_scaled.obj")
     mat = DefaultChronoMaterial()
     mat.Friction = 0.65
     mat.DampingF = 0.65
     obj = BlockWrapper(ChronoBodyEnv,
-                       shape=badi,
+                       shape=shape,
                        material=mat,
-                       pos=FrameTransform([0, 1, 0], [0, 0, 0, 1]))
+                       pos=FrameTransform([0, 1, 0], [ 0.854,  0.354,  0.354,  0.146]))
 
     # Configurate simulation
     config_sys = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
