@@ -19,7 +19,32 @@ from rostok.block_builder import envbody_shapes
  
 
 
+def get_obj_complex():
+        # Create object to grasp
+    shape = envbody_shapes.FromMesh("examples\obj_grasp\Ocpocmaqs_scaled.obj")
+    mat = DefaultChronoMaterial()
+    mat.Friction = 0.65
+    mat.DampingF = 0.65
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=shape,
+                       material=mat,
+                       pos=FrameTransform([0, 1, 0], [ 0.854,  0.354,  0.354,  0.146]))
+    return obj
 
+def get_obj_complex_a():
+    shape = envbody_shapes.Ellipsoid()
+    shape.radius_x = 0.2
+    shape.radius_y = 0.3
+    shape.radius_z = 0.18
+    
+    mat = DefaultChronoMaterial()
+    mat.Friction = 0.30
+    mat.DampingF = 0.8
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=shape,
+                       material=mat,
+                       pos=FrameTransform([0, 0.8, 0], [ 1,  0,  0, 0]))
+    return obj
 
 mechs = [
     get_terminal_graph_three_finger, get_terminal_graph_no_joints, get_terminal_graph_two_finger
@@ -44,7 +69,7 @@ for get_graph in mechs:
                        shape=shape,
                        material=mat,
                        pos=FrameTransform([0, 1, 0], [ 0.854,  0.354,  0.354,  0.146]))
-
+    obj = get_obj_complex()
     # Configurate simulation
     config_sys = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
     flags = [FlagMaxTime(MAX_TIME)]
