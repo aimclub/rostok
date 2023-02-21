@@ -28,7 +28,7 @@ class ConfigRewardFunction:
     bound: tuple[float, float] = (-1, 1)
     iters: int = 20
     sim_config: dict[str, str] = field(default_factory=dict)
-    time_step: float = 0.001
+    time_step: float = 0.005
     time_sim: float = 2
     flags: list = field(default_factory=list)
     criterion_callback: Callable[[SimOut, Robot], float] = None

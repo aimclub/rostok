@@ -33,7 +33,7 @@ def plot_graph(graph: GraphGrammar):
 # %% Create extension rule vocabulary
 rule_vocabul, _ = rule_extention.init_extension_rules()
 
-# %% Create condig optimizing control
+# %% Create config optimizing control
 
 # List of weights for each criterion (force, time, COG)
 WEIGHT = [5, 10, 2]

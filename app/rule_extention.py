@@ -245,6 +245,6 @@ def init_extension_rules():
     list_B = node_vocab.get_list_of_nodes(["L1", "L2", "L3", "F1", "F2", "F3", "U1", "U2"])
     # Required for criteria calc
     node_features = [list_B, list_J, list_LM, list_RM]
-    return rule_vocab, node_features, node_vocab
+    return rule_vocab, node_features
 
 

@@ -79,5 +79,3 @@ print(res)
 rew_func = control_optimizer.create_reward_function(graph)
 rew_func(res[1], True)
 pass
-res = control_optimizer.start_optimisation(graph)
-print(res)
