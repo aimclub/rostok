@@ -11,7 +11,7 @@ from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact, Fla
 from rostok.graph_generators.mcts_helper import OptimizedGraphReport
 from rostok.graph_grammar.graphgrammar_explorer import ruleset_explorer
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.trajectory_optimizer.control_optimizer import (ConfigConstTorque, ControlOptimizer)
+from rostok.trajectory_optimizer.control_optimizer import (ConfigVectorJoints, ControlOptimizer)
 
 rule_vocabul, node_features = rule_extention.init_extension_rules()
 
@@ -26,7 +26,7 @@ print(f"Uniq graphs :{len(out[0])}")
 # %% Create config for control optimizer
 GAIT = 2.5
 WEIGHT = [3, 1, 1, 2]
-cfg = ConfigConstTorque()
+cfg = ConfigVectorJoints()
 cfg.bound = (2, 10)
 cfg.iters = 5
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}

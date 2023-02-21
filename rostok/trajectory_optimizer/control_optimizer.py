@@ -3,7 +3,7 @@ from typing import Callable
 
 import pychrono as chrono
 from scipy.optimize import direct, shgo, dual_annealing
-
+from functools import partial
 from rostok.block_builder.blocks_utils import NodeFeatures
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.virtual_experiment.robot import Robot
@@ -33,14 +33,16 @@ class _ConfigRewardFunction:
     params_to_timesiries_callback: Callable[[GraphGrammar, list[float]], list] = None
 
 
-class ConfigConstTorque(_ConfigRewardFunction):
+class ConfigVectorJoints(_ConfigRewardFunction):
     """
+    Length of vector X equal number of joints
     Attributes:
         bound: tuple (lower bound, upper bound) extend to joints number
         iters: number of iteration optimization algorithm
     """
     bound: tuple[float, float] = (-1, 1)
     iters: int = 10
+    optimizer_scipy = partial(direct)
 
 
 class ConfigGraphControl(_ConfigRewardFunction):
@@ -70,7 +72,7 @@ def num_joints(graph: GraphGrammar) -> int:
 
 class ControlOptimizer():
 
-    def __init__(self, cfg: Union[ConfigGraphControl, ConfigConstTorque]) -> None:
+    def __init__(self, cfg: Union[ConfigGraphControl, ConfigVectorJoints]) -> None:
         self.cfg = cfg
 
     def create_reward_function(self,
@@ -119,12 +121,12 @@ class ControlOptimizer():
         tuple[float, list[float]]
         Reward, values for generate control
         """
-        if isinstance(self.cfg, ConfigConstTorque):
+        if isinstance(self.cfg, ConfigVectorJoints):
             reward_fun = self.create_reward_function(generated_graph, is_debug=is_debug)
             multi_bound = create_multidimensional_bounds(generated_graph, self.cfg.bound)
             if len(multi_bound) == 0:
                 return (0, 0)
-            result = direct(reward_fun, multi_bound, maxiter=self.cfg.iters)
+            result = self.cfg.optimizer_scipy(reward_fun, multi_bound, maxiter=self.cfg.iters)
             return (result.fun, result.x)
         elif isinstance(self.cfg, ConfigGraphControl):
             n_joint = num_joints(generated_graph)
