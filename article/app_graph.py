@@ -8,6 +8,7 @@ import optmizers_config
 from obj_grasp.objects import get_obj_easy_box, get_obj_hard_ellipsoid
 from rule_sets import rule_extention_graph
 
+import hyperparameters as hp
 from rostok.graph_generators.mcts_helper import (make_mcts_step,
                                                  prepare_mcts_state_and_helper)
 from rostok.graph_grammar.node import GraphGrammar
@@ -19,9 +20,9 @@ cfg = optmizers_config.get_cfg_graph(rule_extention_graph.torque_dict)
 cfg.get_rgab_object_callback = get_obj_hard_ellipsoid
 control_optimizer = ControlOptimizer(cfg)
  
-base_iteration_limit = 50
-max_numbers_rules = 20
-iteration_reduction_rate = 0.7
+base_iteration_limit = hp.BASE_ITERATION_LIMIT
+max_numbers_rules = hp.MAX_NUMBER_RULES
+iteration_reduction_rate = hp.ITERATION_REDUCTION_TIME
 
 # Create graph environments for algorithm (not gym)
 graph_env = prepare_mcts_state_and_helper(GraphGrammar(), rule_vocabul, control_optimizer, max_numbers_rules,
@@ -62,6 +63,7 @@ with open(Path(path, "mcts_result.txt"), "a") as file:
     print()
     print("Object to grasp:", gb_params.get("shape"))
     print("Object initial coordinats:", gb_params.get("pos"))
+    print("Time optimization:", ex)
     sys.stdout = original_stdout   
 
 # visualisation in the end of the search

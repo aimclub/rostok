@@ -1,3 +1,5 @@
+import hyperparameters as hp
+
 from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact, FlagSlipout)
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x, create_control_from_graph
@@ -11,14 +13,16 @@ from scipy.optimize import dual_annealing
 
 
 def get_cfg_standart():
-    WEIGHT = [5, 5, 2]
+    WEIGHT = hp.CRITERION_WEIGHTS
     # Init configuration of control optimizing
     cfg = ConfigVectorJoints()
     cfg.bound = (0, 15)
-    cfg.iters = 20
-    cfg.time_step = 0.0025
-    cfg.time_sim = 3
-    cfg.flags = [FlagMaxTime(cfg.time_sim), FlagNotContact(2), FlagSlipout(0.8, 0.8)]
+    cfg.iters = hp.CONTROL_OPTIMIZATION_ITERATION
+    cfg.time_step = hp.TIME_STEP_SIMULATION
+    cfg.time_sim = hp.TIME_SIMULATION
+    cfg.flags = [FlagMaxTime(cfg.time_sim), 
+                 FlagNotContact(hp.FLAG_TIME_NO_CONTACT), 
+                 FlagSlipout(hp.FLAG_TIME_NO_CONTACT, hp.FLAG_TIME_SLIPOUT)]
     """Wraps function call"""
     criterion_callback = partial(criterion_calc, weights=WEIGHT)
     traj_generator_fun = partial(create_torque_traj_from_x,
@@ -31,12 +35,14 @@ def get_cfg_standart():
 
 
 def get_cfg_graph(torque_dict: dict[Node, float]):
-    WEIGHT = [5, 5, 2]
+    WEIGHT = hp.CRITERION_WEIGHTS
     # Init configuration of control optimizing
     cfg = ConfigGraphControl()
-    cfg.time_step = 0.0025
-    cfg.time_sim = 3
-    cfg.flags = [FlagMaxTime(cfg.time_sim), FlagNotContact(2), FlagSlipout(0.8, 0.8)]
+    cfg.time_step = hp.TIME_STEP_SIMULATION
+    cfg.time_sim = hp.TIME_SIMULATION
+    cfg.flags = [FlagMaxTime(cfg.time_sim), 
+                 FlagNotContact(hp.FLAG_TIME_NO_CONTACT), 
+                 FlagSlipout(hp.FLAG_TIME_NO_CONTACT, hp.FLAG_TIME_SLIPOUT)]
     """Wraps function call"""
     criterion_callback = partial(criterion_calc, weights=WEIGHT)
     traj_generator_fun = partial(create_control_from_graph,
@@ -50,15 +56,17 @@ def get_cfg_graph(torque_dict: dict[Node, float]):
 
 
 def get_cfg_standart_anealing():
-    WEIGHT = [5, 5, 2]
+    WEIGHT = hp.CRITERION_WEIGHTS
     # Init configuration of control optimizing
     cfg = ConfigVectorJoints()
     cfg.optimizer_scipy = partial(dual_annealing)
     cfg.bound = (0, 15)
-    cfg.iters = 20
-    cfg.time_step = 0.0025
-    cfg.time_sim = 3
-    cfg.flags = [FlagMaxTime(cfg.time_sim), FlagNotContact(2), FlagSlipout(0.8, 0.8)]
+    cfg.iters = hp.CONTROL_OPTIMIZATION_ITERATION
+    cfg.time_step = hp.TIME_STEP_SIMULATION
+    cfg.time_sim = hp.TIME_SIMULATION
+    cfg.flags = [FlagMaxTime(cfg.time_sim), 
+                 FlagNotContact(hp.FLAG_TIME_NO_CONTACT), 
+                 FlagSlipout(hp.FLAG_TIME_NO_CONTACT, hp.FLAG_TIME_SLIPOUT)]
     """Wraps function call"""
     criterion_callback = partial(criterion_calc, weights=WEIGHT)
     traj_generator_fun = partial(create_torque_traj_from_x,
@@ -68,5 +76,3 @@ def get_cfg_standart_anealing():
     cfg.criterion_callback = criterion_callback
     cfg.params_to_timesiries_callback = traj_generator_fun
     return cfg
-
-
