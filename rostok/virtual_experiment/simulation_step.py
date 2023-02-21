@@ -208,7 +208,6 @@ class SimulationStepOptimization:
             vis.Initialize()
             vis.AddCamera(chrono.ChVectorD(1.5, 3, -2))
             vis.AddTypicalLights()
-            vis.EnableCollisionShapeDrawing(True)
 
         # Initilize temporarily dictionary of arries output data
         arrays_simulation_data_time = []
@@ -239,11 +238,9 @@ class SimulationStepOptimization:
             self.chrono_system.Update()
             self.chrono_system.DoStepDynamics(time_step)
             # Realtime for fixed step
-
-            if self.chrono_system.GetStepcount() % int(FRAME_STEP / time_step) == 0:
-                if visualize:
-
-                    vis.Run()
+            if visualize:
+                vis.Run()
+                if self.chrono_system.GetStepcount() % int(FRAME_STEP / time_step) == 0:
                     vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
                     vis.Render()
                     vis.EndScene()
