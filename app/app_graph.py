@@ -8,51 +8,39 @@ import mcts
 import networkx as nx
 # chrono imports
 import pychrono as chrono
-import rule_extention
-from control_optimisation import (create_grab_criterion_fun, create_traj_fun,
-                                  get_object_to_grasp)
+import rule_ext_graph_control
 
+from app.control_optimisation import (create_grab_criterion_fun,
+                                      create_traj_fun, create_traj_fun_graph,
+                                      get_object_to_grasp_sphere)
 from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact,
                                                 FlagSlipout)
 from rostok.graph_generators.mcts_helper import (make_mcts_step,
                                                  prepare_mcts_state_and_helper)
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.trajectory_optimizer.control_optimizer import (
-    ConfigRewardFunction, ControlOptimizer)
-
-
-def plot_graph(graph: GraphGrammar):
-    plt.figure()
-    nx.draw_networkx(graph,
-                     pos=nx.kamada_kawai_layout(graph, dim=2),
-                     node_size=800,
-                     labels={n: graph.nodes[n]["Node"].label for n in graph})
-    plt.show()
-
+from rostok.trajectory_optimizer.control_optimizer import (ConfigGraphControl,
+                                                           ControlOptimizer)
 
 # %% Create extension rule vocabulary
-rule_vocabul, _ = rule_extention.init_extension_rules()
-
+#rule_vocabul, node_features = rule_extention.init_extension_rules()
+rule_vocabul, node_features, torque_dict = rule_ext_graph_control.init_extension_rules()
 # %% Create condig optimizing control
 
-# List of weights for each criterion (force, time, COG)
-WEIGHT = [5, 10, 2]
+GAIT = 2.5
+WEIGHT = [3, 1, 1, 2]
 
-# At least 20 iterations are needed for good results
-cfg = ConfigRewardFunction()
-cfg.bound = (-7, 7)
-cfg.iters = 20 
+cfg = ConfigGraphControl()
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
 cfg.time_step = 0.005
 cfg.time_sim = 2
-cfg.flags = [FlagMaxTime(cfg.time_sim), FlagNotContact(1), FlagSlipout(0.5, 0.5)]
+cfg.flags = [FlagMaxTime(2), FlagNotContact(1.5), FlagSlipout(0.8, 0.8)]
 """Wraps function call"""
 
-criterion_callback = create_grab_criterion_fun(WEIGHT)
-traj_generator_fun = create_traj_fun(cfg.time_sim, cfg.time_step)
+criterion_callback = create_grab_criterion_fun(node_features, GAIT, WEIGHT)
+traj_generator_fun = create_traj_fun_graph(cfg.time_sim, cfg.time_step, torque_dict)
 
 cfg.criterion_callback = criterion_callback
-cfg.get_rgab_object_callback = get_object_to_grasp
+cfg.get_rgab_object_callback = get_object_to_grasp_sphere
 cfg.params_to_timesiries_callback = traj_generator_fun
 
 control_optimizer = ControlOptimizer(cfg)
@@ -65,7 +53,7 @@ base_iteration_limit = 50
 finish = False
 
 initial_graph = GraphGrammar()
-max_numbers_rules = 20
+max_numbers_rules = 30
 # Create graph environments for algorithm (not gym)
 graph_env = prepare_mcts_state_and_helper(initial_graph, rule_vocabul, control_optimizer, max_numbers_rules,
                                           Path("./results"))
@@ -76,7 +64,7 @@ n_steps = 0
 #%% Run first algorithm
 start = time.time()
 # the constant that determines how we reduce the number of iterations in the MCTS search
-iteration_reduction_rate = 0.7
+iteration_reduction_rate = 0.5
 while not finish:
     iteration_limit = base_iteration_limit - int(graph_env.counter_action/max_numbers_rules * (base_iteration_limit*iteration_reduction_rate))
     searcher = mcts.mcts(iterationLimit=iteration_limit)
@@ -95,7 +83,7 @@ report.save_lists()
 report.save_means()
 # additions to the file
 with open(Path(path, "mcts_result.txt"), "a") as file:
-    gb_params = get_object_to_grasp().kwargs
+    gb_params = get_object_to_grasp_sphere().kwargs
     original_stdout = sys.stdout
     sys.stdout = file
     print()

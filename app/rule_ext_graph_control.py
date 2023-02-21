@@ -28,7 +28,7 @@ def init_extension_rules():
     alpha = 45
     alpha_left = [0, 30, 60]
     alpha_right = [180, 150, 120]
-    length_link = [0.4, 0.6, 0.8]
+    length_link = [0.3, 0.6, 0.8 , 1]
 
     flat = list(map(lambda x: BlockWrapper(FlatChronoBody, width_x=x, height_y=0.05, depth_z=0.8),
                     width))
@@ -135,6 +135,12 @@ def init_extension_rules():
 
     #O = Node("O")
     node_vocab.create_node(label="J1", is_terminal=True, block_wrapper=revolve1)
+    node_vocab.create_node(label="J2", is_terminal=True, block_wrapper=revolve1)
+    node_vocab.create_node(label="J3", is_terminal=True, block_wrapper=revolve1)
+    node_vocab.create_node(label="J4", is_terminal=True, block_wrapper=revolve1)
+    node_vocab.create_node(label="J5", is_terminal=True, block_wrapper=revolve1)
+    node_vocab.create_node(label="J6", is_terminal=True, block_wrapper=revolve1)
+
     node_vocab.create_node(label="L1", is_terminal=True, block_wrapper=link[0])
     node_vocab.create_node(label="L2", is_terminal=True, block_wrapper=link[1])
     node_vocab.create_node(label="L3", is_terminal=True, block_wrapper=link[2])
@@ -239,12 +245,15 @@ def init_extension_rules():
     rule_vocab.create_rule("TerminalEndLimb1", ["EM"], ["U1"], 0 , 0)
     rule_vocab.create_rule("TerminalEndLimb2", ["EM"], ["U2"], 0 , 0)
 
-    list_J = node_vocab.get_list_of_nodes(["J1"])
+    list_J = node_vocab.get_list_of_nodes(["J1", "J2", "J3", "J4", "J5", "J6"])
     list_RM = node_vocab.get_list_of_nodes(["TR1", "TR2", "TR3","TRP1", "TRP2", "TRP3","TRM1", "TRM2", "TRM3", "TRPA1", "TRPA2", "TRPA3","TRMA1", "TRMA2", "TRMA3"])
     list_LM = node_vocab.get_list_of_nodes(["TL1", "TL2", "TL3","TLP1", "TLP2", "TLP3","TLM1", "TLM2", "TLM3", "TLPA1", "TLPA2", "TLPA3","TLMA1", "TLMA2", "TLMA3"] )
     list_B = node_vocab.get_list_of_nodes(["L1", "L2", "L3", "F1", "F2", "F3", "U1", "U2"])
     # Required for criteria calc
     node_features = [list_B, list_J, list_LM, list_RM]
-    return rule_vocab, node_features, node_vocab
+
+    torque_dict = {node_vocab.get_node("J1") : 10, node_vocab.get_node("J2"): 5, node_vocab.get_node("J3"): 4, node_vocab.get_node("J4"): 3, node_vocab.get_node("J5"): 2, node_vocab.get_node("J6"): 1}
+    time_dicst = {node_vocab.get_node("J1") : 0.2, node_vocab.get_node("J2"): 0, node_vocab.get_node("J3"): 0.4, node_vocab.get_node("J4"): 0.35, node_vocab.get_node("J5"): 0.1, node_vocab.get_node("J6"): 0.15}
+    return rule_vocab, node_features, torque_dict
 
 
