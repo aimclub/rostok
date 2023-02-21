@@ -64,6 +64,15 @@ with open(Path(path, "mcts_result.txt"), "a") as file:
     print("Object to grasp:", gb_params.get("shape"))
     print("Object initial coordinats:", gb_params.get("pos"))
     print("Time optimization:", ex)
+    print("MAX_NUMBER_RULES:", hp.MAX_NUMBER_RULES)
+    print("BASE_ITERATION_LIMIT:", hp.BASE_ITERATION_LIMIT)
+    print("ITERATION_REDUCTION_TIME:", hp.ITERATION_REDUCTION_TIME)
+    print("CRITERION_WEIGHTS:", hp.CRITERION_WEIGHTS)
+    print("CONTROL_OPTIMIZATION_ITERATION:", hp.CONTROL_OPTIMIZATION_ITERATION)
+    print("TIME_STEP_SIMULATION:", hp.TIME_STEP_SIMULATION)
+    print("TIME_SIMULATION:", hp.TIME_SIMULATION)
+    print("FLAG_TIME_NO_CONTACT:", hp.FLAG_TIME_NO_CONTACT)
+    print("FLAG_TIME_SLIPOUT:", hp.FLAG_TIME_SLIPOUT)
     sys.stdout = original_stdout   
 
 # visualisation in the end of the search
