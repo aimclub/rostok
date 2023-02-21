@@ -9,6 +9,7 @@ from rostok.graph_grammar.node import GraphGrammar
 from rostok.virtual_experiment.robot import Robot
 from rostok.virtual_experiment.simulation_step import (SimOut, SimulationStepOptimization)
 from typing import Union
+import time
 
 @dataclass
 class _ConfigRewardFunction:
@@ -73,7 +74,9 @@ class ControlOptimizer():
         self.cfg = cfg
 
     def create_reward_function(self,
-                               generated_graph: GraphGrammar) -> Callable[[float], float]:
+                               generated_graph: GraphGrammar,
+                               is_vis=False,
+                               is_debug=False) -> Callable[[float], float]:
         """Create reward function
         Args:
             generated_graph (GraphGrammar):
@@ -82,7 +85,9 @@ class ControlOptimizer():
             returns reward based on criterion_callback
         """
 
-        def reward(x, is_vis=False):
+        def reward(x, is_vis=is_vis, is_debug=is_debug):
+            start_time = time.time()
+            
             # Init object state
             object_to_grab = self.cfg.get_rgab_object_callback()
             arr_traj = self.cfg.params_to_timesiries_callback(generated_graph, x)
@@ -91,11 +96,18 @@ class ControlOptimizer():
             sim.change_config_system(self.cfg.sim_config)
             sim_output = sim.simulate_system(self.cfg.time_step, is_vis)
             rew = self.cfg.criterion_callback(sim_output)
+            
+            elapsed = time.time() - start_time
+            
+            if is_debug:
+                print('Rew:', rew, 'Vec:', x, "Elapsed t:", elapsed)
             return rew
 
         return reward
 
-    def start_optimisation(self, generated_graph: GraphGrammar) -> tuple[float, list[float]]:
+    def start_optimisation(self,
+                           generated_graph: GraphGrammar,
+                           is_debug=False) -> tuple[float, list[float]]:
         """Start find optimal control. If graph-based control is used, 
         then run one simulation. If torque control search is used, 
         it starts the optimization process.
@@ -108,7 +120,7 @@ class ControlOptimizer():
         Reward, values for generate control
         """
         if isinstance(self.cfg, ConfigConstTorque):
-            reward_fun = self.create_reward_function(generated_graph)
+            reward_fun = self.create_reward_function(generated_graph, is_debug=is_debug)
             multi_bound = create_multidimensional_bounds(generated_graph, self.cfg.bound)
             if len(multi_bound) == 0:
                 return (0, 0)
@@ -118,7 +130,7 @@ class ControlOptimizer():
             n_joint = num_joints(generated_graph)
             if n_joint == 0:
                 return (0, 0)
-            reward_fun = self.create_reward_function(generated_graph)
+            reward_fun = self.create_reward_function(generated_graph, is_debug=is_debug)
             unused_list = [0 for t in range(n_joint)]
             res = reward_fun(unused_list)
             return (res, unused_list)
