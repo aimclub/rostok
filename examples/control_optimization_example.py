@@ -9,7 +9,7 @@ from rostok.block_builder.node_render import (ChronoBodyEnv,
 from rostok.criterion.flags_simualtions import FlagMaxTime, FlagNotContact, FlagSlipout
 from rostok.graph_grammar.node import BlockWrapper, GraphGrammar, Node
 from rostok.trajectory_optimizer.control_optimizer import (
-    ConfigRewardFunction, ControlOptimizer)
+    ConfigConstTorque, ControlOptimizer)
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
 from rostok.virtual_experiment.simulation_step import SimOut
@@ -51,9 +51,9 @@ def create_traj_fun(stop_time: float, time_step: float):
 WEIGHT = [5, 10, 2]
 
 # Init configuration of control optimizing
-cfg = ConfigRewardFunction()
+cfg = ConfigConstTorque()
 cfg.bound = (-7, 7)
-cfg.iters = 20
+cfg.iters = 2
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
 cfg.time_step = 0.005
 cfg.time_sim = 3
@@ -78,4 +78,3 @@ print(res)
 # Print result with visualisation
 rew_func = control_optimizer.create_reward_function(graph)
 rew_func(res[1], True)
-pass
