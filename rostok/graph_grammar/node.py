@@ -66,6 +66,8 @@ class Rule:
     id_node_connect_child = -1
     id_node_connect_parent = -1
     _is_terminal: bool = None
+    is_sigleton: bool = False
+    rule_class:str = "None"
 
     @property
     def graph_insert(self):

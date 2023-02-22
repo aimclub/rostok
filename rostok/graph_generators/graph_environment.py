@@ -208,8 +208,22 @@ class GraphVocabularyEnvironment(GraphEnvironment):
             possible_rules_name = self.actions.get_list_of_applicable_rules(self.graph)
         else:
             possible_rules_name = self.actions.get_list_of_applicable_terminal_rules(self.graph)
+        class_list = []
+        for rule in self.state.rule_list:
+            class_list.append(self.actions.get_rule(rule).rule_class)
+        class_list = set(class_list)
+        temp_list = []
+        for rule_name in possible_rules_name:
+            rule = self.actions.get_rule(rule_name)
+            if rule.is_sigleton and rule.rule_class in class_list:
+                continue
+            else:
+                temp_list.append(rule_name)
+
+        possible_rules_name = temp_list
 
         possible_rules = [self.actions.rule_dict[str_rule] for str_rule in possible_rules_name]
+
         possible_actions = set(RuleAction(rule) for rule in possible_rules)
         return list(possible_actions)
 
