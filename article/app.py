@@ -14,7 +14,7 @@ from rostok.graph_generators.mcts_helper import (make_mcts_step,
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.trajectory_optimizer.control_optimizer import (
     ControlOptimizer)
-from rule_sets.updated_ruleset_new_style import create_rules
+from rule_sets.ruleset_old_style import create_rules
 
 #rule_vocabul = deepcopy(rule_extention.rule_vocab)
 rule_vocabul = create_rules()
