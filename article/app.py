@@ -7,7 +7,7 @@ import mcts
 import optmizers_config
 from obj_grasp.objects import get_obj_easy_box
 from rule_sets import rule_extention
-from rule_sets import rulset_old_style
+from rule_sets import ruleset_new_style
 import hyperparameters as hp
 from rostok.graph_generators.mcts_helper import (make_mcts_step,
                                                  prepare_mcts_state_and_helper)
@@ -16,7 +16,7 @@ from rostok.trajectory_optimizer.control_optimizer import (
     ControlOptimizer)
 
 #rule_vocabul = deepcopy(rule_extention.rule_vocab)
-rule_vocabul = rulset_old_style.create_rules()
+rule_vocabul = ruleset_new_style.create_rules()
 
 cfg = optmizers_config.get_cfg_standart()
 #cfg = optmizers_config.get_cfg_standart_anealing()
@@ -30,7 +30,7 @@ iteration_reduction_rate = hp.ITERATION_REDUCTION_TIME
 # Create graph environments for algorithm (not gym)
 G = GraphGrammar()
 G.apply_rule(rule_vocabul.get_rule("Init"))
-graph_env = prepare_mcts_state_and_helper(G, rule_vocabul, control_optimizer, max_numbers_rules,
+graph_env = prepare_mcts_state_and_helper(GraphGrammar(), rule_vocabul, control_optimizer, max_numbers_rules,
                                           Path("./results"))
 mcts_helper = graph_env.helper
 mcts_helper.report.non_terminal_rules_limit = max_numbers_rules
