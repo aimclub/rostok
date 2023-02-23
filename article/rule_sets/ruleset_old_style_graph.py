@@ -94,6 +94,10 @@ def create_rules():
     node_vocab.create_node(label="J4", is_terminal=True, block_wrapper=revolve)
     node_vocab.create_node(label="J5", is_terminal=True, block_wrapper=revolve)
     node_vocab.create_node(label="J6", is_terminal=True, block_wrapper=revolve)
+    node_vocab.create_node(label="J7", is_terminal=True, block_wrapper=revolve)
+    node_vocab.create_node(label="J8", is_terminal=True, block_wrapper=revolve)
+    node_vocab.create_node(label="J9", is_terminal=True, block_wrapper=revolve)
+    node_vocab.create_node(label="J10", is_terminal=True, block_wrapper=revolve)
 
     rule_vocab = rule_vocabulary.RuleVocabulary(node_vocab)
     rule_vocab.create_rule("Init", ["ROOT"], ["FT", "F", "RF", "PF", "NF", "RPF", "RNF"], 0, 0, [(0,1), (0,2), (0,3), (0,4), (0,5),(0, 6)])
@@ -113,6 +117,10 @@ def create_rules():
     rule_vocab.create_rule("Terminal_Joint4", ["J"], ["J4"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Joint5", ["J"], ["J5"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Joint6", ["J"], ["J6"], 0, 0, [])
+    rule_vocab.create_rule("Terminal_Joint7", ["J"], ["J7"], 0, 0, [])
+    rule_vocab.create_rule("Terminal_Joint8", ["J"], ["J8"], 0, 0, [])
+    rule_vocab.create_rule("Terminal_Joint9", ["J"], ["J9"], 0, 0, [])
+    rule_vocab.create_rule("Terminal_Joint10", ["J"], ["J10"], 0, 0, [])
     rule_vocab.create_rule("Terminal_EF1", ["FG"], ["U1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_EF2", ["FG"], ["U2"], 0, 0, [])
     rule_vocab.create_rule("AddFinger_P", ["PF"], ["RT", "TP", "RE", "FG"], 0, 0, [(0, 1), (1, 2),
@@ -140,12 +148,16 @@ def create_rules():
     rule_vocab.create_rule("Terminal_Negative_Translate1", ["TN"], ["TN1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Negative_Translate2", ["TN"], ["TN2"], 0, 0, [])
     torque_dict = {
-        node_vocab.get_node("J1"): 10,
-        node_vocab.get_node("J2"): 5,
-        node_vocab.get_node("J3"): 4,
-        node_vocab.get_node("J4"): 3,
-        node_vocab.get_node("J5"): 2,
-        node_vocab.get_node("J6"): 1
+        node_vocab.get_node("J1"): 1,
+        node_vocab.get_node("J2"): 2,
+        node_vocab.get_node("J3"): 3,
+        node_vocab.get_node("J4"): 4,
+        node_vocab.get_node("J5"): 5,
+        node_vocab.get_node("J6"): 6,
+        node_vocab.get_node("J7"): 7,
+        node_vocab.get_node("J8"): 8,
+        node_vocab.get_node("J9"): 9,
+        node_vocab.get_node("J10"): 10
     }
     return rule_vocab, torque_dict
 

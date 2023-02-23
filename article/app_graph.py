@@ -5,7 +5,7 @@ from pathlib import Path
 
 import mcts
 import optmizers_config
-from obj_grasp.objects import get_obj_easy_box, get_obj_hard_ellipsoid
+from obj_grasp.objects import get_obj_easy_box, get_obj_hard_ellipsoid, get_object_to_grasp_sphere
 from rule_sets import rule_extention_graph
 
 import hyperparameters as hp
@@ -20,7 +20,8 @@ from rule_sets.ruleset_old_style_graph import create_rules
 rule_vocabul, torque_dict = create_rules()
 #rule_vocabul = deepcopy(rule_extention_graph.rule_vocab)
 cfg = optmizers_config.get_cfg_graph(torque_dict)
-cfg.get_rgab_object_callback = get_obj_hard_ellipsoid
+#cfg.get_rgab_object_callback = get_obj_hard_ellipsoid
+cfg.get_rgab_object_callback = get_object_to_grasp_sphere
 #cfg.get_rgab_object_callback = get_obj_easy_box
 control_optimizer = ControlOptimizer(cfg)
  
