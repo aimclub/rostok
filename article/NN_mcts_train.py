@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 CURRENT_PLAYER = 1
 
 mcts_args = dotdict({
-    "numMCTSSims" : 10,
+    "numMCTSSims" : 20,
     "cpuct" : 1/np.sqrt(2),
     "epochs": 10
 })
@@ -54,7 +54,7 @@ def main():
     WEIGHT = hp.CRITERION_WEIGHTS
 
     # At least 20 iterations are needed for good results
-    cfg = optmizers_config.get_cfg_standart()
+    cfg = optmizers_config.get_cfg_graph()
     rule_vocabul = deepcopy(rule_extention_graph.rule_vocab)
 
     cfg.get_rgab_object_callback = get_obj_easy_box
