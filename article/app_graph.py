@@ -20,8 +20,8 @@ from rule_sets.ruleset_old_style_graph import create_rules
 rule_vocabul, torque_dict = create_rules()
 #rule_vocabul = deepcopy(rule_extention_graph.rule_vocab)
 cfg = optmizers_config.get_cfg_graph(torque_dict)
-#cfg.get_rgab_object_callback = get_obj_hard_ellipsoid
-cfg.get_rgab_object_callback = get_obj_easy_box
+cfg.get_rgab_object_callback = get_obj_hard_ellipsoid
+#cfg.get_rgab_object_callback = get_obj_easy_box
 control_optimizer = ControlOptimizer(cfg)
  
 base_iteration_limit = hp.BASE_ITERATION_LIMIT
