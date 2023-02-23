@@ -1,6 +1,7 @@
 {
     "python.analysis.extraPaths": [
-        "./src"
+        "./src",
+        "./alpha-zero-general"
     ],
     "python.formatting.provider": "yapf",
     "python.formatting.yapfArgs": [

@@ -30,7 +30,7 @@ class AlphaZeroWrapper(NeuralNet):
         self.converter = ConverterToPytorchGeometric(game.rule_vocabulary.node_vocab)
         args_network = dotdict({"num_features":len(self.converter.label2id),
                         "num_rules": game.getActionSize(),
-                        "nhid": 2,
+                        "nhid": 64,
                         "pooling_ratio": 0.3,
                         "dropout_ratio": 0.3})
         
@@ -96,7 +96,7 @@ class AlphaZeroWrapper(NeuralNet):
         with torch.no_grad():
             pi, v = self.nnet(data_graph)
 
-        print('PREDICTION TIME TAKEN : {0:03f}'.format(time.time()-start))
+        # print('PREDICTION TIME TAKEN : {0:03f}'.format(time.time()-start))
         return torch.exp(pi).data.cpu().numpy()[0], v.data.cpu().numpy()[0]
 
     def loss_pi(self, targets, outputs):
