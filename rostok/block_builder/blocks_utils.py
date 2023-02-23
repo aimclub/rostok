@@ -42,7 +42,7 @@ class NodeFeatures:
 
     @staticmethod
     def is_body(node: Node):
-        return node.block_wrapper.block_cls is RobotBody
+        return issubclass(node.block_wrapper.block_cls, ChronoBody)
 
     @staticmethod
     def is_transform(node: Node):
