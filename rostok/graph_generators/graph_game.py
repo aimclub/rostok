@@ -44,9 +44,8 @@ class GraphGrammarGame(Game):
         next_state_graph = deepcopy(graph)
         next_state_graph.apply_rule(rule)
         if name_rule in self.rule_vocabulary.rules_nonterminal_node_set:
-            pass
-        else:
             self.counter_actions += 1
+
         return (next_state_graph, -player)
 
     def getActionSize(self):
