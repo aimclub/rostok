@@ -8,7 +8,7 @@ import networkx as nx
 import optmizers_config
 # chrono imports
 import pychrono as chrono
-from obj_grasp.objects import get_obj_easy_box, get_obj_hard_ellipsoid, get_object_to_grasp_sphere, get_obj_hard_large_ellipsoid
+from obj_grasp.objects import get_obj_easy_box, get_obj_hard_ellipsoid, get_object_to_grasp_sphere
 from rule_sets import rule_extention_graph
 from rule_sets.ruleset_old_style_graph import create_rules
 
@@ -19,6 +19,7 @@ from rostok.graph_generators.mcts_helper import (make_mcts_step,
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
 from rostok.utils.pickle_save import load_saveable
+from rostok.graph_generators.mcts_helper import OptimizedGraphReport
 
 
 def plot_graph(graph: GraphGrammar):
@@ -30,21 +31,52 @@ def plot_graph(graph: GraphGrammar):
     plt.show()
 
 
-report = load_saveable(Path(r"results\Reports_23y_02m_24d_19H_28M\MCTS_data.pickle"))
+graph_report: OptimizedGraphReport = load_saveable(Path(r"results\Reports_23y_02m_24d_19H_28M\optimized_graph_report.pickle"))
 # %% Create extension rule vocabulary
 rule_vocabul, torque_dict = create_rules()
 #rule_vocabul = deepcopy(rule_extention_graph.rule_vocab)
 #torque_dict = rule_extention_graph.torque_dict
 cfg = optmizers_config.get_cfg_graph(torque_dict)
-cfg.get_rgab_object_callback = get_obj_hard_large_ellipsoid
+cfg.get_rgab_object_callback = get_obj_hard_ellipsoid
 #cfg.get_rgab_object_callback = get_obj_easy_box
-#cfg.get_rgab_object_callback = get_object_to_grasp_sphere
+#cfg.get_rgab_object_callback =get_object_to_grasp_sphere
 control_optimizer = ControlOptimizer(cfg)
 
-best_graph, reward, best_control = report.get_best_info()
-#best_graph, reward, best_control = report.get_main_info()
-func_reward = control_optimizer.create_reward_function(best_graph)
-plot_graph(best_graph)
-best_control = []
-res = -func_reward(best_control, True)
-print(res)
+graph_list = graph_report.graph_list
+reward_list = []
+i_list = set()
+
+# for graph in graph_list:
+#     reward_list.append(graph.reward)
+#     i_list.add(int(graph.reward))
+
+# print(sorted(i_list))
+# plt.hist(reward_list)
+# plt.show()
+# for graph in graph_list:
+#     if graph.reward >48 and graph.reward < 49:
+#         G = graph.graph
+#         reward = graph.reward
+#         control = graph.control
+#         break
+#     #print(graph.reward)
+
+
+# func_reward = control_optimizer.create_reward_function(G)
+# res = -func_reward(control, True)
+# print(res)
+# print(reward)
+
+#best_graph, reward, best_control = report.get_best_info()
+
+top_list =[]
+sorted_graph_list = sorted(graph_list, key = lambda x: x.reward)
+ten_top = sorted_graph_list[-1:-11:-1]
+for graph in ten_top:
+    G = graph.graph
+    reward = graph.reward
+    control = graph.control
+    func_reward = control_optimizer.create_reward_function(G)
+    res = -func_reward(control, True)
+
+
