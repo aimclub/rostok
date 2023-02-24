@@ -46,7 +46,26 @@ def criterion_calc(sim_output, weights) -> float:
     else:
         cog_crit = 0
 
-    reward = -weights[0] * force_crit - weights[1] * time_crit - weights[2] * cog_crit
+    # 4) Time of force crit
+    
+    CUTOFF = 0.5
+    THR_FORCE = 5
+    """Crit belongs (0, 1)
+    The percentage of time after the cutoff 
+    when the force acting on the body is greater than the threshold.
+
+    """
+    obj_forces = sim_output[-1].obj_forces
+    if np.size(obj_forces) > 0:
+        len_array = np.size(obj_forces)
+        checkpoint = int(len_array*CUTOFF)
+        sliced_force =  np.array(obj_forces[checkpoint : -1])
+        greater_thr_len = np.size(np.where(sliced_force > THR_FORCE)[0])
+        time_force_thr_crit = greater_thr_len / np.size(sliced_force)
+    else:
+        time_force_thr_crit = 0
+    
+    reward = -weights[0] * force_crit - weights[1] * time_crit - weights[2] * cog_crit - weights[3] * time_force_thr_crit
 
     if force_crit == 0:
         return 0.25*(reward)
