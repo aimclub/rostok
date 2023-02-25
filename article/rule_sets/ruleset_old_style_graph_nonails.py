@@ -22,7 +22,7 @@ def create_rules():
 
     length_link = [0.4, 0.6, 0.8]
 
-    super_flat = BlockWrapper(FlatChronoBody, width_x=3, height_y=0.2, depth_z=3)
+    super_flat = BlockWrapper(FlatChronoBody, width_x=3, height_y=0.1, depth_z=3)
     link = list(map(lambda x: BlockWrapper(LinkChronoBody, length_y=x), length_link))
     u_1 = BlockWrapper(MountChronoBody, width_x=0.1, length_y=0.05)
     u_2 = BlockWrapper(MountChronoBody, width_x=0.2, length_y=0.1)

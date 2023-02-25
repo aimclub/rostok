@@ -8,7 +8,7 @@ import networkx as nx
 import optmizers_config
 # chrono imports
 import pychrono as chrono
-from obj_grasp.objects import get_obj_easy_box, get_obj_hard_ellipsoid, get_object_to_grasp_sphere
+from obj_grasp.objects import get_obj_easy_box, get_obj_hard_ellipsoid, get_object_to_grasp_sphere, get_obj_hard_large_ellipsoid
 from rule_sets import rule_extention_graph
 from rule_sets.ruleset_old_style_graph import create_rules
 
@@ -31,13 +31,13 @@ def plot_graph(graph: GraphGrammar):
     plt.show()
 
 
-graph_report: OptimizedGraphReport = load_saveable(Path(r"results\Reports_23y_02m_24d_19H_28M\optimized_graph_report.pickle"))
+graph_report: OptimizedGraphReport = load_saveable(Path(r"results\Reports_23y_02m_25d_14H_25M\optimized_graph_report.pickle"))
 # %% Create extension rule vocabulary
 rule_vocabul, torque_dict = create_rules()
 #rule_vocabul = deepcopy(rule_extention_graph.rule_vocab)
 #torque_dict = rule_extention_graph.torque_dict
 cfg = optmizers_config.get_cfg_graph(torque_dict)
-cfg.get_rgab_object_callback = get_obj_hard_ellipsoid
+cfg.get_rgab_object_callback = get_obj_hard_large_ellipsoid
 #cfg.get_rgab_object_callback = get_obj_easy_box
 #cfg.get_rgab_object_callback =get_object_to_grasp_sphere
 control_optimizer = ControlOptimizer(cfg)

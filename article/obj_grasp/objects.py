@@ -69,9 +69,9 @@ def get_obj_hard_ellipsoid():
 
 def get_obj_hard_large_ellipsoid():
     shape = envbody_shapes.Ellipsoid()
-    shape.radius_x = 0.4
-    shape.radius_y = 0.4
-    shape.radius_z = 0.6
+    shape.radius_x = 0.6
+    shape.radius_y = 0.2
+    shape.radius_z = 0.9
     
     mat = DefaultChronoMaterial()
     mat.Friction = 0.30
@@ -79,5 +79,5 @@ def get_obj_hard_large_ellipsoid():
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=shape,
                        material=mat,
-                       pos=FrameTransform([0, 0.8, 0], [ 1,  0,  0, 0]))
+                       pos=FrameTransform([0, 1.5, -0.2], [ 1,  0,  0, 0]))
     return obj
