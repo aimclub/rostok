@@ -357,7 +357,7 @@ class LinkChronoBody(ChronoBody, RobotBody):
         is_collide (bool, optional): Flag of collision body with other object in system.
         Defaults to True.
     """
-
+    
     def __init__(self,
                  builder: chrono.ChSystem,
                  width_x: float = 0.1,
@@ -371,9 +371,9 @@ class LinkChronoBody(ChronoBody, RobotBody):
         # Create body
         material = struct_material2object_material(material)
         body = chrono.ChBody()
-
+        gap_between_bodies = 0.1
         # Calculate new length with gap
-        gap_between_bodies = 0.05
+        
         cylinder_r = width_x / 2
         offset = gap_between_bodies + cylinder_r
         length_minus_gap = length_y - offset
@@ -386,39 +386,39 @@ class LinkChronoBody(ChronoBody, RobotBody):
         # Add box visual
         box_asset = chrono.ChBoxShape()
         #TODO: Move box asset + gap + cylinder_r
-        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width_x / 2, (length_y - 2 * offset) / 2,
+        box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width_x / 2, (length_y) / 2,
                                                            depth_z / 2)
 
         body.AddVisualShape(box_asset)
 
         # Add cylinder visual
         cylinder = chrono.ChCylinder()
-        cylinder.p2 = chrono.ChVectorD(0, -length_y / 2 + gap_between_bodies + cylinder_r,
+        cylinder.p2 = chrono.ChVectorD(0, -length_y / 2  - cylinder_r,
                                        depth_z / 2)
-        cylinder.p1 = chrono.ChVectorD(0, -length_y / 2 + gap_between_bodies + cylinder_r,
+        cylinder.p1 = chrono.ChVectorD(0, -length_y / 2  - cylinder_r,
                                        -depth_z / 2)
-        cylinder.rad = cylinder_r
+        cylinder.rad = cylinder_r*0.8
         cylinder_asset = chrono.ChCylinderShape(cylinder)
         body.AddVisualShape(cylinder_asset)
 
         # Add collision box
         body.GetCollisionModel().ClearModel()
         body.GetCollisionModel().AddBox(
-            material, width_x / 2, length_minus_gap / 2, depth_z / 2,
-            chrono.ChVectorD(0, (cylinder_r + gap_between_bodies) / 2, 0))
+            material, width_x / 2, length_y/2, depth_z / 2,
+            chrono.ChVectorD(0, 0, 0))
 
         # Add collision cylinder
         body.GetCollisionModel().AddCylinder(
-            material, cylinder_r, depth_z / 2, depth_z / 2,
-            chrono.ChVectorD(0, -length_y / 2 + gap_between_bodies + cylinder_r, 0),
+            material, cylinder_r*0.8, depth_z / 2, depth_z / 2,
+            chrono.ChVectorD(0, -length_y / 2 - cylinder_r, 0),
             chrono.ChMatrix33D(chrono.Q_ROTATE_Z_TO_Y))
 
         body.GetCollisionModel().BuildModel()
 
         body.SetMass(mass)
 
-        pos_in_marker = chrono.ChVectorD(0, -length_y / 2, 0)
-        pos_out_marker = chrono.ChVectorD(0, length_y / 2, 0)
+        pos_in_marker = chrono.ChVectorD(0, -length_y / 2 - gap_between_bodies/2, 0)
+        pos_out_marker = chrono.ChVectorD(0, length_y / 2 + gap_between_bodies/2, 0)
         super().__init__(builder,
                          body,
                          pos_in_marker,
@@ -453,7 +453,7 @@ class FlatChronoBody(ChronoBody, RobotBody):
                  material=DefaultChronoMaterial(),
                  is_collide: bool = True):
         # Create body
-
+        gap_between_bodies = 0.1
         body = chrono.ChBody()
 
         box_asset = chrono.ChBoxShape()
@@ -464,8 +464,8 @@ class FlatChronoBody(ChronoBody, RobotBody):
 
         body.SetMass(mass)
 
-        pos_input_marker = chrono.ChVectorD(0, -height_y / 2, 0)
-        pos_out_marker = chrono.ChVectorD(0, height_y / 2, 0)
+        pos_input_marker = chrono.ChVectorD(0, -height_y / 2-gap_between_bodies/2, 0)
+        pos_out_marker = chrono.ChVectorD(0, height_y / 2+gap_between_bodies/2, 0)
         super().__init__(builder,
                          body,
                          pos_input_marker,

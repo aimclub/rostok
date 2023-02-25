@@ -30,7 +30,7 @@ def plot_graph(graph: GraphGrammar):
     plt.show()
 
 
-report = load_saveable(Path(r"results\Reports_23y_02m_25d_01H_38M\MCTS_data.pickle"))
+report = load_saveable(Path(r"results\Reports_23y_02m_25d_03H_02M\MCTS_data.pickle"))
 # %% Create extension rule vocabulary
 rule_vocabul, torque_dict = create_rules()
 #rule_vocabul = deepcopy(rule_extention_graph.rule_vocab)
