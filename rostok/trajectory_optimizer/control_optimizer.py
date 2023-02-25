@@ -1,5 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Callable
+from typing import Union
+import time
+import warnings
 
 import pychrono as chrono
 from scipy.optimize import direct, shgo, dual_annealing
@@ -8,8 +11,22 @@ from rostok.block_builder.blocks_utils import NodeFeatures
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.virtual_experiment.robot import Robot
 from rostok.virtual_experiment.simulation_step import (SimOut, SimulationStepOptimization)
-from typing import Union
-import time
+
+
+class TimeOptimizerStopper(object):
+    def __init__(self, max_sec=0.3):
+        self.max_sec = max_sec
+        self.start = time.time()
+
+    def __call__(self, xk=None, convergence=None):
+        elapsed = time.time() - self.start
+        if elapsed > self.max_sec:
+            warnings.warn("Terminating optimization: time limit reached")
+            return True
+        else:
+            # you might want to report other stuff here
+            print("Elapsed: %.3f sec" % elapsed)
+            return False
 
 @dataclass
 class _ConfigRewardFunction:
@@ -27,6 +44,7 @@ class _ConfigRewardFunction:
     sim_config: dict[str, str] = field(default_factory=dict)
     time_step: float = 0.001
     time_sim: float = 2
+    time_optimization = 100
     flags: list = field(default_factory=list)
     criterion_callback: Callable[[SimOut, Robot], float] = None
     get_rgab_object_callback: Callable[[], chrono.ChBody] = None
@@ -42,7 +60,7 @@ class ConfigVectorJoints(_ConfigRewardFunction):
     """
     bound: tuple[float, float] = (-1, 1)
     iters: int = 10
-    optimizer_scipy = partial(direct)
+    optimizer_scipy = partial(shgo)
 
 
 class ConfigGraphControl(_ConfigRewardFunction):
@@ -126,7 +144,8 @@ class ControlOptimizer():
             multi_bound = create_multidimensional_bounds(generated_graph, self.cfg.bound)
             if len(multi_bound) == 0:
                 return (0, 0)
-            result = self.cfg.optimizer_scipy(reward_fun, multi_bound, maxiter=self.cfg.iters)
+            time_stopper = TimeOptimizerStopper(self.cfg.time_optimization)
+            result = self.cfg.optimizer_scipy(reward_fun, multi_bound,  callback=time_stopper)#,maxiter=self.cfg.iters,)
             return (result.fun, result.x)
         elif isinstance(self.cfg, ConfigGraphControl):
             n_joint = num_joints(generated_graph)
