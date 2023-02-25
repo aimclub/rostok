@@ -72,14 +72,14 @@ nodes_types = adapter_local.adapt_node_seq(terminal_nodes)
 
 def custom_mutation_add(graph: GraphGrammar, **kwargs) -> GraphGrammar:
     try:
-        graph_mut = add_mut(graph, terminal_nodes, (0.7, 0.5, 0.5 ))
+        graph_mut = add_mut(graph, terminal_nodes)
     except:
         graph_mut = deepcopy(graph)
   
     return graph_mut
 def custom_mutation_del(graph: GraphGrammar, **kwargs) -> GraphGrammar:
     try:
-        graph_mut = del_mut(graph, terminal_nodes, (0.5, 1, 0.2 ))
+        graph_mut = del_mut(graph, terminal_nodes)
     except:
         graph_mut = deepcopy(graph)
     return graph_mut
@@ -111,11 +111,11 @@ optimizer_parameters = GPAlgorithmParameters(
         mutation_types=[
             MutationTypesEnum.none,
             custom_mutation_add,
-            custom_mutation_del,
+            custom_mutation_del
         ],
     crossover_types = [CrossoverTypesEnum.gg_subtree],
     regularization_type = RegularizationTypesEnum.none,
-    mutation_strength = MutationStrengthEnum.mean
+    mutation_strength = MutationStrengthEnum.strong,
     )
 
 optimizer = EvoGraphOptimizer(
