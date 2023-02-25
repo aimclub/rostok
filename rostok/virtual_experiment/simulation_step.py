@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
-
+import matplotlib.pyplot as plt
 import rostok.block_builder.control as control
 from rostok.block_builder.node_render import ChronoRevolveJoint, RobotBody
 from rostok.block_builder.transform_srtucture import FrameTransform,OriginWorldFrame
@@ -69,6 +69,7 @@ class DataObjectBlock(SimulationDataBlock):
     obj_amount_surf_forces: list[float]
     obj_cont_coord: list[float]
     obj_COG: list[float]
+    obj_forces: list[float]
 
 
 """Type for output simulation. Store trajectory and block id"""
@@ -232,6 +233,7 @@ class SimulationStepOptimization:
         arrays_simulation_data_amount_obj_contact_surfaces = [(-1, [])]
         arrays_simulation_data_cont_coord = [(-1, [])]
         arrays_simulation_data_abs_coord_COG_obj = [(-1, [])]
+        arrays_simulation_data_obj_real_force = [(-1, [])]
 
         # Loop of simulation
         while not self.condion_stop_simulation.flag_stop_simulation():
@@ -260,8 +262,8 @@ class SimulationStepOptimization:
             current_data_cont_coord = RobotSensor.contact_coord(self.grasp_object)
             current_data_abs_coord_COG_obj = RobotSensor.abs_coord_COG_obj(self.grasp_object)            
             current_data_amount_obj_contact_surfaces = RobotSensor.amount_contact_forces_object(self.grasp_object)
-
-
+            current_data_sum_contact_real_forces_obj = RobotSensor.sum_contact_forces_obj(self.grasp_object)
+            
             # current_data_amount_obj_contact_surfaces = dict([
             #     (-1, len([item for item in self.grasp_object.list_n_forces if item != 0]))
             # ])
@@ -283,14 +285,14 @@ class SimulationStepOptimization:
                     arrays_simulation_data_amount_contact_surfaces))
 
             if current_data_std_obj_force is not None:
-                arrays_simulation_data_obj_force = map(append_arr_in_dict,
+                arrays_simulation_data_obj_force = list(map(append_arr_in_dict,
                                                        current_data_std_obj_force.items(),
-                                                       arrays_simulation_data_obj_force)
+                                                       arrays_simulation_data_obj_force))
 
             if current_data_amount_obj_contact_surfaces is not None:
-                arrays_simulation_data_amount_obj_contact_surfaces = map(
+                arrays_simulation_data_amount_obj_contact_surfaces = list(map(
                     append_arr_in_dict, current_data_amount_obj_contact_surfaces.items(),
-                    arrays_simulation_data_amount_obj_contact_surfaces)
+                    arrays_simulation_data_amount_obj_contact_surfaces))
 
             if current_data_cont_coord is not None:
                 arrays_simulation_data_cont_coord = list(map(
@@ -301,6 +303,11 @@ class SimulationStepOptimization:
                 arrays_simulation_data_abs_coord_COG_obj = list(map(
                     append_arr_in_dict, current_data_abs_coord_COG_obj.items(),
                     arrays_simulation_data_abs_coord_COG_obj))
+            
+            if current_data_sum_contact_real_forces_obj is not None:
+                arrays_simulation_data_obj_real_force = list(map(
+                    append_arr_in_dict, current_data_sum_contact_real_forces_obj.items(),
+                    arrays_simulation_data_obj_real_force))
 
         if visualize:
             vis.GetDevice().closeDevice()
@@ -318,11 +325,12 @@ class SimulationStepOptimization:
                 arrays_simulation_data_amount_contact_surfaces))
 
         simulation_data_object: dict[int, DataObjectBlock] = dict(
-            map(lambda x, y, z, w: (x[0], DataObjectBlock(x[0], arrays_simulation_data_time, x[1], y[1], z[1], w[1])),
+            map(lambda x, y, z, w, f: (x[0], DataObjectBlock(x[0], arrays_simulation_data_time, x[1], y[1], z[1], w[1], f[1])),
                 arrays_simulation_data_obj_force,
                 arrays_simulation_data_amount_obj_contact_surfaces,
                 arrays_simulation_data_cont_coord,
-                arrays_simulation_data_abs_coord_COG_obj))
+                arrays_simulation_data_abs_coord_COG_obj,
+                arrays_simulation_data_obj_real_force))
 
         simulation_data_joint_angle.update(simulation_data_body)
         simulation_data_joint_angle.update(simulation_data_object)
