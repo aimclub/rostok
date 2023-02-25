@@ -161,6 +161,8 @@ def get_random_node(nodes_list: list[Node],
 def add_node_mutation(node: Node, graph: GraphGrammar):
     if NodeFeatures.is_body(node):
         avalibale_edges = available_for_add_bodies_edges(graph)
+        if len(avalibale_edges) == 0:
+            return
         current_edge = choice(avalibale_edges)
         if len(current_edge) == 2:
             add_node_between(current_edge, graph, node)
@@ -175,7 +177,8 @@ def add_node_mutation(node: Node, graph: GraphGrammar):
         avalibale_edges = available_for_add_joint_edges(graph)
     else:
         raise Exception(f"Wrong node type: node")
-
+    if len(avalibale_edges) == 0:
+        return
     current_edge = choice(avalibale_edges)
     add_node_between(current_edge, graph, node)
 
@@ -194,7 +197,8 @@ def delete_node_mutation(node: Node, graph: GraphGrammar):
     else:
         raise Exception(f"Wrong node type: node")
 
-
+    if len(avalibale_node_id) == 0:
+        return
     current_id = choice(avalibale_node_id)
     del_node(current_id, graph)
 
@@ -212,7 +216,6 @@ def del_mut(graph: GraphGrammar,
             type_distribution: tuple[float, float, float] = (1, 1, 1)) -> GraphGrammar:
     res_graph = deepcopy(graph)
     node = get_random_node(nodes_list, type_distribution)
-    print(node)
     delete_node_mutation(node, res_graph)
     return res_graph
 
@@ -230,13 +233,31 @@ def del_mut(graph: GraphGrammar,
 # list_before = []
 # list_after = []
 
-# for i in range(2):
-#     for _ in range(4):
+# for i in range(10):
+#     for _ in range(2):
 #         graph = add_mut(graph, terminal_nodes)
+#         number_trq = num_joints(graph)
+#         const_torque_koef = [10*random() for _ in range(number_trq)]
+#         arr_trj = create_torque_traj_from_x(graph, const_torque_koef, 5, 0.1)
+#         obj = get_obj_hard_ellipsoid()
+#         sim = step.SimulationStepOptimization(arr_trj, graph, obj,
+#                                                 FrameTransform([0, 1.5, 0], [0, 1, 0, 0]))
+#         flags = [FlagMaxTime(0.2)]
+#         sim.set_flags_stop_simulation(flags)
+#         sim_output = sim.simulate_system(0.001, False)
 #     for _ in range(2):
 #         graph = del_mut(graph, terminal_nodes)
+#         number_trq = num_joints(graph)
+#         const_torque_koef = [10*random() for _ in range(number_trq)]
+#         arr_trj = create_torque_traj_from_x(graph, const_torque_koef, 5, 0.1)
+#         obj = get_obj_hard_ellipsoid()
+#         sim = step.SimulationStepOptimization(arr_trj, graph, obj,
+#                                                 FrameTransform([0, 1.5, 0], [0, 1, 0, 0]))
+#         flags = [FlagMaxTime(0.2)]
+#         sim.set_flags_stop_simulation(flags)
+#         sim_output = sim.simulate_system(0.001, False)
 
-# plot_graph_ids(graph)
+# #plot_graph_ids(graph)
 # number_trq = num_joints(graph)
 # const_torque_koef = [10*random() for _ in range(number_trq)]
 # arr_trj = create_torque_traj_from_x(graph, const_torque_koef, 5, 0.1)

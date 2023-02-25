@@ -1,7 +1,8 @@
 import datetime
 from copy import deepcopy
 from functools import partial
-
+import pickle
+import time
 from golem.core.dag.verification_rules import DEFAULT_DAG_RULES
 from golem.core.optimisers.genetic.gp_optimizer import EvoGraphOptimizer
 from golem.core.optimisers.genetic.gp_params import GPAlgorithmParameters
@@ -16,9 +17,9 @@ from golem.core.optimisers.genetic.operators.regularization import \
 from golem.core.optimisers.objective import Objective, ObjectiveEvaluate
 from golem.core.optimisers.optimization_parameters import GraphRequirements
 from golem.core.optimisers.optimizer import GraphGenerationParams
-from obj_grasp.objects import get_obj_hard_ellipsoid
+from obj_grasp.objects import get_obj_hard_ellipsoid, get_object_to_grasp_sphere
 from optmizers_config import get_cfg_graph
-from rule_sets.rule_extention_graph import rule_vocab, torque_dict, node_vocab
+from rule_sets.ruleset_old_style_graph import create_rules
 
 from rostok.adapters.golem_adapter import (GraphGrammarAdapter,
                                            GraphGrammarFactory)
@@ -27,7 +28,12 @@ from rostok.graph_grammar.make_random_graph import make_random_graph
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
 import random
+from mutation_logik import add_mut, del_mut
+from golem.core.optimisers.genetic.operators import crossover
 
+
+rule_vocab, torque_dict = create_rules()
+node_vocab = rule_vocab.node_vocab
 def custom_metric(graph: GraphGrammar):
     existing_variables_num = -len(graph)
     print(existing_variables_num)
@@ -35,40 +41,46 @@ def custom_metric(graph: GraphGrammar):
 
 def custom_metriwith_build_mechs(graph: GraphGrammar, optimizer: ControlOptimizer):
     res, unused_list = optimizer.start_optimisation(graph)
-    print(res)
-    return 42
+    #print(res)
+    return res
 
-def custom_mutation(graph: GraphGrammar, **kwargs) -> GraphGrammar:
-    num_mut = 10
-    for _ in range(num_mut):
-        rid = random.choice(range(graph.length))
-        random_node = graph.nodes[rid]
-        other_random_node = graph.nodes[random.choice(range(len(graph.nodes)))]
-        graph.connect_nodes(random_node, other_random_node)
-    return graph
-
-
+def custom_crossover(graph_first, graph_second, **kwargs):
+    return graph_first, graph_second 
 
 adapter_local = GraphGrammarAdapter()
 
 rule_vocab = deepcopy(rule_vocab)
 init_population_gr = []
-for _ in range(15):
-    rand_mech = make_random_graph(7, rule_vocab)
+for _ in range(120):
+    rand_mech = make_random_graph(12, rule_vocab)
     init_population_gr.append(rand_mech)
 
 initial = adapter_local.adapt(init_population_gr)
 cfg = get_cfg_graph(torque_dict)
-cfg.get_rgab_object_callback = get_obj_hard_ellipsoid
+cfg.get_rgab_object_callback = get_object_to_grasp_sphere
 optic = ControlOptimizer(cfg)
 
 build_wrapperd  = partial(custom_metriwith_build_mechs, optimizer = optic)
 objective = Objective({'custom': build_wrapperd})
 objective_eval = ObjectiveEvaluate(objective)
-timeout = datetime.timedelta(minutes = 30)
+timeout = datetime.timedelta(hours = 8)
 
 terminal_nodes = [i for i in list(node_vocab.node_dict.values()) if  i.is_terminal]
 nodes_types = adapter_local.adapt_node_seq(terminal_nodes)
+
+def custom_mutation_add(graph: GraphGrammar, **kwargs) -> GraphGrammar:
+    try:
+        graph_mut = add_mut(graph, terminal_nodes)
+    except:
+        graph_mut = deepcopy(graph)
+  
+    return graph_mut
+def custom_mutation_del(graph: GraphGrammar, **kwargs) -> GraphGrammar:
+    try:
+        graph_mut = del_mut(graph, terminal_nodes)
+    except:
+        graph_mut = deepcopy(graph)
+    return graph_mut
 
 graph_generation_params = GraphGenerationParams(
     adapter=adapter_local,
@@ -79,31 +91,34 @@ graph_generation_params = GraphGenerationParams(
 
 
 requirements = GraphRequirements(
-    max_arity=6,
-    max_depth=15,
+    max_arity=4,
+    max_depth=17,
     parallelization_mode="single",
     timeout=timeout,
-    num_of_generations=12,
+    num_of_generations=40,
+    early_stopping_iterations = 20,
     history_dir=None)
 
 optimizer_parameters = GPAlgorithmParameters(
-    pop_size=15,
-    max_pop_size = 12,
+    pop_size = 120,
+    max_pop_size = 120,
+    
 
-    crossover_prob=0.9, mutation_prob=0.5,
-    genetic_scheme_type=GeneticSchemeTypesEnum.steady_state,
+    crossover_prob=0.5, mutation_prob=0.7,
+    genetic_scheme_type=GeneticSchemeTypesEnum.parameter_free,
         mutation_types=[
             #MutationTypesEnum.growth,
             MutationTypesEnum.none,
-            MutationTypesEnum.simple,
-            MutationTypesEnum.growth,
+            #MutationTypesEnum.simple,
+            #MutationTypesEnum.growth,
             #MutationTypesEnum.single_edge,
-            MutationTypesEnum.single_add,
-            custom_mutation,
+            #MutationTypesEnum.single_add,
+            custom_mutation_add,
+            custom_mutation_del,
             #MutationTypesEnum.single_add,
             #MutationTypesEnum.single_add,
         ],
-    crossover_types = [CrossoverTypesEnum.one_point],
+    crossover_types = [CrossoverTypesEnum.gg_subtree],
     regularization_type = RegularizationTypesEnum.none,
     mutation_strength = MutationStrengthEnum.mean
     )
@@ -120,5 +135,8 @@ optimizer = EvoGraphOptimizer(
 optimized_graphs = optimizer.optimise(objective_eval)
 optimized_mech = adapter_local.restore(optimized_graphs[0])
 plot_graph(optimized_mech)
+name = str(int(time.time()))
+with open(name, 'wb') as handle:
+    pickle.dump(optimizer.history, handle)
 rew = optic.create_reward_function(optimized_mech)
 rew(optimized_mech, True)
