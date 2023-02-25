@@ -96,7 +96,7 @@ requirements = GraphRequirements(
     max_arity=5,
     min_arity=1,
     max_depth=17,
-    early_stopping_timeout = None,
+    early_stopping_timeout = 9000,
     parallelization_mode="single",
     timeout=timeout,
     num_of_generations=40,
@@ -129,9 +129,14 @@ optimizer = EvoGraphOptimizer(
 
 optimized_graphs = optimizer.optimise(objective_eval)
 optimized_mech = adapter_local.restore(optimized_graphs[0])
-plot_graph(optimized_mech)
+#plot_graph(optimized_mech)
+#optimized_graphs[0].
 name = str(int(time.time()))
-with open(name, 'wb') as handle:
+name2 = str(optimizer.history.final_choices.data[0].fitness)
+name2 = name2.replace(".", "_")
+name2 = name2.replace("-", "_")
+
+with open(name2, 'wb') as handle:
     pickle.dump(optimizer.history, handle)
 rew = optic.create_reward_function(optimized_mech)
 rew(optimized_mech, True)
