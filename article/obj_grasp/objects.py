@@ -29,7 +29,7 @@ def get_object_to_grasp_sphere():
     matich = DefaultChronoMaterial()
     matich.Friction = 0.65
     matich.DampingF = 0.65
-    shape = envbody_shapes.Sphere(0.2)
+    shape = envbody_shapes.Sphere(0.4)
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=shape,
                        material=matich,
@@ -67,3 +67,17 @@ def get_obj_hard_ellipsoid():
     return obj
 
 
+def get_obj_hard_large_ellipsoid():
+    shape = envbody_shapes.Ellipsoid()
+    shape.radius_x = 0.4
+    shape.radius_y = 0.4
+    shape.radius_z = 0.6
+    
+    mat = DefaultChronoMaterial()
+    mat.Friction = 0.30
+    mat.DampingF = 0.8
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=shape,
+                       material=mat,
+                       pos=FrameTransform([0, 0.8, 0], [ 1,  0,  0, 0]))
+    return obj
