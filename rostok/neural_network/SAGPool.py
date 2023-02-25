@@ -13,7 +13,7 @@ class SAGPoolToAlphaZero(torch.nn.Module):
         self.num_rules = args.num_rules
         self.pooling_ratio = args.pooling_ratio
         self.dropout_ratio = args.dropout_ratio
-        
+
         self.conv1 = GCNConv(self.num_features, self.nhid)
         self.pool1 = SAGPooling(self.nhid, ratio=self.pooling_ratio, GNN=GCNConv)
         self.conv2 = GCNConv(self.nhid, self.nhid)
@@ -25,7 +25,7 @@ class SAGPoolToAlphaZero(torch.nn.Module):
         self.fc_bn1 = torch.nn.BatchNorm1d(self.nhid)
         self.lin2 = torch.nn.Linear(self.nhid, self.nhid//2)
         self.fc_bn2 = torch.nn.BatchNorm1d(self.nhid//2)
-        
+
         self.fc_to_pi = torch.nn.Linear(self.nhid//2, self.num_rules)
         self.fc_to_v = torch.nn.Linear(self.nhid//2, 1)
 
@@ -46,12 +46,14 @@ class SAGPoolToAlphaZero(torch.nn.Module):
 
         x = x1 + x2 + x3
 
-        x = F.relu(self.fc_bn1(self.lin1(x)))
-        x = F.dropout(x, p=self.dropout_ratio, training=self.training)
-        x = F.relu(self.fc_bn2(self.lin2(x)))
-        x = F.dropout(x, p=self.dropout_ratio, training=self.training)
+        x = F.relu(self.lin1(x))
+        # x = self.fc_bn1(x)
+        # x = F.dropout(x, p=self.dropout_ratio, training=self.training)
+        x = F.relu(self.lin2(x))
+        # x = self.fc_bn2(x)
+        # x = F.dropout(x, p=self.dropout_ratio, training=self.training)
         
         pi = F.log_softmax(self.fc_to_pi(x), dim=1)
-        v = torch.tanh(self.fc_to_v(x))
+        v = F.relu(self.fc_to_v(x))
 
         return pi, v

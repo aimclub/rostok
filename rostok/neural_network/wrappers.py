@@ -13,57 +13,49 @@ from NeuralNet import NeuralNet
 
 import torch
 import torch.optim as optim
+from torch_geometric.loader import DataLoader
 
 from rostok.neural_network.SAGPool import SAGPoolToAlphaZero as graph_nnet
 from rostok.neural_network.converter import ConverterToPytorchGeometric
 
-
-args_train = dotdict({
-    "epochs": 10,
-    "batch_size": 1,
-    "cuda": torch.cuda.is_available(),
-})
-
 class AlphaZeroWrapper(NeuralNet):
-    def __init__(self, game: GraphGrammarGame):
+    def __init__(self, game: GraphGrammarGame , args_train):
         self.action_size = game.getActionSize()
         self.converter = ConverterToPytorchGeometric(game.rule_vocabulary.node_vocab)
-        args_network = dotdict({"num_features":len(self.converter.label2id),
-                        "num_rules": game.getActionSize(),
-                        "nhid": 64,
-                        "pooling_ratio": 0.3,
-                        "dropout_ratio": 0.3})
+        self.args_train = args_train
+        self.args_train["num_features"] =len(self.converter.label2id)
+        self.args_train["num_rules"] =  game.getActionSize()
         
-        self.nnet = graph_nnet(args_network)
+        self.nnet = graph_nnet(self.args_train)
         
 
-        if args_train.cuda:
+        if self.args_train.cuda:
             self.nnet.cuda()
 
-    def train(self, examples):
+    def train(self, examples, epochs):
         """
         examples: list of examples, each example is of form (graph, pi, v)
         """
         optimizer = optim.Adam(self.nnet.parameters())
 
-        for epoch in range(args_train.epochs):
+        for epoch in range(epochs):
             print('EPOCH ::: ' + str(epoch + 1))
             self.nnet.train()
             pi_losses = AverageMeter()
             v_losses = AverageMeter()
 
-            batch_count = int(len(examples) / args_train.batch_size)
+            batch_count = int(len(examples) / self.args_train.batch_size)
 
             t = tqdm(range(batch_count), desc='Training Net')
             for _ in t:
-                sample_ids = np.random.randint(len(examples), size=args_train.batch_size)
+                sample_ids = np.random.randint(len(examples), size=self.args_train.batch_size)
                 graph, pis, vs = list(zip(*[examples[i] for i in sample_ids]))
                 data_graph = self.converter.transform_digraph(graph)
                 target_pis = torch.FloatTensor(np.array(pis))
                 target_vs = torch.FloatTensor(np.array(vs).astype(np.float64))
 
                 # predict
-                if args_train.cuda:
+                if self.args_train.cuda:
                     data_graph, target_pis, target_vs = data_graph.contiguous().cuda(), target_pis.contiguous().cuda(), target_vs.contiguous().cuda()
 
                 # compute output
@@ -91,7 +83,7 @@ class AlphaZeroWrapper(NeuralNet):
 
         # preparing input
         data_graph = self.converter.transform_digraph(graph)
-        if args_train.cuda: data_graph = data_graph.contiguous().cuda()
+        if self.args_train.cuda: data_graph = data_graph.contiguous().cuda()
         self.nnet.eval()
         with torch.no_grad():
             pi, v = self.nnet(data_graph)
@@ -121,6 +113,6 @@ class AlphaZeroWrapper(NeuralNet):
         filepath = os.path.join(folder, filename)
         if not os.path.exists(filepath):
             raise ("No model in path {}".format(filepath))
-        map_location = None if args_train.cuda else 'cpu'
+        map_location = None if self.args_train.cuda else 'cpu'
         checkpoint = torch.load(filepath, map_location=map_location)
         self.nnet.load_state_dict(checkpoint['state_dict'])

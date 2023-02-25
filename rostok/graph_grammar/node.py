@@ -109,6 +109,7 @@ class GraphGrammar(nx.DiGraph):
         super().__init__(**attr)
         self.__uniq_id_counter = -1
         self.add_node(self._get_uniq_id(), Node=ROOT)
+        self.counter_nonterminal_rules = 0
 
     def _get_uniq_id(self):
         self.__uniq_id_counter += 1
@@ -208,6 +209,9 @@ class GraphGrammar(nx.DiGraph):
         return root_id
 
     def apply_rule(self, rule: Rule):
+        if not rule.is_terminal:
+            self.counter_nonterminal_rules += 1
+
         ids = self.find_nodes(rule.replaced_node)
         edge_list = list(self.edges)
         id_closest = self.closest_node_to_root(ids)
