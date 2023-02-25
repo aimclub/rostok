@@ -26,6 +26,7 @@ def get_cfg_standart():
     # Init configuration of control optimizing
     cfg = ConfigVectorJoints()
     cfg.bound = (0, 15)
+    cfg.time_optimization = hp.TIME_OPTIMIZATION
     cfg.iters = hp.CONTROL_OPTIMIZATION_ITERATION
     cfg.time_step = hp.TIME_STEP_SIMULATION
     cfg.time_sim = hp.TIME_SIMULATION
@@ -47,6 +48,7 @@ def get_cfg_graph(torque_dict: dict[Node, float]):
     WEIGHT = hp.CRITERION_WEIGHTS
     # Init configuration of control optimizing
     cfg = ConfigGraphControl()
+    cfg.time_optimization = hp.TIME_OPTIMIZATION
     cfg.time_step = hp.TIME_STEP_SIMULATION
     cfg.time_sim = hp.TIME_SIMULATION
     cfg.flags = [FlagMaxTime(cfg.time_sim), 
@@ -67,6 +69,7 @@ def get_cfg_standart_anealing():
     cfg = ConfigVectorJoints()
     cfg.optimizer_scipy = partial(dual_annealing)
     cfg.bound = (0, 15)
+    cfg.time_optimization = hp.TIME_OPTIMIZATION
     cfg.iters = hp.CONTROL_OPTIMIZATION_ITERATION
     cfg.time_step = hp.TIME_STEP_SIMULATION
     cfg.time_sim = hp.TIME_SIMULATION
@@ -89,6 +92,7 @@ def get_cfg_standart_step():
     # Init configuration of control optimizing
     CONST_TORQUE = 12
     cfg = ConfigVectorJoints()
+    cfg.time_optimization = hp.TIME_OPTIMIZATION
     cfg.bound = (0, hp.TIME_SIMULATION / 3)
     cfg.iters = hp.CONTROL_OPTIMIZATION_ITERATION
     cfg.time_step = hp.TIME_STEP_SIMULATION

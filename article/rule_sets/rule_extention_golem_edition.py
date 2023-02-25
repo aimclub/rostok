@@ -38,17 +38,17 @@ def rotation(alpha):
     quat_Y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))
     return [quat_Y_ang_alpha.e0, quat_Y_ang_alpha.e1, quat_Y_ang_alpha.e2, quat_Y_ang_alpha.e3]
 
-
+MOVES_R = 0.4
 MOVE_TO_RIGHT_SIDE = map(lambda x: FrameTransform([x, 0, 0], [0, 0, 1, 0]), width)
-MOVE_TO_RIGHT_SIDE_PLUS = map(lambda x: FrameTransform([x, 0, +0.3], [0, 0, 1, 0]), width)
-MOVE_TO_RIGHT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([x, 0, +0.3], rotation(150)), width)
-MOVE_TO_RIGHT_SIDE_MINUS = map(lambda x: FrameTransform([x, 0, -0.3], [0, 0, 1, 0]), width)
-MOVE_TO_RIGHT_SIDE_MINUS_ANGLE = map(lambda x: FrameTransform([x, 0, -0.3], rotation(210)), width)
+MOVE_TO_RIGHT_SIDE_PLUS = map(lambda x: FrameTransform([x, 0, +MOVES_R], [0, 0, 1, 0]), width)
+MOVE_TO_RIGHT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([x, 0, +MOVES_R], rotation(150)), width)
+MOVE_TO_RIGHT_SIDE_MINUS = map(lambda x: FrameTransform([x, 0, -MOVES_R], [0, 0, 1, 0]), width)
+MOVE_TO_RIGHT_SIDE_MINUS_ANGLE = map(lambda x: FrameTransform([x, 0, -MOVES_R], rotation(210)), width)
 MOVE_TO_LEFT_SIDE = map(lambda x: FrameTransform([-x, 0, 0], [1, 0, 0, 0]), width)
-MOVE_TO_LEFT_SIDE_PLUS = map(lambda x: FrameTransform([-x, 0, +0.3], [1, 0, 0, 0]), width)
-MOVE_TO_LEFT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([-x, 0, +0.3], rotation(30)), width)
-MOVE_TO_LEFT_SIDE_MINUS = map(lambda x: FrameTransform([-x, 0, -0.3], [1, 0, 0, 0]), width)
-MOVE_TO_LEFT_SIDE_MINUS_ANGLE = map(lambda x: FrameTransform([-x, 0, -0.3], rotation(-30)), width)
+MOVE_TO_LEFT_SIDE_PLUS = map(lambda x: FrameTransform([-x, 0, +MOVES_R], [1, 0, 0, 0]), width)
+MOVE_TO_LEFT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([-x, 0, +MOVES_R], rotation(30)), width)
+MOVE_TO_LEFT_SIDE_MINUS = map(lambda x: FrameTransform([-x, 0, -MOVES_R], [1, 0, 0, 0]), width)
+MOVE_TO_LEFT_SIDE_MINUS_ANGLE = map(lambda x: FrameTransform([-x, 0, -MOVES_R], rotation(-30)), width)
 
 # quat_Y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))
 # ROTATE_TO_ALPHA = FrameTransform([0, 0, 0],[quat_Y_ang_alpha.e0,quat_Y_ang_alpha.e1,
@@ -84,9 +84,9 @@ revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z, type_of_i
 node_vocab = node_vocabulary.NodeVocabulary()
 node_vocab.add_node(ROOT)
 node_vocab.create_node("L")
+node_vocab.create_node("J")
 node_vocab.create_node("F")
 node_vocab.create_node("M")
-node_vocab.create_node("J")
 node_vocab.create_node("EF")
 node_vocab.create_node("EM")
 node_vocab.create_node("SML")
@@ -200,6 +200,8 @@ node_vocab.create_node(label="TLMA3",
 # Defines rules
 rule_vocab = rule_vocabulary.RuleVocabulary(node_vocab)
 
+rule_vocab.create_rule("InitMechanism_1", ["ROOT"], ["F", "SML", "EM"], 0, 0, [(0, 1), (1, 2)])
+
 rule_vocab.create_rule("InitMechanism_2", ["ROOT"], ["F", "SML", "SMR", "EM", "EM"], 0, 0, [(0, 1),
                                                                                             (0, 2),
                                                                                             (1, 3),
@@ -234,8 +236,16 @@ rule_vocab.create_rule("InitMechanism_4_A", ["ROOT"],
                        [(0, 1), (0, 2), (0, 3), (0, 4), (1, 5), (2, 6), (3, 7), (4, 8)])
 rule_vocab.create_rule("FingerUpper", ["EM"], ["J", "L", "EM"], 0, 2, [(0, 1), (1, 2)])
 
-rule_vocab.create_rule("TerminalFlat1", ["F"], ["F1"], 0, 0)
-rule_vocab.create_rule("TerminalFlat2", ["F"], ["F2"], 0, 0)
+
+rule_vocab.create_rule("TerminalJoint1", ["J"], ["J1"], 0, 0)
+rule_vocab.create_rule("TerminalJoint2", ["J"], ["J2"], 0, 0)
+rule_vocab.create_rule("TerminalJoint3", ["J"], ["J3"], 0, 0)
+rule_vocab.create_rule("TerminalJoint4", ["J"], ["J4"], 0, 0)
+rule_vocab.create_rule("TerminalJoint5", ["J"], ["J5"], 0, 0)
+rule_vocab.create_rule("TerminalJoint6", ["J"], ["J6"], 0, 0)
+
+#rule_vocab.create_rule("TerminalFlat1", ["F"], ["F1"], 0, 0)
+#rule_vocab.create_rule("TerminalFlat2", ["F"], ["F2"], 0, 0)
 rule_vocab.create_rule("TerminalFlat3", ["F"], ["F3"], 0, 0)
 
 rule_vocab.create_rule("TerminalL1", ["L"], ["L1"], 0, 0)
@@ -286,12 +296,12 @@ rule_vocab.create_rule("TerminalEndLimb1", ["EM"], ["U1"], 0, 0)
 rule_vocab.create_rule("TerminalEndLimb2", ["EM"], ["U2"], 0, 0)
 
 torque_dict = {
-    node_vocab.get_node("J1"): 10,
-    node_vocab.get_node("J2"): 5,
-    node_vocab.get_node("J3"): 4,
-    node_vocab.get_node("J4"): 3,
-    node_vocab.get_node("J5"): 2,
-    node_vocab.get_node("J6"): 1
+    node_vocab.get_node("J1"): 15,
+    node_vocab.get_node("J2"): 10,
+    node_vocab.get_node("J3"): -10,
+    node_vocab.get_node("J4"): 7,
+    node_vocab.get_node("J5"): 5,
+    node_vocab.get_node("J6"): 3
 }
 time_dicst = {
     node_vocab.get_node("J1"): 0.2,
