@@ -1,5 +1,7 @@
+from typing import Union
 import networkx as nx
 import numpy as np
+
 
 import torch
 from torch_geometric.data import Data
@@ -24,21 +26,44 @@ class ConverterToPytorchGeometric:
 
         return dict_id_label_nodes, dict_label_id_nodes
 
-    def flatting_sorted_graph(self, graph: GraphGrammar) -> tuple[list[int], list[list[int]]]:
-
-        sorted_id_nodes = list(
-            nx.lexicographical_topological_sort(graph, key=lambda x: graph.get_node_by_id(x).label))
-        sorted_name_nodes = list(map(lambda x: graph.get_node_by_id(x).label, sorted_id_nodes))
-
-        id_node2list = {id[1]: id[0] for id in enumerate(sorted_id_nodes)}
-
-        list_edges_on_id = list(graph.edges)
-        list_id_edge_links = list(map(lambda x: [id_node2list[n] for n in x], list_edges_on_id))
+    def flatting_sorted_graph(self, graph: Union[GraphGrammar, tuple]):
         
-        if not list_id_edge_links:
-            list_id_edge_links = [[0, 0]]
+        if isinstance(graph, GraphGrammar):
+            sorted_id_nodes = list(
+                nx.lexicographical_topological_sort(graph, key=lambda x: graph.get_node_by_id(x).label))
+            sorted_name_nodes = list(map(lambda x: graph.get_node_by_id(x).label, sorted_id_nodes))
 
-        return sorted_name_nodes, list_id_edge_links
+            id_node2list = {id[1]: id[0] for id in enumerate(sorted_id_nodes)}
+
+            list_edges_on_id = list(graph.edges)
+            list_id_edge_links = list(map(lambda x: [id_node2list[n] for n in x], list_edges_on_id))
+            
+            if not list_id_edge_links:
+                list_id_edge_links = [[0, 0]]
+
+            return sorted_name_nodes, list_id_edge_links
+        
+        if isinstance(graph, tuple):
+            list_sorted_name_nodes = []
+            list_list_id_edge_links = []
+            
+            for g in graph:
+                sorted_id_nodes = list(
+                nx.lexicographical_topological_sort(g, key=lambda x: g.get_node_by_id(x).label))
+                sorted_name_nodes = list(map(lambda x: g.get_node_by_id(x).label, sorted_id_nodes))
+
+                id_node2list = {id[1]: id[0] for id in enumerate(sorted_id_nodes)}
+
+                list_edges_on_id = list(g.edges)
+                list_id_edge_links = list(map(lambda x: [id_node2list[n] for n in x], list_edges_on_id))
+                
+                if not list_id_edge_links:
+                    list_id_edge_links = [[0, 0]]
+                    
+                list_sorted_name_nodes.append(sorted_name_nodes)
+                list_list_id_edge_links.append(list_id_edge_links)
+            
+            return list_sorted_name_nodes, list_list_id_edge_links
 
     def one_hot_encodding(self, label_node: str) -> list[int]:
 
@@ -48,13 +73,38 @@ class ConverterToPytorchGeometric:
 
     def transform_digraph(self, graph: GraphGrammar):
 
-        node_label_list, edge_id_list = self.flatting_sorted_graph(graph)
+        if isinstance(graph, GraphGrammar):
+            node_label_list, edge_id_list = self.flatting_sorted_graph(graph)
+            
+            
+            one_hot_list = list(map(self.one_hot_encodding, node_label_list))
 
-        one_hot_list = list(map(self.one_hot_encodding, node_label_list))
+            edge_index = torch.t(torch.tensor(edge_id_list, dtype=torch.long))
+            x = torch.tensor(one_hot_list, dtype=torch.float)
+            
+            data = Data(x=x, edge_index=edge_index)
 
-        edge_index = torch.t(torch.tensor(edge_id_list, dtype=torch.long))
-        x = torch.tensor(one_hot_list, dtype=torch.float)
+            return data
+            
+        if isinstance(graph, tuple):
+            
+            x = []
+            edge_index = []
+            batch = []
+            node_label_list, edge_id_list = self.flatting_sorted_graph(graph)
+            for id_batch, (n_label_list, e_id_list) in enumerate(zip(node_label_list, edge_id_list)):
+                
+                
+                one_hot_list = list(map(self.one_hot_encodding, n_label_list))
+                
+                x += one_hot_list
+                edge_index += e_id_list
+                batch += [id_batch for __ in range(len(one_hot_list))]
 
-        data = Data(x=x, edge_index=edge_index)
-
-        return data
+            edge_index = torch.t(torch.tensor(edge_index, dtype=torch.long))
+            x = torch.tensor(x, dtype=torch.float)
+            batch = torch.tensor(batch, dtype=torch.long)
+            
+            data = Data(x=x, edge_index=edge_index, batch=batch)
+            return data
+            
