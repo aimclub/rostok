@@ -207,8 +207,9 @@ class SimulationStepOptimization:
             vis.SetWindowSize(1024, 768)
             vis.SetWindowTitle('Grab demo')
             vis.Initialize()
-            vis.AddCamera(chrono.ChVectorD(1, 3, -1.5))
-            vis.AddTypicalLights()
+            vis.AddCamera(chrono.ChVectorD(1, 2, -3))
+            vis.AddLight(chrono.ChVectorD(1.5, 3, 2), 4)
+            vis.AddLight(chrono.ChVectorD(-1.5, 3, -2), 4)
 
         # Initilize temporarily dictionary of arries output data
         arrays_simulation_data_time = []

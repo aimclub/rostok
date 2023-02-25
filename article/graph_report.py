@@ -8,7 +8,8 @@ import networkx as nx
 import optmizers_config
 # chrono imports
 import pychrono as chrono
-from obj_grasp.objects import get_obj_easy_box, get_obj_hard_ellipsoid, get_object_to_grasp_sphere, get_obj_hard_large_ellipsoid
+from obj_grasp.objects import (get_obj_easy_box, get_obj_hard_ellipsoid, get_object_to_grasp_sphere,
+    get_obj_hard_large_ellipsoid, get_obj_easy_large_box, get_obj_hard_long_ellipsoid,get_obj_hard_long_tilt_ellipsoid, get_obj_easy_long_tilt_box)
 from rule_sets import rule_extention_graph
 from rule_sets.ruleset_old_style_graph import create_rules
 
@@ -31,15 +32,16 @@ def plot_graph(graph: GraphGrammar):
     plt.show()
 
 
-graph_report: OptimizedGraphReport = load_saveable(Path(r"results\Reports_23y_02m_25d_14H_25M\optimized_graph_report.pickle"))
+graph_report: OptimizedGraphReport = load_saveable(Path(r"results\Reports_23y_02m_26d_00H_53M\optimized_graph_report.pickle"))
 # %% Create extension rule vocabulary
 rule_vocabul, torque_dict = create_rules()
 #rule_vocabul = deepcopy(rule_extention_graph.rule_vocab)
 #torque_dict = rule_extention_graph.torque_dict
 cfg = optmizers_config.get_cfg_graph(torque_dict)
-cfg.get_rgab_object_callback = get_obj_hard_large_ellipsoid
+#cfg.get_rgab_object_callback = get_obj_hard_large_ellipsoid
 #cfg.get_rgab_object_callback = get_obj_easy_box
 #cfg.get_rgab_object_callback =get_object_to_grasp_sphere
+cfg.get_rgab_object_callback = get_obj_easy_long_tilt_box
 control_optimizer = ControlOptimizer(cfg)
 
 graph_list = graph_report.graph_list
@@ -54,7 +56,7 @@ i_list = set()
 # plt.hist(reward_list)
 # plt.show()
 # for graph in graph_list:
-#     if graph.reward >48 and graph.reward < 49:
+#     if graph.reward >5.6 and graph.reward < 5.7:
 #         G = graph.graph
 #         reward = graph.reward
 #         control = graph.control
@@ -78,5 +80,8 @@ for graph in ten_top:
     control = graph.control
     func_reward = control_optimizer.create_reward_function(G)
     res = -func_reward(control, True)
+    print(reward)
+    print(res)
+    print()
 
 

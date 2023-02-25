@@ -23,9 +23,9 @@ def create_rules():
     length_link = [0.4, 0.6, 0.8]
     super_flat = BlockWrapper(FlatChronoBody, width_x=3, height_y=0.1, depth_z=3)
     link = list(map(lambda x: BlockWrapper(LinkChronoBody, length_y=x), length_link))
-    radial_move_values = [0.8, 1.2]
+    radial_move_values = [0.8, 1.2, 1.6]
     RADIAL_MOVES = list(map(lambda x: FrameTransform([x, 0, 0], [1, 0, 0, 0]), radial_move_values))
-    tan_move_values = [0.4, 0.6]
+    tan_move_values = [0.4, 0.6, 0.8]
     MOVES_POSITIVE = list(map(lambda x: FrameTransform([0, 0, x], [1, 0, 0, 0]),
                               tan_move_values))
     MOVES_NEGATIVE = list(
@@ -67,6 +67,7 @@ def create_rules():
     node_vocab.create_node(label="RT")
     node_vocab.create_node(label="RT1", is_terminal=True, block_wrapper=radial_transform[0])
     node_vocab.create_node(label="RT2", is_terminal=True, block_wrapper=radial_transform[1])
+    node_vocab.create_node(label="RT3", is_terminal=True, block_wrapper=radial_transform[2])
     node_vocab.create_node(label="FG")
     node_vocab.create_node(label="J1", is_terminal=True, block_wrapper=revolve)
     node_vocab.create_node(label="L")
@@ -76,20 +77,22 @@ def create_rules():
     node_vocab.create_node(label="TP")
     node_vocab.create_node(label="TP1", is_terminal=True, block_wrapper=positive_transforms[0])
     node_vocab.create_node(label="TP2", is_terminal=True, block_wrapper=positive_transforms[1])
+    node_vocab.create_node(label="TP3", is_terminal=True, block_wrapper=positive_transforms[2])
     node_vocab.create_node(label="TN")
     node_vocab.create_node(label="TN1", is_terminal=True, block_wrapper=negative_transforms[0])
     node_vocab.create_node(label="TN2", is_terminal=True, block_wrapper=negative_transforms[1])
+    node_vocab.create_node(label="TN3", is_terminal=True, block_wrapper=negative_transforms[2])
     node_vocab.create_node(label="TURN_P", is_terminal=True, block_wrapper=turn_transform_P)
     node_vocab.create_node(label="TURN_N", is_terminal=True, block_wrapper=turn_transform_N)
 
     rule_vocab = rule_vocabulary.RuleVocabulary(node_vocab)
     rule_vocab.create_rule("Init", ["ROOT"], ["FT", "F", "RF", "PF", "NF", "RPF", "RNF"], 0, 0, [(0,1), (0,2), (0,3), (0,4), (0,5),(0, 6)])
-    create_all_rules("AddFinger", ["F"], [ ["RT1", "RT2"], ["RE"], ["FG"]],
+    create_all_rules("AddFinger", ["F"], [ ["RT1", "RT2", "RT3"], ["RE"], ["FG"]],
                      0,
                      0, [(0, 1), (1, 2)])
     rule_vocab.create_rule("RemoveFinger", ["F"], [], 0, 0, [])
 
-    create_all_rules("AddFinger_R", ["RF"], [["RE"], ["RT1", "RT2"], ["RE"], ["FG"]],
+    create_all_rules("AddFinger_R", ["RF"], [["RE"], ["RT1", "RT2", "RT3"], ["RE"], ["FG"]],
                      0,
                      0, [(0, 1), (1, 2), (2, 3)])
     rule_vocab.create_rule("RemoveFinger_R", ["RF"], [], 0, 0, [])
@@ -99,40 +102,40 @@ def create_rules():
 
     rule_vocab.create_rule("Remove_FG", ["FG"], [], 0, 0, [])
 
-    create_all_rules("AddFinger_P", ["PF"], [ ["RT1", "RT2"], ["TP1", "TP2"], ["RE"], ["FG"]],
+    create_all_rules("AddFinger_P", ["PF"], [ ["RT1", "RT2", "RT3"], ["TP1", "TP2", "TP3"], ["RE"], ["FG"]],
                      0,
                      0, [(0, 1), (1, 2), (2, 3)])
     create_all_rules("AddFinger_PT", ["PF"],
-                     [ ["TURN_N"], ["RT1", "RT2"], ["RE"], ["FG"]],
+                     [ ["TURN_N"], ["RT1", "RT2", "RT3"], ["RE"], ["FG"]],
                      0,
                      0, [(0, 1), (1, 2), (2, 3)])
     rule_vocab.create_rule("RemoveFinger_P", ["PF"], [], 0, 0, [])
 
-    create_all_rules("AddFinger_N", ["NF"], [ ["RT1", "RT2"], ["TN1", "TN2"], ["RE"], ["FG"]],
+    create_all_rules("AddFinger_N", ["NF"], [ ["RT1", "RT2", "RT3"], ["TN1", "TN2", "TN3"], ["RE"], ["FG"]],
                      0,
                      0, [(0, 1), (1, 2), (2, 3)])
     create_all_rules("AddFinger_NT", ["NF"],
-                     [ ["TURN_P"], ["RT1", "RT2"], ["RE"], ["FG"]],
+                     [ ["TURN_P"], ["RT1", "RT2", "RT3"], ["RE"], ["FG"]],
                      0,
                      0, [(0, 1), (1, 2), (2, 3)])
     rule_vocab.create_rule("RemoveFinger_N", ["NF"], [], 0, 0, [])
 
     create_all_rules("AddFinger_RP", ["RPF"],
-                     [["RE"], ["RT1", "RT2"], ["TP1", "TP2"], ["RE"], ["FG"]],
+                     [["RE"], ["RT1", "RT2", "RT3"], ["TP1", "TP2", "TP3"], ["RE"], ["FG"]],
                      0,
                      0, [(0, 1), (1, 2), (2, 3), (3, 4)])
     create_all_rules("AddFinger_RPT", ["RPF"],
-                     [["RE"], ["TURN_N"], ["RT1", "RT2"],  ["RE"], ["FG"]],
+                     [["RE"], ["TURN_N"], ["RT1", "RT2", "RT3"],  ["RE"], ["FG"]],
                      0,
                      0, [(0, 1), (1, 2), (2, 3), (3, 4)])
     rule_vocab.create_rule("RemoveFinger_RP", ["RPF"], [], 0, 0, [])
 
     create_all_rules("AddFinger_RN", ["RNF"],
-                     [["RE"], ["RT1", "RT2"], ["TN1", "TN2"], ["RE"], ["FG"]],
+                     [["RE"], ["RT1", "RT2", "RT3"], ["TN1", "TN2", "TN3"], ["RE"], ["FG"]],
                      0,
                      0, [(0, 1), (1, 2), (2, 3), (3, 4)])
     create_all_rules("AddFinger_RNT", ["RNF"],
-                     [["RE"], ["TURN_P"], ["RT1", "RT2"],  ["RE"], ["FG"]],
+                     [["RE"], ["TURN_P"], ["RT1", "RT2", "RT3"],  ["RE"], ["FG"]],
                      0,
                      0, [(0, 1), (1, 2), (2, 3), (3, 4)])
     rule_vocab.create_rule("RemoveFinger_RN", ["RNF"], [], 0, 0, [])
