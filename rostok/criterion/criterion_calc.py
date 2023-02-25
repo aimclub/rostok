@@ -61,13 +61,17 @@ def criterion_calc(sim_output, weights) -> float:
         checkpoint = int(len_array*CUTOFF)
         sliced_force =  np.array(obj_forces[checkpoint : -1])
         greater_thr_len = np.size(np.where(sliced_force > THR_FORCE)[0])
-        time_force_thr_crit = greater_thr_len / np.size(sliced_force)
+        if np.size(sliced_force) == 0:
+            time_force_thr_crit = 0
+        else:    
+            time_force_thr_crit = greater_thr_len / np.size(sliced_force)
+
     else:
         time_force_thr_crit = 0
     
     reward = -weights[0] * force_crit - weights[1] * time_crit - weights[2] * cog_crit - weights[3] * time_force_thr_crit
 
     if force_crit == 0:
-        return 0.25*(reward)
+        return 0.5*(reward)
     else:
         return reward
