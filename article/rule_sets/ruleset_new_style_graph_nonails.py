@@ -68,6 +68,15 @@ def create_rules():
     node_vocab.create_node(label="RT3", is_terminal=True, block_wrapper=radial_transform[2])
     node_vocab.create_node(label="FG")
     node_vocab.create_node(label="J1", is_terminal=True, block_wrapper=revolve)
+    node_vocab.create_node(label="J2", is_terminal=True, block_wrapper=revolve)
+    node_vocab.create_node(label="J3", is_terminal=True, block_wrapper=revolve)
+    node_vocab.create_node(label="J4", is_terminal=True, block_wrapper=revolve)
+    node_vocab.create_node(label="J5", is_terminal=True, block_wrapper=revolve)
+    node_vocab.create_node(label="J6", is_terminal=True, block_wrapper=revolve)
+    node_vocab.create_node(label="J7", is_terminal=True, block_wrapper=revolve)
+    node_vocab.create_node(label="J8", is_terminal=True, block_wrapper=revolve)
+    node_vocab.create_node(label="J9", is_terminal=True, block_wrapper=revolve)
+    node_vocab.create_node(label="J10", is_terminal=True, block_wrapper=revolve)
     node_vocab.create_node(label="L")
     node_vocab.create_node(label="L1", is_terminal=True, block_wrapper=link[0])
     node_vocab.create_node(label="L2", is_terminal=True, block_wrapper=link[1])
@@ -94,7 +103,7 @@ def create_rules():
                      [(0, 1), (1, 2), (2, 3)])
     rule_vocab.create_rule("RemoveFinger_R", ["RF"], [], 0, 0, [])
 
-    create_all_rules("Phalanx", ["FG"], [["J1"], ["L1", "L2", "L3"], ["FG"]], 0, 0, [(0, 1),
+    create_all_rules("Phalanx", ["FG"], [["J1","J2","J3","J4","J5","J6","J7","J8","J9", "J10"], ["L1", "L2", "L3"], ["FG"]], 0, 0, [(0, 1),
                                                                                      (1, 2)])
 
     rule_vocab.create_rule("Remove_FG", ["FG"], [], 0, 0, [])
@@ -134,8 +143,19 @@ def create_rules():
                                                                                          (2, 3),
                                                                                          (3, 4)])
     rule_vocab.create_rule("RemoveFinger_RN", ["RNF"], [], 0, 0, [])
-
-    return rule_vocab
+    torque_dict = {
+        node_vocab.get_node("J1"): 1,
+        node_vocab.get_node("J2"): 2,
+        node_vocab.get_node("J3"): 3,
+        node_vocab.get_node("J4"): 4,
+        node_vocab.get_node("J5"): 5,
+        node_vocab.get_node("J6"): 6,
+        node_vocab.get_node("J7"): 7,
+        node_vocab.get_node("J8"): 8,
+        node_vocab.get_node("J9"): 9,
+        node_vocab.get_node("J10"): 10
+    }
+    return rule_vocab, torque_dict
 
 
 if __name__ == "__main__":

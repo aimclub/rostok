@@ -38,19 +38,16 @@ def get_obj_easy_large_box():
 
     return obj
 
-def get_obj_hard_long_ellipsoid():
-    shape = envbody_shapes.Ellipsoid()
-    shape.radius_x = 0.2
-    shape.radius_y = 0.3
-    shape.radius_z = 2
-
-    mat = DefaultChronoMaterial()
-    mat.Friction = 0.30
-    mat.DampingF = 0.8
+def get_obj_easy_long_box():
+    matich = DefaultChronoMaterial()
+    matich.Friction = 0.1
+    matich.DampingF = 0.65
+    shape_box = envbody_shapes.Box(0.4, 0.4, 4)
     obj = BlockWrapper(ChronoBodyEnv,
-                       shape=shape,
-                       material=mat,
-                       pos=FrameTransform([0, 0.8, 0], [ 1,  0,  0, 0]))
+                       shape=shape_box,
+                       material=matich,
+                       pos=FrameTransform([0, 0.5, 0], [1, 0, 0, 0]))
+
     return obj
 
 def get_obj_easy_long_tilt_box():
@@ -64,26 +61,24 @@ def get_obj_easy_long_tilt_box():
                        pos=FrameTransform([0, 1, 0], rotation_x(15)))
 
     return obj
-def get_obj_easy_box():
+
+def get_obj_easy_cylinder():
     matich = DefaultChronoMaterial()
-    matich.Friction = 0.65
+    matich.Friction = 0.1
     matich.DampingF = 0.65
-    shape_box = envbody_shapes.Box(0.2, 0.2, 0.5)
+    shape_box = envbody_shapes.Cylinder(0.6, 0.4)
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=shape_box,
                        material=matich,
-                       pos=FrameTransform([0, 0.5, 0], [0, -0.048, 0.706, 0.706]))
+                       mass=10,
+                       pos=FrameTransform([0, 1, 0], [1,0,0,0]))
 
-    return obj
-
-
-
-def get_object_to_grasp_sphere():    
+def get_object_to_grasp_sphere():
     """Medium task"""
     matich = DefaultChronoMaterial()
-    matich.Friction = 0.3
-    matich.DampingF = 0.3
-    shape = envbody_shapes.Sphere(0.3)
+    matich.Friction = 0.65
+    matich.DampingF = 0.65
+    shape = envbody_shapes.Sphere(0.4)
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=shape,
                        material=matich,
