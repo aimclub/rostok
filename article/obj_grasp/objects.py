@@ -8,7 +8,7 @@ from rostok.graph_grammar.node import BlockWrapper
 from rostok.trajectory_optimizer.control_optimizer import num_joints
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
-
+from scipy.spatial.transform import Rotation
 
 def get_obj_easy_box():
     matich = DefaultChronoMaterial()
@@ -27,9 +27,9 @@ def get_obj_easy_box():
 def get_object_to_grasp_sphere():    
     """Medium task"""
     matich = DefaultChronoMaterial()
-    matich.Friction = 0.65
-    matich.DampingF = 0.65
-    shape = envbody_shapes.Sphere(0.4)
+    matich.Friction = 0.3
+    matich.DampingF = 0.3
+    shape = envbody_shapes.Sphere(0.3)
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=shape,
                        material=matich,
@@ -43,8 +43,8 @@ def get_obj_hard_mesh():
     # Create object to grasp
     shape = envbody_shapes.FromMesh("examples\obj_grasp\Ocpocmaqs_scaled.obj")
     mat = DefaultChronoMaterial()
-    mat.Friction = 0.65
-    mat.DampingF = 0.65
+    mat.Friction = 0.2
+    mat.DampingF = 0.2
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=shape,
                        material=mat,
@@ -80,4 +80,48 @@ def get_obj_hard_large_ellipsoid():
                        shape=shape,
                        material=mat,
                        pos=FrameTransform([0, 0.8, 0], [ 1,  0,  0, 0]))
+    return obj
+
+
+def get_obj_box_pos_parametrize(yaw = 0 , pitch = 0, roll = 0):
+    quat = Rotation.from_euler('xyz', [yaw, pitch, roll], degrees=True).as_quat()
+    shape_box = envbody_shapes.Box(0.24, 0.24, 0.4)
+    
+    mat = DefaultChronoMaterial()
+    mat.Friction = 0.30
+    mat.DampingF = 0.8
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=shape_box,
+                       material=mat,
+                       pos=FrameTransform([0, 0.8, 0], quat))
+    return obj
+
+def get_obj_cyl_pos_parametrize(yaw = 0 , pitch = 0, roll = 0):
+    quat = Rotation.from_euler('xyz', [yaw, pitch, roll], degrees=True).as_quat()
+    shape_box = envbody_shapes.Cylinder()
+    shape_box.height_y = 0.5
+    shape_box.radius = 0.2
+    mat = DefaultChronoMaterial()
+    mat.Friction = 0.30
+    mat.DampingF = 0.8
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=shape_box,
+                       material=mat,
+                       pos=FrameTransform([0, 0.8, 0], quat))
+    return obj
+
+
+def get_obj_hard_ellipsoid_move():
+    shape = envbody_shapes.Ellipsoid()
+    shape.radius_x = 0.2
+    shape.radius_y = 0.3
+    shape.radius_z = 0.18
+    
+    mat = DefaultChronoMaterial()
+    mat.Friction = 0.30
+    mat.DampingF = 0.8
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=shape,
+                       material=mat,
+                       pos=FrameTransform([0.15, 0.85, -0.1], [ 1,  0,  0, 0]))
     return obj
