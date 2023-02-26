@@ -44,7 +44,6 @@ class _ConfigRewardFunction:
     sim_config: dict[str, str] = field(default_factory=dict)
     time_step: float = 0.001
     time_sim: float = 2
-    time_optimization = 100
     flags: list = field(default_factory=list)
     criterion_callback: Callable[[SimOut, Robot], float] = None
     get_rgab_object_callback: Callable[[], chrono.ChBody] = None
@@ -60,7 +59,7 @@ class ConfigVectorJoints(_ConfigRewardFunction):
     """
     bound: tuple[float, float] = (-1, 1)
     iters: int = 10
-    optimizer_scipy = partial(shgo)
+    optimizer_scipy = partial(direct)
 
 
 class ConfigGraphControl(_ConfigRewardFunction):
@@ -144,8 +143,7 @@ class ControlOptimizer():
             multi_bound = create_multidimensional_bounds(generated_graph, self.cfg.bound)
             if len(multi_bound) == 0:
                 return (0, 0)
-            time_stopper = TimeOptimizerStopper(self.cfg.time_optimization)
-            result = self.cfg.optimizer_scipy(reward_fun, multi_bound,  callback=time_stopper)#,maxiter=self.cfg.iters,)
+            result = self.cfg.optimizer_scipy(reward_fun, multi_bound,maxiter=self.cfg.iters)
             return (result.fun, result.x)
         elif isinstance(self.cfg, ConfigGraphControl):
             n_joint = num_joints(generated_graph)
