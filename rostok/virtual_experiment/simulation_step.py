@@ -293,6 +293,13 @@ class SimulationStepOptimization:
                 arrays_simulation_data_amount_obj_contact_surfaces = list(map(
                     append_arr_in_dict, current_data_amount_obj_contact_surfaces.items(),
                     arrays_simulation_data_amount_obj_contact_surfaces))
+                
+            else:
+                current_data_amount_obj_contact_surfaces = {-1 : 0}
+                arrays_simulation_data_amount_obj_contact_surfaces = list(map(
+                    append_arr_in_dict, current_data_amount_obj_contact_surfaces.items(),
+                    arrays_simulation_data_amount_obj_contact_surfaces))
+
 
             if current_data_cont_coord is not None:
                 arrays_simulation_data_cont_coord = list(map(
@@ -305,6 +312,11 @@ class SimulationStepOptimization:
                     arrays_simulation_data_abs_coord_COG_obj))
             
             if current_data_sum_contact_real_forces_obj is not None:
+                arrays_simulation_data_obj_real_force = list(map(
+                    append_arr_in_dict, current_data_sum_contact_real_forces_obj.items(),
+                    arrays_simulation_data_obj_real_force))
+            else:
+                current_data_sum_contact_real_forces_obj = {-1: 0}
                 arrays_simulation_data_obj_real_force = list(map(
                     append_arr_in_dict, current_data_sum_contact_real_forces_obj.items(),
                     arrays_simulation_data_obj_real_force))
