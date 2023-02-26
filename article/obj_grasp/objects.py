@@ -233,3 +233,43 @@ def get_obj_hard_mesh_bukvg():
                        material=mat,
                        pos=FrameTransform([0, 1, 0], quat))
     return obj
+
+def get_obj_hard_mesh_mikki():
+    # Create object to grasp
+    quat = Rotation.from_euler('xyz', [90, 0, 0], degrees=True).as_quat()
+    shape = envbody_shapes.FromMesh("article\obj_grasp\MIKKI.obj")
+    mat = DefaultChronoMaterial()
+    mat.Friction = 0.2
+    mat.DampingF = 0.2
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=shape,
+                       material=mat,
+                       pos=FrameTransform([0, 1, 0], quat))
+    return obj
+
+def get_obj_hard_mesh_zateynik():
+    # Create object to grasp
+    quat = Rotation.from_euler('xyz', [90, 0, 0], degrees=True).as_quat()
+    shape = envbody_shapes.FromMesh("article\obj_grasp\ZATEYNIK.obj")
+    mat = DefaultChronoMaterial()
+    mat.Friction = 0.2
+    mat.DampingF = 0.2
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=shape,
+                       material=mat,
+                       pos=FrameTransform([0, 1, 0], quat))
+    return obj
+
+def get_obj_hard_mesh_piramida():
+        # Create object to grasp
+    quat = Rotation.from_euler('xyz', [90, 0, 0], degrees=True).as_quat()
+    shape = envbody_shapes.FromMesh("article\obj_grasp\PIRAMIDA12.obj")
+    mat = DefaultChronoMaterial()
+    mat.Friction = 0.2
+    mat.DampingF = 0.2
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=shape,
+                       material=mat,
+                       pos=FrameTransform([0, 1, 0], quat))
+    return obj
+    

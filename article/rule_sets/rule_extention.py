@@ -21,9 +21,9 @@ link = list(map(lambda x: BlockWrapper(LinkChronoBody, length_y=x),
 
 u1 = BlockWrapper(MountChronoBody, width_x=0.1, length_y=0.05)
 u2 = BlockWrapper(MountChronoBody, width_x=0.2, length_y=0.1)
-
+CHOOO = 0.5
 # %% Tranform for extansions rules 
-# z_shift = [-0.3, 0, 0.3]
+# z_shift = [-CHOOO, 0, CHOOO]
 # MOVE_TO_RIGHT_SIDE = []
 # for i in width:
 #     for j in z_shift:
@@ -42,23 +42,23 @@ def rotation(alpha):
 
 MOVE_TO_RIGHT_SIDE = map(lambda x: FrameTransform([x, 0, 0],[0,0,1,0]),
                 width)
-MOVE_TO_RIGHT_SIDE_PLUS = map(lambda x: FrameTransform([x, 0, +0.3],[0,0,1,0]),
+MOVE_TO_RIGHT_SIDE_PLUS = map(lambda x: FrameTransform([x, 0, +CHOOO],[0,0,1,0]),
                 width)
-MOVE_TO_RIGHT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([x, 0, +0.3], rotation(150)),
+MOVE_TO_RIGHT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([x, 0, +CHOOO], rotation(150)),
                 width)
-MOVE_TO_RIGHT_SIDE_MINUS = map(lambda x: FrameTransform([x, 0, -0.3],[0,0,1,0]),
+MOVE_TO_RIGHT_SIDE_MINUS = map(lambda x: FrameTransform([x, 0, -CHOOO],[0,0,1,0]),
                 width)
-MOVE_TO_RIGHT_SIDE_MINUS_ANGLE = map(lambda x: FrameTransform([x, 0, -0.3],rotation(210)),
+MOVE_TO_RIGHT_SIDE_MINUS_ANGLE = map(lambda x: FrameTransform([x, 0, -CHOOO],rotation(210)),
                 width)
 MOVE_TO_LEFT_SIDE = map(lambda x:  FrameTransform([-x, 0, 0],[1,0,0,0]),
                 width)
-MOVE_TO_LEFT_SIDE_PLUS = map(lambda x: FrameTransform([-x, 0, +0.3],[1,0,0,0]),
+MOVE_TO_LEFT_SIDE_PLUS = map(lambda x: FrameTransform([-x, 0, +CHOOO],[1,0,0,0]),
                 width)
-MOVE_TO_LEFT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([-x, 0, +0.3],rotation(30)),
+MOVE_TO_LEFT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([-x, 0, +CHOOO],rotation(30)),
                 width)
-MOVE_TO_LEFT_SIDE_MINUS = map(lambda x: FrameTransform([-x, 0, -0.3],[1,0,0,0]),
+MOVE_TO_LEFT_SIDE_MINUS = map(lambda x: FrameTransform([-x, 0, -CHOOO],[1,0,0,0]),
                 width)
-MOVE_TO_LEFT_SIDE_MINUS_ANGLE = map(lambda x: FrameTransform([-x, 0, -0.3],rotation(-30)),
+MOVE_TO_LEFT_SIDE_MINUS_ANGLE = map(lambda x: FrameTransform([-x, 0, -CHOOO],rotation(-30)),
                 width)
 
 # quat_Y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))
@@ -224,7 +224,7 @@ rule_vocab.create_rule("TerminalEndLimb2", ["EM"], ["U2"], 0 , 0)
 
 def get_three_finger():
     rule_action_three_finger = np.asarray([
-        "InitMechanism_3_L_A", "TerminalFlat3", "TerminalTransformLeftMinusAngle1", "TerminalTransformLeftPlusAngle1", "TerminalTransformRight1",
+        "InitMechanism_3_L_A", "TerminalFlat3", "TerminalTransformLeftMinusAngle1", "TerminalTransformLeftPlusAngle1", "TerminalTransformRight3",
         "FingerUpper", "FingerUpper", "FingerUpper", "FingerUpper", "FingerUpper", "FingerUpper",
         "TerminalL2", "TerminalL2", "TerminalL2", "TerminalL3", "TerminalL3", "TerminalL3",
         "TerminalEndLimb1", "TerminalEndLimb1", "TerminalEndLimb1"]
