@@ -44,6 +44,9 @@ class _ConfigRewardFunction:
     sim_config: dict[str, str] = field(default_factory=dict)
     time_step: float = 0.001
     time_sim: float = 2
+    time_start_gravity = float("inf")
+    time_saturation_gravity = 0
+    gravity_vector = [0, -9.8, 0]
     flags: list = field(default_factory=list)
     criterion_callback: Callable[[SimOut, Robot], float] = None
     get_rgab_object_callback: Callable[[], chrono.ChBody] = None
@@ -113,6 +116,7 @@ class ControlOptimizer():
             sim = SimulationStepOptimization(arr_traj, generated_graph, object_to_grab)
             sim.set_flags_stop_simulation(self.cfg.flags)
             sim.change_config_system(self.cfg.sim_config)
+            sim.set_turn_on_gravity(self.cfg.time_start_gravity, self.cfg.time_saturation_gravity, self.cfg.gravity_vector)
             sim_output = sim.simulate_system(self.cfg.time_step, is_vis)
             rew = self.cfg.criterion_callback(sim_output)
             
