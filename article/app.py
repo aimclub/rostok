@@ -5,9 +5,11 @@ from pathlib import Path
 
 import mcts
 import optmizers_config
-from obj_grasp.objects import get_obj_easy_box
+from obj_grasp.objects import get_obj_easy_box, get_obj_hard_ellipsoid, get_object_to_grasp_sphere, get_obj_hard_large_ellipsoid, get_obj_easy_large_box, get_obj_hard_long_ellipsoid
+
 from rule_sets import rule_extention
 from rule_sets import ruleset_new_style
+from rule_sets import ruleset_new_style_nonails
 import hyperparameters as hp
 from rostok.graph_generators.mcts_helper import (make_mcts_step,
                                                  prepare_mcts_state_and_helper)
@@ -16,11 +18,12 @@ from rostok.trajectory_optimizer.control_optimizer import (
     ControlOptimizer)
 
 #rule_vocabul = deepcopy(rule_extention.rule_vocab)
-rule_vocabul = ruleset_new_style.create_rules()
+rule_vocabul = ruleset_new_style_nonails.create_rules()
 
 cfg = optmizers_config.get_cfg_standart()
 #cfg = optmizers_config.get_cfg_standart_anealing()
 cfg.get_rgab_object_callback = get_obj_easy_box
+cfg.get_rgab_object_callback = get_obj_hard_long_ellipsoid
 control_optimizer = ControlOptimizer(cfg)
  
 base_iteration_limit = hp.BASE_ITERATION_LIMIT
