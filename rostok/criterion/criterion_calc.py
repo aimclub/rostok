@@ -98,8 +98,11 @@ def criterion_calc(sim_output, weights) -> float:
             midle_contact_crit = np.sum(list_surfaces) / len(sliced_force)
     
     reward = -weights[0] * force_crit - weights[1] * time_crit - weights[2] * cog_crit - weights[3] * time_force_thr_crit - weights[4] * midle_contact_crit
-
+    
+    if reward > 80:
+        reward = 0
+    
     if force_crit == 0:
-        return 0.5*(reward)
-    else:
-        return reward
+        reward = 0.5*(reward)
+
+    return reward
