@@ -8,7 +8,8 @@ from rostok.graph_grammar.node import BlockWrapper
 from rostok.trajectory_optimizer.control_optimizer import num_joints
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
-
+import numpy as np
+import pychrono as chrono
 from scipy.spatial.transform import Rotation
 
 def rotation_x(alpha):
@@ -37,6 +38,20 @@ def get_obj_easy_large_box():
 
     return obj
 
+def get_obj_hard_long_ellipsoid():
+    shape = envbody_shapes.Ellipsoid()
+    shape.radius_x = 0.2
+    shape.radius_y = 0.3
+    shape.radius_z = 2
+
+    mat = DefaultChronoMaterial()
+    mat.Friction = 0.30
+    mat.DampingF = 0.8
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=shape,
+                       material=mat,
+                       pos=FrameTransform([0, 0.8, 0], [ 1,  0,  0, 0]))
+    return obj
 
 def get_obj_easy_long_tilt_box():
     matich = DefaultChronoMaterial()
