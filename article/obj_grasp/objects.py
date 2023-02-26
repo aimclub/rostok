@@ -26,6 +26,18 @@ def rotation_y(alpha):
     quat_Y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))
     return [quat_Y_ang_alpha.e0, quat_Y_ang_alpha.e1, quat_Y_ang_alpha.e2, quat_Y_ang_alpha.e3]
 
+def get_obj_easy_box():
+    matich = DefaultChronoMaterial()
+    matich.Friction = 0.65
+    matich.DampingF = 0.65
+    shape_box = Box(0.2, 0.2, 0.5)
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=shape_box,
+                       material=matich,
+                       pos=FrameTransform([0, 0.5, 0], [0, -0.048, 0.706, 0.706]))
+
+    return obj
+
 def get_obj_easy_large_box():
     matich = DefaultChronoMaterial()
     matich.Friction = 0.65
@@ -72,6 +84,8 @@ def get_obj_easy_cylinder():
                        material=matich,
                        mass=10,
                        pos=FrameTransform([0, 1, 0], [1,0,0,0]))
+    
+    return obj
 
 def get_object_to_grasp_sphere():
     """Medium task"""
@@ -129,6 +143,36 @@ def get_obj_hard_large_ellipsoid():
                        shape=shape,
                        material=mat,
                        pos=FrameTransform([0, 0.8, 0], [ 1,  0,  0, 0]))
+    return obj
+
+def get_obj_hard_long_ellipsoid():
+    shape = envbody_shapes.Ellipsoid()
+    shape.radius_x = 0.4
+    shape.radius_y = 0.4
+    shape.radius_z = 2
+    
+    mat = DefaultChronoMaterial()
+    mat.Friction = 0.30
+    mat.DampingF = 0.8
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=shape,
+                       material=mat,
+                       pos=FrameTransform([0, 0.8, 0], [ 1,  0,  0, 0]))
+    return obj
+
+def get_obj_hard_long_tilt_ellipsoid():
+    shape = envbody_shapes.Ellipsoid()
+    shape.radius_x = 0.4
+    shape.radius_y = 0.4
+    shape.radius_z = 2
+    
+    mat = DefaultChronoMaterial()
+    mat.Friction = 0.30
+    mat.DampingF = 0.8
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=shape,
+                       material=mat,
+                       pos=FrameTransform([0, 0.8, 0], rotation_x(15)))
     return obj
 
 

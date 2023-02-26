@@ -106,7 +106,16 @@ def create_rules():
     create_all_rules("Phalanx", ["FG"], [["J1","J2","J3","J4","J5","J6","J7","J8","J9", "J10"], ["L1", "L2", "L3"], ["FG"]], 0, 0, [(0, 1),
                                                                                      (1, 2)])
 
-    rule_vocab.create_rule("Remove_FG", ["FG"], [], 0, 0, [])
+    rule_vocab.create_rule("Remove_FG_1", ["FG"], [], 0, 0, [])
+    rule_vocab.create_rule("Remove_FG_2", ["FG"], [], 0, 0, [])
+    rule_vocab.create_rule("Remove_FG_3", ["FG"], [], 0, 0, [])
+    rule_vocab.create_rule("Remove_FG_4", ["FG"], [], 0, 0, [])
+    rule_vocab.create_rule("Remove_FG_5", ["FG"], [], 0, 0, [])
+    rule_vocab.create_rule("Remove_FG_6", ["FG"], [], 0, 0, [])
+    rule_vocab.create_rule("Remove_FG_7", ["FG"], [], 0, 0, [])
+    rule_vocab.create_rule("Remove_FG_8", ["FG"], [], 0, 0, [])
+    rule_vocab.create_rule("Remove_FG_9", ["FG"], [], 0, 0, [])
+    rule_vocab.create_rule("Remove_FG_10", ["FG"], [], 0, 0, [])
 
     create_all_rules("AddFinger_P", ["PF"],
                      [["RT1", "RT2", "RT3"], ["TP1", "TP2", "TP3"], ["RE"], ["FG"]], 0, 0, [(0, 1),

@@ -33,7 +33,7 @@ def plot_graph(graph: GraphGrammar):
     plt.show()
 
 
-graph_report: OptimizedGraphReport = load_saveable(Path(r"results\Reports_23y_02m_26d_19H_05M\optimized_graph_report.pickle"))
+graph_report: OptimizedGraphReport = load_saveable(Path(r"results\Reports_23y_02m_26d_21H_48M\optimized_graph_report.pickle"))
 # %% Create extension rule vocabulary
 rule_vocabul, torque_dict = create_rules()
 cfg = optmizers_config.get_cfg_graph(torque_dict)
