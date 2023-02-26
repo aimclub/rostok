@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
-import matplotlib.pyplot as plt
+import numpy as np
 import rostok.block_builder.control as control
 from rostok.block_builder.node_render import ChronoRevolveJoint, RobotBody
 from rostok.block_builder.transform_srtucture import FrameTransform,OriginWorldFrame
@@ -11,7 +11,7 @@ from rostok.graph_grammar.node import BlockWrapper, GraphGrammar
 from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
 from rostok.virtual_experiment.robot import Robot
 
-
+EPS = 1e-8
 # Immutable classes with output simulation data for robot block
 @dataclass(frozen=True)
 class SimulationDataBlock:
@@ -118,6 +118,7 @@ class SimulationStepOptimization:
 
         # Add grasp object in system and set system without gravity
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
+        self.gravity_config = (float("inf"), 0, np.array([0,0,0]))
 
         self.bind_trajectory(self.control_trajectory)
         self.fix_robot_base()
@@ -181,6 +182,16 @@ class SimulationStepOptimization:
             except AttributeError:
                 raise AttributeError("Chrono system doesn't have method {0}".format(str_method))
 
+    def __calculate_gravity(self,current_time):
+            time_s = self.gravity_config[0]
+            time_satur = self.gravity_config[1]
+            grav_vector = self.gravity_config[2]
+            grav_vector = grav_vector/2 * np.tanh(12/(time_satur+EPS)*(current_time - (time_s + time_satur/2))) + grav_vector/2
+            vector_gravity = chrono.ChVectorD(grav_vector[0], grav_vector[1],grav_vector[2])
+            self.chrono_system.Set_G_acc(vector_gravity)
+    
+    def set_turn_on_gravity(self, time_start, saturation_time, gravity_vector):
+        self.gravity_config = (time_start, saturation_time, np.array(gravity_vector))
     # Run simulation
     def simulate_system(self, time_step, visualize=False) -> SimOut:
         """Start the simulation and return data from it
@@ -207,8 +218,10 @@ class SimulationStepOptimization:
             vis.SetWindowSize(1024, 768)
             vis.SetWindowTitle('Grab demo')
             vis.Initialize()
-            vis.AddCamera(chrono.ChVectorD(1.5, 3, -2))
-            vis.AddTypicalLights()
+            vis.AddCamera(chrono.ChVectorD(1, 2, -3))
+            vis.AddLight(chrono.ChVectorD(1.5, 3, 2), 4)
+            vis.AddLight(chrono.ChVectorD(-1.5, 3, -2), 4)
+            
 
         # Initilize temporarily dictionary of arries output data
         arrays_simulation_data_time = []
@@ -246,7 +259,10 @@ class SimulationStepOptimization:
                     vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
                     vis.Render()
                     vis.EndScene()
-
+            simulation_time = self.chrono_system.GetChTime()
+            if self.gravity_config[0] < simulation_time < sum(self.gravity_config[0:2]):
+                self.__calculate_gravity(simulation_time)
+            
             arrays_simulation_data_time.append(self.chrono_system.GetChTime())
 
             # Get current variables from robot blocks

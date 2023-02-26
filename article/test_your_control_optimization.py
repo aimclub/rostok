@@ -11,6 +11,9 @@ from rostok.trajectory_optimizer.control_optimizer import (
 
 # Init control optimization
 cfg = optmizers_config.get_cfg_standart()
+cfg.gravity_vector = [0, 9.8, 0]
+cfg.time_saturation_gravity = 0.5
+cfg.time_start_gravity = 1
 control_optimizer = ControlOptimizer(cfg)
 cfg.get_rgab_object_callback = get_obj_easy_box
 graph = rule_extention.get_three_finger()

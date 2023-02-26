@@ -8,6 +8,7 @@ from rostok.graph_grammar.node import BlockWrapper
 from rostok.trajectory_optimizer.control_optimizer import num_joints
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
+
 from scipy.spatial.transform import Rotation
 
 def get_obj_easy_box():

@@ -9,9 +9,10 @@ import networkx as nx
 import optmizers_config
 # chrono imports
 import pychrono as chrono
-from obj_grasp.objects import get_obj_easy_box, get_obj_hard_ellipsoid
+from obj_grasp.objects import get_obj_easy_box, get_obj_hard_ellipsoid, get_object_to_grasp_sphere
 #from rule_sets import rule_extention_graph
 from rule_sets.ruleset_old_style_graph import create_rules
+from rule_sets import rule_extention_graph, rule_extention
 
 from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact,
                                                 FlagSlipout)
@@ -31,13 +32,22 @@ def plot_graph(graph: GraphGrammar):
     plt.show()
 
 
-report = load_saveable(Path("/home/human/rostok-team/rostok/results/Reports_23y_02m_24d_13H_27M/MCTS_data.pickle"))
+report = load_saveable(Path("results\Reports_23y_02m_22d_04H_51M\MCTS_data_windows.pickle"))
 # %% Create extension rule vocabulary
-rule_vocabul, torque_dict = create_rules()
-cfg = optmizers_config.get_cfg_graph(torque_dict)
+# rule_vocabul, torque_dict = create_rules()
+# cfg = optmizers_config.get_cfg_graph(torque_dict)
 
-cfg.get_rgab_object_callback = get_obj_hard_ellipsoid
+# rule_vocabul, torque_dict = create_rules()
+# cfg = optmizers_config.get_cfg_graph(torque_dict)
+# rule_vocabul = deepcopy(rule_extention_graph.rule_vocab)
+# cfg = optmizers_config.get_cfg_graph(rule_extention_graph.torque_dict)
+rule_vocabul = deepcopy(rule_extention.rule_vocab)
+cfg = optmizers_config.get_cfg_standart()
+# cfg.get_rgab_object_callback = get_object_to_grasp_sphere
+cfg.get_rgab_object_callback = get_obj_easy_box
+# cfg.get_rgab_object_callback = get_obj_hard_ellipsoid
 control_optimizer = ControlOptimizer(cfg)
+# control_optimizer = ControlOptimizer(cfg)
 seen_graphs = deepcopy(report.seen_graphs.graph_list)
 key_sort = lambda x: x.reward
 seen_graphs.sort(key=key_sort) 

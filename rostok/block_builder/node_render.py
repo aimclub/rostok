@@ -551,7 +551,7 @@ class ChronoBodyEnv(ChronoBody):
     def __init__(self,
                  builder,
                  shape: envbody_shapes.ShapeTypes = envbody_shapes.Box(),
-                 color=[237, 177, 32],
+                 color=[173, 2, 50],
                  mass=1,
                  material=DefaultChronoMaterial(),
                  pos: FrameTransform = FrameTransform([0, 0.0, 0], [1, 0, 0, 0])):

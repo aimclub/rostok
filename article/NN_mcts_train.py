@@ -13,31 +13,32 @@ from MCTS import MCTS
 from Coach import Coach
 
 
-from obj_grasp.objects import get_obj_easy_box
+from obj_grasp.objects import get_obj_easy_box, get_object_to_grasp_sphere
 from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
 from utils import dotdict
 
 import hyperparameters as hp
 import optmizers_config
-from rule_sets import rule_extention, rule_extention_graph
-from rule_sets.ruleset_old_style_graph import create_rules
+# from rule_sets import rule_extention, rule_extention_graph
+# from rule_sets.ruleset_old_style_graph import create_rules
+from rule_sets.ruleset_old_style_graph_nonails import create_rules
 
 log = logging.getLogger(__name__)
 
 CURRENT_PLAYER = 1
 
 coach_args = dotdict({
-    "numMCTSSims" : 10,
+    "numMCTSSims" : 100,
     "cpuct" : 5,
-    "train_offline_epochs": 50,
+    "train_offline_epochs": 100,
     "train_online_epochs":10,
     "num_learn_epochs": 100,
     "tempThreshold":4,
     "maxlenOfQueue":20000,
     "numItersForTrainExamplesHistory":20,
-    "offline_iters":5,
+    "offline_iters":200,
     "online_iters":10,
-    "update_weights":2,
+    "update_weights":5,
     "checkpoint": "./temp/"
 })
 
@@ -79,7 +80,7 @@ def preconfigure():
     rule_vocabul, torque_dict = create_rules()
     cfg = optmizers_config.get_cfg_graph(torque_dict)
 
-    cfg.get_rgab_object_callback = get_obj_easy_box
+    cfg.get_rgab_object_callback = get_object_to_grasp_sphere
     control_optimizer = ControlOptimizer(cfg)
     graph_game = Game(rule_vocabul, control_optimizer, hp.MAX_NUMBER_RULES)
     
@@ -133,9 +134,12 @@ if __name__ == "__main__":
     #     main()
     #     final_ex = time.time() - initial_time
     #     print(f"train {idx} index, full_time: {final_ex}")
-    
+
     # load_train("train_data_10e_1000mcts_2302.pickle")
     game_graph = preconfigure()
     graph_nnet = AlphaZeroWrapper(game_graph, args_train)
-    coacher = Coach(game_graph, graph_nnet, coach_args)
-    coacher.learn()
+    graph_nnet.load_checkpoint("temp_GraphControl_sphere", "best.pth.tar")
+    nnmcts = MCTS(game_graph, graph_nnet, coach_args)
+    nnmcts.search()
+    # coacher = Coach(game_graph, graph_nnet, coach_args)
+    # coacher.learn()
