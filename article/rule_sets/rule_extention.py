@@ -6,7 +6,7 @@ from rostok.graph_grammar import node_vocabulary, rule_vocabulary
 from rostok.graph_grammar.node import ROOT, BlockWrapper, GraphGrammar
 
 # %% Bodies for extansions rules
-width = [0.25, 0.35, 0.5]
+width = [0.4, 0.5, 0.6]
 alpha = 45
 alpha_left = [0, 30, 60]
 alpha_right = [180, 150, 120]
