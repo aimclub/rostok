@@ -557,7 +557,7 @@ class ChronoBodyEnv(ChronoBody):
                  pos: FrameTransform = FrameTransform([0, 0.0, 0], [1, 0, 0, 0])):
 
         # This parameter redefined by SetMass
-        MOCK_DENSITY: int = 1000  # pylint: disable=invalid-name
+        MOCK_DENSITY: int = 100  # pylint: disable=invalid-name
 
         # Create body
         material = struct_material2object_material(material)

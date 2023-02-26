@@ -60,7 +60,7 @@ class ConfigVectorJoints(_ConfigRewardFunction):
     """
     bound: tuple[float, float] = (-1, 1)
     iters: int = 10
-    optimizer_scipy = partial(shgo)
+    optimizer_scipy = partial(direct)
 
 
 class ConfigGraphControl(_ConfigRewardFunction):
@@ -145,7 +145,7 @@ class ControlOptimizer():
             if len(multi_bound) == 0:
                 return (0, 0)
             time_stopper = TimeOptimizerStopper(self.cfg.time_optimization)
-            result = self.cfg.optimizer_scipy(reward_fun, multi_bound,  callback=time_stopper)#,maxiter=self.cfg.iters,)
+            result = self.cfg.optimizer_scipy(reward_fun, multi_bound, maxiter=self.cfg.iters)
             return (result.fun, result.x)
         elif isinstance(self.cfg, ConfigGraphControl):
             n_joint = num_joints(generated_graph)

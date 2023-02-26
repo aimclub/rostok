@@ -98,9 +98,27 @@ def get_population_zoo():
     for struct in STRUCTURE_ZOO:
         
         graphs_one_struct = []
-        for _ in range(3):
+        for _ in range(4):
             graph_zoo = struct()
             rule_vocab.make_graph_terminal(graph_zoo)
             graphs_one_struct.append(graph_zoo)
+        
+        # for _ in range(3):
+        #     skoka = random.choice([5, 8, 3, 5, 7])
+        #     gr = make_random_graph(skoka, rule_vocab)
+        #     graphs_one_struct.append(gr)
+
         zoo.extend(graphs_one_struct)
     return zoo
+
+def get_pop_simple():
+    finger = []
+    for _ in range(3):
+        nonterminal = get_non_terminal_one_finger()
+        rule_vocab.make_graph_terminal(nonterminal)
+        finger.append(nonterminal)
+    for _ in range(3):
+        nonterminal = get_non_terminal_two_finger_asym()
+        rule_vocab.make_graph_terminal(nonterminal)
+        finger.append(nonterminal)
+    return finger
