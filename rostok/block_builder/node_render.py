@@ -578,7 +578,7 @@ class ChronoBodyEnv(ChronoBody):
                 raise Exception(f"Wrong path: {shape.path}")
             
             mesh = open3d.io.read_triangle_mesh(shape.path)
-            volume = mesh.get_volume()
+            volume = 0.3*0.3*0.3
             density = mass/volume
             mesh_chrono = o3d_to_chrono_trianglemesh(mesh)
             body = chrono.ChBodyEasyMesh(mesh_chrono, # mesh filename

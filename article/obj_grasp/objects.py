@@ -179,3 +179,18 @@ def get_obj_hard_ellipsoid_move():
                        material=mat,
                        pos=FrameTransform([0.15, 0.85, -0.1], [ 1,  0,  0, 0]))
     return obj
+
+
+
+def get_obj_hard_mesh_bukvg():
+    # Create object to grasp
+    quat = Rotation.from_euler('xyz', [90, 0, 0], degrees=True).as_quat()
+    shape = envbody_shapes.FromMesh("article\obj_grasp\G_BUKV_VERY2.obj")
+    mat = DefaultChronoMaterial()
+    mat.Friction = 0.2
+    mat.DampingF = 0.2
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=shape,
+                       material=mat,
+                       pos=FrameTransform([0, 1, 0], quat))
+    return obj
