@@ -21,7 +21,7 @@ import hyperparameters as hp
 import optmizers_config
 # from rule_sets import rule_extention, rule_extention_graph
 # from rule_sets.ruleset_old_style_graph import create_rules
-from rule_sets.ruleset_old_style_graph_nonails import create_rules
+from rule_sets.rule_set import create_rules
 
 log = logging.getLogger(__name__)
 
@@ -50,6 +50,21 @@ args_train = dotdict({
     "pooling_ratio": 0.7,
     "dropout_ratio": 0.3
 })
+
+
+def pretrain_model(path_to_data, list_name_data):
+    
+    for name_data in list_name_data:
+        train_examples = load_train_data(path_to_data+name_data+".pickle")
+        graph_game = preconfigure()
+        
+        log.info('Loading %s ...', AlphaZeroWrapper.__name__)
+        nnet = AlphaZeroWrapper(graph_game, args_train)
+        
+        nnet.train(train_examples)
+    
+    nnet.save_checkpoint()
+
 
 def executeEpisode(game, mcts, temp_threshold):
 
@@ -116,18 +131,40 @@ def load_train_data(path_to_data):
     formatting_train_data = list(map(lambda x: (x[0], x[2], x[3]), formatting_train_data))
     return train
 
-def pretrain_model(path_to_data, list_name_data):
     
-    for name_data in list_name_data:
-        train_examples = load_train_data(path_to_data+name_data+".pickle")
-        graph_game = preconfigure()
+def run_learned_alphazero(path_to_dir, file, simulation_mcts, cpuct):
+    game_graph = preconfigure()
+    graph_nnet = AlphaZeroWrapper(game_graph, args_train)
+    graph_nnet.load_checkpoint(path_to_dir, file)
+    nnmcts = MCTS(game_graph, graph_nnet, coach_args)
+    nnmcts.args.cpuct = cpuct
         
-        log.info('Loading %s ...', AlphaZeroWrapper.__name__)
-        nnet = AlphaZeroWrapper(graph_game, args_train)
+    state_graph = game_graph.getInitBoard()
+    reward = 0
+    mean_values = []
+    while reward == 0:
+        values = []
+        for __ in range(simulation_mcts):
+                values = nnmcts.search(state_graph)
+        mean_values.append(np.mean(values))
         
-        nnet.train(train_examples)
+        best_rule = nnmcts.get_best_action(state_graph)
+        state_graph, __ = game_graph.getNextState(state_graph, 1, best_rule)
+        reward = game_graph.getGameEnded(state_graph, 1)
+        print(best_rule)
+
+    string_graph = game_graph.stringRepresentation(state_graph)
+    __, control = game_graph.terminal_graphs[string_graph]
+    if control == 0:
+        control = []
+    result_optimizer = game_graph.control_optimization.create_reward_function(state_graph, True)
+    true_reward = -result_optimizer(control, True)
     
-    nnet.save_checkpoint()
+    print(f"Mean values states: {mean_values} \n")
+    print(f"The best reward in MCTS: {max(nnmcts.Es.values())}")
+    print(f"True reward: {true_reward} \n")
+
+
 if __name__ == "__main__":
     # for idx in range(10):    
     #     initial_time = time.time()
@@ -136,10 +173,7 @@ if __name__ == "__main__":
     #     print(f"train {idx} index, full_time: {final_ex}")
 
     # load_train("train_data_10e_1000mcts_2302.pickle")
-    game_graph = preconfigure()
-    graph_nnet = AlphaZeroWrapper(game_graph, args_train)
-    graph_nnet.load_checkpoint("temp_GraphControl_sphere", "best.pth.tar")
-    nnmcts = MCTS(game_graph, graph_nnet, coach_args)
-    nnmcts.search()
+
+    run_learned_alphazero("temp_GraphControl_sphere", "best.pth.tar", 10, 0)
     # coacher = Coach(game_graph, graph_nnet, coach_args)
     # coacher.learn()
