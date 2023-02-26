@@ -26,7 +26,7 @@ def create_rules():
     link = list(map(lambda x: BlockWrapper(LinkChronoBody, length_y=x), length_link))
     u_1 = BlockWrapper(MountChronoBody, width_x=0.1, length_y=0.05)
     u_2 = BlockWrapper(MountChronoBody, width_x=0.2, length_y=0.1)
-    radial_move_values = [0.8, 1, 1.2]
+    radial_move_values = [0.9, 1.05, 1.2]
     RADIAL_MOVES = list(map(lambda x: FrameTransform([x, 0, 0], [1, 0, 0, 0]), radial_move_values))
     tan_move_values = [0.4, 0.6, 0.8]
     MOVES_POSITIVE = list(map(lambda x: FrameTransform([0, 0, x], [1, 0, 0, 0]),
@@ -128,7 +128,7 @@ def create_rules():
     
     rule_vocab.create_rule("RemoveFinger", ["F"], [], 0, 0, [])
     rule_vocab.create_rule("RemoveFinger_R", ["RF"], [], 0, 0, [])
-    rule_vocab.create_rule("Terminal_EF1", ["FG"], [], 0, 0, [])
+    rule_vocab.create_rule("Remove_FG", ["FG"], [], 0, 0, [])
     rule_vocab.create_rule("RemoveFinger_P", ["PF"], [], 0, 0, [])
     rule_vocab.create_rule("RemoveFinger_N", ["NF"], [], 0, 0, [])
     rule_vocab.create_rule("RemoveFinger_RP", ["RPF"], [], 0, 0, [])

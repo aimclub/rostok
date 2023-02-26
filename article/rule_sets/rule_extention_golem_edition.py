@@ -6,7 +6,7 @@ import pychrono as chrono
 import numpy as np
 
 # %% Bodies for extansions rules
-width = [0.25, 0.35, 0.5]
+width = [0.5, 0.6, 0.65]
 alpha = 45
 alpha_left = [0, 30, 60]
 alpha_right = [180, 150, 120]

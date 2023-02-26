@@ -17,7 +17,7 @@ from golem.core.optimisers.genetic.operators.regularization import \
 from golem.core.optimisers.objective import Objective, ObjectiveEvaluate
 from golem.core.optimisers.optimization_parameters import GraphRequirements
 from golem.core.optimisers.optimizer import GraphGenerationParams
-from obj_grasp.objects import get_obj_hard_ellipsoid, get_object_to_grasp_sphere
+from obj_grasp.objects import get_obj_hard_ellipsoid, get_object_to_grasp_sphere, get_obj_hard_large_ellipsoid, get_obj_cyl_pos_parametrize, get_obj_hard_ellipsoid_move, get_obj_hard_mesh
 from optmizers_config import get_cfg_graph
 from rule_sets.ruleset_old_style_graph import create_rules
 from rule_sets.rule_extention_golem_edition import rule_vocab, torque_dict
@@ -58,7 +58,7 @@ for _ in range(15):
 init_population_gr = init_pop.get_population_zoo()
 initial = adapter_local.adapt(init_population_gr)
 cfg = get_cfg_graph(torque_dict)
-cfg.get_rgab_object_callback = get_object_to_grasp_sphere
+cfg.get_rgab_object_callback = get_obj_hard_ellipsoid_move
 optic = ControlOptimizer(cfg)
 
 build_wrapperd  = partial(custom_metriwith_build_mechs, optimizer = optic)
@@ -114,8 +114,8 @@ optimizer_parameters = GPAlgorithmParameters(
             custom_mutation_del
         ],
     crossover_types = [CrossoverTypesEnum.gg_subtree],
-    regularization_type = RegularizationTypesEnum.none,
-    mutation_strength = MutationStrengthEnum.strong,
+    regularization_type = RegularizationTypesEnum.decremental,
+    mutation_strength = MutationStrengthEnum.mean,
     )
 
 optimizer = EvoGraphOptimizer(
@@ -135,8 +135,6 @@ name = str(int(time.time()))
 name2 = str(optimizer.history.final_choices.data[0].fitness)
 name2 = name2.replace(".", "_")
 name2 = name2.replace("-", "_")
-
-with open(name2, 'wb') as handle:
+name = name + name_objective + name2
+with open(name, 'wb') as handle:
     pickle.dump(optimizer.history, handle)
-rew = optic.create_reward_function(optimized_mech)
-rew(optimized_mech, True)
