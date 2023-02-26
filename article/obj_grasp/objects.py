@@ -11,6 +11,44 @@ from rostok.trajectory_optimizer.trajectory_generator import \
 
 from scipy.spatial.transform import Rotation
 
+def rotation_x(alpha):
+    quat_X_ang_alpha = chrono.Q_from_AngX(np.deg2rad(alpha))
+    return [quat_X_ang_alpha.e0, quat_X_ang_alpha.e1, quat_X_ang_alpha.e2, quat_X_ang_alpha.e3]
+
+
+def rotation_z(alpha):
+    quat_Z_ang_alpha = chrono.Q_from_AngZ(np.deg2rad(alpha))
+    return [quat_Z_ang_alpha.e0, quat_Z_ang_alpha.e1, quat_Z_ang_alpha.e2, quat_Z_ang_alpha.e3]
+
+
+def rotation_y(alpha):
+    quat_Y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))
+    return [quat_Y_ang_alpha.e0, quat_Y_ang_alpha.e1, quat_Y_ang_alpha.e2, quat_Y_ang_alpha.e3]
+
+def get_obj_easy_large_box():
+    matich = DefaultChronoMaterial()
+    matich.Friction = 0.65
+    matich.DampingF = 0.65
+    shape_box = envbody_shapes.Box(0.8, 0.4, 1.2)
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=shape_box,
+                       material=matich,
+                       pos=FrameTransform([0, 1, 0], [1, 0, 0, 0]))
+
+    return obj
+
+
+def get_obj_easy_long_tilt_box():
+    matich = DefaultChronoMaterial()
+    matich.Friction = 0.65
+    matich.DampingF = 0.65
+    shape_box = envbody_shapes.Box(0.4, 0.6, 4)
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=shape_box,
+                       material=matich,
+                       pos=FrameTransform([0, 1, 0], rotation_x(15)))
+
+    return obj
 def get_obj_easy_box():
     matich = DefaultChronoMaterial()
     matich.Friction = 0.65
