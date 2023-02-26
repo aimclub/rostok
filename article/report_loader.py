@@ -30,7 +30,7 @@ def plot_graph(graph: GraphGrammar):
     plt.show()
 
 
-report = load_saveable(Path(r"results\Reports_23y_02m_25d_03H_02M\MCTS_data.pickle"))
+report = load_saveable(Path(r"results\Reports_23y_02m_25d_09H_23M\MCTS_data_windows.pickle"))
 # %% Create extension rule vocabulary
 rule_vocabul, torque_dict = create_rules()
 #rule_vocabul = deepcopy(rule_extention_graph.rule_vocab)
@@ -40,7 +40,6 @@ cfg.get_rgab_object_callback = get_obj_hard_large_ellipsoid
 #cfg.get_rgab_object_callback = get_obj_easy_box
 #cfg.get_rgab_object_callback = get_object_to_grasp_sphere
 control_optimizer = ControlOptimizer(cfg)
-
 best_graph, reward, best_control = report.get_best_info()
 #best_graph, reward, best_control = report.get_main_info()
 func_reward = control_optimizer.create_reward_function(best_graph)
