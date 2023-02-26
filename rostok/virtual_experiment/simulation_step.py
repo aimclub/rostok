@@ -215,7 +215,7 @@ class SimulationStepOptimization:
 
             vis = chronoirr.ChVisualSystemIrrlicht()
             vis.AttachSystem(self.chrono_system)
-            vis.SetWindowSize(1024, 768)
+            vis.SetWindowSize(1920, 1080)
             vis.SetWindowTitle('Grab demo')
             vis.Initialize()
             vis.AddCamera(chrono.ChVectorD(1, 2, -3))

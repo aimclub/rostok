@@ -5,7 +5,7 @@ from pathlib import Path
 
 import mcts
 import optmizers_config
-from obj_grasp.objects import get_obj_easy_box, get_obj_hard_ellipsoid, get_object_to_grasp_sphere, get_obj_hard_large_ellipsoid, get_obj_easy_large_box, get_obj_hard_long_ellipsoid
+from obj_grasp.objects import get_obj_easy_box, get_obj_hard_ellipsoid, get_object_to_grasp_sphere, get_obj_hard_large_ellipsoid, get_obj_easy_large_box, get_obj_hard_long_ellipsoid, get_obj_easy_cylinder
 
 from rule_sets import rule_extention
 from rule_sets import ruleset_new_style
@@ -22,8 +22,8 @@ rule_vocabul = ruleset_new_style_nonails.create_rules()
 
 cfg = optmizers_config.get_cfg_standart()
 #cfg = optmizers_config.get_cfg_standart_anealing()
-cfg.get_rgab_object_callback = get_obj_easy_box
-cfg.get_rgab_object_callback = get_obj_hard_long_ellipsoid
+# Set the body to grasp
+cfg.get_rgab_object_callback = get_obj_easy_cylinder
 control_optimizer = ControlOptimizer(cfg)
  
 base_iteration_limit = hp.BASE_ITERATION_LIMIT
@@ -31,8 +31,6 @@ max_numbers_rules = hp.MAX_NUMBER_RULES
 iteration_reduction_rate = hp.ITERATION_REDUCTION_TIME
 
 # Create graph environments for algorithm (not gym)
-G = GraphGrammar()
-G.apply_rule(rule_vocabul.get_rule("Init"))
 graph_env = prepare_mcts_state_and_helper(GraphGrammar(), rule_vocabul, control_optimizer, max_numbers_rules,
                                           Path("./results"))
 mcts_helper = graph_env.helper
