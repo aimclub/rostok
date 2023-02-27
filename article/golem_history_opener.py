@@ -17,7 +17,7 @@ from golem.core.optimisers.genetic.operators.regularization import \
 from golem.core.optimisers.objective import Objective, ObjectiveEvaluate
 from golem.core.optimisers.optimization_parameters import GraphRequirements
 from golem.core.optimisers.optimizer import GraphGenerationParams
-from obj_grasp.objects import get_obj_hard_ellipsoid, get_object_to_grasp_sphere, get_obj_hard_ellipsoid_move
+from obj_grasp.objects import get_obj_hard_ellipsoid, get_object_to_grasp_sphere, get_obj_hard_ellipsoid_move, get_obj_hard_mesh_zateynik, get_obj_hard_mesh_mikki, get_obj_hard_mesh_piramida
 from optmizers_config import get_cfg_graph
 from rule_sets.ruleset_old_style_graph import create_rules
 
@@ -32,7 +32,7 @@ from mutation_logik import add_mut, del_mut
 from golem.core.optimisers.genetic.operators import crossover
 import pickle
 from golem.core.optimisers.optimizer import OptHistory
-from rule_sets.rule_extention_golem_edition import rule_vocab, torque_dict
+from rule_sets.rule_extention_merge import rule_vocab, torque_dict
 import numpy as np
 import matplotlib.pyplot as plt
 def get_leaderboard(history, top_n: int = 10) -> str:
@@ -75,16 +75,16 @@ def plot_median_reward(history: OptHistory, prefix: str):
     #plt.savefig(prefix + "median.fig")
 
 
-history : OptHistory = pickle.load( open( "1677432514get_obj_hard_ellipsoid_move_31_3387", "rb" ) )
+history : OptHistory = pickle.load( open( "1677521690get_obj_hard_mesh_piramida_66_1597", "rb" ) )
 adapter_local = GraphGrammarAdapter()
 cfg = get_cfg_graph(torque_dict)
-cfg.get_rgab_object_callback = get_obj_hard_ellipsoid_move
+cfg.get_rgab_object_callback = get_obj_hard_mesh_piramida
 optic = ControlOptimizer(cfg)
 
 ebaca = get_leaderboard(history)
 ebaca_restored = list(map(adapter_local.restore, ebaca))
-plot_mean_reward(history, "1677432514get_obj_hard_ellipsoid_move_31_3387")
-plot_median_reward(history, "1677432514get_obj_hard_ellipsoid_move_31_3387")
+plot_mean_reward(history, "1677521690get_obj_hard_mesh_piramida_66_1597")
+plot_median_reward(history, "1677521690get_obj_hard_mesh_piramida_66_1597")
 
 for i in ebaca_restored:
     rews  = optic.create_reward_function(i, True)

@@ -20,7 +20,7 @@ from golem.core.optimisers.optimizer import GraphGenerationParams
 from obj_grasp.objects import get_obj_hard_mesh_piramida, get_object_to_grasp_sphere, get_obj_hard_large_ellipsoid, get_obj_cyl_pos_parametrize, get_obj_hard_ellipsoid_move
 from optmizers_config import get_cfg_graph
 from rule_sets.ruleset_old_style_graph import create_rules
-from rule_sets.rule_extention_golem_edition import rule_vocab, torque_dict
+from rule_sets.rule_extention_merge import rule_vocab, torque_dict, node_vocab
 from rostok.adapters.golem_adapter import (GraphGrammarAdapter,
                                            GraphGrammarFactory)
 from rostok.graph_grammar.graph_utils import plot_graph
@@ -30,10 +30,9 @@ from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
 import random
 from mutation_logik import add_mut, del_mut
 from golem.core.optimisers.genetic.operators import crossover
-import init_pop
+import init_pop_2
 from random import choice
-rule_vocab, torque_dict = create_rules()
-node_vocab = rule_vocab.node_vocab
+
 def custom_metric(graph: GraphGrammar):
     existing_variables_num = -len(graph)
     print(existing_variables_num)
@@ -56,7 +55,7 @@ for _ in range(20):
     rand_mech = make_random_graph(numes, rule_vocab)
     init_population_gr.append(rand_mech)
 
-
+init_population_gr = init_pop_2.get_population_zoo() 
 initial = adapter_local.adapt(init_population_gr)
 cfg = get_cfg_graph(torque_dict)
 cfg.get_rgab_object_callback = get_obj_hard_mesh_piramida
@@ -66,7 +65,7 @@ build_wrapperd  = partial(custom_metriwith_build_mechs, optimizer = optic)
 name_objective = cfg.get_rgab_object_callback.__name__
 objective = Objective({name_objective: build_wrapperd})
 objective_eval = ObjectiveEvaluate(objective)
-timeout = datetime.timedelta(hours = 4)
+timeout = datetime.timedelta(hours = 10)
 
 terminal_nodes = [i for i in list(node_vocab.node_dict.values()) if  i.is_terminal]
 nodes_types = adapter_local.adapt_node_seq(terminal_nodes)
