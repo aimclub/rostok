@@ -17,7 +17,7 @@ from golem.core.optimisers.genetic.operators.regularization import \
 from golem.core.optimisers.objective import Objective, ObjectiveEvaluate
 from golem.core.optimisers.optimization_parameters import GraphRequirements
 from golem.core.optimisers.optimizer import GraphGenerationParams
-from obj_grasp.objects import get_obj_hard_ellipsoid, get_object_to_grasp_sphere, get_obj_hard_large_ellipsoid, get_obj_cyl_pos_parametrize, get_obj_hard_ellipsoid_move, get_obj_hard_mesh
+from obj_grasp.objects import get_obj_hard_mesh_piramida, get_object_to_grasp_sphere, get_obj_hard_large_ellipsoid, get_obj_cyl_pos_parametrize, get_obj_hard_ellipsoid_move
 from optmizers_config import get_cfg_graph
 from rule_sets.ruleset_old_style_graph import create_rules
 from rule_sets.rule_extention_golem_edition import rule_vocab, torque_dict
@@ -31,8 +31,8 @@ import random
 from mutation_logik import add_mut, del_mut
 from golem.core.optimisers.genetic.operators import crossover
 import init_pop
-
-#rule_vocab, torque_dict = create_rules()
+from random import choice
+rule_vocab, torque_dict = create_rules()
 node_vocab = rule_vocab.node_vocab
 def custom_metric(graph: GraphGrammar):
     existing_variables_num = -len(graph)
@@ -49,16 +49,17 @@ def custom_crossover(graph_first, graph_second, **kwargs):
 
 adapter_local = GraphGrammarAdapter()
 
-rule_vocab = deepcopy(rule_vocab)
+ 
 init_population_gr = []
-for _ in range(15):
+for _ in range(20):
+    numes = choice([5, 8, 10])
     rand_mech = make_random_graph(5, rule_vocab)
     init_population_gr.append(rand_mech)
 
 init_population_gr = init_pop.get_population_zoo()
 initial = adapter_local.adapt(init_population_gr)
 cfg = get_cfg_graph(torque_dict)
-cfg.get_rgab_object_callback = get_obj_hard_ellipsoid_move
+cfg.get_rgab_object_callback = get_obj_hard_mesh_piramida
 optic = ControlOptimizer(cfg)
 
 build_wrapperd  = partial(custom_metriwith_build_mechs, optimizer = optic)
@@ -99,15 +100,15 @@ requirements = GraphRequirements(
     early_stopping_timeout = 9000,
     parallelization_mode="single",
     timeout=timeout,
-    num_of_generations=40,
-    early_stopping_iterations = 20,
+    num_of_generations=80,
+    early_stopping_iterations = 60,
     history_dir=None)
 
 optimizer_parameters = GPAlgorithmParameters(
     pop_size = len(initial),
     max_pop_size = len(initial)+10,
     crossover_prob=0.5, mutation_prob=0.8,
-    genetic_scheme_type=GeneticSchemeTypesEnum.parameter_free,
+    genetic_scheme_type=GeneticSchemeTypesEnum.generational,
         mutation_types=[
             MutationTypesEnum.none,
             custom_mutation_add,
