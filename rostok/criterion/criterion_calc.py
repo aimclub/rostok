@@ -99,7 +99,7 @@ def criterion_calc(sim_output, weights) -> float:
     
     reward = -weights[0] * force_crit - weights[1] * time_crit - weights[2] * cog_crit - weights[3] * time_force_thr_crit - weights[4] * midle_contact_crit
     
-    if reward > 75:
+    if reward < -75:
         reward = 0
     
     if force_crit == 0:
