@@ -557,7 +557,7 @@ class ChronoBodyEnv(ChronoBody):
                  pos: FrameTransform = FrameTransform([0, 0.0, 0], [1, 0, 0, 0])):
 
         # This parameter redefined by SetMass
-        MOCK_DENSITY: int = 100  # pylint: disable=invalid-name
+        MOCK_DENSITY: int = 10  # pylint: disable=invalid-name
 
         # Create body
         material = struct_material2object_material(material)
@@ -578,7 +578,7 @@ class ChronoBodyEnv(ChronoBody):
                 raise Exception(f"Wrong path: {shape.path}")
             
             mesh = open3d.io.read_triangle_mesh(shape.path)
-            volume = 0.3*0.3*0.3
+            volume = 0.4*0.4*0.4
             density = mass/volume
             mesh_chrono = o3d_to_chrono_trianglemesh(mesh)
             body = chrono.ChBodyEasyMesh(mesh_chrono, # mesh filename
