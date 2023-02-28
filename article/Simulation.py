@@ -18,177 +18,81 @@ from rostok.graph_generators.mcts_helper import (make_mcts_step,
                                                  prepare_mcts_state_and_helper)
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
-from rostok.utils.pickle_save import load_saveable
-
+import simple_designs
 
 def plot_graph(graph: GraphGrammar):
     plt.figure()
     nx.draw_networkx(graph,
                      pos=nx.kamada_kawai_layout(graph, dim=2),
-                     node_size=800,
+                     node_size=500,
                      labels={n: graph.nodes[n]["Node"].label for n in graph})
-    plt.show()
+    plt.savefig("three_finger.svg", dpi = 1200)
 
+def simulate_rules(_rules, _control_optimizer):
+    _graph = GraphGrammar()
+    for _rule in _rules:
+        _graph.apply_rule(rule_vocabul.get_rule(_rule))
 
+    func_reward = control_optimizer.create_reward_function(_graph)
+    res = -func_reward([], True)
+    print()
+    print(res)
 # %% Create extension rule vocabulary
 rule_vocabul, torque_dict = create_rules()
 #rule_vocabul = deepcopy(rule_extention_graph.rule_vocab)
 #torque_dict = rule_extention_graph.torque_dict
+
 cfg = optmizers_config.get_cfg_graph(torque_dict)
-cfg.get_rgab_object_callback = get_obj_hard_large_ellipsoid
+# cfg.gravity_vector = [0, -9.8, 0]
+# cfg.time_saturation_gravity = 0.5
+# cfg.time_start_gravity = 0.1
+cfg.get_rgab_object_callback = get_obj_easy_large_box
 control_optimizer = ControlOptimizer(cfg)
 
-
-G = GraphGrammar()
-# rules = ["Init", "AddFinger_N", "AddFinger",  "Terminal_Negative_Translate2",  "RemoveFinger_P",  "Terminal_Radial_Translate1", "RemoveFinger_RN", "Phalanx", "Terminal_Joint5", "Remove_FG", "Terminal_Radial_Translate1", "Remove_FG", "Terminal_Link3", "AddFinger_R", "RemoveFinger_RP", "Phalanx", "Terminal_Joint5", "Terminal_Link3", "Remove_FG", "Terminal_Radial_Translate1"]
-# rules = ["Init", 
-#          "RemoveFinger",  
-#          "RemoveFinger_N", 
-#          "RemoveFinger_R", 
-#          "AddFinger_RN", "Terminal_Radial_Translate1", "Terminal_Negative_Translate2","Phalanx", "Terminal_Joint5", "Remove_FG", "Terminal_Link3",
-#          "RemoveFinger_P",
-#          "RemoveFinger_RP"
-#          ]
-# for rule in rules:
-#     G.apply_rule(rule_vocabul.get_rule(rule))
-
-# func_reward = control_optimizer.create_reward_function(G)
-# #plot_graph(G)
-# best_control = []
-# res = -func_reward(best_control, True)
-# print()
-# print(res)
-# G = GraphGrammar()
-# rules = ["Init", 
-#          "AddFinger",  "Terminal_Radial_Translate1", "Phalanx", "Terminal_Joint5", "Remove_FG", "Terminal_Link2", 
-#          "RemoveFinger_N", 
-#          "AddFinger_R", "Terminal_Radial_Translate1", "Phalanx", "Terminal_Joint5", "Remove_FG", "Terminal_Link2",
-#          "RemoveFinger_RN", 
-#          "RemoveFinger_P",
-#          "RemoveFinger_RP"
-#          ]
-# for rule in rules:
-#     G.apply_rule(rule_vocabul.get_rule(rule))
-
-# func_reward = control_optimizer.create_reward_function(G)
-# #plot_graph(G)
-# best_control = []
-# res = -func_reward(best_control, True)
-# print()
-# print(res)
-
-G = GraphGrammar()
-rules = ["Init", 
-         "AddFinger",  "Terminal_Radial_Translate1", "Phalanx", "Phalanx",  "Remove_FG", "Terminal_Link3", "Terminal_Joint5", "Terminal_Link2", "Terminal_Joint2",
-         "RemoveFinger_N", 
-         "RemoveFinger_R", 
-         "AddFinger_RNT", "Terminal_Radial_Translate1", "Phalanx", "Phalanx", "Remove_FG", "Terminal_Joint5", "Terminal_Link3", "Terminal_Joint2", "Terminal_Link2",
-         "RemoveFinger_P",
-         "AddFinger_RPT","Terminal_Radial_Translate1", "Phalanx", "Phalanx", "Remove_FG", "Terminal_Joint5",  "Terminal_Link3", "Terminal_Joint2",  "Terminal_Link2"
-         ]
-
-for rule in rules:
-    G.apply_rule(rule_vocabul.get_rule(rule))
-
-func_reward = control_optimizer.create_reward_function(G)
-# plot_graph(G)
-best_control = []
-res = -func_reward(best_control, True)
+graph = simple_designs.get_two_link_three_finger()
+func_reward = control_optimizer.create_reward_function(graph)
+#plot_graph(graph)
+res = -func_reward([], True)
 print()
 print(res)
 
-G = GraphGrammar()
-# rules = ["Init", 
-#          "RemoveFinger",  
-#          "AddFinger_N", "Terminal_Radial_Translate1", "Terminal_Negative_Translate2","Phalanx", "Terminal_Joint5", "Remove_FG", "Terminal_Link3",
-#          "RemoveFinger_R", 
-#          "AddFinger_RN", "Terminal_Radial_Translate1", "Terminal_Negative_Translate2","Phalanx", "Terminal_Joint5", "Remove_FG", "Terminal_Link3",
-#          "RemoveFinger_P",
-#          "RemoveFinger_RP"
-#          ]
+# rules = ["Init", "AddFinger_N", "AddFinger",  "Terminal_Negative_Translate2",  "RemoveFinger_P",  "Terminal_Radial_Translate1", "RemoveFinger_RN", "Phalanx", "Terminal_Joint5", "Remove_FG", "Terminal_Radial_Translate1", "Remove_FG", "Terminal_Link3", "AddFinger_R", "RemoveFinger_RP", "Phalanx", "Terminal_Joint5", "Terminal_Link3", "Remove_FG", "Terminal_Radial_Translate1"]
+# simulate_rules(rules, control_optimizer)
+
+graph = simple_designs.get_one_link_two_finger()
+func_reward = control_optimizer.create_reward_function(graph)
+res = -func_reward([], True)
+print()
+print(res)
 
 # rules = ["Init", 
-#          "AddFinger",  "Terminal_Radial_Translate1", "Phalanx", "Terminal_Joint5", "Remove_FG", "Terminal_Link3", 
-#          "AddFinger_N", "Terminal_Radial_Translate1", "Terminal_Negative_Translate2","Phalanx", "Terminal_Joint5", "Remove_FG", "Terminal_Link3",
-#          "AddFinger_R", "Terminal_Radial_Translate1", "Phalanx", "Terminal_Joint5", "Remove_FG", "Terminal_Link3",
-#          "RemoveFinger_RN", 
-#          "RemoveFinger_P",
-#          "AddFinger_RP","Terminal_Radial_Translate1", "Terminal_Positive_Translate2","Phalanx", "Terminal_Joint5", "Remove_FG", "Terminal_Link3"
+#          "AddFinger",  "Terminal_Radial_Translate1", "Phalanx", "Phalanx",  "Remove_FG", "Terminal_Link3", "Terminal_Joint5", "Terminal_Link2", "Terminal_Joint2",
+#          "AddFinger_NT", "Terminal_Radial_Translate1", "Phalanx", "Terminal_Joint3", "Remove_FG", "Terminal_Link3",
+#          "AddFinger_R", "Terminal_Radial_Translate1", "Phalanx", "Terminal_Joint3", "Remove_FG", "Terminal_Link3",
+#          "AddFinger_RNT", "Terminal_Radial_Translate1", "Phalanx", "Phalanx", "Remove_FG", "Terminal_Joint5", "Terminal_Link3", "Terminal_Joint2", "Terminal_Link2",
+#          "AddFinger_PT", "Terminal_Radial_Translate1", "Phalanx", "Terminal_Joint3", "Remove_FG", "Terminal_Link3",
+#          "AddFinger_RPT","Terminal_Radial_Translate1", "Phalanx", "Phalanx", "Remove_FG", "Terminal_Joint5",  "Terminal_Link3", "Terminal_Joint2",  "Terminal_Link2"
 #          ]
-
-# rules = ["Init", 
-#          "AddFinger",  "Terminal_Radial_Translate1", "Phalanx", "Terminal_Joint5", "Remove_FG", "Terminal_Link3", 
-#          "AddFinger_N", "Terminal_Radial_Translate1", "Terminal_Negative_Translate2","Phalanx", "Terminal_Joint5", "Remove_FG", "Terminal_Link3",
-#          "AddFinger_R", "Terminal_Radial_Translate1", "Phalanx", "Terminal_Joint5", "Remove_FG", "Terminal_Link3",
-#          "AddFinger_RN", "Terminal_Radial_Translate1", "Terminal_Negative_Translate2","Phalanx", "Terminal_Joint5", "Remove_FG", "Terminal_Link3",
-#          "AddFinger_P","Terminal_Radial_Translate1", "Terminal_Positive_Translate2","Phalanx", "Terminal_Joint5", "Remove_FG", "Terminal_Link3",
-#          "AddFinger_RP","Terminal_Radial_Translate1", "Terminal_Positive_Translate2","Phalanx", "Terminal_Joint5", "Remove_FG", "Terminal_Link3"
-#          ]
-
-rules = ["Init", 
-         "AddFinger",  "Terminal_Radial_Translate1", "Phalanx", "Phalanx",  "Remove_FG", "Terminal_Link3", "Terminal_Joint5", "Terminal_Link2", "Terminal_Joint2",
-         "RemoveFinger_N", 
-         "AddFinger_R", "Terminal_Radial_Translate1", "Phalanx", "Terminal_Joint3", "Remove_FG", "Terminal_Link3",
-         "AddFinger_RNT", "Terminal_Radial_Translate1", "Phalanx", "Phalanx", "Remove_FG", "Terminal_Joint5", "Terminal_Link3", "Terminal_Joint2", "Terminal_Link2",
-         "RemoveFinger_P",
-         "AddFinger_RPT","Terminal_Radial_Translate1", "Phalanx", "Phalanx", "Remove_FG", "Terminal_Joint5",  "Terminal_Link3", "Terminal_Joint2",  "Terminal_Link2"
-         ]
-
-rules = ["Init", 
-         "AddFinger",  "Terminal_Radial_Translate1", "Phalanx", "Phalanx",  "Remove_FG", "Terminal_Link3", "Terminal_Joint5", "Terminal_Link2", "Terminal_Joint2",
-         "RemoveFinger_N", 
-         "AddFinger_R", "Terminal_Radial_Translate1", "Phalanx", "Terminal_Joint3", "Remove_FG", "Terminal_Link3",
-         "RemoveFinger_RN", 
-         "RemoveFinger_P",
-         "RemoveFinger_RP"
-         ]
+# simulate_rules(rules, control_optimizer)
 
 # rules = ["Init", 
 #          "AddFinger",  "Terminal_Radial_Translate1", "Phalanx", "Phalanx",  "Remove_FG", "Terminal_Link3", "Terminal_Joint5", "Terminal_Link2", "Terminal_Joint2",
 #          "RemoveFinger_N", 
-#          "RemoveFinger_R", 
-#          "AddFinger_RNT", "Terminal_Radial_Translate1", "Phalanx", "Phalanx", "Remove_FG", "Terminal_Joint5", "Terminal_Link3", "Terminal_Joint2", "Terminal_Link2",
+#          "AddFinger_R", "Terminal_Radial_Translate1", "Phalanx", "Terminal_Joint3", "Remove_FG", "Terminal_Link3",
+#          "RemoveFinger_RN", 
 #          "RemoveFinger_P",
-#          "AddFinger_RPT","Terminal_Radial_Translate1", "Phalanx", "Phalanx", "Remove_FG", "Terminal_Joint5",  "Terminal_Link3", "Terminal_Joint2",  "Terminal_Link2"
+#          "RemoveFinger_RP"
 #          ]
 
-# rules = ["Init", 
-#          "AddFinger",  "Terminal_Radial_Translate1", "Phalanx", "Remove_FG", "Terminal_Link3", "Terminal_Joint5", 
-#          "RemoveFinger_N", 
-#          "RemoveFinger_R", 
-#          "AddFinger_RNT", "Terminal_Radial_Translate1", "Phalanx",  "Remove_FG", "Terminal_Joint5", "Terminal_Link3", 
-#          "RemoveFinger_P",
-#          "AddFinger_RPT","Terminal_Radial_Translate1", "Phalanx",  "Remove_FG", "Terminal_Joint5",  "Terminal_Link3"
-#          ]
+# simulate_rules(rules, control_optimizer)
 
-for rule in rules:
-    G.apply_rule(rule_vocabul.get_rule(rule))
+rules = ["Init", 
+        "AddFinger",  "Terminal_Radial_Translate1", "Phalanx", "Phalanx",  "Remove_FG", "Terminal_Link3", "Terminal_Joint5", "Terminal_Link2", "Terminal_Joint2",
+        "RemoveFinger_N", 
+        "AddFinger_R", "Terminal_Radial_Translate1", "Phalanx", "Terminal_Joint3", "Remove_FG", "Terminal_Link3",
+        "AddFinger_RNT", "Terminal_Radial_Translate1", "Phalanx", "Phalanx", "Remove_FG", "Terminal_Joint5", "Terminal_Link3", "Terminal_Joint2", "Terminal_Link2",
+        "RemoveFinger_P",
+        "AddFinger_RPT","Terminal_Radial_Translate1", "Phalanx", "Phalanx", "Remove_FG", "Terminal_Joint5",  "Terminal_Link3", "Terminal_Joint2",  "Terminal_Link2"
+        ]
 
-func_reward = control_optimizer.create_reward_function(G)
-# plot_graph(G)
-best_control = []
-res = -func_reward(best_control, True)
-print()
-print(res)
-
-# G = GraphGrammar()
-# rules = ["Init", 
-#          "AddFinger",  "Terminal_Radial_Translate1", "Phalanx", "Remove_FG", "Terminal_Link3", "Terminal_Joint5", 
-#          "RemoveFinger_N", 
-#          "RemoveFinger_R", 
-#          "AddFinger_RNT", "Terminal_Radial_Translate1", "Phalanx",  "Remove_FG", "Terminal_Joint5", "Terminal_Link3", 
-#          "RemoveFinger_P",
-#          "AddFinger_RPT","Terminal_Radial_Translate1", "Phalanx",  "Remove_FG", "Terminal_Joint5",  "Terminal_Link3"
-#          ]
-
-
-# for rule in rules:
-#     G.apply_rule(rule_vocabul.get_rule(rule))
-
-# func_reward = control_optimizer.create_reward_function(G)
-# # plot_graph(G)
-# best_control = []
-# res = -func_reward(best_control, True)
-# print()
-# print(res)
-
+simulate_rules(rules, control_optimizer)

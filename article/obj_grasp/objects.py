@@ -30,7 +30,7 @@ def get_obj_easy_box():
     matich = DefaultChronoMaterial()
     matich.Friction = 0.65
     matich.DampingF = 0.65
-    shape_box = Box(0.2, 0.2, 0.5)
+    shape_box = envbody_shapes.Box(0.2, 0.2, 0.5)
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=shape_box,
                        material=matich,
@@ -142,7 +142,7 @@ def get_obj_hard_large_ellipsoid():
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=shape,
                        material=mat,
-                       mass = 5,
+                       mass = 1,
                        pos=FrameTransform([0.0, 0.8, 0.2], [ 1,  0,  0, 0]))
     return obj
 
