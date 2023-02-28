@@ -76,13 +76,13 @@ def get_obj_easy_long_tilt_box():
 
 def get_obj_easy_cylinder():
     matich = DefaultChronoMaterial()
-    matich.Friction = 0.1
+    matich.Friction = 0.2
     matich.DampingF = 0.65
     shape_box = envbody_shapes.Cylinder(0.6, 0.4)
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=shape_box,
                        material=matich,
-                       mass=10,
+                       mass=1,
                        pos=FrameTransform([0, 1, 0], [1,0,0,0]))
     
     return obj
