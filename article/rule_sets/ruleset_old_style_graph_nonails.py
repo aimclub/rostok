@@ -88,8 +88,8 @@ def create_rules():
     node_vocab.create_node(label="TN1", is_terminal=True, block_wrapper=negative_transforms[0])
     node_vocab.create_node(label="TN2", is_terminal=True, block_wrapper=negative_transforms[1])
     node_vocab.create_node(label="TN3", is_terminal=True, block_wrapper=negative_transforms[2])
-    node_vocab.create_node(label="TURN_P", is_terminal=True, block_wrapper=turn_transform_P)
-    node_vocab.create_node(label="TURN_N", is_terminal=True, block_wrapper=turn_transform_N)
+    node_vocab.create_node(label="RP", is_terminal=True, block_wrapper=turn_transform_P)
+    node_vocab.create_node(label="RN", is_terminal=True, block_wrapper=turn_transform_N)
 
     node_vocab.create_node(label="J1", is_terminal=True, block_wrapper=revolve)
     node_vocab.create_node(label="J2", is_terminal=True, block_wrapper=revolve)
@@ -111,19 +111,19 @@ def create_rules():
     rule_vocab.create_rule("AddFinger_R", ["RF"], ["RE", "RT", "RE","FG"], 0, 0, [(0, 1), (1, 2), (2,3)])
     rule_vocab.create_rule("AddFinger_P", ["PF"], ["RT", "TP", "RE", "FG"], 0, 0, [(0, 1), (1, 2),
                                                                                   (2, 3)])
-    rule_vocab.create_rule("AddFinger_PT", ["PF"], ["TURN_N","RT",  "RE", "FG"], 0, 0, [(0, 1), (1, 2),
+    rule_vocab.create_rule("AddFinger_PT", ["PF"], ["RN","RT",  "RE", "FG"], 0, 0, [(0, 1), (1, 2),
                                                                                   (2, 3)])
     rule_vocab.create_rule("AddFinger_N", ["NF"], ["RT", "TN", "RE", "FG"], 0, 0, [(0, 1), (1, 2),
                                                                                   (2, 3)])
-    rule_vocab.create_rule("AddFinger_NT", ["NF"], ["TURN_P","RT",  "RE", "FG"], 0, 0, [(0, 1), (1, 2),
+    rule_vocab.create_rule("AddFinger_NT", ["NF"], ["RP","RT",  "RE", "FG"], 0, 0, [(0, 1), (1, 2),
                                                                                   (2, 3)])
     rule_vocab.create_rule("AddFinger_RP", ["RPF"], ["RE", "RT", "TP", "RE","FG"], 0, 0, [(0, 1), (1, 2),
                                                                                    (2, 3), (3, 4)])
-    rule_vocab.create_rule("AddFinger_RPT", ["RPF"], ["RE", "TURN_N","RT",  "RE","FG"], 0, 0, [(0, 1), (1, 2),
+    rule_vocab.create_rule("AddFinger_RPT", ["RPF"], ["RE", "RN","RT",  "RE","FG"], 0, 0, [(0, 1), (1, 2),
                                                                                    (2, 3), (3, 4)])
     rule_vocab.create_rule("AddFinger_RN", ["RNF"], ["RE", "RT", "TN", "RE","FG"], 0, 0, [(0, 1), (1, 2),
                                                                                    (2, 3), (3, 4)])
-    rule_vocab.create_rule("AddFinger_RNT", ["RNF"], ["RE", "TURN_P", "RT",  "RE","FG"], 0, 0, [(0, 1), (1, 2),
+    rule_vocab.create_rule("AddFinger_RNT", ["RNF"], ["RE", "RP", "RT",  "RE","FG"], 0, 0, [(0, 1), (1, 2),
                                                                                    (2, 3), (3, 4)])
     
     rule_vocab.create_rule("RemoveFinger", ["F"], [], 0, 0, [])
@@ -157,16 +157,16 @@ def create_rules():
     rule_vocab.create_rule("Terminal_Negative_Translate1", ["TN"], ["TN1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Negative_Translate2", ["TN"], ["TN2"], 0, 0, [])
     torque_dict = {
-        node_vocab.get_node("J1"): 1,
-        node_vocab.get_node("J2"): 2,
-        node_vocab.get_node("J3"): 3,
-        node_vocab.get_node("J4"): 4,
-        node_vocab.get_node("J5"): 5,
-        node_vocab.get_node("J6"): 6,
-        node_vocab.get_node("J7"): 7,
-        node_vocab.get_node("J8"): 8,
-        node_vocab.get_node("J9"): 9,
-        node_vocab.get_node("J10"): 10
+        node_vocab.get_node("J1"): 6,
+        node_vocab.get_node("J2"): 7,
+        node_vocab.get_node("J3"): 8,
+        node_vocab.get_node("J4"): 9,
+        node_vocab.get_node("J5"): 10,
+        node_vocab.get_node("J6"): 11,
+        node_vocab.get_node("J7"): 12,
+        node_vocab.get_node("J8"): 13,
+        node_vocab.get_node("J9"): 14,
+        node_vocab.get_node("J10"): 15
     }
     return rule_vocab, torque_dict
 

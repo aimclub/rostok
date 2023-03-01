@@ -113,8 +113,13 @@ class ControlOptimizer():
             arr_traj = self.cfg.params_to_timesiries_callback(generated_graph, x)
             sim = SimulationStepOptimization(arr_traj, generated_graph, object_to_grab)
             sim.set_flags_stop_simulation(self.cfg.flags)
+            try:
+                sim.set_turn_on_gravity(self.cfg.time_start_gravity, self.cfg.time_saturation_gravity, self.cfg.gravity_vector)
+            except:
+                pass 
             sim.change_config_system(self.cfg.sim_config)
             sim_output = sim.simulate_system(self.cfg.time_step, is_vis)
+            
             rew = self.cfg.criterion_callback(sim_output)
             
             elapsed = time.time() - start_time

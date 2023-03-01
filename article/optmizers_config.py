@@ -25,7 +25,7 @@ def get_cfg_standart():
     WEIGHT = hp.CRITERION_WEIGHTS
     # Init configuration of control optimizing
     cfg = ConfigVectorJoints()
-    cfg.bound = (0, 15)
+    cfg.bound = (6, 15)
     cfg.iters = hp.CONTROL_OPTIMIZATION_ITERATION
     cfg.time_step = hp.TIME_STEP_SIMULATION
     cfg.time_sim = hp.TIME_SIMULATION
@@ -66,7 +66,7 @@ def get_cfg_standart_anealing():
     # Init configuration of control optimizing
     cfg = ConfigVectorJoints()
     cfg.optimizer_scipy = partial(dual_annealing)
-    cfg.bound = (0, 15)
+    cfg.bound = (6, 15)
     cfg.iters = hp.CONTROL_OPTIMIZATION_ITERATION
     cfg.time_step = hp.TIME_STEP_SIMULATION
     cfg.time_sim = hp.TIME_SIMULATION
@@ -113,7 +113,7 @@ def get_cfg_small_iter_standart():
     WEIGHT = hp.CRITERION_WEIGHTS
     # Init configuration of control optimizing
     cfg = ConfigVectorJoints()
-    cfg.bound = (0, 15)
+    cfg.bound = (6, 15)
     cfg.time_optimization = hp.TIME_OPTIMIZATION
     cfg.iters = 10
     cfg.time_step = hp.TIME_STEP_SIMULATION
