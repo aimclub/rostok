@@ -71,7 +71,7 @@ def get_obj_COMPLEX():
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=shape_box,
                        material=matich,
-                       pos=FrameTransform([0, 1, 0], [1, 0, 0, 0]))
+                       pos=FrameTransform([0.3, 1, 0.3], [1, 0, 0, 0]))
 
 
     return obj
