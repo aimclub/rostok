@@ -1,9 +1,10 @@
+from itertools import chain
 import pathlib
 import random
 from abc import ABC
 from enum import Enum
 from typing import Optional
-
+import numpy
 import open3d
 import pychrono.core as chrono
 
@@ -457,6 +458,7 @@ class FlatChronoBody(ChronoBody, RobotBody):
         body = chrono.ChBody()
 
         box_asset = chrono.ChBoxShape()
+        
         box_asset.GetBoxGeometry().Size = chrono.ChVectorD(width_x / 2, height_y / 2,
                                                            depth_z / 2)
         body.AddVisualShape(box_asset)
@@ -588,6 +590,31 @@ class ChronoBodyEnv(ChronoBody):
                               True,             # collide?
                               material, # contact material
                               )
+         
+        elif isinstance(shape, envbody_shapes.COPLEX):
+            one = chrono.vector_ChVectorD()
+            one.append(chrono.ChVectorD(0, 0, 0))
+            
+            one.append(chrono.ChVectorD(0.6, 0, 0))
+            one.append(chrono.ChVectorD(0, 0, 0.6))
+            #one.append(chrono.ChVectorD(0, 0, 0.6))
+
+            one.append(chrono.ChVectorD(-0.1, 0, 0.3))
+            one.append(chrono.ChVectorD(0.2, 0, 0.4))
+            one.append(chrono.ChVectorD(0.5, 0, 0.3))
+
+            one.append(chrono.ChVectorD(0.1, 0.3, 0.3))
+            one.append(chrono.ChVectorD(0.2, -0.4, 0.2))
+            one.append(chrono.ChVectorD(-0.1, -0.4, 0.1))
+            #one.append(chrono.ChVectorD(0, 0, 0))
+           
+            body = chrono.ChBodyEasyConvexHull(one, MOCK_DENSITY, True, True, material)
+            #colla = body.GetCollisionModel()
+            #cone_asset = chrono.ChRoundedCone
+            #cone_asset.rad = chrono.ChVectorD(0, 1, 1)
+            
+            #body.AddVisualShape(cone_asset.)
+            #c#one_asset = chrono.ChRoundedCone()
         else:
             raise Exception("Unknown shape for ChronoBodyEnv object")
         body.SetCollide(True)

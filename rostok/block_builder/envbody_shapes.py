@@ -33,5 +33,8 @@ class Ellipsoid:
 class FromMesh:
     path: Path
 
+@dataclass
+class COPLEX:
+    x: 10
 # All types of shape
 ShapeTypes = Union[Box, Cylinder, Sphere, Ellipsoid, FromMesh]

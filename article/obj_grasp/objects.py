@@ -46,7 +46,7 @@ def get_obj_easy_large_box():
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=shape_box,
                        material=matich,
-                       pos=FrameTransform([0, 1, 0], [1, 0, 0, 0]))
+                       pos=FrameTransform([0.3, 1.2, 0.2], [1, 0, 0, 0]))
 
     return obj
 
@@ -59,6 +59,20 @@ def get_obj_easy_long_box():
                        shape=shape_box,
                        material=matich,
                        pos=FrameTransform([0, 0.5, 0], [1, 0, 0, 0]))
+
+    return obj
+
+
+def get_obj_COMPLEX():
+    matich = DefaultChronoMaterial()
+    matich.Friction = 0.2
+    matich.DampingF = 0.65
+    shape_box = envbody_shapes.COPLEX(1)
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=shape_box,
+                       material=matich,
+                       pos=FrameTransform([0, 1, 0], [1, 0, 0, 0]))
+
 
     return obj
 
