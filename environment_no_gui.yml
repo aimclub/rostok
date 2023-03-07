@@ -8,7 +8,7 @@ channels:
   - projectchrono
   - defaults
 dependencies:
-  - python=3.9.12
+  - python=3.9
   - pythonocc-core=7.4.1
   - irrlicht
   - numpy
