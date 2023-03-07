@@ -11,7 +11,7 @@ dependencies:
   - projectchrono::pychrono=7.*
   - irrlicht
   - numpy
-  
+  - pip
   - pip:
     - networkx==2.8.6
     - matplotlib==3.6.0
