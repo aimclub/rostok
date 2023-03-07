@@ -5,11 +5,10 @@ name: rostok_no_gui
 channels:
   - https://conda.anaconda.org/intel
   - https://conda.anaconda.org/conda-forge
-  - projectchrono
-  - defaults
 dependencies:
   - python=3.9
   - pythonocc-core=7.4.1
+  - projectchrono::pychrono=7.*
   - irrlicht
   - numpy
   
