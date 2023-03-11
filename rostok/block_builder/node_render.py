@@ -51,7 +51,7 @@ class ContactReporter(chrono.ReportContactCallback):
         """Create a sensor of contact normal forces for the body.
 
         Args:
-            chrono_body (ChBody): The body on which the sensor is install
+            chrono_body (ChBody): The body on which the sensor is installed
         """
         self._body = chrono_body
         self.__current_normal_forces = None
@@ -179,10 +179,13 @@ class ChronoBody(BlockBody, ABC):
         # Normal Forces
         self.__contact_reporter = ContactReporter(self.body)
 
-        if random_color:
+        if color is None:
             rgb = [random.random(), random.random(), random.random()]
             rgb[int(random.random() * 2)] *= 0.2
             self.body.GetVisualShape(0).SetColor(chrono.ChColor(*rgb))
+        else:
+            color = [x/256 for x in color]
+            self.body.GetVisualShape(0).SetColor(chrono.ChColor(*color))
 
     def _build_collision_box_model(self, struct_material, width_x, length_y):
         """Build collision model of the block on material width and length.

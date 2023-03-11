@@ -1,12 +1,12 @@
 from enum import Enum
 from abc import ABC
+from enum import StrEnum 
 
 
 class BlockType(str, Enum):
     TRANSFORM = "Transform"
     BODY = "Body"
     BRIDGE = "Bridge"
-
 
 class Block(ABC):
 
