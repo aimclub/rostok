@@ -10,6 +10,7 @@ from rostok.block_builder.transform_srtucture import FrameTransform
 
 class BlockType(str, Enum):
     TRANSFORM = "Transform"
+    SELFTRANSFORM = "SelfTransform"
     BODY = "Body"
     BRIDGE = "Bridge"
 
@@ -27,6 +28,102 @@ def frame_transform_to_chcoordsys(transform: FrameTransform):
                 chrono.ChQuaternionD(transform.rotation[0], transform.rotation[1],
                                      transform.rotation[2], transform.rotation[3]))
 
+class ContactReporter(chrono.ReportContactCallback):
+
+    def __init__(self, chrono_body):
+        """Create a sensor of contact normal forces for the body.
+
+        Args:
+            chrono_body (ChBody): The body on which the sensor is install
+        """
+        self._body = chrono_body
+        self.__current_normal_forces = None
+        self.__current_contact_coord = None
+        self.__list_normal_forces = []
+        self.__list_contact_coord = []
+        super().__init__()
+
+    def OnReportContact(self, pA: chrono.ChVectorD, pB: chrono.ChVectorD,
+                        plane_coord: chrono.ChMatrix33D, distance: float, eff_radius: float,
+                        react_forces: chrono.ChVectorD, react_torques: chrono.ChVectorD,
+                        contactobjA: chrono.ChContactable, contactobjB: chrono.ChContactable):
+        """Callback used to report contact points already added to the container
+
+        Args:
+            pA (ChVector): coordinates of contact point(s) in body A
+            pB (ChVector): coordinates of contact point(s) in body B
+            plane_coord (ChMatrix33): contact plane coordsystem
+            distance (float): contact distance
+            eff_radius (float)): effective radius of curvature at contact
+            react_forces (ChVector): reaction forces in coordsystem 'plane_coord'
+            react_torques (ChVector): reaction torques, if rolling friction
+            contactobjA (ChContactable): model A
+            contactobjB (ChContactable): model B
+        Returns:
+            bool: If returns false, the contact scanning will be stopped
+        """
+
+        body_a = chrono.CastToChBody(contactobjA)
+        body_b = chrono.CastToChBody(contactobjB)
+        if (body_a == self._body) or (body_b == self._body):
+            self.__current_normal_forces = react_forces.x
+            self.__list_normal_forces.append(react_forces.x)
+
+            if (body_a == self._body):
+                self.__current_contact_coord = [pA.x, pA.y, pA.z]
+                self.__list_contact_coord.append(self.__current_contact_coord)
+            elif(body_b == self._body):
+                self.__current_contact_coord = [pB.x, pB.y, pB.z]
+                self.__list_contact_coord.append(self.__current_contact_coord)
+
+        return True
+
+    def is_empty(self):
+        return len(self.__list_normal_forces) == 0
+
+    def list_clear(self):
+        self.__list_normal_forces.clear()
+    
+    def list_cont_clear(self):
+        self.__list_contact_coord.clear()
+
+    def get_normal_forces(self):
+        return self.__current_normal_forces
+
+    def get_list_n_forces(self):
+        return self.__list_normal_forces
+
+    def get_list_c_coord(self):
+        return self.__list_contact_coord
+class SpringTorque(chrono.TorqueFunctor):
+
+    def __init__(self, spring_coef, damping_coef, rest_angle):
+        super(SpringTorque, self).__init__()
+        self.spring_coef = spring_coef
+        self.damping_coef = damping_coef
+        self.rest_angle = rest_angle
+
+    def evaluate(self, time, angle, vel, link):
+        """Calculation of torque, that is created by spring
+        
+
+        Args:
+            time  :  current time
+            angle :  relative angle of rotation
+            vel   :  relative angular speed
+            link  :  back-pointer to associated link
+
+
+        Returns:
+            torque: torque, that is created by spring
+        """
+        torque = 0
+        if self.spring_coef > 10**-3:
+            torque = -self.spring_coef * \
+                (angle - self.rest_angle) - self.damping_coef * vel
+        else:
+            torque = -self.damping_coef * vel
+        return torque
 class ChronoBody(BlockBody, ABC):
     """Abstract class, that interpreting nodes of a robot body part in a
     physics engine (`pychrono <https://projectchrono.org/pychrono/>`_).
@@ -209,6 +306,32 @@ class ChronoTransform(BlockTransform):
                                      transform.rotation[2], transform.rotation[3]))
             self.transform = coordsys_transform
 
+class BlockSelfTransform(ABC):
+
+    def __init__(self):
+        self.block_type = BlockType.SELFTRANSFORM
+class ChronoSelfTransform(BlockSelfTransform):
+    """Class representing node of the transformation in `pychrono <https://projectchrono.org/pychrono/>`_ physical
+    engine
+
+    Args:
+        builder (pychrono.ChSystem): Arg sets the system, which hosth the body
+        transform (FrameTransform): Define tranformation of the instance
+    """
+
+    def __init__(self, transform):
+        super().__init__()
+        if isinstance(transform, chrono.ChCoordsysD):
+            self.transform = transform
+        elif isinstance(transform, FrameTransform):
+            coordsys_transform = chrono.ChCoordsysD(
+                chrono.ChVectorD(transform.position[0], transform.position[1],
+                                 transform.position[2]),
+                chrono.ChQuaternionD(transform.rotation[0], transform.rotation[1],
+                                     transform.rotation[2], transform.rotation[3]))
+            self.transform = coordsys_transform
+
+
 class ChronoRevolveJoint(BlockBridge):
     """The class representing revolute joint object in `pychrono <https://projectchrono.org/pychrono/>`_ physical
     engine. It is the embodiment of joint nodes from the mechanism graph in
@@ -248,6 +371,7 @@ class ChronoRevolveJoint(BlockBridge):
     def __init__(self,
                  axis: Axis = Axis.Z,
                  type_of_input: InputType = InputType.POSITION,
+                 starting_angle = 0,
                  stiffness: float = 0.,
                  damping: float = 0.,
                  equilibrium_position: float = 0.):
@@ -262,6 +386,8 @@ class ChronoRevolveJoint(BlockBridge):
         self.stiffness = stiffness
         self.damping = damping
         self.equilibrium_position = equilibrium_position
+
+    def positioning(self, prev_body):
 
     def connect(self, in_block: ChronoBody, out_block: ChronoBody):
         """Joint is connected two bodies.
@@ -296,3 +422,80 @@ class ChronoRevolveJoint(BlockBridge):
         self._torque_functor = SpringTorque(self.stiffness, self.damping, self.equilibrium_position)
         self._joint_spring.RegisterTorqueFunctor(self._torque_functor)
         self.builder.Add(self._joint_spring)
+
+
+def set_block_pos():
+    pass
+
+def connect_blocks(sequence: list):
+    # Make body and apply transform
+    previous_body_block = None
+    need_fix_joint = False
+    for it, block in enumerate(sequence):
+        if block.block_type is BlockType.BODY:
+            # First body
+            if previous_body_block is None:
+                need_fix_joint = True
+                previous_body_block = block
+            else:
+                if not block.is_build:
+                    block.move_to_out_frame(previous_body_block)  # NOQA gryazuka
+                    if need_fix_joint:
+                        block.make_fix_joint(previous_body_block)  # NOQA
+
+                need_fix_joint = True
+                previous_body_block = block
+
+            block.is_build = True
+
+        elif block.block_type is BlockType.BRIDGE:
+            need_fix_joint = False
+
+        elif block.block_type is BlockType.TRANSFORM:
+            i = 0
+            transform = True
+            while transform:
+                i += 1
+                if sequence[it - i].block_type is BlockType.BODY:
+                    transform = False
+                    current_transform = chrono.ChCoordsysD()
+                    for k in range(it - i + 1, it + 1):
+                        current_transform = current_transform * sequence[k].transform
+
+                    sequence[it - i].apply_transform(current_transform)
+                elif sequence[it - i].block_type is BlockType.BRIDGE:
+                    raise Exception("Transform after joint!!!")
+                else:
+                    continue
+
+    for it, block in enumerate(sequence):  # NOQA
+        if block.block_type is BlockType.BRIDGE:
+            if block.is_build:
+                continue
+
+            block.is_build = True
+            block_in = find_body_in_previous_blocks(sequence, it)
+            block_out = find_body_from_one_after_blocks(sequence, it)
+
+            if block_in is None:
+                raise Exception('Bridge block require body block before')
+            if block_out is None:
+                raise Exception('Bridge block require body block after')
+
+            block.connect(block_in, block_out) 
+
+def place_and_connect(bodies:list):
+    previous_body_block = None
+    need_fix_joint = False
+
+
+if __name__ =="__main__":
+    flat = UniversalBox(1, 0.2, 1)
+    flat.transformed_frame_out.
+    
+    
+    
+    
+    body_list = [flat]
+    
+    place_and_connect(body_list)

@@ -68,3 +68,5 @@ class ContactReporter(chrono.ReportContactCallback):
 
     def get_list_c_coord(self):
         return self.__list_contact_coord 
+    
+
