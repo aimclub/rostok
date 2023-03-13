@@ -71,61 +71,35 @@ def get_obj_COMPLEX():
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=shape_box,
                        material=matich,
-                       pos=FrameTransform([0, 1, 0], [1, 0, 0, 0]))
+                       pos=FrameTransform([0.3, 1, 0.3], [1, 0, 0, 0]))
 
 
     return obj
 
-def get_obj_easy_long_tilt_box():
-    matich = DefaultChronoMaterial()
-    matich.Friction = 0.65
-    matich.DampingF = 0.65
-    shape_box = envbody_shapes.Box(0.4, 0.6, 4)
-    obj = BlockWrapper(ChronoBodyEnv,
-                       shape=shape_box,
-                       material=matich,
-                       pos=FrameTransform([0, 1, 0], rotation_x(15)))
-
-    return obj
 
 def get_obj_easy_cylinder():
     matich = DefaultChronoMaterial()
     matich.Friction = 0.2
     matich.DampingF = 0.65
-    shape_box = envbody_shapes.Cylinder(0.6, 0.4)
+    shape_box = envbody_shapes.Cylinder(0.3, 1)
     obj = BlockWrapper(ChronoBodyEnv,
                        shape=shape_box,
                        material=matich,
                        mass=1,
-                       pos=FrameTransform([0, 1, 0], [1,0,0,0]))
+                       pos=FrameTransform([0.25, 1.25, -0.5], rotation_x(15)))
     
     return obj
 
-def get_object_to_grasp_sphere():
-    """Medium task"""
+def get_obj_easy_long_tilt_box():
     matich = DefaultChronoMaterial()
-    matich.Friction = 0.65
+    matich.Friction = 0.3
     matich.DampingF = 0.65
-    shape = envbody_shapes.Sphere(0.4)
+    shape_box = envbody_shapes.Box(0.4, 0.6, 1)
     obj = BlockWrapper(ChronoBodyEnv,
-                       shape=shape,
+                       shape=shape_box,
                        material=matich,
-                       pos=FrameTransform([0, 0.9, 0], [0, 0, 0, 1]))
-
-    return obj
-
-
-
-def get_obj_hard_mesh():
-    # Create object to grasp
-    shape = envbody_shapes.FromMesh("examples\obj_grasp\Ocpocmaqs_scaled.obj")
-    mat = DefaultChronoMaterial()
-    mat.Friction = 0.2
-    mat.DampingF = 0.2
-    obj = BlockWrapper(ChronoBodyEnv,
-                       shape=shape,
-                       material=mat,
-                       pos=FrameTransform([0, 1, 0], [ 0.854,  0.354,  0.354,  0.146]))
+                       mass = 3,
+                       pos=FrameTransform([0, 1, 0], rotation_x(15)))
     return obj
 
 def get_obj_hard_ellipsoid():
@@ -177,9 +151,9 @@ def get_obj_hard_long_ellipsoid():
 
 def get_obj_hard_long_tilt_ellipsoid():
     shape = envbody_shapes.Ellipsoid()
-    shape.radius_x = 0.4
-    shape.radius_y = 0.4
-    shape.radius_z = 2
+    shape.radius_x = 0.15
+    shape.radius_y = 0.15
+    shape.radius_z = 0.15
     
     mat = DefaultChronoMaterial()
     mat.Friction = 0.30
@@ -287,4 +261,18 @@ def get_obj_hard_mesh_piramida():
                        material=mat,
                        pos=FrameTransform([0, 1, 0], quat))
     return obj
-    
+
+
+def get_obj_hard_mesh_punk_piramida():
+        # Create object to grasp
+    quat = Rotation.from_euler('xyz', [90, 0, 0], degrees=True).as_quat()
+    shape = envbody_shapes.FromMesh("article\obj_grasp\PUNK_PIRAMIDA_M.obj")
+    mat = DefaultChronoMaterial()
+    mat.Friction = 0.2
+    mat.DampingF = 0.1
+    obj = BlockWrapper(ChronoBodyEnv,
+                       shape=shape,
+                       mass = 2,
+                       material=mat,
+                       pos=FrameTransform([0, 1.5, 0], quat))
+    return obj
