@@ -17,7 +17,7 @@ from golem.core.optimisers.genetic.operators.regularization import \
 from golem.core.optimisers.objective import Objective, ObjectiveEvaluate
 from golem.core.optimisers.optimization_parameters import GraphRequirements
 from golem.core.optimisers.optimizer import GraphGenerationParams
-from obj_grasp.objects import get_obj_hard_mesh_piramida, get_object_to_grasp_sphere, get_obj_hard_large_ellipsoid, get_obj_cyl_pos_parametrize, get_obj_hard_ellipsoid_move
+from obj_grasp.objects import get_obj_hard_mesh_piramida, get_obj_hard_large_ellipsoid, get_obj_easy_long_tilt_box, get_obj_easy_cylinder
 from optmizers_config import get_cfg_graph
 from rule_sets.ruleset_old_style_graph import create_rules
 from rule_sets.rule_extention_merge import rule_vocab, torque_dict, node_vocab
@@ -58,7 +58,7 @@ for _ in range(20):
 init_population_gr = init_pop_2.get_population_zoo() 
 initial = adapter_local.adapt(init_population_gr)
 cfg = get_cfg_graph(torque_dict)
-cfg.get_rgab_object_callback = get_obj_hard_mesh_piramida
+cfg.get_rgab_object_callback = get_obj_easy_long_tilt_box
 optic = ControlOptimizer(cfg)
 
 build_wrapperd  = partial(custom_metriwith_build_mechs, optimizer = optic)
@@ -107,7 +107,7 @@ optimizer_parameters = GPAlgorithmParameters(
     pop_size = len(initial),
     max_pop_size = len(initial)+10,
     crossover_prob=0.5, mutation_prob=0.8,
-    genetic_scheme_type=GeneticSchemeTypesEnum.generational,
+    genetic_scheme_type=GeneticSchemeTypesEnum.parameter_free,
         mutation_types=[
             MutationTypesEnum.none,
             custom_mutation_add,

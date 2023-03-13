@@ -5,8 +5,8 @@ from pathlib import Path
 
 import mcts
 import optmizers_config
-from obj_grasp.objects import (get_obj_easy_box, get_obj_hard_ellipsoid, get_object_to_grasp_sphere, get_obj_hard_large_ellipsoid, get_obj_easy_large_box, get_obj_hard_long_ellipsoid, get_obj_hard_long_tilt_ellipsoid,
-                               get_obj_easy_long_box, get_obj_easy_long_tilt_box, get_obj_easy_cylinder)
+from obj_grasp.objects import (get_obj_easy_cylinder, get_obj_easy_long_tilt_box, get_object_to_grasp_sphere, get_obj_hard_large_ellipsoid, get_obj_easy_large_box, get_obj_hard_long_ellipsoid, get_obj_hard_long_tilt_ellipsoid,
+                               get_obj_COMPLEX)
 from rule_sets import rule_extention_graph
 
 import hyperparameters as hp
