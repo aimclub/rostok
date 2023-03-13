@@ -150,6 +150,7 @@ class ChronoBody(BlockBody, ABC):
         super().__init__(builder)
         self.body = body
         self.builder.Add(self.body)
+        chrono.ChBody()
 
         # Create markers aka RefFrames
         input_marker = chrono.ChMarker()

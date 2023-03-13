@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Optional
 
 import pychrono.core as chrono
-from functions import ContactReporter
+from functions import ContactReporter, rotation_z
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (DefaultChronoMaterial, Material, struct_material2object_material)
 from rostok.block_builder.transform_srtucture import FrameTransform
 
@@ -28,73 +28,6 @@ def frame_transform_to_chcoordsys(transform: FrameTransform):
                 chrono.ChQuaternionD(transform.rotation[0], transform.rotation[1],
                                      transform.rotation[2], transform.rotation[3]))
 
-class ContactReporter(chrono.ReportContactCallback):
-
-    def __init__(self, chrono_body):
-        """Create a sensor of contact normal forces for the body.
-
-        Args:
-            chrono_body (ChBody): The body on which the sensor is install
-        """
-        self._body = chrono_body
-        self.__current_normal_forces = None
-        self.__current_contact_coord = None
-        self.__list_normal_forces = []
-        self.__list_contact_coord = []
-        super().__init__()
-
-    def OnReportContact(self, pA: chrono.ChVectorD, pB: chrono.ChVectorD,
-                        plane_coord: chrono.ChMatrix33D, distance: float, eff_radius: float,
-                        react_forces: chrono.ChVectorD, react_torques: chrono.ChVectorD,
-                        contactobjA: chrono.ChContactable, contactobjB: chrono.ChContactable):
-        """Callback used to report contact points already added to the container
-
-        Args:
-            pA (ChVector): coordinates of contact point(s) in body A
-            pB (ChVector): coordinates of contact point(s) in body B
-            plane_coord (ChMatrix33): contact plane coordsystem
-            distance (float): contact distance
-            eff_radius (float)): effective radius of curvature at contact
-            react_forces (ChVector): reaction forces in coordsystem 'plane_coord'
-            react_torques (ChVector): reaction torques, if rolling friction
-            contactobjA (ChContactable): model A
-            contactobjB (ChContactable): model B
-        Returns:
-            bool: If returns false, the contact scanning will be stopped
-        """
-
-        body_a = chrono.CastToChBody(contactobjA)
-        body_b = chrono.CastToChBody(contactobjB)
-        if (body_a == self._body) or (body_b == self._body):
-            self.__current_normal_forces = react_forces.x
-            self.__list_normal_forces.append(react_forces.x)
-
-            if (body_a == self._body):
-                self.__current_contact_coord = [pA.x, pA.y, pA.z]
-                self.__list_contact_coord.append(self.__current_contact_coord)
-            elif(body_b == self._body):
-                self.__current_contact_coord = [pB.x, pB.y, pB.z]
-                self.__list_contact_coord.append(self.__current_contact_coord)
-
-        return True
-
-    def is_empty(self):
-        return len(self.__list_normal_forces) == 0
-
-    def list_clear(self):
-        self.__list_normal_forces.clear()
-    
-    def list_cont_clear(self):
-        self.__list_contact_coord.clear()
-
-    def get_normal_forces(self):
-        return self.__current_normal_forces
-
-    def get_list_n_forces(self):
-        return self.__list_normal_forces
-
-    def get_list_c_coord(self):
-        return self.__list_contact_coord
 class SpringTorque(chrono.TorqueFunctor):
 
     def __init__(self, spring_coef, damping_coef, rest_angle):
@@ -124,6 +57,7 @@ class SpringTorque(chrono.TorqueFunctor):
         else:
             torque = -self.damping_coef * vel
         return torque
+
 class ChronoBody(BlockBody, ABC):
     """Abstract class, that interpreting nodes of a robot body part in a
     physics engine (`pychrono <https://projectchrono.org/pychrono/>`_).
@@ -163,14 +97,17 @@ class ChronoBody(BlockBody, ABC):
         input_marker = chrono.ChMarker()
         out_marker = chrono.ChMarker()
         transformed_out_marker = chrono.ChMarker()
+        transformed_input_marker = chrono.ChMarker()
 
         input_marker.SetMotionType(chrono.ChMarker.M_MOTION_KEYFRAMED)
         out_marker.SetMotionType(chrono.ChMarker.M_MOTION_KEYFRAMED)
         transformed_out_marker.SetMotionType(chrono.ChMarker.M_MOTION_KEYFRAMED)
+        transformed_input_marker.SetMotionType(chrono.ChMarker.M_MOTION_KEYFRAMED)
 
         self.body.AddMarker(input_marker)
         self.body.AddMarker(out_marker)
         self.body.AddMarker(transformed_out_marker)
+        self.body.AddMarker(transformed_input_marker)
         self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
         self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
         self.body.SetCollide(is_collide)
@@ -179,10 +116,12 @@ class ChronoBody(BlockBody, ABC):
         out_marker.SetPos(out_pos_marker)
         # Calc SetPos
         transformed_out_marker.SetCoord(out_marker.GetCoord())
+        transformed_input_marker.SetCoord(input_marker.GetCoord())
 
         self._ref_frame_in = input_marker
         self._ref_frame_out = out_marker
         self.transformed_frame_out = transformed_out_marker
+        self.transformed_frame_input = transformed_input_marker
 
         # Normal Forces
         self.__contact_reporter = ContactReporter(self.body)
@@ -200,6 +139,11 @@ class ChronoBody(BlockBody, ABC):
         state."""
         self.transformed_frame_out.SetCoord(self._ref_frame_out.GetCoord())
 
+    def reset_transformed_frame_input(self):
+        """Reset all transforms output frame of the body and back to initial
+        state."""
+        self.transformed_frame_input.SetCoord(self._ref_frame_in.GetCoord())
+
     def apply_transform(self, transform: chrono.ChCoordsysD):
         """Applied input transformation to the output frame of the body.
 
@@ -210,6 +154,17 @@ class ChronoBody(BlockBody, ABC):
         frame_coord = self.transformed_frame_out.GetCoord()
         frame_coord = frame_coord * transform
         self.transformed_frame_out.SetCoord(frame_coord)
+
+    def apply_input_transform(self, transform: chrono.ChCoordsysD):
+        """Applied input transformation to the output frame of the body.
+
+        Args:
+            in_block (BlockTransform): The block which define transformations
+        """
+        self.reset_transformed_frame_input()
+        frame_coord = self.transformed_frame_input.GetCoord()
+        frame_coord = frame_coord * transform
+        self.transformed_frame_input.SetCoord(frame_coord)
 
     def set_coord(self, transform: FrameTransform):
         self.body.SetCoord(frame_transform_to_chcoordsys(transform))
@@ -270,8 +225,8 @@ class UniversalBox(ChronoBody):
         body.SetCoord(frame_transform_to_chcoordsys(pos))
         body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
         body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
-        pos_in_marker = chrono.ChVectorD(0, y*0.5, 0)
-        pos_out_marker = chrono.ChVectorD(0, -y*0.5, 0)
+        pos_in_marker = chrono.ChVectorD(0, y * 0.5, 0)
+        pos_out_marker = chrono.ChVectorD(0, -y * 0.5, 0)
         super().__init__(body, pos_in_marker, pos_out_marker, color)
 
 
@@ -280,7 +235,7 @@ class BlockTransform(ABC):
     def __init__(self):
         self.block_type = BlockType.TRANSFORM
 
-class BlockBridge(Block, ABC):
+class BlockBridge(ABC):
 
     def __init__(self):
         self.block_type = BlockType.BRIDGE
@@ -336,7 +291,6 @@ class ChronoRevolveJoint(BlockBridge):
     """The class representing revolute joint object in `pychrono <https://projectchrono.org/pychrono/>`_ physical
     engine. It is the embodiment of joint nodes from the mechanism graph in
     simulation.
-    
 
         Args:
             builder (pychrono.ChSystem): Arg sets the system, which hosth the body
@@ -345,7 +299,7 @@ class ChronoRevolveJoint(BlockBridge):
             stiffness (float, optional): Optional arg add a spring with `stiffness` to joint. Defaults to 0.
             damping (float, optional): Optional arg add a dempher to joint. Defaults to 0.
             equilibrium_position (float, optional): Define equilibrium position of the spring. Defaults to 0.
-            
+
         Attributes:
             joint (pychrono.ChLink): Joint define nodes of the joint part in the system
             axis (Axis): The axis of the rotation
@@ -371,6 +325,7 @@ class ChronoRevolveJoint(BlockBridge):
     def __init__(self,
                  axis: Axis = Axis.Z,
                  type_of_input: InputType = InputType.POSITION,
+                 radius = 0.05,
                  starting_angle = 0,
                  stiffness: float = 0.,
                  damping: float = 0.,
@@ -379,7 +334,8 @@ class ChronoRevolveJoint(BlockBridge):
         self.joint = None
         self.axis = axis
         self.input_type = type_of_input
-        self._ref_frame_out = chrono.ChCoordsysD()
+        self.radius = radius
+        self.starting_angle = starting_angle
         # Spring Damper params
         self._joint_spring = None
         self._torque_functor = None
@@ -387,7 +343,18 @@ class ChronoRevolveJoint(BlockBridge):
         self.damping = damping
         self.equilibrium_position = equilibrium_position
 
-    def positioning(self, prev_body):
+    def set_prev_body_frame(self, prev_body:ChronoBody):
+        # additional transform is just a translatoin along y axis to the radius of the joint 
+        additional_transform = chrono.ChCoordsysD([0, self.radius, 0],[1, 0, 0, 0])
+        additional_transform*= chrono.ChCoordsysD([0, 0, 0], rotation_z(self.starting_angle))
+        transform = prev_body.transformed_frame_out.GetCoord()
+        prev_body.apply_transform(transform * additional_transform)
+
+    def set_next_body_frame(self, prev_body:ChronoBody):
+        additional_transform = chrono.ChCoordsysD([0, -self.radius, 0],[1, 0, 0, 0])
+        transform = prev_body.transformed_frame_input.GetCoord()
+        prev_body.apply_input_transform(transform * additional_transform)
+
 
     def connect(self, in_block: ChronoBody, out_block: ChronoBody):
         """Joint is connected two bodies.
@@ -400,7 +367,7 @@ class ChronoRevolveJoint(BlockBridge):
         """
         self.joint = self.input_type.motor()
         self.joint.Initialize(in_block.body, out_block.body, True, in_block.transformed_frame_out,
-                              out_block.ref_frame_in)
+                              out_block.transformed_frame_input)
         self.builder.AddLink(self.joint)
 
         if (self.stiffness != 0) or (self.damping != 0):
@@ -484,18 +451,96 @@ def connect_blocks(sequence: list):
 
             block.connect(block_in, block_out) 
 
-def place_and_connect(bodies:list):
+def place_next_block(prev_block,next_block, system:chrono.ChSystem):
+    # prev_body is already added to the system
+    prev_body:ChronoBody = prev_block.body
+    next_body:ChronoBody = next_block.body
+    total_transformation = prev_body.transformed_frame_out.GetAbsCoord()*chrono.ChFrameD(next_body.transformed_frame_input).GetInverse().GetCoord()
+
+def make_fix_joint(prev_block, next_block):
+    
+    prev_body = prev_block.body
+    next_body = next_block.body
+
+    fix_joint = chrono.ChLinkMateFix()
+    fix_joint.Initialize(prev_body, next_body, True, prev_body.transformed_frame_out, next_body.transformed_frame_input)
+    self.builder.Add(fix_joint)
+
+def start_selftransformation_loop():
+    pass
+
+# the function places and connects a sequence of blocks. The sequence should start from the root block 
+def place_and_connect(sequence:list, system:chrono.ChSystem):
+    # all connections occurs between bodies
     previous_body_block = None
+    previous_joint = None
     need_fix_joint = False
+    for it, block in enumerate(sequence):
+        if block.block_type is BlockType.BODY:
+            if previous_body_block is None:
+                previous_body_block = block
+                if not block.is_build:
+                    system.AddBody(block.body)
+
+            else:
+                if not block.is_build:
+                    if sequence[it - 1].block_type is BlockType.SELFTRANSFORM:
+                        start_selftransformation_loop()
+
+                    if  not (previous_joint is None):
+                        previous_joint.set_prev_body_frame(block.body)
+                        place_next_block(previous_body_block, block, system)
+                        previous_joint.connect(previous_body_block, block)
+                        previous_joint = None
+
+                    else:
+                        place_next_block(previous_body_block, block, system)
+                        make_fix_joint(previous_body_block, block)
+
+                previous_body_block = block
+
+            block.is_build = True
+        # transforms follow the block and shift the outer transformed frame, 
+        # using inner function `apply_transform`
+        elif block.block_type is BlockType.TRANSFORM:
+            i = 0
+            transform = True
+            while transform:
+                i += 1
+                if sequence[it - i].block_type is BlockType.BODY:
+                    transform = False
+                    current_transform = chrono.ChCoordsysD()
+                    for k in range(it - i + 1, it + 1):
+                        current_transform = current_transform * sequence[k].transform
+
+                    sequence[it - i].apply_transform(current_transform)
+                elif sequence[it - i].block_type is BlockType.BRIDGE:
+                    raise Exception("Transform after joint!!!")
+                else:
+                    continue
+        # self transformations follows are applied to the next body input frame
+        elif block.block_type is BlockType.SELFTRANSFORM:
+            continue
+
+        elif block.block_type is BlockType.BRIDGE:
+            need_fix_joint = False
+            block.set_prev_body_frame(previous_body_block.body)
+            previous_joint = block
+
+
+
 
 
 if __name__ =="__main__":
     flat = UniversalBox(1, 0.2, 1)
-    flat.transformed_frame_out.
+    coord = flat.transformed_frame_out.GetCoord()
+    print(isinstance(coord, chrono.ChCoordsysD))
+
+    print(coord.pos, coord.rot)
     
     
     
     
-    body_list = [flat]
+    # body_list = [flat]
     
-    place_and_connect(body_list)
+    # place_and_connect(body_list)

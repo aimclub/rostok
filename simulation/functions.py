@@ -1,5 +1,10 @@
+import numpy as np
 import pychrono.core as chrono
 
+
+def rotation_z(alpha):
+    quat_Z_ang_alpha = chrono.Q_from_AngZ(np.deg2rad(alpha))
+    return [quat_Z_ang_alpha.e0, quat_Z_ang_alpha.e1, quat_Z_ang_alpha.e2,quat_Z_ang_alpha.e3]
 
 class ContactReporter(chrono.ReportContactCallback):
 
