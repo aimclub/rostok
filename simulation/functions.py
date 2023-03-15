@@ -1,10 +1,19 @@
 import numpy as np
 import pychrono.core as chrono
-
-
+from rostok.block_builder.transform_srtucture import FrameTransform
+def frame_transform_to_chcoordsys(transform: FrameTransform):
+    return chrono.ChCoordsysD(
+                chrono.ChVectorD(transform.position[0], transform.position[1],
+                                 transform.position[2]),
+                chrono.ChQuaternionD(transform.rotation[0], transform.rotation[1],
+                                     transform.rotation[2], transform.rotation[3]))
 def rotation_z(alpha):
     quat_Z_ang_alpha = chrono.Q_from_AngZ(np.deg2rad(alpha))
     return [quat_Z_ang_alpha.e0, quat_Z_ang_alpha.e1, quat_Z_ang_alpha.e2,quat_Z_ang_alpha.e3]
+
+def rotation_z_q(alpha):
+    quat_Z_ang_alpha = chrono.Q_from_AngZ(np.deg2rad(alpha))
+    return chrono.ChQuaternionD(quat_Z_ang_alpha.e0, quat_Z_ang_alpha.e1, quat_Z_ang_alpha.e2,quat_Z_ang_alpha.e3)
 
 class ContactReporter(chrono.ReportContactCallback):
 
@@ -74,4 +83,36 @@ class ContactReporter(chrono.ReportContactCallback):
     def get_list_c_coord(self):
         return self.__list_contact_coord 
     
+
+class SpringTorque(chrono.TorqueFunctor):
+
+    def __init__(self, spring_coef, damping_coef, rest_angle):
+        super(SpringTorque, self).__init__()
+        self.spring_coef = spring_coef
+        self.damping_coef = damping_coef
+        self.rest_angle = rest_angle
+
+    def evaluate(self, time, angle, vel, link):
+        """Calculation of torque, that is created by spring
+        
+
+        Args:
+            time  :  current time
+            angle :  relative angle of rotation
+            vel   :  relative angular speed
+            link  :  back-pointer to associated link
+
+
+        Returns:
+            torque: torque, that is created by spring
+        """
+        torque = 0
+        if self.spring_coef > 10**-3:
+            torque = -self.spring_coef * \
+                (angle - self.rest_angle) - self.damping_coef * vel
+        else:
+            torque = -self.damping_coef * vel
+        return torque
+
+
 

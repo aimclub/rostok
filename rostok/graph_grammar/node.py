@@ -38,6 +38,7 @@ class Node:
     which is the physical representation of the node in the simulator
     """
     label: str = "*"
+    # a terminal node is a node that does not change in further graph changes
     is_terminal: bool = False
 
     # None for non-terminal nodes
@@ -48,9 +49,7 @@ class Node:
 
     def __eq__(self, __o: object) -> bool:
         if not isinstance(__o, self.__class__):
-            raise Exception(
-                "Wrong type of comparable object. Must be Node instead {wrong_type}".format(
-                    wrong_type=type(__o)))
+            raise Exception(f"Wrong type of comparable object. Must be Node instead {type(__o)}")
         return self.label == __o.label
 
 
@@ -73,6 +72,7 @@ class Rule:
 
     @graph_insert.setter
     def graph_insert(self, graph: nx.DiGraph):
+        # a rule is terminal if all nodes in it are terminal nodes
         self._is_terminal = all(
             [raw_node["Node"].is_terminal for _, raw_node in graph.nodes(data=True)])
         self._graph_insert = graph
@@ -115,7 +115,7 @@ class GraphGrammar(nx.DiGraph):
         return self.__uniq_id_counter
 
     def find_nodes(self, match: Node) -> list[int]:
-        """
+        """Generates the list of nodes that have the same name as a `mathch`
 
         Args:
             match (Node): Node for find, matched by label
@@ -146,7 +146,7 @@ class GraphGrammar(nx.DiGraph):
         out_edges = [list(edge) for edge in self.out_edges(node_id)]
 
         id_node_connect_child_graph = self._get_uniq_id()
-
+        # FIXME: Why is it inverted? 
         is_equal_id = rule.id_node_connect_parent != rule.id_node_connect_child
         id_node_connect_parent_graph = self._get_uniq_id(
         ) if is_equal_id else id_node_connect_child_graph
@@ -383,6 +383,6 @@ class GraphGrammar(nx.DiGraph):
         return self_dfs_paths_lbl
 
 
-    def __hash__(self) -> list[list[str]]:
+    def __hash__(self) -> int:
         self_dfs_paths_lbl = self.get_uniq_representation()
         return hash(str(self_dfs_paths_lbl))
