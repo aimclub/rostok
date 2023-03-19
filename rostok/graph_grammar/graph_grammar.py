@@ -2,7 +2,6 @@ import networkx as nx
 
 from rostok.graph.graph import Graph
 from rostok.graph.node import Node
-from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 
 
 class Rule:
@@ -44,7 +43,7 @@ class GraphGrammar(Graph):
         Supports methods from :py:class:`networkx.DiGraph` ancestor class
     """
 
-    def __init__(self, rule_vocablary: RuleVocabulary = None,**attr):
+    def __init__(self, rule_vocablary = None,**attr):
         super().__init__(**attr)
         self.rule_vocabulary = rule_vocablary
         self.rule_list = []

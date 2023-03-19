@@ -1,0 +1,17 @@
+main_result:
+rules: InitMechanism_3_R_A TerminalTransformRightPlusAngle2 TerminalTransformRightMinusAngle1 TerminalFlat1 FingerUpper TerminalL1 TerminalTransformLeft3 TerminalEndLimb2 TerminalEndLimb2 TerminalEndLimb2
+control:
+reward: 2.5000000000000036
+
+best_result:
+rules: InitMechanism_3_R FingerUpper TerminalTransformRightMinus3 TerminalFlat1 TerminalEndLimb2 TerminalEndLimb2 TerminalL2 TerminalEndLimb1 TerminalTransformLeft2 TerminalTransformRightPlus3
+control: -5.054107701280742
+reward: 2.5000000000000036
+
+max number of non-terminal rules: 2 search parameter: 2
+
+Number of unique mechanisms tested in current MCTS run:  14
+Number of states  16
+
+Object to grasp: Box(width_x=0.2, length_y=0.2, height_z=0.5)
+Object initial coordinats: FrameTransform(position=[0, 0.5, 0], rotation=[0, -0.048, 0.706, 0.706])

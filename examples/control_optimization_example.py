@@ -6,7 +6,7 @@ from rostok.block_builder.envbody_shapes import Cylinder
 from rostok.block_builder.node_render import (ChronoBodyEnv,
                                               DefaultChronoMaterial,
                                               FrameTransform)
-from rostok.criterion.flags_simualtions import FlagMaxTime, FlagNotContact, FlagSlipout
+from rostok.virtual_experiment.flags_simualtions import FlagMaxTime, FlagNotContact, FlagSlipout
 from rostok.graph_grammar.node import BlockWrapper, GraphGrammar, Node
 from rostok.trajectory_optimizer.control_optimizer import (
     ConfigRewardFunction, ControlOptimizer)

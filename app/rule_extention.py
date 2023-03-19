@@ -1,6 +1,8 @@
-from rostok.graph_grammar.node import BlockWrapper, ROOT
-from rostok.graph_grammar import node_vocabulary, rule_vocabulary
-from rostok.block_builder.node_render import *
+from rostok.graph.node import BlockWrapper
+from rostok.graph.graph import ROOT
+from rostok.graph import node_vocabulary
+from rostok.graph_grammar import rule_vocabulary
+from rostok.block_builder_chrono.block_classes import *
 
 
 import pychrono as chrono
@@ -30,15 +32,15 @@ def init_extension_rules():
     alpha_right = [180, 150, 120]
     length_link = [0.4, 0.6, 0.8]
 
-    flat = list(map(lambda x: BlockWrapper(FlatChronoBody, width_x=x, height_y=0.05, depth_z=0.8),
+    flat = list(map(lambda x: BlockWrapper(UniversalBox, x=x, y=0.05, z=0.8),
                     width))
 
-    link = list(map(lambda x: BlockWrapper(LinkChronoBody, length_y=x),
+    link = list(map(lambda x: BlockWrapper(UniversalBox, y=x),
                     length_link))
 
 
-    u1 = BlockWrapper(MountChronoBody, width_x=0.1, length_y=0.05)
-    u2 = BlockWrapper(MountChronoBody, width_x=0.2, length_y=0.1)
+    u1 = BlockWrapper(UniversalBox, x=0.1, y=0.05)
+    u2 = BlockWrapper(UniversalBox, x=0.2, y=0.1)
 
     # %% Tranform for extansions rules 
     # z_shift = [-0.3, 0, 0.3]

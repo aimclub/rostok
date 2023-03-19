@@ -10,7 +10,7 @@ import pychrono as chrono
 from control_optimisation import create_grab_criterion_fun, create_traj_fun, get_object_to_grasp
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.trajectory_optimizer.control_optimizer import ConfigRewardFunction, ControlOptimizer
-from rostok.criterion.flags_simualtions import FlagMaxTime, FlagSlipout, FlagNotContact
+from rostok.virtual_experiment.flags_simualtions import FlagMaxTime, FlagSlipout, FlagNotContact
 from rostok.utils.result_saver  import read_report
 
 import rostok.graph_generators.graph_environment as env

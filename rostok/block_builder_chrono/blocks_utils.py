@@ -5,10 +5,6 @@ import numpy as np
 import pychrono.core as chrono
 
 from rostok.block_builder_chrono.block_types import BlockBody
-from rostok.block_builder_chrono.node_render import (ChronoBody,
-                                                     ChronoRevolveJoint,
-                                                     ChronoTransform)
-from rostok.graph.node import Node
 
 FrameTransform = namedtuple('FrameTransform', ["position", "rotation"])
 
@@ -23,9 +19,9 @@ def frame_transform_to_chcoordsys(transform: FrameTransform):
 
 
 def rotation_z_q(alpha):
-    quat_Z_ang_alpha = chrono.Q_from_AngZ(np.deg2rad(alpha))
-    return chrono.ChQuaternionD(quat_Z_ang_alpha.e0, quat_Z_ang_alpha.e1, quat_Z_ang_alpha.e2,
-                                quat_Z_ang_alpha.e3)
+    quat_z_ang_alpha = chrono.Q_from_AngZ(np.deg2rad(alpha))
+    return chrono.ChQuaternionD(quat_z_ang_alpha.e0, quat_z_ang_alpha.e1, quat_z_ang_alpha.e2,
+                                quat_z_ang_alpha.e3)
 
 
 class CollisionGroup(int, Enum):
@@ -35,7 +31,7 @@ class CollisionGroup(int, Enum):
     WORLD = 3
 
 
-def make_collide(body_list: list[ChronoBody],
+def make_collide(body_list: list[BlockBody],
                  group_id: CollisionGroup,
                  disable_group: list[CollisionGroup] = [CollisionGroup.DEFAULT],
                  self_colide=False):
@@ -55,21 +51,6 @@ def make_collide(body_list: list[ChronoBody],
             body.body.SetCollide(True)
         else:
             body.body.SetCollide(True)
-
-
-class NodeFeatures:
-
-    @staticmethod
-    def is_joint(node: Node):
-        return node.block_wrapper.block_cls is ChronoRevolveJoint
-
-    @staticmethod
-    def is_body(node: Node):
-        return node.block_wrapper.block_cls is BlockBody
-
-    @staticmethod
-    def is_transform(node: Node):
-        return node.block_wrapper.block_cls is ChronoTransform
 
 
 class SpringTorque(chrono.TorqueFunctor):

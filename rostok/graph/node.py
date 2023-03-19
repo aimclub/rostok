@@ -1,4 +1,3 @@
-from copy import deepcopy
 from dataclasses import dataclass
 
 
@@ -23,8 +22,8 @@ class BlockWrapper:
         self.args = args
         self.kwargs = kwargs
 
-    def create_block(self, builder):
-        return self.block_cls(builder, *self.args, **self.kwargs)
+    def create_block(self):
+        return self.block_cls(*self.args, **self.kwargs)
 
 
 @dataclass

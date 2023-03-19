@@ -3,9 +3,10 @@ from copy import deepcopy
 
 import numpy as np
 import pychrono as chrono
-import scipy.interpolate as interpolate
+from scipy import interpolate
 
-from rostok.block_builder.node_render import Block, ChronoRevolveJoint
+from rostok.block_builder_chrono.block_classes import ChronoRevolveJoint
+from rostok.block_builder_chrono.block_types import Block
 
 
 def get_controllable_joints(blocks: list[list[Block]]):

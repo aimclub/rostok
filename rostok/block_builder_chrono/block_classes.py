@@ -11,6 +11,8 @@ from rostok.block_builder_chrono.blocks_utils import (ContactReporter, FrameTran
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
     DefaultChronoMaterial, Material, struct_material2object_material)
 from rostok.block_builder_chrono import easy_body_shapes
+from rostok.graph.node import Node
+from rostok.block_builder_chrono.chrono_system import get_chrono_system
 
 
 class ChronoBody(BlockBody, ABC):
@@ -119,8 +121,8 @@ class ChronoBody(BlockBody, ABC):
         frame_coord = frame_coord * transform
         self.transformed_frame_input.SetCoord(frame_coord)
 
-    def set_coord(self, transform: FrameTransform):
-        self.body.SetCoord(frame_transform_to_chcoordsys(transform))
+    def set_coord(self, frame: FrameTransform):
+        self.body.SetCoord(frame_transform_to_chcoordsys(frame))
 
     @property
     def ref_frame_in(self) -> chrono.ChMarker:
@@ -132,23 +134,25 @@ class ChronoBody(BlockBody, ABC):
         return self._ref_frame_in
 
     @property
-    def normal_force(self, builder) -> float:
+    def normal_force(self) -> float:
         """Return value normal forces of random collision point.
 
         Returns:
             float: Value normal forces of random collision point
         """
-        builder.GetContactContainer().ReportAllContacts(self.__contact_reporter)
+        system = get_chrono_system()
+        system.GetContactContainer().ReportAllContacts(self.__contact_reporter)
         return self.__contact_reporter.get_normal_forces()
 
     @property
-    def list_n_forces(self, builder) -> list:
+    def list_n_forces(self) -> list:
         """Return a list of all the contact forces.
 
         Returns:
             list: List normal forces of all the contacts points
         """
-        container = builder.GetContactContainer()
+        system = get_chrono_system()
+        container = system.GetContactContainer()
         contacts = container.GetNcontacts()
         if contacts:
             self.__contact_reporter.list_clear()
@@ -156,12 +160,13 @@ class ChronoBody(BlockBody, ABC):
         return self.__contact_reporter.get_list_n_forces()
 
     @property
-    def list_c_coord(self, builder) -> list:
+    def list_c_coord(self) -> list:
         """Return a list of all the contact forces.
         Returns:
             list: List normal forces of all the contacts points
         """
-        container = builder.GetContactContainer()
+        system = get_chrono_system()
+        container = system.GetContactContainer()
         contacts = container.GetNcontacts()
         if contacts:
             self.__contact_reporter.list_cont_clear()
@@ -373,10 +378,6 @@ class ChronoEasyShape(ChronoBody):
         # Create shape
         super().__init__(body, pos_in_marker, pos_out_marker, color, is_collide)
 
-    def set_coord(self, frame: FrameTransform):
-        transform = frame_transform_to_chcoordsys(frame)
-        self.body.SetCoord(transform)
-
 
 class ChronoEasyShapeObject():
     """Class of environments bodies with standard shape, like box, ellipsoid,
@@ -394,7 +395,7 @@ class ChronoEasyShapeObject():
     """
 
     def __init__(self,
-                 shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box(),
+                 shape = easy_body_shapes.Box(),
                  density: float = 10.0, 
                  material=DefaultChronoMaterial(),
                  is_collide: bool = True, 
@@ -403,7 +404,7 @@ class ChronoEasyShapeObject():
 
         # Create body
         material = struct_material2object_material(material)
-
+        print(shape)
         if isinstance(shape, easy_body_shapes.Box):
             body = chrono.ChBodyEasyBox(shape.width_x, shape.length_y, shape.height_z, density,
                                         True, True, material)
@@ -435,27 +436,28 @@ class ChronoEasyShapeObject():
             self.body.GetVisualShape(0).SetColor(chrono.ChColor(*color))
 
     def set_coord(self, frame: FrameTransform):
-        transform = frame_transform_to_chcoordsys(frame)
-        self.body.SetCoord(transform)
+        self.body.SetCoord(frame_transform_to_chcoordsys(frame))
 
     @property
-    def normal_force(self, builder) -> float:
+    def normal_force(self) -> float:
         """Return value normal forces of random collision point.
 
         Returns:
             float: Value normal forces of random collision point
         """
-        builder.GetContactContainer().ReportAllContacts(self.__contact_reporter)
+        system = get_chrono_system()
+        system.GetContactContainer().ReportAllContacts(self.__contact_reporter)
         return self.__contact_reporter.get_normal_forces()
 
     @property
-    def list_n_forces(self, builder) -> list:
+    def list_n_forces(self) -> list:
         """Return a list of all the contact forces.
 
         Returns:
             list: List normal forces of all the contacts points
         """
-        container = builder.GetContactContainer()
+        system = get_chrono_system()
+        container = system.GetContactContainer()
         contacts = container.GetNcontacts()
         if contacts:
             self.__contact_reporter.list_clear()
@@ -463,14 +465,29 @@ class ChronoEasyShapeObject():
         return self.__contact_reporter.get_list_n_forces()
 
     @property
-    def list_c_coord(self, builder) -> list:
+    def list_c_coord(self) -> list:
         """Return a list of all the contact forces.
         Returns:
             list: List normal forces of all the contacts points
         """
-        container = builder.GetContactContainer()
+        system = get_chrono_system()
+        container = system.GetContactContainer()
         contacts = container.GetNcontacts()
         if contacts:
             self.__contact_reporter.list_cont_clear()
             container.ReportAllContacts(self.__contact_reporter)
         return self.__contact_reporter.get_list_c_coord()
+
+class NodeFeatures:
+
+    @staticmethod
+    def is_joint(node: Node):
+        return node.block_wrapper.block_cls is ChronoRevolveJoint
+
+    @staticmethod
+    def is_body(node: Node):
+        return node.block_wrapper.block_cls is BlockBody
+
+    @staticmethod
+    def is_transform(node: Node):
+        return node.block_wrapper.block_cls is ChronoTransform

@@ -8,9 +8,9 @@ import rostok.virtual_experiment.simulation_step as step
 from rostok.block_builder.envbody_shapes import Box
 from rostok.block_builder.node_render import (ChronoBodyEnv, DefaultChronoMaterial, FrameTransform)
 from rostok.criterion.criterion_calc import criterion_calc
-from rostok.criterion.flags_simualtions import FlagMaxTime, FlagNotContact, FlagSlipout
+from rostok.virtual_experiment.flags_simualtions import FlagMaxTime, FlagNotContact, FlagSlipout
 from rostok.graph_grammar.node import BlockWrapper
-from rostok.graph_grammar.nodes_division import nodes_division, sort_left_right
+from rostok.robot.nodes_division import nodes_division, sort_left_right
 from rostok.trajectory_optimizer.control_optimizer import num_joints
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x

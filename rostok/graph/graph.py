@@ -1,7 +1,7 @@
 import networkx as nx
 from networkx.algorithms.traversal import dfs_preorder_nodes
-from node import Node, WrapperTuple
 
+from rostok.graph.node import Node, WrapperTuple
 
 ROOT = Node("ROOT")
 

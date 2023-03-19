@@ -4,10 +4,10 @@ from typing import Callable
 import pychrono as chrono
 from scipy.optimize import direct, shgo, dual_annealing
 
-from rostok.block_builder.blocks_utils import NodeFeatures
-from rostok.graph_grammar.node import GraphGrammar
-from rostok.virtual_experiment.robot import Robot
-from rostok.virtual_experiment.simulation_step import (SimOut, SimulationStepOptimization)
+from rostok.block_builder_chrono.block_classes import NodeFeatures
+from rostok.graph_grammar.graph_grammar import GraphGrammar
+from rostok.robot.robot import Robot
+from rostok.virtual_experiment_chrono.simulation_step import (SimOut, SimulationStepOptimization)
 
 
 @dataclass

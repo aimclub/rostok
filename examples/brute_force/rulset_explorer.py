@@ -7,7 +7,7 @@ import pychrono as chrono
 import rule_extention
 from control_optimisation import (create_grab_criterion_fun, create_traj_fun, get_object_to_grasp)
 
-from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact, FlagSlipout)
+from rostok.virtual_experiment.flags_simualtions import (FlagMaxTime, FlagNotContact, FlagSlipout)
 from rostok.graph_generators.mcts_helper import OptimizedGraphReport
 from rostok.graph_grammar.graphgrammar_explorer import ruleset_explorer
 from rostok.graph_grammar.node import GraphGrammar

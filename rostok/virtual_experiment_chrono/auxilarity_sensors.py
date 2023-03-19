@@ -1,7 +1,8 @@
 import pychrono as chrono
 import numpy as np
-from rostok.virtual_experiment.robot import Robot
-from rostok.block_builder.node_render import RobotBody, ChronoRevolveJoint, ChronoBodyEnv
+from rostok.robot.robot import Robot
+from rostok.block_builder_chrono.block_classes import ChronoRevolveJoint, ChronoEasyShapeObject
+from rostok.block_builder_chrono.block_types import BlockBody
 
 
 
@@ -24,7 +25,7 @@ class RobotSensor:
             chrono.ChVectorD: Coordinate of the center of the robot
         """
         blocks = in_robot.block_map.values()
-        body_block = filter(lambda x: isinstance(x, RobotBody), blocks)
+        body_block = filter(lambda x: isinstance(x, BlockBody), blocks)
         sum_cog_coord = chrono.ChVectorD(0, 0, 0)
         bodies = list(body_block)
         for body in bodies:
@@ -44,7 +45,7 @@ class RobotSensor:
             are sum of contact forces
         """
         blocks = in_robot.block_map
-        body_block = filter(lambda x: isinstance(x[1], RobotBody), blocks.items())
+        body_block = filter(lambda x: isinstance(x[1], BlockBody), blocks.items())
         contact_force_blocks = map(lambda x: (x[0], sum(x[1].list_n_forces)), body_block)
         return dict(contact_force_blocks)
 
@@ -60,7 +61,7 @@ class RobotSensor:
             boides and values are coordinates COG
         """
         blocks = in_robot.block_map
-        body_block = filter(lambda x: isinstance(x[1], RobotBody), blocks.items())
+        body_block = filter(lambda x: isinstance(x[1], BlockBody), blocks.items())
 
         def cog_from_tuple(tupled):
             pos = tupled[1].body.GetPos()
@@ -82,7 +83,7 @@ class RobotSensor:
             bodies and values are number of contact surfaces
         """
         blocks = in_robot.block_map
-        body_block = filter(lambda x: isinstance(x[1], RobotBody), blocks.items())
+        body_block = filter(lambda x: isinstance(x[1], BlockBody), blocks.items())
 
         num_contact_surfaces = map(lambda x: (x[0], int(not (sum(x[1].list_n_forces) == 0))),
                                    body_block)
@@ -140,7 +141,7 @@ class RobotSensor:
             return None
 
     @staticmethod
-    def contact_coord(obj: ChronoBodyEnv):
+    def contact_coord(obj: ChronoEasyShapeObject):
         """Sensor of COG of contact points
         Args:
             obj (ChronoBodyEnv): Grasp object
@@ -162,7 +163,7 @@ class RobotSensor:
             return None
 
     @staticmethod
-    def abs_coord_COG_obj(obj: ChronoBodyEnv):
+    def abs_coord_COG_obj(obj: ChronoEasyShapeObject):
         """Sensor of absolute coordinates of grasp object
         Args:
             obj (ChronoBodyEnv): Grasp object

@@ -3,13 +3,18 @@ from dataclasses import dataclass
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 
-import rostok.block_builder.control as control
-from rostok.block_builder.node_render import ChronoRevolveJoint, RobotBody
-from rostok.block_builder.transform_srtucture import FrameTransform,OriginWorldFrame
-from rostok.criterion.flags_simualtions import (ConditionStopSimulation, FlagStopSimualtions)
-from rostok.graph_grammar.node import BlockWrapper, GraphGrammar
-from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
-from rostok.virtual_experiment.robot import Robot
+import rostok.control_chrono.control as control
+from rostok.block_builder_chrono.block_classes import ChronoRevolveJoint
+from rostok.block_builder_chrono.block_types import BlockBody
+from rostok.block_builder_chrono.blocks_utils import (FrameTransform,
+                                                      OriginWorldFrame)
+from rostok.block_builder_chrono.chrono_system import register_chrono_system
+from rostok.graph.node import BlockWrapper
+from rostok.graph_grammar.graph_grammar import GraphGrammar
+from rostok.robot.robot import Robot
+from rostok.virtual_experiment_chrono.auxilarity_sensors import RobotSensor
+from rostok.virtual_experiment_chrono.flags_simualtions import (
+    ConditionStopSimulation, FlagStopSimualtions)
 
 
 # Immutable classes with output simulation data for robot block
@@ -111,8 +116,8 @@ class SimulationStepOptimization:
         self.chrono_system.SetSolverForceTolerance(1e-6)
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
 
-        self.grasp_object = grasp_object.create_block(self.chrono_system)
-
+        self.grasp_object = grasp_object.create_block()
+        register_chrono_system(self.chrono_system)
         self.grab_robot = Robot(self.graph_mechanism, self.chrono_system, start_frame_robot)
 
         # Add grasp object in system and set system without gravity
@@ -219,15 +224,15 @@ class SimulationStepOptimization:
 
         arrays_simulation_data_sum_contact_forces = map(
             lambda x: (x[0], []),
-            filter(lambda x: isinstance(x[1], RobotBody), self.grab_robot.block_map.items()))
+            filter(lambda x: isinstance(x[1], BlockBody), self.grab_robot.block_map.items()))
 
         arrays_simulation_data_abs_coord_COG = map(
             lambda x: (x[0], []),
-            filter(lambda x: isinstance(x[1], RobotBody), self.grab_robot.block_map.items()))
+            filter(lambda x: isinstance(x[1], BlockBody), self.grab_robot.block_map.items()))
 
         arrays_simulation_data_amount_contact_surfaces = map(
             lambda x: (x[0], []),
-            filter(lambda x: isinstance(x[1], RobotBody), self.grab_robot.block_map.items()))
+            filter(lambda x: isinstance(x[1], BlockBody), self.grab_robot.block_map.items()))
 
         arrays_simulation_data_obj_force = [(-1, [])]
         arrays_simulation_data_amount_obj_contact_surfaces = [(-1, [])]

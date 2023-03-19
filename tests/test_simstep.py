@@ -8,7 +8,7 @@ import rostok.virtual_experiment.simulation_step as step
 
 from rostok.block_builder.envbody_shapes import Box
 from rostok.block_builder.node_render import (ChronoBodyEnv, DefaultChronoMaterial, FrameTransform)
-from rostok.criterion.flags_simualtions import FlagMaxTime
+from rostok.virtual_experiment.flags_simualtions import FlagMaxTime
 from rostok.graph_grammar.node import BlockWrapper
 from rostok.trajectory_optimizer.control_optimizer import num_joints
 from rostok.trajectory_optimizer.trajectory_generator import \

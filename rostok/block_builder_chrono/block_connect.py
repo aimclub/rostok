@@ -1,33 +1,30 @@
-import random
-from enum import Enum
-from typing import Optional
-
 import pychrono.core as chrono
 import pychrono.irrlicht as chronoirr
 
+from rostok.block_builder_chrono.block_classes import (ChronoBody,
+                                                       ChronoRevolveJoint,
+                                                       UniversalBox)
+from rostok.block_builder_chrono.block_types import (Block, BlockBody,
+                                                     BlockBridge,
+                                                     BlockTransform, BlockType)
 
-from rostok.block_builder_chrono.blocks_utils import FrameTransform
-from rostok.block_builder_chrono.block_types import Block, BlockBody,BlockBridge, BlockTransform, BlockType
-from rostok.utils.dataset_materials.material_dataclass_manipulating import (
-    DefaultChronoMaterial, Material, struct_material2object_material)
-from rostok.block_builder_chrono.block_classes import ChronoBody
 
-def place_next_block(prev_block:ChronoBody, next_block:ChronoBody, system: chrono.ChSystem):
+def place_next_block(prev_block: ChronoBody, next_block: ChronoBody, system: chrono.ChSystem):
     # prev_body is already added to the system
-    prev_body: chrono.ChBody = prev_block.body
     next_body: chrono.ChBody = next_block.body
     total_transformation = prev_block.transformed_frame_out.GetAbsCoord() * chrono.ChFrameD(
         next_block.transformed_frame_input).GetInverse().GetCoord()
-    print(prev_block.transformed_frame_out.GetAbsCoord().pos, prev_block.transformed_frame_out.GetAbsCoord().rot)
+    print(prev_block.transformed_frame_out.GetAbsCoord().pos,
+          prev_block.transformed_frame_out.GetAbsCoord().rot)
     print(chrono.ChFrameD(next_block.transformed_frame_input).GetInverse().GetCoord().pos)
-    print(total_transformation.pos,total_transformation.rot)
+    print(total_transformation.pos, total_transformation.rot)
     print()
     next_body.SetCoord(total_transformation)
     system.Add(next_body)
     system.Update()
 
 
-def make_fix_joint(prev_block:ChronoBody, next_block:ChronoBody, system: chrono.ChSystem):
+def make_fix_joint(prev_block: ChronoBody, next_block: ChronoBody, system: chrono.ChSystem):
 
     prev_body = prev_block.body
     next_body = next_block.body
@@ -37,10 +34,6 @@ def make_fix_joint(prev_block:ChronoBody, next_block:ChronoBody, system: chrono.
                          next_block.transformed_frame_input)
     system.Add(fix_joint)
     system.Update()
-
-
-def start_selftransformation_loop():
-    pass
 
 
 # the function places and connects a sequence of blocks. The sequence should start from the root block
@@ -60,7 +53,18 @@ def place_and_connect(sequence: list[Block], system: chrono.ChSystem):
             else:
                 if not block.is_build:
                     if sequence[it - 1].block_type is BlockType.SELFTRANSFORM:
-                        start_selftransformation_loop()
+                        i = 1
+                        transform = True
+                        while transform:
+                            i += 1
+                            if not (sequence[it - i].block_type is BlockType.SELFTRANSFORM):
+                                transform = False
+                                current_transform = chrono.ChCoordsysD()
+                                for k in range(it - i + 1, it):
+                                    current_transform = current_transform * sequence[k].transform
+                                block.apply_input_transform(current_transform)
+                            else:
+                                continue
 
                     if previous_joint is None:
                         place_next_block(previous_body_block, block, system)
@@ -70,8 +74,8 @@ def place_and_connect(sequence: list[Block], system: chrono.ChSystem):
                         place_next_block(previous_body_block, block, system)
                         previous_joint.connect(previous_body_block, block, system)
                         previous_joint = None
-
-
+                else:
+                    previous_joint = None
                 previous_body_block = block
 
             block.is_build = True
@@ -88,7 +92,7 @@ def place_and_connect(sequence: list[Block], system: chrono.ChSystem):
                     for k in range(it - i + 1, it + 1):
                         current_transform = current_transform * sequence[k].transform
 
-                    sequence[it - i].apply_transform(current_transform)
+                    sequence[it - i].apply_transform_out(current_transform)
                 elif sequence[it - i].block_type is BlockType.BRIDGE:
                     raise Exception("Transform after joint!!!")
                 else:
@@ -98,6 +102,9 @@ def place_and_connect(sequence: list[Block], system: chrono.ChSystem):
             continue
 
         elif block.block_type is BlockType.BRIDGE:
+            if not previous_joint is None:
+                raise Exception("NO blocks between joints!")
+
             block.set_prev_body_frame(previous_body_block, system)
             previous_joint = block
 
@@ -111,7 +118,7 @@ if __name__ == "__main__":
     chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
     flat = UniversalBox(1, 0.2, 1)
     joint = ChronoRevolveJoint(starting_angle=45)
-    
+
     link = UniversalBox(0.1, 0.6, 0.4)
 
     block_list = [flat, joint, link]
@@ -126,7 +133,6 @@ if __name__ == "__main__":
     print(coord_flat.pos, coord_flat.rot)
     print(coord_link.pos, coord_link.rot)
     print(coord_link_abs.pos, coord_link_abs.rot)
-
 
     vis = chronoirr.ChVisualSystemIrrlicht()
     vis.AttachSystem(chrono_system)

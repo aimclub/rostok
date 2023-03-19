@@ -2,8 +2,9 @@ from collections.abc import Iterable
 
 import numpy as np
 
-from rostok.block_builder.blocks_utils import NodeFeatures
-from rostok.graph_grammar.node import GraphGrammar, Node
+from rostok.block_builder_chrono.block_classes import NodeFeatures
+from rostok.graph.node import Node
+from rostok.graph_grammar.graph_grammar import GraphGrammar
 
 
 def create_const_traj(torque_value, stop_time: float, time_step: float):

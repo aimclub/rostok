@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 
 from rostok.graph_generators.graph_environment import \
     GraphVocabularyEnvironment
-from rostok.graph_grammar.graph_utils import (plot_graph_reward,
+from rostok.graph.graph_utils import (plot_graph_reward,
                                               save_graph_plot_reward)
-from rostok.graph_grammar.node import GraphGrammar
+from rostok.graph_grammar.graph_grammar import GraphGrammar
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
 from rostok.utils.pickle_save import Saveable

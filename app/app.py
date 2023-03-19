@@ -12,11 +12,11 @@ import rule_extention
 from control_optimisation import (create_grab_criterion_fun, create_traj_fun,
                                   get_object_to_grasp)
 
-from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact,
+from rostok.virtual_experiment_chrono.flags_simualtions import (FlagMaxTime, FlagNotContact,
                                                 FlagSlipout)
 from rostok.graph_generators.mcts_helper import (make_mcts_step,
                                                  prepare_mcts_state_and_helper)
-from rostok.graph_grammar.node import GraphGrammar
+from rostok.graph_grammar.graph_grammar import GraphGrammar
 from rostok.trajectory_optimizer.control_optimizer import (
     ConfigRewardFunction, ControlOptimizer)
 
@@ -41,7 +41,7 @@ WEIGHT = [5, 10, 2]
 # At least 20 iterations are needed for good results
 cfg = ConfigRewardFunction()
 cfg.bound = (-7, 7)
-cfg.iters = 20 
+cfg.iters = 2 
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
 cfg.time_step = 0.005
 cfg.time_sim = 2
@@ -59,13 +59,13 @@ control_optimizer = ControlOptimizer(cfg)
 # %% Init mcts parameters
 
 # Hyperparameters mctss
-base_iteration_limit = 50
+base_iteration_limit = 2
 
 # Initialize MCTS
 finish = False
 
 initial_graph = GraphGrammar()
-max_numbers_rules = 20
+max_numbers_rules = 2
 # Create graph environments for algorithm (not gym)
 graph_env = prepare_mcts_state_and_helper(initial_graph, rule_vocabul, control_optimizer, max_numbers_rules,
                                           Path("./results"))
