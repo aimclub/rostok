@@ -1,12 +1,14 @@
 from copy import deepcopy
 from dataclasses import dataclass
 
-from pychrono.core import ChVectorD, ChQuaternionD
+from pychrono.core import ChQuaternionD, ChVectorD
 
 from rostok.block_builder.blocks_utils import NodeFeatures
-from rostok.block_builder.node_render import (Block, connect_blocks)
-from rostok.graph_grammar.node import GraphGrammar, Node, WrapperTuple
-from rostok.block_builder.transform_srtucture import FrameTransform, OriginWorldFrame
+from rostok.block_builder.node_render import Block, connect_blocks
+from rostok.block_builder.transform_srtucture import (FrameTransform,
+                                                      OriginWorldFrame)
+from rostok.graph.node import Node, WrapperTuple
+from rostok.graph_grammar.graph_grammar import GraphGrammar 
 
 
 @dataclass
@@ -30,7 +32,6 @@ class Robot:
         # Map { id from graph : block }
         self.block_map = self.__build_robot(wrapper_tuple_array, start_frame)
         self.__bind_blocks_to_graph()
-        
 
     def __build_robot(self, wrapper_tuple_array: list[list[WrapperTuple]],
                       start_frame: FrameTransform) -> dict[int, Block]:

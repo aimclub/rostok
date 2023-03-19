@@ -1,19 +1,12 @@
 import numpy as np
 import pychrono.core as chrono
 from rostok.block_builder.transform_srtucture import FrameTransform
-def frame_transform_to_chcoordsys(transform: FrameTransform):
-    return chrono.ChCoordsysD(
-                chrono.ChVectorD(transform.position[0], transform.position[1],
-                                 transform.position[2]),
-                chrono.ChQuaternionD(transform.rotation[0], transform.rotation[1],
-                                     transform.rotation[2], transform.rotation[3]))
+
 def rotation_z(alpha):
     quat_Z_ang_alpha = chrono.Q_from_AngZ(np.deg2rad(alpha))
     return [quat_Z_ang_alpha.e0, quat_Z_ang_alpha.e1, quat_Z_ang_alpha.e2,quat_Z_ang_alpha.e3]
 
-def rotation_z_q(alpha):
-    quat_Z_ang_alpha = chrono.Q_from_AngZ(np.deg2rad(alpha))
-    return chrono.ChQuaternionD(quat_Z_ang_alpha.e0, quat_Z_ang_alpha.e1, quat_Z_ang_alpha.e2,quat_Z_ang_alpha.e3)
+
 
 class ContactReporter(chrono.ReportContactCallback):
 

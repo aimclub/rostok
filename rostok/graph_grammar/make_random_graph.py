@@ -1,7 +1,7 @@
 import numpy as np
 
 from rostok.graph_grammar import rule_vocabulary
-from rostok.graph_grammar.node import GraphGrammar
+from rostok.graph_grammar.graph_grammar import GraphGrammar
 
 
 def make_random_graph(n_iter: int,

@@ -1,0 +1,147 @@
+import random
+from enum import Enum
+from typing import Optional
+
+import pychrono.core as chrono
+import pychrono.irrlicht as chronoirr
+
+
+from rostok.block_builder_chrono.blocks_utils import FrameTransform
+from rostok.block_builder_chrono.block_types import Block, BlockBody,BlockBridge, BlockTransform, BlockType
+from rostok.utils.dataset_materials.material_dataclass_manipulating import (
+    DefaultChronoMaterial, Material, struct_material2object_material)
+from rostok.block_builder_chrono.block_classes import ChronoBody
+
+def place_next_block(prev_block:ChronoBody, next_block:ChronoBody, system: chrono.ChSystem):
+    # prev_body is already added to the system
+    prev_body: chrono.ChBody = prev_block.body
+    next_body: chrono.ChBody = next_block.body
+    total_transformation = prev_block.transformed_frame_out.GetAbsCoord() * chrono.ChFrameD(
+        next_block.transformed_frame_input).GetInverse().GetCoord()
+    print(prev_block.transformed_frame_out.GetAbsCoord().pos, prev_block.transformed_frame_out.GetAbsCoord().rot)
+    print(chrono.ChFrameD(next_block.transformed_frame_input).GetInverse().GetCoord().pos)
+    print(total_transformation.pos,total_transformation.rot)
+    print()
+    next_body.SetCoord(total_transformation)
+    system.Add(next_body)
+    system.Update()
+
+
+def make_fix_joint(prev_block:ChronoBody, next_block:ChronoBody, system: chrono.ChSystem):
+
+    prev_body = prev_block.body
+    next_body = next_block.body
+
+    fix_joint = chrono.ChLinkMateFix()
+    fix_joint.Initialize(prev_body, next_body, True, prev_block.transformed_frame_out,
+                         next_block.transformed_frame_input)
+    system.Add(fix_joint)
+    system.Update()
+
+
+def start_selftransformation_loop():
+    pass
+
+
+# the function places and connects a sequence of blocks. The sequence should start from the root block
+def place_and_connect(sequence: list[Block], system: chrono.ChSystem):
+    # all connections occurs between bodies
+    previous_body_block = None
+    previous_joint = None
+    for it, block in enumerate(sequence):
+        if block.block_type is BlockType.BODY:
+            if previous_body_block is None:
+                # the body is first in sequence
+                previous_body_block = block
+                if not block.is_build:
+                    system.AddBody(block.body)
+                    system.Update()
+
+            else:
+                if not block.is_build:
+                    if sequence[it - 1].block_type is BlockType.SELFTRANSFORM:
+                        start_selftransformation_loop()
+
+                    if previous_joint is None:
+                        place_next_block(previous_body_block, block, system)
+                        make_fix_joint(previous_body_block, block, system)
+                    else:
+                        previous_joint.set_next_body_frame(block, system)
+                        place_next_block(previous_body_block, block, system)
+                        previous_joint.connect(previous_body_block, block, system)
+                        previous_joint = None
+
+
+                previous_body_block = block
+
+            block.is_build = True
+        # transforms follow the block and shift the outer transformed frame,
+        # using inner function `apply_transform`
+        elif block.block_type is BlockType.TRANSFORM:
+            i = 0
+            transform = True
+            while transform:
+                i += 1
+                if sequence[it - i].block_type is BlockType.BODY:
+                    transform = False
+                    current_transform = chrono.ChCoordsysD()
+                    for k in range(it - i + 1, it + 1):
+                        current_transform = current_transform * sequence[k].transform
+
+                    sequence[it - i].apply_transform(current_transform)
+                elif sequence[it - i].block_type is BlockType.BRIDGE:
+                    raise Exception("Transform after joint!!!")
+                else:
+                    continue
+        # self transformations follows are applied to the next body input frame
+        elif block.block_type is BlockType.SELFTRANSFORM:
+            continue
+
+        elif block.block_type is BlockType.BRIDGE:
+            block.set_prev_body_frame(previous_body_block, system)
+            previous_joint = block
+
+
+if __name__ == "__main__":
+    chrono_system = chrono.ChSystemNSC()
+    chrono_system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
+    chrono_system.SetSolverMaxIterations(100)
+    chrono_system.SetSolverForceTolerance(1e-6)
+    chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
+    chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
+    flat = UniversalBox(1, 0.2, 1)
+    joint = ChronoRevolveJoint(starting_angle=45)
+    
+    link = UniversalBox(0.1, 0.6, 0.4)
+
+    block_list = [flat, joint, link]
+
+    place_and_connect(block_list, chrono_system)
+    flat.body.SetBodyFixed(True)
+    joint.joint.SetTorqueFunction(chrono.ChFunction_Const(1))
+    coord_flat = flat.transformed_frame_out.GetCoord()
+    coord_link = link.transformed_frame_input.GetCoord()
+    coord_link_abs = link.transformed_frame_input.GetAbsCoord()
+
+    print(coord_flat.pos, coord_flat.rot)
+    print(coord_link.pos, coord_link.rot)
+    print(coord_link_abs.pos, coord_link_abs.rot)
+
+
+    vis = chronoirr.ChVisualSystemIrrlicht()
+    vis.AttachSystem(chrono_system)
+    vis.SetWindowSize(1024, 768)
+    vis.SetWindowTitle('Grab demo')
+    vis.Initialize()
+    vis.AddCamera(chrono.ChVectorD(1.5, 3, -2))
+    vis.AddTypicalLights()
+    vis.EnableCollisionShapeDrawing(True)
+
+    # Simulation loop
+    while vis.Run():
+        chrono_system.Update()
+        chrono_system.DoStepDynamics(5e-3)
+        vis.BeginScene(True, True, chrono.ChColor(0.2, 0.2, 0.3))
+        vis.Render()
+        vis.EndScene()
+    # place_and_connect(body_list)
