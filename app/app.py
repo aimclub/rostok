@@ -12,13 +12,14 @@ import rule_extention
 from control_optimisation import (create_grab_criterion_fun, create_traj_fun,
                                   get_object_to_grasp)
 
-from rostok.virtual_experiment_chrono.flags_simualtions import (FlagMaxTime, FlagNotContact,
-                                                FlagSlipout)
 from rostok.graph_generators.mcts_helper import (make_mcts_step,
                                                  prepare_mcts_state_and_helper)
 from rostok.graph_grammar.graph_grammar import GraphGrammar
 from rostok.trajectory_optimizer.control_optimizer import (
     ConfigRewardFunction, ControlOptimizer)
+from rostok.virtual_experiment_chrono.flags_simualtions import (FlagMaxTime,
+                                                                FlagNotContact,
+                                                                FlagSlipout)
 
 
 def plot_graph(graph: GraphGrammar):
