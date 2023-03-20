@@ -406,7 +406,6 @@ class ChronoEasyShapeObject():
 
         # Create body
         material = struct_material2object_material(material)
-        print(shape)
         if isinstance(shape, easy_body_shapes.Box):
             body = chrono.ChBodyEasyBox(shape.width_x, shape.length_y, shape.height_z, density,
                                         True, True, material)

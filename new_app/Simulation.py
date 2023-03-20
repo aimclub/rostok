@@ -60,7 +60,7 @@ control_optimizer = ControlOptimizer(cfg)
 
 graph = simple_designs.get_two_link_three_finger()
 func_reward = control_optimizer.create_reward_function(graph)
-plot_graph(graph)
+#plot_graph(graph)
 res = -func_reward([], True)
 print()
 print(res)

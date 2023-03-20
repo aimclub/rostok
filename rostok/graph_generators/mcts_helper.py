@@ -333,7 +333,7 @@ class MCTSGraphEnvironment(GraphVocabularyEnvironment):
             self.reward = report[1]
             self.movements_trajectory = report[2]
             self.helper.add_state(self.state, self.reward, self.movements_trajectory)
-            print('seen reward:', self.reward)
+            print('seen reward:', round(self.reward, 5))
             return self.reward
 
         result_optimizer = self.helper.optimizer.start_optimisation(self.graph)
@@ -341,7 +341,7 @@ class MCTSGraphEnvironment(GraphVocabularyEnvironment):
         self.movments_trajectory = result_optimizer[1]
         self.helper.report.seen_graphs.add_graph(self.graph, self.reward, self.movments_trajectory)
         self.helper.add_state(self.state, self.reward, self.movments_trajectory)
-        print(self.reward)
+        print(round(self.reward, 5))
         return self.reward
 
     def __deepcopy__(self, memo):

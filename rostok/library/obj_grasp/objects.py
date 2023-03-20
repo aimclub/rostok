@@ -78,11 +78,10 @@ def get_obj_easy_cylinder():
     matich = DefaultChronoMaterial()
     matich.Friction = 0.2
     matich.DampingF = 0.65
-    shape_box = easy_body_shapes.Cylinder(0.6, 0.4)
+    shape = easy_body_shapes.Cylinder(0.6, 0.4)
     obj = BlockWrapper(ChronoEasyShapeObject,
-                       shape=shape_box,
+                       shape=shape,
                        material=matich,
-                       mass=1,
                        pos=FrameTransform([0, 1, 0], [1,0,0,0]))
     
     return obj
@@ -142,7 +141,6 @@ def get_obj_hard_large_ellipsoid():
     obj = BlockWrapper(ChronoEasyShapeObject,
                        shape=shape,
                        material=mat,
-                       mass = 1,
                        pos=FrameTransform([0.0, 0.8, 0.2], [ 1,  0,  0, 0]))
     return obj
 

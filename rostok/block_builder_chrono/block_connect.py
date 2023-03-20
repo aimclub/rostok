@@ -16,11 +16,11 @@ def place_next_block(prev_block: ChronoBody, next_block: ChronoBody, system: chr
     next_body: chrono.ChBody = next_block.body
     total_transformation = prev_block.transformed_frame_out.GetAbsCoord() * chrono.ChFrameD(
         next_block.transformed_frame_input).GetInverse().GetCoord()
-    print(prev_block.transformed_frame_out.GetAbsCoord().pos,
-          prev_block.transformed_frame_out.GetAbsCoord().rot)
-    print(chrono.ChFrameD(next_block.transformed_frame_input).GetInverse().GetCoord().pos)
-    print(total_transformation.pos, total_transformation.rot)
-    print()
+    # print(prev_block.transformed_frame_out.GetAbsCoord().pos,
+    #       prev_block.transformed_frame_out.GetAbsCoord().rot)
+    # print(chrono.ChFrameD(next_block.transformed_frame_input).GetInverse().GetCoord().pos)
+    # print(total_transformation.pos, total_transformation.rot)
+    # print()
     next_body.SetCoord(total_transformation)
     system.Add(next_body)
     system.Update()

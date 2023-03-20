@@ -8,20 +8,27 @@ import networkx as nx
 import optmizers_config
 # chrono imports
 import pychrono as chrono
-from obj_grasp.objects import (get_obj_easy_box, get_obj_hard_ellipsoid, get_object_to_grasp_sphere,
-    get_obj_hard_large_ellipsoid, get_obj_easy_large_box, get_obj_hard_long_ellipsoid,get_obj_hard_long_tilt_ellipsoid, get_obj_easy_long_tilt_box,
-    get_obj_easy_long_box, get_obj_easy_long_tilt_box, get_obj_easy_cylinder)
-from rule_sets import rule_extention_graph
-from rule_sets.ruleset_old_style_graph import create_rules
 
-from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact,
-                                                FlagSlipout)
-from rostok.graph_generators.mcts_helper import (make_mcts_step,
+from rostok.graph_generators.mcts_helper import (OptimizedGraphReport,
+                                                 make_mcts_step,
                                                  prepare_mcts_state_and_helper)
-from rostok.graph_grammar.node import GraphGrammar
+from rostok.graph_grammar.graph_grammar import GraphGrammar
+from rostok.library.obj_grasp.objects import (get_obj_easy_box,
+                                              get_obj_easy_cylinder,
+                                              get_obj_easy_large_box,
+                                              get_obj_easy_long_box,
+                                              get_obj_easy_long_tilt_box,
+                                              get_obj_hard_ellipsoid,
+                                              get_obj_hard_large_ellipsoid,
+                                              get_obj_hard_long_ellipsoid,
+                                              get_obj_hard_long_tilt_ellipsoid,
+                                              get_object_to_grasp_sphere)
+from rostok.library.rule_sets.ruleset_old_style_graph import create_rules
 from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
 from rostok.utils.pickle_save import load_saveable
-from rostok.graph_generators.mcts_helper import OptimizedGraphReport
+from rostok.virtual_experiment_chrono.flags_simualtions import (FlagMaxTime,
+                                                                FlagNotContact,
+                                                                FlagSlipout)
 
 
 def plot_graph(graph: GraphGrammar):
