@@ -3,13 +3,15 @@ import pychrono.irrlicht as chronoirr
 
 from rostok.block_builder_chrono.block_classes import (ChronoBody,
                                                        ChronoRevolveJoint,
-                                                       UniversalBox)
+                                                       UniversalBox,ChronoTransform)
 from rostok.block_builder_chrono.block_types import (Block, BlockBody,
                                                      BlockBridge,
                                                      BlockTransform, BlockType)
+from rostok.block_builder_chrono.blocks_utils import FrameTransform
 
 
 def place_next_block(prev_block: ChronoBody, next_block: ChronoBody, system: chrono.ChSystem):
+    system.Update()
     # prev_body is already added to the system
     next_body: chrono.ChBody = next_block.body
     total_transformation = prev_block.transformed_frame_out.GetAbsCoord() * chrono.ChFrameD(
@@ -25,7 +27,7 @@ def place_next_block(prev_block: ChronoBody, next_block: ChronoBody, system: chr
 
 
 def make_fix_joint(prev_block: ChronoBody, next_block: ChronoBody, system: chrono.ChSystem):
-
+    system.Update()
     prev_body = prev_block.body
     next_body = next_block.body
 
@@ -93,6 +95,7 @@ def place_and_connect(sequence: list[Block], system: chrono.ChSystem):
                         current_transform = current_transform * sequence[k].transform
 
                     sequence[it - i].apply_transform_out(current_transform)
+
                 elif sequence[it - i].block_type is BlockType.BRIDGE:
                     raise Exception("Transform after joint!!!")
                 else:
@@ -116,23 +119,35 @@ if __name__ == "__main__":
     chrono_system.SetSolverForceTolerance(1e-6)
     chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
     chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
-    flat = UniversalBox(1, 0.2, 1)
-    joint = ChronoRevolveJoint(starting_angle=45)
+    flat = UniversalBox(0.25, 0.05, 0.8)
+    x = 0.35
+    transform = ChronoTransform(FrameTransform([-x, 0, 0],[1,0,0,0]))
+    joint = ChronoRevolveJoint(starting_angle=0)
 
-    link = UniversalBox(0.1, 0.6, 0.4)
+    link = UniversalBox(y=0.6)
+    mount = UniversalBox(x=0.1, y=0.05)
 
-    block_list = [flat, joint, link]
+    block_list = [flat,transform, joint, link, mount]
 
     place_and_connect(block_list, chrono_system)
     flat.body.SetBodyFixed(True)
     joint.joint.SetTorqueFunction(chrono.ChFunction_Const(1))
-    coord_flat = flat.transformed_frame_out.GetCoord()
-    coord_link = link.transformed_frame_input.GetCoord()
-    coord_link_abs = link.transformed_frame_input.GetAbsCoord()
+    x = 0.5
+    transform2 = transform = ChronoTransform(FrameTransform([x, 0, +0.3],[1,0,0,0]))
+    mount2 = UniversalBox(x=0.2, y=0.05)
+    block_list = [flat, transform2, mount2]
+    place_and_connect(block_list, chrono_system)
+    transform2 = transform = ChronoTransform(FrameTransform([x, 0, -0.3],[1,0,0,0]))
+    mount2 = UniversalBox(x=0.2, y=0.05)
+    block_list = [flat, transform2, mount2]
+    place_and_connect(block_list, chrono_system)
+    # coord_flat = flat.transformed_frame_out.GetCoord()
+    # coord_link = link.transformed_frame_input.GetCoord()
+    # coord_link_abs = link.transformed_frame_input.GetAbsCoord()
 
-    print(coord_flat.pos, coord_flat.rot)
-    print(coord_link.pos, coord_link.rot)
-    print(coord_link_abs.pos, coord_link_abs.rot)
+    # print(coord_flat.pos, coord_flat.rot)
+    # print(coord_link.pos, coord_link.rot)
+    # print(coord_link_abs.pos, coord_link_abs.rot)
 
     vis = chronoirr.ChVisualSystemIrrlicht()
     vis.AttachSystem(chrono_system)

@@ -117,6 +117,7 @@ class SimulationStepOptimization:
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
 
         self.grasp_object = grasp_object.create_block()
+        self.chrono_system.Add(self.grasp_object.body)
         register_chrono_system(self.chrono_system)
         self.grab_robot = Robot(self.graph_mechanism, self.chrono_system, start_frame_robot)
 

@@ -8,10 +8,11 @@ import networkx as nx
 import pychrono as chrono
 
 from control_optimisation import create_grab_criterion_fun, create_traj_fun, get_object_to_grasp
-from rostok.graph_grammar.node import GraphGrammar
+from rostok.graph_grammar.graph_grammar import GraphGrammar
 from rostok.trajectory_optimizer.control_optimizer import ConfigRewardFunction, ControlOptimizer
-from rostok.virtual_experiment.flags_simualtions import FlagMaxTime, FlagSlipout, FlagNotContact
-from rostok.utils.result_saver  import read_report
+from rostok.virtual_experiment_chrono.flags_simualtions import FlagMaxTime, FlagSlipout, FlagNotContact
+from rostok.utils.pickle_save import load_saveable
+from rostok.graph_generators.mcts_helper import MCTSHelper, MCTSSaveable
 
 import rostok.graph_generators.graph_environment as env
 
@@ -27,8 +28,8 @@ rule_vocabul, node_features = rule_extention.init_extension_rules()
 
 
 # !!!! WRITE HERE THE PATH TO THE FILE WITH RESULTS !!!! #
-path = "./results/MCTS_report_22y_12m_12d_22H_27M/mcts_log_.txt"
-best_graph, best_control, reward = read_report(path, rule_vocabul)
+path = r"results\Reports_23y_03m_20d_02H_22M\MCTS_data.pickle"
+report: MCTSSaveable = load_saveable(path)
 
 # %% Create condig optimizing control
 
@@ -40,8 +41,8 @@ cfg.bound = (2, 10)
 cfg.iters = 5
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
 cfg.time_step = 0.005
-cfg.time_sim = 2
-cfg.flags = [FlagMaxTime(2), FlagNotContact(1), FlagSlipout(0.5, 0.5)]
+cfg.time_sim = 15
+cfg.flags = [FlagMaxTime(15), FlagNotContact(15), FlagSlipout(15, 15)]
 """Wraps function call"""
 
 criterion_callback = create_grab_criterion_fun(WEIGHT)
@@ -53,12 +54,14 @@ cfg.params_to_timesiries_callback = traj_generator_fun
 
 control_optimizer = ControlOptimizer(cfg)
 
+best_graph, reward, best_control = report.get_best_info()
 print('Best Graph is ', best_graph)
 print('Best Control is ', best_control)
 print('Reward is ', reward)
 
 best_control = [float(x) for x in best_control]
 func_reward = control_optimizer.create_reward_function(best_graph)
+best_control= [0.1]
 res = -func_reward(best_control, True)
 # plot_graph(best_graph)
 print(res)
