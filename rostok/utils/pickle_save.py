@@ -9,7 +9,7 @@ def load_saveable(path):
     Args:
         path (Path): path to the corresponding pickle file
     """
-    with open(path, "rb") as file:
+    with open(path, "rb+") as file:
         return  pickle.load(file)
 
 class Saveable():
@@ -29,7 +29,7 @@ class Saveable():
             path (Path): path to set
             file_name (str): file name to set
         """
-        self.path = path
+        self.path = str(path)
         self.file_name = file_name
 
     def set_path(self, path:Path):
@@ -38,8 +38,10 @@ class Saveable():
         Args:
             path (Path): new path to directory
         """
-        self.path = path
-        self.path.mkdir(parents=True, exist_ok=True)
+        if isinstance(path, str):
+            path = Path(path)
+        self.path = str(path)
+        path.mkdir(parents=True, exist_ok=True)
 
     def make_time_dependent_path(self):
         """Set path to new directory with name dependent on current time.
@@ -50,9 +52,10 @@ class Saveable():
         time = datetime.now()
         time = str(time.date()) + "_" + str(time.hour) + "-" + str(time.minute) + "-" + str(
             time.second)
-        self.path = Path(self.path, "Reports_" + datetime.now().strftime("%yy_%mm_%dd_%HH_%MM"))
-        self.path.mkdir(parents=True, exist_ok=True)
-        return self.path
+        path = Path(self.path, "Reports_" + datetime.now().strftime("%yy_%mm_%dd_%HH_%MM"))
+        path.mkdir(parents=True, exist_ok=True)
+        self.path = str(path)
+        return path
 
     def save(self):
         """Save the object as pickle file with name at the path directory using file_name."""

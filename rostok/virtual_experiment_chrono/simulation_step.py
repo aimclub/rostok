@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
-
+import numpy as np
 import rostok.control_chrono.control as control
 from rostok.block_builder_chrono.block_classes import ChronoRevolveJoint
 from rostok.block_builder_chrono.block_types import BlockBody
@@ -16,7 +16,7 @@ from rostok.virtual_experiment_chrono.auxilarity_sensors import RobotSensor
 from rostok.virtual_experiment_chrono.flags_simualtions import (
     ConditionStopSimulation, FlagStopSimualtions)
 
-
+EPS = 1e-8
 # Immutable classes with output simulation data for robot block
 @dataclass(frozen=True)
 class SimulationDataBlock:
@@ -74,6 +74,7 @@ class DataObjectBlock(SimulationDataBlock):
     obj_amount_surf_forces: list[float]
     obj_cont_coord: list[float]
     obj_COG: list[float]
+    obj_forces: list[float]
 
 
 """Type for output simulation. Store trajectory and block id"""
@@ -123,7 +124,7 @@ class SimulationStepOptimization:
 
         # Add grasp object in system and set system without gravity
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
-
+        self.gravity_config = (float("inf"), 0, np.array([0,0,0]))
         self.bind_trajectory(self.control_trajectory)
         self.fix_robot_base()
 
@@ -186,6 +187,17 @@ class SimulationStepOptimization:
             except AttributeError:
                 raise AttributeError("Chrono system doesn't have method {0}".format(str_method))
 
+    def __calculate_gravity(self,current_time):
+            time_s = self.gravity_config[0]
+            time_satur = self.gravity_config[1]
+            grav_vector = self.gravity_config[2]
+            grav_vector = grav_vector/2 * np.tanh(12/(time_satur+EPS)*(current_time - (time_s + time_satur/2))) + grav_vector/2
+            vector_gravity = chrono.ChVectorD(grav_vector[0], grav_vector[1],grav_vector[2])
+            self.chrono_system.Set_G_acc(vector_gravity)
+
+    def set_turn_on_gravity(self, time_start, saturation_time, gravity_vector):
+        self.gravity_config = (time_start, saturation_time, np.array(gravity_vector))
+
     # Run simulation
     def simulate_system(self, time_step, visualize=False) -> SimOut:
         """Start the simulation and return data from it
@@ -209,12 +221,12 @@ class SimulationStepOptimization:
 
             vis = chronoirr.ChVisualSystemIrrlicht()
             vis.AttachSystem(self.chrono_system)
-            vis.SetWindowSize(1024, 768)
+            vis.SetWindowSize(1920, 1080)
             vis.SetWindowTitle('Grab demo')
             vis.Initialize()
-            vis.AddCamera(chrono.ChVectorD(1.5, 3, -2))
-            vis.AddTypicalLights()
-            vis.EnableCollisionShapeDrawing(True)
+            vis.AddCamera(chrono.ChVectorD(1, 2, -3))
+            vis.AddLight(chrono.ChVectorD(1.5, 3, 2), 4)
+            vis.AddLight(chrono.ChVectorD(-1.5, 3, -2), 4)
 
         # Initilize temporarily dictionary of arries output data
         arrays_simulation_data_time = []
@@ -239,20 +251,22 @@ class SimulationStepOptimization:
         arrays_simulation_data_amount_obj_contact_surfaces = [(-1, [])]
         arrays_simulation_data_cont_coord = [(-1, [])]
         arrays_simulation_data_abs_coord_COG_obj = [(-1, [])]
+        arrays_simulation_data_obj_real_force = [(-1, [])]
 
         # Loop of simulation
         while not self.condion_stop_simulation.flag_stop_simulation():
             self.chrono_system.Update()
             self.chrono_system.DoStepDynamics(time_step)
             # Realtime for fixed step
-
-            if self.chrono_system.GetStepcount() % int(FRAME_STEP / time_step) == 0:
-                if visualize:
-
-                    vis.Run()
+            if visualize:
+                vis.Run()
+                if self.chrono_system.GetStepcount() % int(FRAME_STEP / time_step) == 0:
                     vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
                     vis.Render()
                     vis.EndScene()
+            simulation_time = self.chrono_system.GetChTime()
+            if self.gravity_config[0] < simulation_time < sum(self.gravity_config[0:2]):
+                self.__calculate_gravity(simulation_time)
 
             arrays_simulation_data_time.append(self.chrono_system.GetChTime())
 
@@ -269,6 +283,7 @@ class SimulationStepOptimization:
             current_data_cont_coord = RobotSensor.contact_coord(self.grasp_object)
             current_data_abs_coord_COG_obj = RobotSensor.abs_coord_COG_obj(self.grasp_object)            
             current_data_amount_obj_contact_surfaces = RobotSensor.amount_contact_forces_object(self.grasp_object)
+            current_data_sum_contact_real_forces_obj = RobotSensor.sum_contact_forces_obj(self.grasp_object)
 
 
             # current_data_amount_obj_contact_surfaces = dict([
@@ -292,14 +307,20 @@ class SimulationStepOptimization:
                     arrays_simulation_data_amount_contact_surfaces))
 
             if current_data_std_obj_force is not None:
-                arrays_simulation_data_obj_force = map(append_arr_in_dict,
+                arrays_simulation_data_obj_force = list(map(append_arr_in_dict,
                                                        current_data_std_obj_force.items(),
-                                                       arrays_simulation_data_obj_force)
+                                                       arrays_simulation_data_obj_force))
 
             if current_data_amount_obj_contact_surfaces is not None:
-                arrays_simulation_data_amount_obj_contact_surfaces = map(
+                arrays_simulation_data_amount_obj_contact_surfaces = list(map(
                     append_arr_in_dict, current_data_amount_obj_contact_surfaces.items(),
-                    arrays_simulation_data_amount_obj_contact_surfaces)
+                    arrays_simulation_data_amount_obj_contact_surfaces))
+                
+            else:
+                current_data_amount_obj_contact_surfaces = {-1 : 0}
+                arrays_simulation_data_amount_obj_contact_surfaces = list(map(
+                    append_arr_in_dict, current_data_amount_obj_contact_surfaces.items(),
+                    arrays_simulation_data_amount_obj_contact_surfaces))
 
             if current_data_cont_coord is not None:
                 arrays_simulation_data_cont_coord = list(map(
@@ -310,7 +331,16 @@ class SimulationStepOptimization:
                 arrays_simulation_data_abs_coord_COG_obj = list(map(
                     append_arr_in_dict, current_data_abs_coord_COG_obj.items(),
                     arrays_simulation_data_abs_coord_COG_obj))
-
+            
+            if current_data_sum_contact_real_forces_obj is not None:
+                arrays_simulation_data_obj_real_force = list(map(
+                    append_arr_in_dict, current_data_sum_contact_real_forces_obj.items(),
+                    arrays_simulation_data_obj_real_force))
+            else:
+                current_data_sum_contact_real_forces_obj = {-1: 0}
+                arrays_simulation_data_obj_real_force = list(map(
+                    append_arr_in_dict, current_data_sum_contact_real_forces_obj.items(),
+                    arrays_simulation_data_obj_real_force))
         if visualize:
             vis.GetDevice().closeDevice()
 
@@ -327,11 +357,12 @@ class SimulationStepOptimization:
                 arrays_simulation_data_amount_contact_surfaces))
 
         simulation_data_object: dict[int, DataObjectBlock] = dict(
-            map(lambda x, y, z, w: (x[0], DataObjectBlock(x[0], arrays_simulation_data_time, x[1], y[1], z[1], w[1])),
+            map(lambda x, y, z, w, f: (x[0], DataObjectBlock(x[0], arrays_simulation_data_time, x[1], y[1], z[1], w[1], f[1])),
                 arrays_simulation_data_obj_force,
                 arrays_simulation_data_amount_obj_contact_surfaces,
                 arrays_simulation_data_cont_coord,
-                arrays_simulation_data_abs_coord_COG_obj))
+                arrays_simulation_data_abs_coord_COG_obj,
+                arrays_simulation_data_obj_real_force))
 
         simulation_data_joint_angle.update(simulation_data_body)
         simulation_data_joint_angle.update(simulation_data_object)

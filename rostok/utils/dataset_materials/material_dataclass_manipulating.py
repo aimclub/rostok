@@ -19,7 +19,7 @@ class DefaultChronoMaterial(Material):
     name: str = "default"
     type_class: str = "ChMaterialSurfaceNSC"
     Friction = 0.5
-    DampingF = 0.1
+    DampingF = 0.3
 
 
 def struct_material2object_material(struct_material: Material, prefix_setter: str = "Set"):

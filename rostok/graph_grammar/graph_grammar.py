@@ -47,6 +47,7 @@ class GraphGrammar(Graph):
         super().__init__(**attr)
         self.rule_vocabulary = rule_vocablary
         self.rule_list = []
+        self.counter_nonterminal_rules = 0
 
     def _replace_node(self, node_id: int, rule: Rule):
         """Auxiliary function for apply rule
@@ -99,6 +100,9 @@ class GraphGrammar(Graph):
             rule = self.rule_vocabulary.get_rule(rule)
             if self.rule_vocabulary is None:
                 raise Exception("Without rule vocabulary the rules must be Rule class objects.")
+
+        if not rule.is_terminal:
+            self.counter_nonterminal_rules += 1
 
         ids = self.find_nodes(rule.replaced_node)
         edge_list = list(self.edges)

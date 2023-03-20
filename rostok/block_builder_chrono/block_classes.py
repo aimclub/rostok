@@ -2,14 +2,16 @@ import random
 from abc import ABC
 from enum import Enum
 from typing import Optional, Union
-
+import open3d
 import pychrono.core as chrono
+import pathlib
 
 from rostok.block_builder_chrono.block_types import (BlockBody, BlockBridge, BlockTransform)
 from rostok.block_builder_chrono.blocks_utils import (ContactReporter, FrameTransform, SpringTorque,
                                                       frame_transform_to_chcoordsys, rotation_z_q)
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
     DefaultChronoMaterial, Material, struct_material2object_material)
+from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
 from rostok.block_builder_chrono import easy_body_shapes
 from rostok.graph.node import Node
 from rostok.block_builder_chrono.chrono_system import get_chrono_system
@@ -417,6 +419,19 @@ class ChronoEasyShapeObject():
             body = chrono.ChBodyEasyEllipsoid(
                 chrono.ChVectorD(shape.radius_x, shape.radius_y, shape.radius_z), density,
                 True, True, material)
+        elif isinstance(shape, easy_body_shapes.FromMesh):
+            if not pathlib.Path(shape.path).exists():
+                raise Exception(f"Wrong path: {shape.path}")
+            
+            mesh = open3d.io.read_triangle_mesh(shape.path)
+            mesh_chrono = o3d_to_chrono_trianglemesh(mesh)
+            body = chrono.ChBodyEasyMesh(mesh_chrono, # mesh filename
+                              density,     # density kg/m^3
+                              True,             # automatically compute mass and inertia
+                              True,             # visualize?>
+                              True,             # collide?
+                              material, # contact material
+                              )
         else:
             raise Exception("Unknown shape for ChronoBodyEnv object")
 

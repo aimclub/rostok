@@ -173,3 +173,21 @@ class RobotSensor:
         """
         if np.size(obj.list_c_coord) > 0:
             return dict([(-1, [obj.body.GetPos().x, obj.body.GetPos().y, obj.body.GetPos().z])])
+
+
+    @staticmethod
+    def sum_contact_forces_obj(obj: ChronoEasyShapeObject):
+        """Sensor of sum contact forces blocks of robot
+
+        Args:
+            in_robot (Robot): Robot to measure sum of contact forces
+
+        Returns:
+            dict[int, float]: Dictionary which keys are id blocks of robot bodies and values
+            are sum of contact forces
+        """
+        if np.size(obj.list_n_forces) > 0:
+            sum_force = np.sum(obj.list_n_forces)
+            return dict([(-1, sum_force)])
+        else:
+            return None
