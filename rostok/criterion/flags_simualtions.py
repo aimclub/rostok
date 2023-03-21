@@ -3,7 +3,7 @@ from copy import deepcopy
 from functools import reduce
 import rostok.virtual_experiment.robot as robot
 import pychrono as chrono
-from rostok.block_builder.node_render import RobotBody
+from rostok.block_builder_chrono.block_classes import ChronoBody
 
 
 class BuilderNotInitializedError(Exception):
@@ -75,7 +75,7 @@ class FlagFlyingApart(FlagStopSimualtions):
 
         blocks = self.robot.block_map.values()
 
-        body_block = filter(lambda x: isinstance(x, RobotBody), blocks)
+        body_block = filter(lambda x: isinstance(x, ChronoBody), blocks)
         abs_cog_frame_robot_bodies = map(lambda x: x.body.GetFrame_COG_to_abs(), body_block)
         rel_cog_frame_robot_bodies = map(lambda x: base_cog_frame * x, abs_cog_frame_robot_bodies)
         body_distance_to_base = list(map(lambda x: x.GetPos().Length2(),

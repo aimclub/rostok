@@ -10,6 +10,7 @@ from rostok.criterion.flags_simualtions import (ConditionStopSimulation, FlagSto
 from rostok.graph_grammar.node import BlockWrapper, GraphGrammar
 from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
 from rostok.virtual_experiment.robot import Robot
+from rostok.block_builder_chrono.chrono_system import register_chrono_system
 
 
 # Immutable classes with output simulation data for robot block
