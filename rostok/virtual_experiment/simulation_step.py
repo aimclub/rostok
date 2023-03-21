@@ -3,9 +3,9 @@ from dataclasses import dataclass
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 
-import rostok.block_builder.control as control
-from rostok.block_builder.node_render import ChronoRevolveJoint, RobotBody
-from rostok.block_builder.transform_srtucture import FrameTransform,OriginWorldFrame
+import rostok.control_chrono.control as control
+from rostok.block_builder_chrono.block_classes import ChronoRevolveJoint, ChronoBody
+from rostok.block_builder_chrono.blocks_utils import FrameTransform, OriginWorldFrame
 from rostok.criterion.flags_simualtions import (ConditionStopSimulation, FlagStopSimualtions)
 from rostok.graph_grammar.node import BlockWrapper, GraphGrammar
 from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
@@ -111,7 +111,9 @@ class SimulationStepOptimization:
         self.chrono_system.SetSolverForceTolerance(1e-6)
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
 
-        self.grasp_object = grasp_object.create_block(self.chrono_system)
+        self.grasp_object = grasp_object.create_block()
+        self.chrono_system.Add(self.grasp_object.body)
+        register_chrono_system(self.chrono_system)
 
         self.grab_robot = Robot(self.graph_mechanism, self.chrono_system, start_frame_robot)
 
@@ -219,15 +221,15 @@ class SimulationStepOptimization:
 
         arrays_simulation_data_sum_contact_forces = map(
             lambda x: (x[0], []),
-            filter(lambda x: isinstance(x[1], RobotBody), self.grab_robot.block_map.items()))
+            filter(lambda x: isinstance(x[1], ChronoBody), self.grab_robot.block_map.items()))
 
         arrays_simulation_data_abs_coord_COG = map(
             lambda x: (x[0], []),
-            filter(lambda x: isinstance(x[1], RobotBody), self.grab_robot.block_map.items()))
+            filter(lambda x: isinstance(x[1], ChronoBody), self.grab_robot.block_map.items()))
 
         arrays_simulation_data_amount_contact_surfaces = map(
             lambda x: (x[0], []),
-            filter(lambda x: isinstance(x[1], RobotBody), self.grab_robot.block_map.items()))
+            filter(lambda x: isinstance(x[1], ChronoBody), self.grab_robot.block_map.items()))
 
         arrays_simulation_data_obj_force = [(-1, [])]
         arrays_simulation_data_amount_obj_contact_surfaces = [(-1, [])]

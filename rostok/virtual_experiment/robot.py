@@ -3,10 +3,11 @@ from dataclasses import dataclass
 
 from pychrono.core import ChVectorD, ChQuaternionD
 
-from rostok.block_builder.blocks_utils import NodeFeatures
-from rostok.block_builder.node_render import (Block, connect_blocks)
+from rostok.block_builder_chrono.block_classes import NodeFeatures
+from rostok.block_builder_chrono.block_types import Block 
 from rostok.graph_grammar.node import GraphGrammar, Node, WrapperTuple
-from rostok.block_builder.transform_srtucture import FrameTransform, OriginWorldFrame
+from rostok.block_builder_chrono.blocks_utils import FrameTransform, OriginWorldFrame
+from rostok.block_builder_chrono.block_connect import place_and_connect
 
 
 @dataclass
@@ -44,7 +45,7 @@ class Robot:
                 wrapper = wrapper_tuple.block_wrapper
 
                 if not (id in uniq_blocks.keys()):
-                    block_buf = wrapper.create_block(self.__simulation)
+                    block_buf = wrapper.create_block()
                     block_line.append(block_buf)
                     uniq_blocks[id] = block_buf
                 else:
@@ -64,7 +65,7 @@ class Robot:
         uniq_blocks[base_id].body.SetRot(chrono_quat_rotation)
 
         for line in blocks:
-            connect_blocks(line)
+            place_and_connect(line,self.__simulation)
 
         return uniq_blocks
 

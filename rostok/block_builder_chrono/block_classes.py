@@ -13,7 +13,8 @@ from rostok.utils.dataset_materials.material_dataclass_manipulating import (
     DefaultChronoMaterial, Material, struct_material2object_material)
 from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
 from rostok.block_builder_chrono import easy_body_shapes
-from rostok.graph.node import Node
+from rostok.graph_grammar.node import Node
+#from rostok.graph.node import Node
 from rostok.block_builder_chrono.chrono_system import get_chrono_system
 
 
