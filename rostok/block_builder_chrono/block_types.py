@@ -3,8 +3,8 @@ from enum import Enum
 
 
 class BlockType(str, Enum):
-    TRANSFORM = "Transform"
-    SELFTRANSFORM = "SelfTransform"
+    TRANSFORM_OUT = "Transform_Out"
+    TRANSFORM_INPUT = "Transform_Input"
     BODY = "Body"
     BRIDGE = "Bridge"
 
@@ -22,12 +22,12 @@ class BlockBridge(Block, ABC):
 
 
 class BlockTransform(Block, ABC):
-    def __init__(self, is_selftransform:bool = False):
+    def __init__(self, is_transform_input:bool = False):
         super().__init__()
-        if is_selftransform:
-            self.block_type = BlockType.SELFTRANSFORM
+        if is_transform_input:
+            self.block_type = BlockType.TRANSFORM_INPUT
         else:
-            self.block_type = BlockType.TRANSFORM
+            self.block_type = BlockType.TRANSFORM_OUT
 
 
 class BlockBody(Block, ABC):

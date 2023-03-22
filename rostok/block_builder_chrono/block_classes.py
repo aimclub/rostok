@@ -17,7 +17,7 @@ from rostok.graph.node import Node
 from rostok.block_builder_chrono.chrono_system import get_chrono_system
 
 
-class ChronoBody(BlockBody, ABC):
+class BuildingBody(BlockBody, ABC):
     """Abstract class, that interpreting nodes of a robot body part in a
     physics engine (`pychrono <https://projectchrono.org/pychrono/>`_).
     
@@ -176,23 +176,23 @@ class ChronoBody(BlockBody, ABC):
         return self.__contact_reporter.get_list_c_coord()
 
 
-# A class to build an EasyBox that have functionality of ChronoBody
-class UniversalBox(ChronoBody):
+# A class to build an EasyBox that have functionality of BuildingBody
+# class UniversalBox(BuildingBody):
 
-    def __init__(self,
-                 x=0.1,
-                 y=0.4,
-                 z=0.2,
-                 color: Optional[list[int]] = None,
-                 material: Material = DefaultChronoMaterial(),
-                 is_collide: bool = True):
+#     def __init__(self,
+#                  x=0.1,
+#                  y=0.4,
+#                  z=0.2,
+#                  color: Optional[list[int]] = None,
+#                  material: Material = DefaultChronoMaterial(),
+#                  is_collide: bool = True):
 
-        density: float = 10.0
-        material = struct_material2object_material(material)
-        body = chrono.ChBodyEasyBox(x, y, z, density, True, True, material)
-        pos_in_marker = chrono.ChVectorD(0, -y * 0.5, 0)
-        pos_out_marker = chrono.ChVectorD(0, y * 0.5, 0)
-        super().__init__(body, pos_in_marker, pos_out_marker, color, is_collide)
+#         density: float = 10.0
+#         material = struct_material2object_material(material)
+#         body = chrono.ChBodyEasyBox(x, y, z, density, True, True, material)
+#         pos_in_marker = chrono.ChVectorD(0, -y * 0.5, 0)
+#         pos_out_marker = chrono.ChVectorD(0, y * 0.5, 0)
+#         super().__init__(body, pos_in_marker, pos_out_marker, color, is_collide)
 
 
 class ChronoTransform(BlockTransform):
@@ -203,8 +203,8 @@ class ChronoTransform(BlockTransform):
         transform (FrameTransform): Define transformation of the instance
     """
 
-    def __init__(self, transform):
-        super().__init__()
+    def __init__(self, transform, is_transform_input=False):
+        super().__init__(is_transform_input=is_transform_input)
         if isinstance(transform, chrono.ChCoordsysD):
             self.transform = transform
         elif isinstance(transform, FrameTransform):
@@ -274,7 +274,7 @@ class ChronoRevolveJoint(BlockBridge):
         self.damping = damping
         self.equilibrium_position = equilibrium_position
 
-    def set_prev_body_frame(self, prev_block: ChronoBody, system: chrono.ChSystem):
+    def set_prev_body_frame(self, prev_block: BuildingBody, system: chrono.ChSystem):
         # additional transform is just a translation along y axis to the radius of the joint
         additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(0, self.radius, 0),
                                                   chrono.ChQuaternionD(1, 0, 0, 0))
@@ -284,21 +284,21 @@ class ChronoRevolveJoint(BlockBridge):
         prev_block.transformed_frame_out.SetCoord(transform * additional_transform)
         system.Update()
 
-    def set_next_body_frame(self, next_block: ChronoBody, system: chrono.ChSystem):
+    def set_next_body_frame(self, next_block: BuildingBody, system: chrono.ChSystem):
         additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(0, -self.radius, 0),
                                                   chrono.ChQuaternionD(1, 0, 0, 0))
         transform = next_block.transformed_frame_input.GetCoord()
         next_block.transformed_frame_input.SetCoord(transform * additional_transform)
         system.Update()
 
-    def connect(self, in_block: ChronoBody, out_block: ChronoBody, system: chrono.ChSystem):
+    def connect(self, in_block: BuildingBody, out_block: BuildingBody, system: chrono.ChSystem):
         """Joint is connected two bodies.
 
         If we have two not initialize joints engine crash
 
         Args:
-            in_block (ChronoBody): Slave body to connect
-            out_block (ChronoBody): Master body to connect
+            in_block (BuildingBody): Slave body to connect
+            out_block (BuildingBody): Master body to connect
         """
         system.Update()
         self.joint = self.input_type.motor()
@@ -318,7 +318,7 @@ class ChronoRevolveJoint(BlockBridge):
             self._add_spring_damper(in_block, out_block, system)
         system.Update()
 
-    def _add_spring_damper(self, in_block: ChronoBody, out_block: ChronoBody,
+    def _add_spring_damper(self, in_block: BuildingBody, out_block: BuildingBody,
                            system: chrono.ChSystem):
         self._joint_spring = chrono.ChLinkRSDA()
         self._joint_spring.Initialize(in_block.body, out_block.body, False,
@@ -329,7 +329,7 @@ class ChronoRevolveJoint(BlockBridge):
         system.Add(self._joint_spring)
 
 
-class ChronoEasyShape(ChronoBody):
+class PrimitiveBody(BuildingBody):
     """Class of environments bodies with standard shape, like box, ellipsoid,
     cylinder. It adds solid body in `pychrono <https://projectchrono.org/pychrono/>`_ physical system that is not
     robot part.
