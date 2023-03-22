@@ -29,7 +29,7 @@ class BlockWrapper:
         self.kwargs = kwargs
 
     def create_block(self):
-        return self.block_cls( *self.args, **self.kwargs)
+        return self.block_cls(*self.args, **self.kwargs)
 
 
 @dataclass
@@ -325,22 +325,22 @@ class GraphGrammar(nx.DiGraph):
         paths = [[root_id]]
         final_paths = []
         counter = 0
-        while len(paths)>0:
+        while len(paths) > 0:
             if counter > 1000:
                 raise Exception("Reached the iteration limit in number of paths in a graph")
-            counter+=1
+            counter += 1
             new_paths = []
             for path in paths:
                 end_id_path = path[-1]
                 # neighbors in digraph returns list of children nodes
                 children = list(self.neighbors(end_id_path))
                 if len(children) == 0:
-                    # no children <==> end of a path 
+                    # no children <==> end of a path
                     final_paths.append(path)
                     continue
                 else:
                     for child in children:
-                        new_paths.append(path+[child])
+                        new_paths.append(path + [child])
 
             paths = new_paths
 
@@ -381,7 +381,6 @@ class GraphGrammar(nx.DiGraph):
 
         self_dfs_paths_lbl.sort(key=lambda x: "".join(x))
         return self_dfs_paths_lbl
-
 
     def __hash__(self) -> list[list[str]]:
         self_dfs_paths_lbl = self.get_uniq_representation()

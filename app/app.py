@@ -9,16 +9,12 @@ import networkx as nx
 # chrono imports
 import pychrono as chrono
 import rule_extention
-from control_optimisation import (create_grab_criterion_fun, create_traj_fun,
-                                  get_object_to_grasp)
+from control_optimisation import (create_grab_criterion_fun, create_traj_fun, get_object_to_grasp)
 
-from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact,
-                                                FlagSlipout)
-from rostok.graph_generators.mcts_helper import (make_mcts_step,
-                                                 prepare_mcts_state_and_helper)
+from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact, FlagSlipout)
+from rostok.graph_generators.mcts_helper import (make_mcts_step, prepare_mcts_state_and_helper)
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.trajectory_optimizer.control_optimizer import (
-    ConfigRewardFunction, ControlOptimizer)
+from rostok.trajectory_optimizer.control_optimizer import (ConfigRewardFunction, ControlOptimizer)
 
 
 def plot_graph(graph: GraphGrammar):
@@ -41,7 +37,7 @@ WEIGHT = [5, 10, 2]
 # At least 20 iterations are needed for good results
 cfg = ConfigRewardFunction()
 cfg.bound = (-7, 7)
-cfg.iters = 20 
+cfg.iters = 20
 cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
 cfg.time_step = 0.005
 cfg.time_sim = 2
@@ -67,8 +63,8 @@ finish = False
 initial_graph = GraphGrammar()
 max_numbers_rules = 20
 # Create graph environments for algorithm (not gym)
-graph_env = prepare_mcts_state_and_helper(initial_graph, rule_vocabul, control_optimizer, max_numbers_rules,
-                                          Path("./results"))
+graph_env = prepare_mcts_state_and_helper(initial_graph, rule_vocabul, control_optimizer,
+                                          max_numbers_rules, Path("./results"))
 mcts_helper = graph_env.helper
 mcts_helper.report.non_terminal_rules_limit = max_numbers_rules
 mcts_helper.report.search_parameter = base_iteration_limit
@@ -78,7 +74,8 @@ start = time.time()
 # the constant that determines how we reduce the number of iterations in the MCTS search
 iteration_reduction_rate = 0.7
 while not finish:
-    iteration_limit = base_iteration_limit - int(graph_env.counter_action/max_numbers_rules * (base_iteration_limit*iteration_reduction_rate))
+    iteration_limit = base_iteration_limit - int(graph_env.counter_action / max_numbers_rules *
+                                                 (base_iteration_limit * iteration_reduction_rate))
     searcher = mcts.mcts(iterationLimit=iteration_limit)
     finish, graph_env = make_mcts_step(searcher, graph_env, n_steps)
     n_steps += 1
@@ -101,7 +98,7 @@ with open(Path(path, "mcts_result.txt"), "a") as file:
     print()
     print("Object to grasp:", gb_params.get("shape"))
     print("Object initial coordinats:", gb_params.get("pos"))
-    sys.stdout = original_stdout   
+    sys.stdout = original_stdout
 
 # visualisation in the end of the search
 best_graph, reward, best_control = mcts_helper.report.get_best_info()

@@ -19,7 +19,8 @@ class RobotState():
 
         rules (RuleVocabulary): the rule set that to use for the state
     """
-    def __init__(self,  rules: RuleVocabulary, rule_list: list[str] = []):
+
+    def __init__(self, rules: RuleVocabulary, rule_list: list[str] = []):
         """Create an empty state or a state from the given rule list.
 
         The in list is copied and can be modified outside the state object.
@@ -50,12 +51,12 @@ class RobotState():
         """
 
         if rule not in self.__rules.rule_dict.keys():
-            raise Exception("Attempt to add to a state a rule that is absent in the" + 
-                "rule_vocabulary")
+            raise Exception("Attempt to add to a state a rule that is absent in the" +
+                            "rule_vocabulary")
 
         self.rule_list.append(rule)
 
-    def create_and_add(self, rule:str):
+    def create_and_add(self, rule: str):
         """Create a new state and add rule to it, return the new state.
 
         Args:
@@ -66,8 +67,8 @@ class RobotState():
         """
 
         if rule not in self.__rules.rule_dict.keys():
-            raise Exception("Attempt to add to a state a rule that is absent in the"+
-                "rule_vocabulary")
+            raise Exception("Attempt to add to a state a rule that is absent in the" +
+                            "rule_vocabulary")
 
         new = RobotState(self.__rules, self.rule_list)
         new.add_rule(rule)
@@ -91,6 +92,7 @@ class RobotState():
         answer = ''
         answer = answer.join(self.rule_list)
         return hash(answer)
+
 
 @dataclass
 class OptimizedState():
@@ -120,6 +122,7 @@ class MCTSOptimizedState():
     reward: float
     control: Any
     step: int
+
 
 class OptimizedGraph():
     """Class that represents the graph with a calculated reward

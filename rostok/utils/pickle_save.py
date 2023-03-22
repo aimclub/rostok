@@ -10,7 +10,8 @@ def load_saveable(path):
         path (Path): path to the corresponding pickle file
     """
     with open(path, "rb") as file:
-        return  pickle.load(file)
+        return pickle.load(file)
+
 
 class Saveable():
     """Class that represents the objects that can be saved using pickle module.
@@ -22,7 +23,8 @@ class Saveable():
         path (Path): a path to directory for saving the object
         file_name (str): name of the file to save the object
     """
-    def __init__(self, path = None, file_name = 'default'):
+
+    def __init__(self, path=None, file_name='default'):
         """Set initial path and file_name.
 
         Args:
@@ -32,7 +34,7 @@ class Saveable():
         self.path = path
         self.file_name = file_name
 
-    def set_path(self, path:Path):
+    def set_path(self, path: Path):
         """Set new path to directory for file save.
 
         Args:

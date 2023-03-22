@@ -1,24 +1,24 @@
+import pathlib
 import random
 from abc import ABC
 from enum import Enum
 from typing import Optional, Union
+
 import open3d
 import pychrono.core as chrono
-import pathlib
 
+from rostok.block_builder_chrono import easy_body_shapes
 from rostok.block_builder_chrono.block_types import (BlockBody, BlockBridge, BlockTransform)
 from rostok.block_builder_chrono.blocks_utils import (ContactReporter, FrameTransform, SpringTorque,
                                                       frame_transform_to_chcoordsys, rotation_z_q)
+from rostok.block_builder_chrono.chrono_system import get_chrono_system
+from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
+from rostok.graph_grammar.node import Node
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
     DefaultChronoMaterial, Material, struct_material2object_material)
-from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
-from rostok.block_builder_chrono import easy_body_shapes
-from rostok.graph_grammar.node import Node
-#from rostok.graph.node import Node
-from rostok.block_builder_chrono.chrono_system import get_chrono_system
 
 
-class ChronoBody(BlockBody, ABC):
+class BuildingBody(BlockBody, ABC):
     """Abstract class, that interpreting nodes of a robot body part in a
     physics engine (`pychrono <https://projectchrono.org/pychrono/>`_).
     
@@ -177,25 +177,6 @@ class ChronoBody(BlockBody, ABC):
         return self.__contact_reporter.get_list_c_coord()
 
 
-# A class to build an EasyBox that have functionality of ChronoBody
-class UniversalBox(ChronoBody):
-
-    def __init__(self,
-                 x=0.1,
-                 y=0.4,
-                 z=0.2,
-                 color: Optional[list[int]] = None,
-                 material: Material = DefaultChronoMaterial(),
-                 is_collide: bool = True):
-
-        density: float = 10.0
-        material = struct_material2object_material(material)
-        body = chrono.ChBodyEasyBox(x, y, z, density, True, True, material)
-        pos_in_marker = chrono.ChVectorD(0, -y * 0.5, 0)
-        pos_out_marker = chrono.ChVectorD(0, y * 0.5, 0)
-        super().__init__(body, pos_in_marker, pos_out_marker, color, is_collide)
-
-
 class ChronoTransform(BlockTransform):
     """Class representing node of the transformation in `pychrono <https://projectchrono.org/pychrono/>`_ physical
     engine
@@ -204,8 +185,8 @@ class ChronoTransform(BlockTransform):
         transform (FrameTransform): Define transformation of the instance
     """
 
-    def __init__(self, transform):
-        super().__init__()
+    def __init__(self, transform, is_transform_input=False):
+        super().__init__(is_transform_input=is_transform_input)
         if isinstance(transform, chrono.ChCoordsysD):
             self.transform = transform
         elif isinstance(transform, FrameTransform):
@@ -261,21 +242,22 @@ class ChronoRevolveJoint(BlockBridge):
                  damping: float = 0.,
                  equilibrium_position: float = 0.):
         super().__init__()
-        self.joint:Optional[Union[chrono.ChLinkMotorRotationTorque, chrono.ChLinkMotorRotationSpeed, 
-                                  chrono.ChLinkMotorRotationAngle, chrono.ChLinkRevolute]] = None
+        self.joint: Optional[Union[chrono.ChLinkMotorRotationTorque,
+                                   chrono.ChLinkMotorRotationSpeed, chrono.ChLinkMotorRotationAngle,
+                                   chrono.ChLinkRevolute]] = None
         self.axis = axis
         self.input_type = type_of_input
         self.radius = radius
         self.length = length
         self.starting_angle = starting_angle
         # Spring Damper params
-        self._joint_spring:Optional[chrono.ChLinkRSDA] = None
-        self._torque_functor:Optional[SpringTorque] = None
+        self._joint_spring: Optional[chrono.ChLinkRSDA] = None
+        self._torque_functor: Optional[SpringTorque] = None
         self.stiffness = stiffness
         self.damping = damping
         self.equilibrium_position = equilibrium_position
 
-    def set_prev_body_frame(self, prev_block: ChronoBody, system: chrono.ChSystem):
+    def set_prev_body_frame(self, prev_block: BuildingBody, system: chrono.ChSystem):
         # additional transform is just a translation along y axis to the radius of the joint
         additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(0, self.radius, 0),
                                                   chrono.ChQuaternionD(1, 0, 0, 0))
@@ -285,21 +267,21 @@ class ChronoRevolveJoint(BlockBridge):
         prev_block.transformed_frame_out.SetCoord(transform * additional_transform)
         system.Update()
 
-    def set_next_body_frame(self, next_block: ChronoBody, system: chrono.ChSystem):
+    def set_next_body_frame(self, next_block: BuildingBody, system: chrono.ChSystem):
         additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(0, -self.radius, 0),
                                                   chrono.ChQuaternionD(1, 0, 0, 0))
         transform = next_block.transformed_frame_input.GetCoord()
         next_block.transformed_frame_input.SetCoord(transform * additional_transform)
         system.Update()
 
-    def connect(self, in_block: ChronoBody, out_block: ChronoBody, system: chrono.ChSystem):
+    def connect(self, in_block: BuildingBody, out_block: BuildingBody, system: chrono.ChSystem):
         """Joint is connected two bodies.
 
         If we have two not initialize joints engine crash
 
         Args:
-            in_block (ChronoBody): Slave body to connect
-            out_block (ChronoBody): Master body to connect
+            in_block (BuildingBody): Slave body to connect
+            out_block (BuildingBody): Master body to connect
         """
         system.Update()
         self.joint = self.input_type.motor()
@@ -319,7 +301,7 @@ class ChronoRevolveJoint(BlockBridge):
             self._add_spring_damper(in_block, out_block, system)
         system.Update()
 
-    def _add_spring_damper(self, in_block: ChronoBody, out_block: ChronoBody,
+    def _add_spring_damper(self, in_block: BuildingBody, out_block: BuildingBody,
                            system: chrono.ChSystem):
         self._joint_spring = chrono.ChLinkRSDA()
         self._joint_spring.Initialize(in_block.body, out_block.body, False,
@@ -330,7 +312,7 @@ class ChronoRevolveJoint(BlockBridge):
         system.Add(self._joint_spring)
 
 
-class ChronoEasyShape(ChronoBody):
+class PrimitiveBody(BuildingBody):
     """Class of environments bodies with standard shape, like box, ellipsoid,
     cylinder. It adds solid body in `pychrono <https://projectchrono.org/pychrono/>`_ physical system that is not
     robot part.
@@ -347,9 +329,9 @@ class ChronoEasyShape(ChronoBody):
 
     def __init__(self,
                  shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box(),
-                 density: float = 10.0, 
+                 density: float = 10.0,
                  material=DefaultChronoMaterial(),
-                 is_collide: bool = True, 
+                 is_collide: bool = True,
                  color: Optional[list[int]] = None):
 
         # Create body
@@ -371,8 +353,8 @@ class ChronoEasyShape(ChronoBody):
             pos_out_marker = chrono.ChVectorD(0, shape.radius * 0.5, 0)
         elif isinstance(shape, easy_body_shapes.Ellipsoid):
             body = chrono.ChBodyEasyEllipsoid(
-                chrono.ChVectorD(shape.radius_x, shape.radius_y, shape.radius_z), density,
-                True, True, material)
+                chrono.ChVectorD(shape.radius_x, shape.radius_y, shape.radius_z), density, True,
+                True, material)
             pos_in_marker = chrono.ChVectorD(0, -shape.radius_y * 0.5, 0)
             pos_out_marker = chrono.ChVectorD(0, shape.radius_y * 0.5, 0)
         else:
@@ -398,10 +380,10 @@ class ChronoEasyShapeObject():
     """
 
     def __init__(self,
-                 shape = easy_body_shapes.Box(),
-                 density: float = 10.0, 
+                 shape=easy_body_shapes.Box(),
+                 density: float = 10.0,
                  material=DefaultChronoMaterial(),
-                 is_collide: bool = True, 
+                 is_collide: bool = True,
                  color: Optional[list[int]] = None,
                  pos: FrameTransform = FrameTransform([0, 0.0, 0], [1, 0, 0, 0])):
 
@@ -417,21 +399,22 @@ class ChronoEasyShapeObject():
             body = chrono.ChBodyEasySphere(shape.radius, density, True, True, material)
         elif isinstance(shape, easy_body_shapes.Ellipsoid):
             body = chrono.ChBodyEasyEllipsoid(
-                chrono.ChVectorD(shape.radius_x, shape.radius_y, shape.radius_z), density,
-                True, True, material)
+                chrono.ChVectorD(shape.radius_x, shape.radius_y, shape.radius_z), density, True,
+                True, material)
         elif isinstance(shape, easy_body_shapes.FromMesh):
             if not pathlib.Path(shape.path).exists():
                 raise Exception(f"Wrong path: {shape.path}")
-            
+
             mesh = open3d.io.read_triangle_mesh(shape.path)
             mesh_chrono = o3d_to_chrono_trianglemesh(mesh)
-            body = chrono.ChBodyEasyMesh(mesh_chrono, # mesh filename
-                              density,     # density kg/m^3
-                              True,             # automatically compute mass and inertia
-                              True,             # visualize?>
-                              True,             # collide?
-                              material, # contact material
-                              )
+            body = chrono.ChBodyEasyMesh(
+                mesh_chrono,  # mesh filename
+                density,  # density kg/m^3
+                True,  # automatically compute mass and inertia
+                True,  # visualize?>
+                True,  # collide?
+                material,  # contact material
+            )
         else:
             raise Exception("Unknown shape for ChronoBodyEnv object")
 
@@ -492,6 +475,7 @@ class ChronoEasyShapeObject():
             self.__contact_reporter.list_cont_clear()
             container.ReportAllContacts(self.__contact_reporter)
         return self.__contact_reporter.get_list_c_coord()
+
 
 class NodeFeatures:
 

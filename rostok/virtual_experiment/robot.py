@@ -1,13 +1,13 @@
 from copy import deepcopy
 from dataclasses import dataclass
 
-from pychrono.core import ChVectorD, ChQuaternionD
+from pychrono.core import ChQuaternionD, ChVectorD
 
 from rostok.block_builder_chrono.block_classes import NodeFeatures
-from rostok.block_builder_chrono.block_types import Block 
-from rostok.graph_grammar.node import GraphGrammar, Node, WrapperTuple
-from rostok.block_builder_chrono.blocks_utils import FrameTransform, OriginWorldFrame
 from rostok.block_builder_chrono.block_connect import place_and_connect
+from rostok.block_builder_chrono.block_types import Block
+from rostok.block_builder_chrono.blocks_utils import (FrameTransform, OriginWorldFrame)
+from rostok.graph_grammar.node import GraphGrammar, Node, WrapperTuple
 
 
 @dataclass
@@ -31,7 +31,6 @@ class Robot:
         # Map { id from graph : block }
         self.block_map = self.__build_robot(wrapper_tuple_array, start_frame)
         self.__bind_blocks_to_graph()
-        
 
     def __build_robot(self, wrapper_tuple_array: list[list[WrapperTuple]],
                       start_frame: FrameTransform) -> dict[int, Block]:
@@ -65,7 +64,7 @@ class Robot:
         uniq_blocks[base_id].body.SetRot(chrono_quat_rotation)
 
         for line in blocks:
-            place_and_connect(line,self.__simulation)
+            place_and_connect(line, self.__simulation)
 
         return uniq_blocks
 

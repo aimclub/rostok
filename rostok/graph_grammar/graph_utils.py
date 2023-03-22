@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import networkx as nx
+
 from rostok.graph_grammar.node import GraphGrammar, Node
 
 
@@ -10,6 +11,7 @@ def replace_nodes(graph: GraphGrammar, mapping: dict[Node, Node]):
         for id in id_replace:
             graph_dict[id]["Node"] = mapping[node_replace]
 
+
 def plot_graph(graph: GraphGrammar):
     plt.figure()
     nx.draw_networkx(graph,
@@ -19,13 +21,12 @@ def plot_graph(graph: GraphGrammar):
                      labels={n: graph.nodes[n]["Node"].label for n in graph})
     plt.show()
 
+
 def plot_graph_ids(graph: GraphGrammar):
     plt.figure()
-    nx.draw_networkx(graph,
-                     font_size=8,
-                     pos=nx.spring_layout(graph, dim=2),
-                     node_size=200)
+    nx.draw_networkx(graph, font_size=8, pos=nx.spring_layout(graph, dim=2), node_size=200)
     plt.show()
+
 
 def plot_graph_reward(graph: GraphGrammar, reward):
     plt.figure()
@@ -36,6 +37,7 @@ def plot_graph_reward(graph: GraphGrammar, reward):
                      node_size=600,
                      labels={n: graph.nodes[n]["Node"].label for n in graph})
     plt.show()
+
 
 def save_graph_plot_reward(graph: GraphGrammar, reward, path):
     plt.figure()

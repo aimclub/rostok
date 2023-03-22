@@ -29,9 +29,11 @@ class Ellipsoid:
     radius_y: float = 0.2
     radius_z: float = 0.3
 
+
 @dataclass
 class FromMesh:
     path: Path
+
 
 # All types of shape
 ShapeTypes = Union[Box, Cylinder, Sphere, Ellipsoid, FromMesh]
