@@ -1,5 +1,5 @@
-from scipy.spatial import distance
 import numpy as np
+from scipy.spatial import distance
 
 
 def criterion_calc(sim_output, weights) -> float:
@@ -34,21 +34,21 @@ def criterion_calc(sim_output, weights) -> float:
         time_crit = np.square(sim_output[-1].time[-1])
     else:
         time_crit = 0
-        
 
     # 3) Obj COG coordinats
     dist_list = []
     if np.size(sim_output[-1].obj_cont_coord) > 0:
-       for idx,_ in enumerate(sim_output[-1].obj_cont_coord):
-            dist_list.append(distance.euclidean(sim_output[-1].obj_cont_coord[idx], sim_output[-1].obj_COG[idx]))
+        for idx, _ in enumerate(sim_output[-1].obj_cont_coord):
+            dist_list.append(
+                distance.euclidean(sim_output[-1].obj_cont_coord[idx], sim_output[-1].obj_COG[idx]))
     if np.size(dist_list) > 0:
-        cog_crit = 1/(1+np.mean(dist_list))
+        cog_crit = 1 / (1 + np.mean(dist_list))
     else:
         cog_crit = 0
 
     reward = -weights[0] * force_crit - weights[1] * time_crit - weights[2] * cog_crit
 
     if force_crit == 0:
-        return 0.25*(reward)
+        return 0.25 * (reward)
     else:
         return reward

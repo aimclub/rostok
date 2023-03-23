@@ -3,9 +3,10 @@ from dataclasses import dataclass
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 
-import rostok.block_builder.control as control
-from rostok.block_builder.node_render import ChronoRevolveJoint, RobotBody
-from rostok.block_builder.transform_srtucture import FrameTransform,OriginWorldFrame
+import rostok.control_chrono.control as control
+from rostok.block_builder_chrono.block_classes import (BuildingBody, ChronoRevolveJoint)
+from rostok.block_builder_chrono.blocks_utils import (FrameTransform, OriginWorldFrame)
+from rostok.block_builder_chrono.chrono_system import register_chrono_system
 from rostok.criterion.flags_simualtions import (ConditionStopSimulation, FlagStopSimualtions)
 from rostok.graph_grammar.node import BlockWrapper, GraphGrammar
 from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
@@ -111,7 +112,9 @@ class SimulationStepOptimization:
         self.chrono_system.SetSolverForceTolerance(1e-6)
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
 
-        self.grasp_object = grasp_object.create_block(self.chrono_system)
+        self.grasp_object = grasp_object.create_block()
+        self.chrono_system.Add(self.grasp_object.body)
+        register_chrono_system(self.chrono_system)
 
         self.grab_robot = Robot(self.graph_mechanism, self.chrono_system, start_frame_robot)
 
@@ -219,15 +222,15 @@ class SimulationStepOptimization:
 
         arrays_simulation_data_sum_contact_forces = map(
             lambda x: (x[0], []),
-            filter(lambda x: isinstance(x[1], RobotBody), self.grab_robot.block_map.items()))
+            filter(lambda x: isinstance(x[1], BuildingBody), self.grab_robot.block_map.items()))
 
         arrays_simulation_data_abs_coord_COG = map(
             lambda x: (x[0], []),
-            filter(lambda x: isinstance(x[1], RobotBody), self.grab_robot.block_map.items()))
+            filter(lambda x: isinstance(x[1], BuildingBody), self.grab_robot.block_map.items()))
 
         arrays_simulation_data_amount_contact_surfaces = map(
             lambda x: (x[0], []),
-            filter(lambda x: isinstance(x[1], RobotBody), self.grab_robot.block_map.items()))
+            filter(lambda x: isinstance(x[1], BuildingBody), self.grab_robot.block_map.items()))
 
         arrays_simulation_data_obj_force = [(-1, [])]
         arrays_simulation_data_amount_obj_contact_surfaces = [(-1, [])]
@@ -261,9 +264,9 @@ class SimulationStepOptimization:
             # Get current variables from object
             current_data_std_obj_force = RobotSensor.std_contact_forces_object(self.grasp_object)
             current_data_cont_coord = RobotSensor.contact_coord(self.grasp_object)
-            current_data_abs_coord_COG_obj = RobotSensor.abs_coord_COG_obj(self.grasp_object)            
-            current_data_amount_obj_contact_surfaces = RobotSensor.amount_contact_forces_object(self.grasp_object)
-
+            current_data_abs_coord_COG_obj = RobotSensor.abs_coord_COG_obj(self.grasp_object)
+            current_data_amount_obj_contact_surfaces = RobotSensor.amount_contact_forces_object(
+                self.grasp_object)
 
             # current_data_amount_obj_contact_surfaces = dict([
             #     (-1, len([item for item in self.grasp_object.list_n_forces if item != 0]))
@@ -296,14 +299,14 @@ class SimulationStepOptimization:
                     arrays_simulation_data_amount_obj_contact_surfaces)
 
             if current_data_cont_coord is not None:
-                arrays_simulation_data_cont_coord = list(map(
-                    append_arr_in_dict, current_data_cont_coord.items(),
-                    arrays_simulation_data_cont_coord))
+                arrays_simulation_data_cont_coord = list(
+                    map(append_arr_in_dict, current_data_cont_coord.items(),
+                        arrays_simulation_data_cont_coord))
 
             if current_data_abs_coord_COG_obj is not None:
-                arrays_simulation_data_abs_coord_COG_obj = list(map(
-                    append_arr_in_dict, current_data_abs_coord_COG_obj.items(),
-                    arrays_simulation_data_abs_coord_COG_obj))
+                arrays_simulation_data_abs_coord_COG_obj = list(
+                    map(append_arr_in_dict, current_data_abs_coord_COG_obj.items(),
+                        arrays_simulation_data_abs_coord_COG_obj))
 
         if visualize:
             vis.GetDevice().closeDevice()
@@ -321,11 +324,12 @@ class SimulationStepOptimization:
                 arrays_simulation_data_amount_contact_surfaces))
 
         simulation_data_object: dict[int, DataObjectBlock] = dict(
-            map(lambda x, y, z, w: (x[0], DataObjectBlock(x[0], arrays_simulation_data_time, x[1], y[1], z[1], w[1])),
+            map(
+                lambda x, y, z, w:
+                (x[0], DataObjectBlock(x[0], arrays_simulation_data_time, x[1], y[1], z[1], w[1])),
                 arrays_simulation_data_obj_force,
                 arrays_simulation_data_amount_obj_contact_surfaces,
-                arrays_simulation_data_cont_coord,
-                arrays_simulation_data_abs_coord_COG_obj))
+                arrays_simulation_data_cont_coord, arrays_simulation_data_abs_coord_COG_obj))
 
         simulation_data_joint_angle.update(simulation_data_body)
         simulation_data_joint_angle.update(simulation_data_object)

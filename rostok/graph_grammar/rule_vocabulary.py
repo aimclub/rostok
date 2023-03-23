@@ -278,30 +278,31 @@ class RuleVocabulary():
         graph = rule.graph_insert
         node = GraphGrammar()
         node.clear()
-        node.add_node(1, Node = rule.replaced_node)
+        node.add_node(1, Node=rule.replaced_node)
         ax1 = plt.subplot(121)
         ax1.set_title("Replaced node")
-        nx.draw_networkx(node, with_labels=True, 
-                     pos=nx.shell_layout(node, dim=2),
-                     node_size=800,
-                     labels={n: node.nodes[n]["Node"].label for n in node})
+        nx.draw_networkx(node,
+                         with_labels=True,
+                         pos=nx.shell_layout(node, dim=2),
+                         node_size=800,
+                         labels={n: node.nodes[n]["Node"].label for n in node})
 
         ax1.axis("off")
         ax2 = plt.subplot(122)
         ax2.set_title("New subgraph")
-        # nx.draw_networkx(graph, with_labels=True, 
+        # nx.draw_networkx(graph, with_labels=True,
         #              pos=nx.spring_layout(graph,dim=2, pos={1: (0, 0)},k=1.0, fixed=[1]),
         #              node_size=500,
         #              labels={n: graph.nodes[n]["Node"].label for n in graph})
 
-        nx.draw_networkx(graph, with_labels=True, 
-                pos=nx.planar_layout(graph, dim=2, scale=5),
-                node_size=800,
-                labels={n: graph.nodes[n]["Node"].label for n in graph})
+        nx.draw_networkx(graph,
+                         with_labels=True,
+                         pos=nx.planar_layout(graph, dim=2, scale=5),
+                         node_size=800,
+                         labels={n: graph.nodes[n]["Node"].label for n in graph})
 
         ax2.axis("off")
         plt.show()
-
 
 
 if __name__ == '__main__':

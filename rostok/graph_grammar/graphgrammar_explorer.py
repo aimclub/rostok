@@ -1,5 +1,6 @@
 from copy import deepcopy
 from typing import Tuple
+
 from rostok.graph_grammar.node import GraphGrammar, Rule
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 
@@ -58,7 +59,7 @@ def _ruleset_explorer(set_uniq_graphs: set[GraphGrammar],
     if len(rule_names) == 0:
         set_uniq_graphs.add(current_graph)
         mutable_counter[0] += 1
-        if mutable_counter[0]%1000 == 0:
+        if mutable_counter[0] % 1000 == 0:
             print(mutable_counter[0])
         return current_graph
 
