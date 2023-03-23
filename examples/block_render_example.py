@@ -1,7 +1,8 @@
 import pychrono.core as chrono
 import pychrono.irrlicht as chronoirr
 
-from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, ChronoTransform,UniversalBox)
+from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, ChronoTransform,PrimitiveBody)
+from rostok.block_builder_chrono.easy_body_shapes import Box
 from rostok.block_builder_chrono.block_connect import place_and_connect                                            
 from rostok.block_builder_chrono.blocks_utils import FrameTransform, OriginWorldFrame
 from rostok.block_builder_chrono.chrono_system import register_chrono_system
@@ -10,13 +11,13 @@ from rostok.block_builder_chrono.chrono_system import register_chrono_system
 mysystem = chrono.ChSystemNSC()
 register_chrono_system(mysystem)
 # Init body blocks
-body_1 = UniversalBox(x=0.1, y=1, z=0.4)
-body_2 = UniversalBox(x=0.1, y=0.5, z=0.4)
-body_3 = UniversalBox(x=0.1, y=0.5, z=0.4)
-body_4 = UniversalBox(x=0.1, y=0.5, z=0.4)
-body_5 = UniversalBox(x=0.1, y=1, z=0.4)
-body_6 = UniversalBox(x=0.1, y=1, z=0.4)
-body_7 = UniversalBox(x=0.1, y=1, z=0.4)
+body_1 = PrimitiveBody(Box(0.1, 1, 0.4))
+body_2 = PrimitiveBody(Box(0.1, 0.5, 0.4))
+body_3 = PrimitiveBody(Box(0.1, 0.5, 0.4))
+body_4 = PrimitiveBody(Box(0.1, 0.5, 0.4))
+body_5 = PrimitiveBody(Box(0.1, 1, 0.4))
+body_6 = PrimitiveBody(Box(0.1, 1, 0.4))
+body_7 = PrimitiveBody(Box(0.1, 1, 0.4))
 
 # Init transforms
 cord_sys_1 = OriginWorldFrame

@@ -3,21 +3,22 @@ from cmath import sqrt
 import numpy as np
 import pychrono as chrono
 
-from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint,
-                                              ChronoTransform, UniversalBox)
+from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, ChronoTransform,
+                                                       PrimitiveBody)
+from rostok.block_builder_chrono.easy_body_shapes import Box
 from rostok.block_builder_chrono.blocks_utils import FrameTransform
 from rostok.graph_grammar.node import ROOT, BlockWrapper, GraphGrammar
 from rostok.graph_grammar.node_vocabulary import NodeVocabulary
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 
 # Bodies
-link1 = BlockWrapper(UniversalBox, x = 0.1, y=0.6, z=0.4)
-link2 = BlockWrapper(UniversalBox, x = 0.1, y=0.6, z=0.4)
+link1 = BlockWrapper(PrimitiveBody, Box(0.1, 0.6, 0.4))
+link2 = BlockWrapper(PrimitiveBody, Box(0.1, 0.6, 0.4))
 
-flat1 = BlockWrapper(UniversalBox, x=0.4, y=0.2, z = 0.8)
-flat2 = BlockWrapper(UniversalBox, x=0.7, y=0.2, z = 0.8)
+flat1 = BlockWrapper(PrimitiveBody, Box(0.4, 0.2, 0.8))
+flat2 = BlockWrapper(PrimitiveBody, Box(0.7, 0.2, 0.8))
 
-u1 = BlockWrapper(UniversalBox, x=0.1, y=0.1, z=0.4)
+u1 = BlockWrapper(PrimitiveBody, Box(0.1, 0.1, 0.4))
 
 # Transforms
 RZX = FrameTransform([0, 0, 0], [sqrt(2), 0, sqrt(2), 0])
