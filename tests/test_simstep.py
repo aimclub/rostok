@@ -5,11 +5,11 @@ from test_ruleset import (get_terminal_graph_no_joints, get_terminal_graph_three
                           get_terminal_graph_two_finger)
 
 import rostok.virtual_experiment.simulation_step as step
-
-from rostok.block_builder.envbody_shapes import Box
-from rostok.block_builder.node_render import (ChronoBodyEnv, DefaultChronoMaterial, FrameTransform)
+from rostok.block_builder_chrono.block_classes import (ChronoEasyShapeObject, DefaultChronoMaterial,
+                                                       FrameTransform)
+from rostok.block_builder_chrono.easy_body_shapes import Box
 from rostok.criterion.flags_simualtions import FlagMaxTime
-from rostok.graph_grammar.node import BlockWrapper
+from rostok.graph.node import BlockWrapper
 from rostok.trajectory_optimizer.control_optimizer import num_joints
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
@@ -38,8 +38,8 @@ def test_control_bind_and_create_sim():
 
         matich = DefaultChronoMaterial()
         matich.Friction = 0.65
- 
-        obj = BlockWrapper(ChronoBodyEnv,
+
+        obj = BlockWrapper(ChronoEasyShapeObject,
                            shape=Box(),
                            material=matich,
                            pos=FrameTransform([0, 1, 0], [0, -0.048, 0.706, 0.706]))

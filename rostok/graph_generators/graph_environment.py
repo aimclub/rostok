@@ -3,7 +3,7 @@ from copy import deepcopy
 from matplotlib import pyplot as plt
 import networkx as nx
 from rostok.graph_generators.graph_reward import Reward
-from rostok.graph_grammar.node import GraphGrammar, Rule
+from rostok.graph_grammar.graph_grammar import GraphGrammar, Rule
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
 from rostok.utils.states import RobotState

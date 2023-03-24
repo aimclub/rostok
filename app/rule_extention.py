@@ -5,8 +5,10 @@ import pychrono as chrono
 
 from rostok.block_builder_chrono.block_classes import *
 from rostok.block_builder_chrono.easy_body_shapes import Box
-from rostok.graph_grammar import node_vocabulary, rule_vocabulary
-from rostok.graph_grammar.node import ROOT, BlockWrapper
+from rostok.graph import node_vocabulary
+from rostok.graph.graph import ROOT
+from rostok.graph.node import BlockWrapper
+from rostok.graph_grammar import rule_vocabulary
 
 
 def plot_graph(graph):

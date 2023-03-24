@@ -7,9 +7,11 @@ from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, Chron
                                                        PrimitiveBody)
 from rostok.block_builder_chrono.easy_body_shapes import Box
 from rostok.block_builder_chrono.blocks_utils import FrameTransform
-from rostok.graph_grammar.node import ROOT, BlockWrapper, GraphGrammar
-from rostok.graph_grammar.node_vocabulary import NodeVocabulary
+from rostok.graph.node import BlockWrapper
+from rostok.graph.graph import ROOT
+from rostok.graph.node_vocabulary import NodeVocabulary
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
+from rostok.graph_grammar.graph_grammar import GraphGrammar
 
 # Bodies
 link1 = BlockWrapper(PrimitiveBody, Box(0.1, 0.6, 0.4))

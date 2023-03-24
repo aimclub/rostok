@@ -4,11 +4,14 @@ import networkx as nx
 import numpy as np
 import pychrono as chrono
 
-from rostok.block_builder.node_render import (ChronoRevolveJoint, ChronoTransform, FlatChronoBody,
-                                              LinkChronoBody, MountChronoBody)
-from rostok.block_builder.transform_srtucture import FrameTransform
-from rostok.graph_grammar.node import ROOT, BlockWrapper, GraphGrammar
-from rostok.graph_grammar.node_vocabulary import NodeVocabulary
+from rostok.block_builder_chrono.block_classes import (BuildingBody, ChronoRevolveJoint,
+                                                       ChronoTransform, PrimitiveBody)
+from rostok.block_builder_chrono.blocks_utils import FrameTransform
+from rostok.block_builder_chrono.easy_body_shapes import Box
+from rostok.graph.graph import ROOT
+from rostok.graph.node import BlockWrapper
+from rostok.graph.node_vocabulary import NodeVocabulary
+from rostok.graph_grammar.graph_grammar import GraphGrammar
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 
 # Define block types
@@ -17,13 +20,13 @@ mat.SetFriction(0.5)
 mat.SetDampingF(0.1)
 
 # Bodies
-link1 = BlockWrapper(LinkChronoBody, length_y=0.3)
-link2 = BlockWrapper(LinkChronoBody, length_y=0.2)
+link1 = BlockWrapper(PrimitiveBody, Box(0.1, 0.6, 0.4))
+link2 = BlockWrapper(PrimitiveBody, Box(0.1, 0.6, 0.4))
 
-flat1 = BlockWrapper(FlatChronoBody, width_x=0.4, height_y=0.1)
-flat2 = BlockWrapper(FlatChronoBody, width_x=0.7, height_y=0.1)
+flat1 = BlockWrapper(PrimitiveBody, Box(0.4, 0.2, 0.8))
+flat2 = BlockWrapper(PrimitiveBody, Box(0.7, 0.2, 0.8))
 
-u1 = BlockWrapper(MountChronoBody, width_x=0.1, length_y=0.1)
+u1 = BlockWrapper(PrimitiveBody, Box(0.1, 0.1, 0.4))
 
 # Transforms
 RZX = FrameTransform([0, 0, 0], [sqrt(2), 0, sqrt(2), 0])
@@ -127,12 +130,25 @@ rule_action_terminal_no_joints = np.asarray(
 rule_action_no_joints = np.r_[rule_action_non_terminal_ladoshaka, rule_action_terminal_no_joints]
 
 rule_action_terminal_two_finger_mix = np.asarray([
-    "TerminalFlat1", "TerminalL1", "TerminalL1", "TerminalL1", "TerminalL2", "TerminalL2",
-    "TerminalTransformL", "TerminalTransformLZ", "TerminalEndLimb","TerminalJoint" ,"TerminalEndLimb",
-    "TerminalJoint", "TerminalJoint", "TerminalJoint", "TerminalJoint",
+    "TerminalFlat1",
+    "TerminalL1",
+    "TerminalL1",
+    "TerminalL1",
+    "TerminalL2",
+    "TerminalL2",
+    "TerminalTransformL",
+    "TerminalTransformLZ",
+    "TerminalEndLimb",
+    "TerminalJoint",
+    "TerminalEndLimb",
+    "TerminalJoint",
+    "TerminalJoint",
+    "TerminalJoint",
+    "TerminalJoint",
 ])
 
-rule_action_two_finger_mix_terminal = np.r_[rule_action_non_terminal_two_finger, rule_action_terminal_two_finger_mix]
+rule_action_two_finger_mix_terminal = np.r_[rule_action_non_terminal_two_finger,
+                                            rule_action_terminal_two_finger_mix]
 
 
 def get_terminal_graph_three_finger():
@@ -161,6 +177,7 @@ def get_nonterminal_graph_two_finger():
     for i in list(rule_action_non_terminal_two_finger):
         G.apply_rule(rule_vocab.get_rule(i))
     return G
+
 
 def get_terminal_graph_two_finger_mix():
     G = GraphGrammar()

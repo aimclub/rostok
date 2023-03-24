@@ -1,4 +1,5 @@
-from rostok.graph_grammar.node import Node, GraphGrammar
+from rostok.graph.node import Node
+from rostok.graph_grammar.graph_grammar import GraphGrammar
 
 
 # The deeper the node, the greater the reward

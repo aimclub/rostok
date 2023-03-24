@@ -1,9 +1,9 @@
 import rostok.criterion.criterion_calc as criterion
+from rostok.block_builder_chrono.block_classes import (ChronoEasyShapeObject, DefaultChronoMaterial,
+                                                       FrameTransform)
 from rostok.block_builder_chrono.easy_body_shapes import Box, Cylinder
-from rostok.block_builder_chrono.block_classes import (ChronoEasyShapeObject,
-                                              DefaultChronoMaterial,
-                                              FrameTransform)
-from rostok.graph_grammar.node import BlockWrapper, GraphGrammar, Node
+from rostok.graph.node import BlockWrapper, Node
+from rostok.graph_grammar.graph_grammar import GraphGrammar
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
 from rostok.virtual_experiment.simulation_step import SimOut
@@ -22,8 +22,7 @@ def get_object_to_grasp():
     return obj
 
 
-def grab_crtitrion(sim_output: dict[int, SimOut],
-                   weight):
+def grab_crtitrion(sim_output: dict[int, SimOut], weight):
 
     return criterion.criterion_calc(sim_output, weight)
 

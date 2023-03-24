@@ -2,7 +2,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
 
-from rostok.graph_grammar.node import GraphGrammar
+from rostok.graph_grammar.graph_grammar import GraphGrammar
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 
 

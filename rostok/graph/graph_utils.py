@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from rostok.graph_grammar.node import GraphGrammar, Node
+from rostok.graph.node import Node
+from rostok.graph_grammar.graph_grammar import GraphGrammar
 
 
 def replace_nodes(graph: GraphGrammar, mapping: dict[Node, Node]):

@@ -1,6 +1,8 @@
 import time
-from rostok.graph_grammar.node import GraphGrammar
+
 from example_vocabulary import rule_vocab
+
+from rostok.graph_grammar.graph_grammar import GraphGrammar
 from rostok.graph_grammar.graphgrammar_explorer import ruleset_explorer
 
 start = time.time()

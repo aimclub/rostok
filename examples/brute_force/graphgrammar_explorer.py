@@ -1,7 +1,7 @@
 from copy import deepcopy
 from typing import Tuple
 
-from rostok.graph_grammar.node import GraphGrammar, Rule
+from rostok.graph_grammar.graph_grammar import GraphGrammar, Rule
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 
 

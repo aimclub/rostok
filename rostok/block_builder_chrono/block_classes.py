@@ -13,9 +13,9 @@ from rostok.block_builder_chrono.blocks_utils import (ContactReporter, FrameTran
                                                       frame_transform_to_chcoordsys, rotation_z_q)
 from rostok.block_builder_chrono.chrono_system import get_chrono_system
 from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
-from rostok.graph_grammar.node import Node
+from rostok.graph.node import Node
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
-    DefaultChronoMaterial, Material, struct_material2object_material)
+    DefaultChronoMaterial, struct_material2object_material)
 
 
 class BuildingBody(BlockBody, ABC):
@@ -237,8 +237,8 @@ class ChronoRevolveJoint(BlockBridge):
                  type_of_input: InputType = InputType.TORQUE,
                  radius=0.07,
                  length=0.4,
-                 material = DefaultChronoMaterial(),
-                 density = 10.0,
+                 material=DefaultChronoMaterial(),
+                 density=10.0,
                  starting_angle=0,
                  stiffness: float = 0.,
                  damping: float = 0.,
@@ -254,7 +254,7 @@ class ChronoRevolveJoint(BlockBridge):
         self.starting_angle = starting_angle
         self.density = density
         material = struct_material2object_material(material)
-        self.material = material 
+        self.material = material
         # Spring Damper params
         self._joint_spring: Optional[chrono.ChLinkRSDA] = None
         self._torque_functor: Optional[SpringTorque] = None
@@ -279,7 +279,11 @@ class ChronoRevolveJoint(BlockBridge):
         next_block.transformed_frame_input.SetCoord(transform * additional_transform)
         system.Update()
 
-    def connect(self, in_block: BuildingBody, out_block: BuildingBody, system: chrono.ChSystem, with_collision=True):
+    def connect(self,
+                in_block: BuildingBody,
+                out_block: BuildingBody,
+                system: chrono.ChSystem,
+                with_collision=True):
         """Joint is connected two bodies.
 
         If we have two not initialize joints engine crash
@@ -307,11 +311,12 @@ class ChronoRevolveJoint(BlockBridge):
 
         if (with_collision):
             eps = 0.002
-            cylinder = chrono.ChBodyEasyCylinder(self.radius-eps, self.length, self.density, True, True, self.material)
-            turn = chrono.ChCoordsysD(chrono.ChVectorD(0,0,0),chrono.Q_ROTATE_Y_TO_Z)
-            reversed_turn = chrono.ChCoordsysD(chrono.ChVectorD(0,0,0),chrono.Q_ROTATE_Z_TO_Y)
+            cylinder = chrono.ChBodyEasyCylinder(self.radius - eps, self.length, self.density, True,
+                                                 True, self.material)
+            turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROTATE_Y_TO_Z)
+            reversed_turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROTATE_Z_TO_Y)
 
-            cylinder.SetCoord(in_block.transformed_frame_out.GetAbsCoord()*turn)
+            cylinder.SetCoord(in_block.transformed_frame_out.GetAbsCoord() * turn)
             system.Add(cylinder)
             marker = chrono.ChMarker()
             marker.SetMotionType(chrono.ChMarker.M_MOTION_KEYFRAMED)
@@ -320,10 +325,10 @@ class ChronoRevolveJoint(BlockBridge):
             system.Update()
             fix_joint = chrono.ChLinkMateFix()
             fix_joint.Initialize(in_block.body, cylinder, True, in_block.transformed_frame_out,
-                         marker)
+                                 marker)
             system.Add(fix_joint)
         else:
-        # Add cylinder visual only
+            # Add cylinder visual only
             cylinder = chrono.ChCylinder()
             cylinder.p2 = chrono.ChVectorD(0, 0, self.length / 2)
             cylinder.p1 = chrono.ChVectorD(0, 0, -self.length / 2)
@@ -521,6 +526,7 @@ class NodeFeatures:
     @staticmethod
     def is_transform(node: Node):
         return node.block_wrapper.block_cls is ChronoTransform
+
 
 if __name__ == "__main__":
     cylinder = chrono.ChBodyEasyCylinder(0.05, 0.4, 10, True, True, DefaultChronoMaterial())

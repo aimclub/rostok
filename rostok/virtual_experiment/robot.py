@@ -7,7 +7,8 @@ from rostok.block_builder_chrono.block_classes import NodeFeatures
 from rostok.block_builder_chrono.block_connect import place_and_connect
 from rostok.block_builder_chrono.block_types import Block
 from rostok.block_builder_chrono.blocks_utils import (FrameTransform, OriginWorldFrame)
-from rostok.graph_grammar.node import GraphGrammar, Node, WrapperTuple
+from rostok.graph.node import Node, WrapperTuple
+from rostok.graph_grammar.graph_grammar import GraphGrammar
 
 
 @dataclass

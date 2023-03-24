@@ -1,7 +1,6 @@
-from example_vocabulary import (B_NODES, J_NODES, T_EXAMPLE,
-                                get_terminal_graph_three_finger)
+from example_vocabulary import (B_NODES, J_NODES, T_EXAMPLE, get_terminal_graph_three_finger)
 
-from rostok.graph_grammar.node import Node
+from rostok.graph.node import Node
 
 graph_grab_torque_robot = get_terminal_graph_three_finger()
 
@@ -26,6 +25,7 @@ def is_body(node: Node):
 def is_special_transform(node: Node):
     return node in T_EXAMPLE
 
+
 # Return true if branch contain nodes from T_EXAMPLE
 def branch_filter(branch: list[Node]):
     check_list = list(map(is_special_transform, branch))
@@ -43,4 +43,3 @@ dfs_patrion_node = [[get_node(node_id) for node_id in branch] for branch in dfs_
 
 # Iterate over dfs_patrion_node and form massive from suitable branch
 branchs_with_special_t = list(filter(branch_filter, dfs_patrion_node))
-

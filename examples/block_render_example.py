@@ -1,11 +1,12 @@
 import pychrono.core as chrono
 import pychrono.irrlicht as chronoirr
 
-from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, ChronoTransform,PrimitiveBody)
-from rostok.block_builder_chrono.easy_body_shapes import Box
-from rostok.block_builder_chrono.block_connect import place_and_connect                                            
-from rostok.block_builder_chrono.blocks_utils import FrameTransform, OriginWorldFrame
+from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, ChronoTransform,
+                                                       PrimitiveBody)
+from rostok.block_builder_chrono.block_connect import place_and_connect
+from rostok.block_builder_chrono.blocks_utils import (FrameTransform, OriginWorldFrame)
 from rostok.block_builder_chrono.chrono_system import register_chrono_system
+from rostok.block_builder_chrono.easy_body_shapes import Box
 
 # Create Chrono system instance
 mysystem = chrono.ChSystemNSC()
@@ -21,11 +22,11 @@ body_7 = PrimitiveBody(Box(0.1, 1, 0.4))
 
 # Init transforms
 cord_sys_1 = OriginWorldFrame
-transform1 = ChronoTransform( cord_sys_1)
+transform1 = ChronoTransform(cord_sys_1)
 
 quat_z_y = chrono.Q_ROTATE_Z_TO_Y
 cord_sys_2 = FrameTransform([0, 0.5, 0], [quat_z_y.e0, quat_z_y.e1, quat_z_y.e2, quat_z_y.e3])
-transform2 = ChronoTransform( cord_sys_2)
+transform2 = ChronoTransform(cord_sys_2)
 
 cord_sys_3 = FrameTransform([0, 0., 0], [quat_z_y.e0, quat_z_y.e1, quat_z_y.e2, quat_z_y.e3])
 transform3 = ChronoTransform(cord_sys_3)

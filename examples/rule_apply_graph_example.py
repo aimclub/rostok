@@ -2,8 +2,9 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 
-from rostok.graph_grammar.node import ROOT, GraphGrammar
-from rostok.graph_grammar.node_vocabulary import NodeVocabulary
+from rostok.graph.graph import ROOT
+from rostok.graph.node_vocabulary import NodeVocabulary
+from rostok.graph_grammar.graph_grammar import GraphGrammar
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 
 node_vocab = NodeVocabulary()

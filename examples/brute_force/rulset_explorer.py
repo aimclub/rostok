@@ -9,8 +9,8 @@ from control_optimisation import (create_grab_criterion_fun, create_traj_fun, ge
 
 from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact, FlagSlipout)
 from rostok.graph_generators.mcts_helper import OptimizedGraphReport
+from rostok.graph_grammar.graph_grammar import GraphGrammar
 from rostok.graph_grammar.graphgrammar_explorer import ruleset_explorer
-from rostok.graph_grammar.node import GraphGrammar
 from rostok.trajectory_optimizer.control_optimizer import (ConfigRewardFunction, ControlOptimizer)
 
 rule_vocabul, node_features = rule_extention.init_extension_rules()

@@ -6,14 +6,15 @@ from example_vocabulary import (get_terminal_graph_no_joints, get_terminal_graph
                                 get_terminal_graph_two_finger)
 
 import rostok.virtual_experiment.simulation_step as step
+from rostok.block_builder_chrono.block_classes import (ChronoEasyShapeObject, DefaultChronoMaterial,
+                                                       FrameTransform)
 from rostok.block_builder_chrono.easy_body_shapes import Box
-from rostok.block_builder_chrono.block_classes import (ChronoEasyShapeObject, DefaultChronoMaterial, FrameTransform)
 from rostok.criterion.flags_simualtions import FlagMaxTime
-from rostok.graph_grammar.node import BlockWrapper
+from rostok.graph.graph_utils import plot_graph
+from rostok.graph.node import BlockWrapper
 from rostok.trajectory_optimizer.control_optimizer import num_joints
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
-from rostok.graph_grammar.graph_utils import plot_graph
 
 mechs = [
     get_terminal_graph_three_finger, get_terminal_graph_no_joints, get_terminal_graph_two_finger

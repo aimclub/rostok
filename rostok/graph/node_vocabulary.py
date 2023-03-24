@@ -1,6 +1,7 @@
 """ Module contains NodeVocabulary class."""
 
-from rostok.graph_grammar.node import ROOT, BlockWrapper, Node
+from rostok.graph.graph import ROOT
+from rostok.graph.node import BlockWrapper, Node
 
 
 class NodeVocabulary():
