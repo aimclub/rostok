@@ -4,21 +4,24 @@ from abc import ABC
 from enum import Enum
 from typing import Optional, Union
 
+
+import inspect
 import open3d
 import pychrono.core as chrono
 
 from rostok.block_builder_chrono import easy_body_shapes
-from rostok.block_builder_chrono.block_types import (BlockBody, BlockBridge, BlockTransform)
-from rostok.block_builder_chrono.blocks_utils import (ContactReporter, FrameTransform, SpringTorque,
+from rostok.block_builder_chrono.block_types import (BlockBody, BlockBridge, BlockTransform, Descriptor)
+from rostok.block_builder_chrono.blocks_utils import (ContactReporter, FrameTransform, DefaultFrame, SpringTorque,
                                                       frame_transform_to_chcoordsys, rotation_z_q)
 from rostok.block_builder_chrono.chrono_system import get_chrono_system
 from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
 from rostok.graph_grammar.node import Node
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
-    DefaultChronoMaterial, Material, struct_material2object_material)
+    DefaultChronoMaterial, struct_material2object_material)
+from dataclasses import dataclass
 
 
-class BuildingBody(BlockBody, ABC):
+class BuildingBody(BlockBody[Descriptor]):
     """Abstract class, that interpreting nodes of a robot body part in a
     physics engine (`pychrono <https://projectchrono.org/pychrono/>`_).
     
@@ -177,7 +180,13 @@ class BuildingBody(BlockBody, ABC):
         return self.__contact_reporter.get_list_c_coord()
 
 
-class ChronoTransform(BlockTransform):
+@dataclass    
+class ChronoTransformDes:
+    transform: FrameTransform = DefaultFrame
+    is_transform_input = False
+
+
+class ChronoTransform(BlockTransform[ChronoTransformDes]):
     """Class representing node of the transformation in `pychrono <https://projectchrono.org/pychrono/>`_ physical
     engine
 
@@ -185,7 +194,7 @@ class ChronoTransform(BlockTransform):
         transform (FrameTransform): Define transformation of the instance
     """
 
-    def __init__(self, transform, is_transform_input=False):
+    def __init__(self, transform : Union[chrono.ChCoordsysD, FrameTransform], is_transform_input=False):
         super().__init__(is_transform_input=is_transform_input)
         if isinstance(transform, chrono.ChCoordsysD):
             self.transform = transform
@@ -196,9 +205,37 @@ class ChronoTransform(BlockTransform):
                 chrono.ChQuaternionD(transform.rotation[0], transform.rotation[1],
                                      transform.rotation[2], transform.rotation[3]))
             self.transform = coordsys_transform
+    
+    @classmethod
+    def initialize_from_descriptor(cls, des: ChronoTransformDes):
+        return cls(**des.__dict__)
 
 
-class ChronoRevolveJoint(BlockBridge):
+class InputType(str, Enum):
+    TORQUE = {"Name": "Torque", "TypeMotor": chrono.ChLinkMotorRotationTorque}
+    VELOCITY = {"Name": "Speed", "TypeMotor": chrono.ChLinkMotorRotationSpeed}
+    POSITION = {"Name": "Angle", "TypeMotor": chrono.ChLinkMotorRotationAngle}
+    UNCONTROL = {"Name": "Uncontrol", "TypeMotor": chrono.ChLinkRevolute}
+
+    def __init__(self, vals):
+        self.num = vals["Name"]
+        self.motor = vals["TypeMotor"]
+
+
+@dataclass    
+class ChronoRevolveJointDes:
+    type_of_input: InputType = InputType.TORQUE
+    radius: float = 0.07
+    length: float = 0.4
+    material = DefaultChronoMaterial()
+    density = 10.0
+    starting_angle = 0
+    stiffness: float = 0.
+    damping: float = 0.
+    with_collision = True
+
+
+class ChronoRevolveJoint(BlockBridge[ChronoRevolveJointDes]):
     """The class representing revolute joint object in `pychrono <https://projectchrono.org/pychrono/>`_ 
     physical engine. It is the embodiment of joint nodes from the mechanism graph in
     simulation.
@@ -216,24 +253,7 @@ class ChronoRevolveJoint(BlockBridge):
             input_type (InputType): The type of input
     """
 
-    class InputType(str, Enum):
-        TORQUE = {"Name": "Torque", "TypeMotor": chrono.ChLinkMotorRotationTorque}
-        VELOCITY = {"Name": "Speed", "TypeMotor": chrono.ChLinkMotorRotationSpeed}
-        POSITION = {"Name": "Angle", "TypeMotor": chrono.ChLinkMotorRotationAngle}
-        UNCONTROL = {"Name": "Uncontrol", "TypeMotor": chrono.ChLinkRevolute}
-
-        def __init__(self, vals):
-            self.num = vals["Name"]
-            self.motor = vals["TypeMotor"]
-
-    class Axis(str, Enum):
-        # Z is default rotation axis
-        Z = chrono.ChQuaternionD(1, 0, 0, 0)
-        Y = chrono.Q_ROTATE_Z_TO_Y
-        X = chrono.Q_ROTATE_Z_TO_X
-
     def __init__(self,
-                 axis: Axis = Axis.Z,
                  type_of_input: InputType = InputType.TORQUE,
                  radius=0.07,
                  length=0.4,
@@ -242,12 +262,13 @@ class ChronoRevolveJoint(BlockBridge):
                  starting_angle=0,
                  stiffness: float = 0.,
                  damping: float = 0.,
-                 equilibrium_position: float = 0.):
+                 equilibrium_position: float = 0.,
+                 with_collision = True):
         super().__init__()
         self.joint: Optional[Union[chrono.ChLinkMotorRotationTorque,
                                    chrono.ChLinkMotorRotationSpeed, chrono.ChLinkMotorRotationAngle,
                                    chrono.ChLinkRevolute]] = None
-        self.axis = axis
+        
         self.input_type = type_of_input
         self.radius = radius
         self.length = length
@@ -261,6 +282,8 @@ class ChronoRevolveJoint(BlockBridge):
         self.stiffness = stiffness
         self.damping = damping
         self.equilibrium_position = equilibrium_position
+        self.with_collision = with_collision
+
 
     def set_prev_body_frame(self, prev_block: BuildingBody, system: chrono.ChSystem):
         # additional transform is just a translation along y axis to the radius of the joint
@@ -279,7 +302,7 @@ class ChronoRevolveJoint(BlockBridge):
         next_block.transformed_frame_input.SetCoord(transform * additional_transform)
         system.Update()
 
-    def connect(self, in_block: BuildingBody, out_block: BuildingBody, system: chrono.ChSystem, with_collision=True):
+    def connect(self, in_block: BuildingBody, out_block: BuildingBody, system: chrono.ChSystem):
         """Joint is connected two bodies.
 
         If we have two not initialize joints engine crash
@@ -290,14 +313,6 @@ class ChronoRevolveJoint(BlockBridge):
         """
         system.Update()
         self.joint = self.input_type.motor()
-        # Add cylinder visual
-        # cylinder = chrono.ChCylinder()
-        # cylinder.p2 = chrono.ChVectorD(0, 0, self.length / 2)
-        # cylinder.p1 = chrono.ChVectorD(0, 0, -self.length / 2)
-        # cylinder.rad = self.radius
-        # cylinder_asset = chrono.ChCylinderShape(cylinder)
-        # self.joint.AddVisualShape(cylinder_asset)
-        #self.joint.AddCollisionModelsToSystem
         self.joint.Initialize(in_block.body, out_block.body, True, in_block.transformed_frame_out,
                               out_block.transformed_frame_input)
         system.AddLink(self.joint)
@@ -305,7 +320,7 @@ class ChronoRevolveJoint(BlockBridge):
         if (self.stiffness != 0) or (self.damping != 0):
             self._add_spring_damper(in_block, out_block, system)
 
-        if (with_collision):
+        if (self.with_collision):
             eps = 0.002
             cylinder = chrono.ChBodyEasyCylinder(self.radius-eps, self.length, self.density, True, True, self.material)
             turn = chrono.ChCoordsysD(chrono.ChVectorD(0,0,0),chrono.Q_ROTATE_Y_TO_Z)
@@ -342,8 +357,15 @@ class ChronoRevolveJoint(BlockBridge):
         self._joint_spring.RegisterTorqueFunctor(self._torque_functor)
         system.Add(self._joint_spring)
 
+@dataclass
+class PrimitiveBodyDes:
+    shape : easy_body_shapes.ShapeTypes = easy_body_shapes.Box() 
+    density: float = 10.0
+    material = DefaultChronoMaterial()
+    is_collide: bool = True
+    color: Optional[list[int]] = None
 
-class PrimitiveBody(BuildingBody):
+class PrimitiveBody(BuildingBody[PrimitiveBodyDes]):
     """Class of environments bodies with standard shape, like box, ellipsoid,
     cylinder. It adds solid body in `pychrono <https://projectchrono.org/pychrono/>`_ physical system that is not
     robot part.
@@ -395,6 +417,15 @@ class PrimitiveBody(BuildingBody):
         super().__init__(body, pos_in_marker, pos_out_marker, color, is_collide)
 
 
+@dataclass
+class ChronoEasyShapeObjectDes:
+    shape=easy_body_shapes.Box()
+    density: float = 10.0
+    is_collide: bool = True
+    color: Optional[list[int]] = None
+    pos: FrameTransform = DefaultFrame
+
+
 class ChronoEasyShapeObject():
     """Class of environments bodies with standard shape, like box, ellipsoid,
     cylinder. It adds solid body in `pychrono <https://projectchrono.org/pychrono/>`_ physical system that is not
@@ -416,7 +447,7 @@ class ChronoEasyShapeObject():
                  material=DefaultChronoMaterial(),
                  is_collide: bool = True,
                  color: Optional[list[int]] = None,
-                 pos: FrameTransform = FrameTransform([0, 0.0, 0], [1, 0, 0, 0])):
+                 pos: FrameTransform = DefaultFrame):
 
         # Create body
         material = struct_material2object_material(material)
@@ -463,6 +494,10 @@ class ChronoEasyShapeObject():
         else:
             color = [x / 256 for x in color]
             self.body.GetVisualShape(0).SetColor(chrono.ChColor(*color))
+    
+    @classmethod
+    def initialize_from_descriptor(cls, des: ChronoEasyShapeObjectDes):
+        return cls(**des.__dict__)
 
     def set_coord(self, frame: FrameTransform):
         self.body.SetCoord(frame_transform_to_chcoordsys(frame))
@@ -523,4 +558,5 @@ class NodeFeatures:
         return node.block_wrapper.block_cls is ChronoTransform
 
 if __name__ == "__main__":
-    cylinder = chrono.ChBodyEasyCylinder(0.05, 0.4, 10, True, True, DefaultChronoMaterial())
+    telo = PrimitiveBody.initialize_from_descriptor(PrimitiveBodyDes())
+    pass
