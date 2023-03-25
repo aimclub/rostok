@@ -5,7 +5,7 @@ import pychrono.irrlicht as chronoirr
 
 import rostok.control_chrono.control as control
 from rostok.block_builder_chrono.block_classes import (BuildingBody, ChronoRevolveJoint)
-from rostok.block_builder_chrono.blocks_utils import (FrameTransform, OriginWorldFrame)
+from rostok.block_builder_chrono.blocks_utils import (FrameTransform, DefaultFrame)
 from rostok.block_builder_chrono.chrono_system import register_chrono_system
 from rostok.criterion.flags_simualtions import (ConditionStopSimulation, FlagStopSimualtions)
 from rostok.graph_grammar.node import BlockWrapper, GraphGrammar
@@ -100,7 +100,7 @@ class SimulationStepOptimization:
                  control_trajectory,
                  graph_mechanism: GraphGrammar,
                  grasp_object: BlockWrapper,
-                 start_frame_robot: FrameTransform = OriginWorldFrame):
+                 start_frame_robot: FrameTransform = DefaultFrame):
         self.control_trajectory = control_trajectory
         self.graph_mechanism = graph_mechanism
         self.controller_joints: list[list[control.ChronoControl]] = []

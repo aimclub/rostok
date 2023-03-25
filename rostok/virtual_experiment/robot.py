@@ -6,7 +6,7 @@ from pychrono.core import ChQuaternionD, ChVectorD
 from rostok.block_builder_chrono.block_classes import NodeFeatures
 from rostok.block_builder_chrono.block_connect import place_and_connect
 from rostok.block_builder_chrono.block_types import Block
-from rostok.block_builder_chrono.blocks_utils import (FrameTransform, OriginWorldFrame)
+from rostok.block_builder_chrono.blocks_utils import (FrameTransform, DefaultFrame)
 from rostok.graph_grammar.node import GraphGrammar, Node, WrapperTuple
 
 
@@ -23,7 +23,7 @@ class Robot:
     def __init__(self,
                  robot_graph: GraphGrammar,
                  simulation,
-                 start_frame: FrameTransform = OriginWorldFrame):
+                 start_frame: FrameTransform = DefaultFrame):
         self.__graph = deepcopy(robot_graph)
         self.__simulation = simulation
         self.bridge_set: set[int] = set()
