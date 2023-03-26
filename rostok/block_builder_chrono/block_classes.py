@@ -180,7 +180,7 @@ class BuildingBody(BlockBody[Descriptor]):
         return self.__contact_reporter.get_list_c_coord()
 
 
-@dataclass    
+@dataclass
 class ChronoTransformDes:
     transform: FrameTransform = DefaultFrame
     is_transform_input = False
@@ -205,10 +205,7 @@ class ChronoTransform(BlockTransform[ChronoTransformDes]):
                 chrono.ChQuaternionD(transform.rotation[0], transform.rotation[1],
                                      transform.rotation[2], transform.rotation[3]))
             self.transform = coordsys_transform
-    
-    @classmethod
-    def initialize_from_descriptor(cls, des: ChronoTransformDes):
-        return cls(**des.__dict__)
+
 
 
 class InputType(str, Enum):
@@ -222,7 +219,7 @@ class InputType(str, Enum):
         self.motor = vals["TypeMotor"]
 
 
-@dataclass    
+@dataclass
 class ChronoRevolveJointDes:
     type_of_input: InputType = InputType.TORQUE
     radius: float = 0.07
@@ -268,14 +265,14 @@ class ChronoRevolveJoint(BlockBridge[ChronoRevolveJointDes]):
         self.joint: Optional[Union[chrono.ChLinkMotorRotationTorque,
                                    chrono.ChLinkMotorRotationSpeed, chrono.ChLinkMotorRotationAngle,
                                    chrono.ChLinkRevolute]] = None
-        
+
         self.input_type = type_of_input
         self.radius = radius
         self.length = length
         self.starting_angle = starting_angle
         self.density = density
         material = struct_material2object_material(material)
-        self.material = material 
+        self.material = material
         # Spring Damper params
         self._joint_spring: Optional[chrono.ChLinkRSDA] = None
         self._torque_functor: Optional[SpringTorque] = None
@@ -338,7 +335,7 @@ class ChronoRevolveJoint(BlockBridge[ChronoRevolveJointDes]):
                          marker)
             system.Add(fix_joint)
         else:
-        # Add cylinder visual only
+            # Add cylinder visual only
             cylinder = chrono.ChCylinder()
             cylinder.p2 = chrono.ChVectorD(0, 0, self.length / 2)
             cylinder.p1 = chrono.ChVectorD(0, 0, -self.length / 2)
@@ -359,7 +356,7 @@ class ChronoRevolveJoint(BlockBridge[ChronoRevolveJointDes]):
 
 @dataclass
 class PrimitiveBodyDes:
-    shape : easy_body_shapes.ShapeTypes = easy_body_shapes.Box() 
+    shape : easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
     density: float = 10.0
     material = DefaultChronoMaterial()
     is_collide: bool = True
@@ -494,7 +491,7 @@ class ChronoEasyShapeObject():
         else:
             color = [x / 256 for x in color]
             self.body.GetVisualShape(0).SetColor(chrono.ChColor(*color))
-    
+
     @classmethod
     def initialize_from_descriptor(cls, des: ChronoEasyShapeObjectDes):
         return cls(**des.__dict__)
@@ -542,7 +539,6 @@ class ChronoEasyShapeObject():
             container.ReportAllContacts(self.__contact_reporter)
         return self.__contact_reporter.get_list_c_coord()
 
-
 class NodeFeatures:
 
     @staticmethod
@@ -556,6 +552,19 @@ class NodeFeatures:
     @staticmethod
     def is_transform(node: Node):
         return node.block_wrapper.block_cls is ChronoTransform
+
+
+BLOCK_CLASS_TYPES = Union[ChronoEasyShapeObject, PrimitiveBody, ChronoRevolveJoint, ChronoTransform]
+BLOCK_DESCRIPTORS_TYPES = Union[ChronoEasyShapeObjectDes, PrimitiveBodyDes, ChronoRevolveJointDes,
+                                ChronoTransformDes]
+
+@dataclass
+class BlockBlueprint:
+    cls: BLOCK_CLASS_TYPES
+    descriptor: BLOCK_DESCRIPTORS_TYPES
+    def create_block(self) -> BLOCK_CLASS_TYPES:
+        return self.cls.initialize_from_descriptor(self.descriptor) # type: ignore
+        
 
 if __name__ == "__main__":
     telo = PrimitiveBody.initialize_from_descriptor(PrimitiveBodyDes())
