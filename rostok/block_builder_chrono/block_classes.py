@@ -15,7 +15,6 @@ from rostok.block_builder_chrono.blocks_utils import (ContactReporter, FrameTran
                                                       frame_transform_to_chcoordsys, rotation_z_q)
 from rostok.block_builder_chrono.chrono_system import get_chrono_system
 from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
-from rostok.graph_grammar.node import Node
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
     DefaultChronoMaterial, struct_material2object_material)
 from dataclasses import dataclass
@@ -539,19 +538,7 @@ class ChronoEasyShapeObject():
             container.ReportAllContacts(self.__contact_reporter)
         return self.__contact_reporter.get_list_c_coord()
 
-class NodeFeatures:
 
-    @staticmethod
-    def is_joint(node: Node):
-        return node.block_wrapper.block_cls is ChronoRevolveJoint
-
-    @staticmethod
-    def is_body(node: Node):
-        return node.block_wrapper.block_cls is BlockBody
-
-    @staticmethod
-    def is_transform(node: Node):
-        return node.block_wrapper.block_cls is ChronoTransform
 
 
 BLOCK_CLASS_TYPES = Union[ChronoEasyShapeObject, PrimitiveBody, ChronoRevolveJoint, ChronoTransform]

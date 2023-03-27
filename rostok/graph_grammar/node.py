@@ -1,10 +1,10 @@
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
-import matplotlib.pyplot as plt
 import networkx as nx
-import pychrono as chrono
+from typing import Optional
 from networkx.algorithms.traversal import dfs_preorder_nodes
+from rostok.block_builder_chrono.block_classes import BlockBlueprint
 
 
 class BlockWrapper:
@@ -41,7 +41,7 @@ class Node:
     is_terminal: bool = False
 
     # None for non-terminal nodes
-    block_wrapper: BlockWrapper = None
+    block_blueprint: Optional[BlockBlueprint] = None
 
     def __hash__(self) -> int:
         return hash(str(self.label) + str(self.is_terminal))
@@ -86,12 +86,12 @@ class Rule:
 
 
 @dataclass
-class WrapperTuple:
+class UniqueBlueprint:
     """ The return type is used to build the Robot.
         Id - from the generated graph
     """
     id: int
-    block_wrapper: BlockWrapper  # Set default value
+    block_blueprint: BlockBlueprint  # Set default value
 
 
 ROOT = Node("ROOT")
@@ -108,9 +108,9 @@ class GraphGrammar(nx.DiGraph):
     def __init__(self, **attr):
         super().__init__(**attr)
         self.__uniq_id_counter = -1
-        self.add_node(self._get_uniq_id(), Node=ROOT)
+        self.add_node(self.get_uniq_id(), Node=ROOT)
 
-    def _get_uniq_id(self):
+    def get_uniq_id(self):
         self.__uniq_id_counter += 1
         return self.__uniq_id_counter
 
@@ -145,10 +145,10 @@ class GraphGrammar(nx.DiGraph):
         in_edges = [list(edge) for edge in self.in_edges(node_id)]
         out_edges = [list(edge) for edge in self.out_edges(node_id)]
 
-        id_node_connect_child_graph = self._get_uniq_id()
+        id_node_connect_child_graph = self.get_uniq_id()
 
         is_equal_id = rule.id_node_connect_parent != rule.id_node_connect_child
-        id_node_connect_parent_graph = self._get_uniq_id(
+        id_node_connect_parent_graph = self.get_uniq_id(
         ) if is_equal_id else id_node_connect_child_graph
 
         relabel_in_rule = \
@@ -159,7 +159,7 @@ class GraphGrammar(nx.DiGraph):
             raw_node_id = raw_nodes[0]
             if raw_node_id in relabel_in_rule.keys():
                 continue
-            relabel_in_rule[raw_node_id] = self._get_uniq_id()
+            relabel_in_rule[raw_node_id] = self.get_uniq_id()
 
         for edge in in_edges:
             edge[1] = id_node_connect_parent_graph
@@ -285,7 +285,7 @@ class GraphGrammar(nx.DiGraph):
                     path.append(edge[1])
         return paths
 
-    def build_terminal_wrapper_array(self) -> list[list[WrapperTuple]]:
+    def build_terminal_wrapper_array(self) -> list[list[UniqueBlueprint]]:
         """Returns a 2-d array of paths from root to each leaf
 
         Raises:
@@ -303,8 +303,8 @@ class GraphGrammar(nx.DiGraph):
             wrapper = []
             for node_id in path:
                 node: Node = self.get_node_by_id(node_id)
-                if node.is_terminal:
-                    buf = WrapperTuple(node_id, node.block_wrapper)
+                if node.is_terminal and node.block_blueprint:
+                    buf = UniqueBlueprint(node_id, node.block_blueprint)
                     wrapper.append(buf)
                 else:
                     raise Exception('Graph contain non-terminal elements')
@@ -382,6 +382,6 @@ class GraphGrammar(nx.DiGraph):
         self_dfs_paths_lbl.sort(key=lambda x: "".join(x))
         return self_dfs_paths_lbl
 
-    def __hash__(self) -> list[list[str]]:
+    def __hash__(self) -> int:
         self_dfs_paths_lbl = self.get_uniq_representation()
         return hash(str(self_dfs_paths_lbl))
