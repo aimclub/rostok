@@ -3,7 +3,8 @@ from rostok.block_builder_chrono.easy_body_shapes import Box, Cylinder
 from rostok.block_builder_chrono.block_classes import (ChronoEasyShapeObject,
                                               DefaultChronoMaterial,
                                               FrameTransform)
-from rostok.graph_grammar.node import BlockWrapper, GraphGrammar, Node
+from rostok.graph_grammar.node import GraphGrammar, Node
+from rostok.block_builder_chrono.block_classes import BlockBlueprint, ChronoEasyShapeObjectDes
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
 from rostok.virtual_experiment.simulation_step import SimOut
@@ -13,11 +14,15 @@ def get_object_to_grasp():
     matich = DefaultChronoMaterial()
     matich.Friction = 0.65
     matich.DampingF = 0.65
+
     shape_box = Box(0.2, 0.2, 0.5)
-    obj = BlockWrapper(ChronoEasyShapeObject,
-                       shape=shape_box,
-                       material=matich,
-                       pos=FrameTransform([0, 0.5, 0], [0, -0.048, 0.706, 0.706]))
+
+    grab_obj_des = ChronoEasyShapeObjectDes(shape_box,
+                                            material=matich,
+                                            pos=FrameTransform([0, 0.5, 0],
+                                                               [0, -0.048, 0.706, 0.706]))
+
+    obj = BlockBlueprint(ChronoEasyShapeObject, grab_obj_des)
 
     return obj
 

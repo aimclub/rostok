@@ -2,35 +2,36 @@ import example_vocabulary
 import pychrono as chrono
 
 import rostok.criterion.criterion_calc as criterion
-from rostok.block_builder.envbody_shapes import Cylinder
-from rostok.block_builder.node_render import (ChronoBodyEnv,
-                                              DefaultChronoMaterial,
-                                              FrameTransform)
+from rostok.block_builder_chrono.easy_body_shapes import Cylinder
+from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject, ChronoEasyShapeObjectDes, BlockBlueprint
+from rostok.block_builder_chrono.block_classes import (DefaultChronoMaterial, FrameTransform)
 from rostok.criterion.flags_simualtions import FlagMaxTime, FlagNotContact, FlagSlipout
-from rostok.graph_grammar.node import BlockWrapper, GraphGrammar, Node
-from rostok.trajectory_optimizer.control_optimizer import (
-    ConfigRewardFunction, ControlOptimizer)
+from rostok.graph_grammar.node import GraphGrammar
+from rostok.trajectory_optimizer.control_optimizer import (ConfigRewardFunction, ControlOptimizer)
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
 from rostok.virtual_experiment.simulation_step import SimOut
+
 
 # Init grasping object
 def get_object_to_grasp():
     matich = DefaultChronoMaterial()
     matich.Friction = 0.65
     matich.DampingF = 0.65
-    obj = BlockWrapper(ChronoBodyEnv,
-                       shape=Cylinder(),
-                       material=matich,
-                       pos=FrameTransform([0, 0.6, 0], [0, -0.048, 0.706, 0.706]))
+    grab_obj_des = ChronoEasyShapeObjectDes(shape=Cylinder(),
+                                            material=matich,
+                                            pos=FrameTransform([0, 1, 0],
+                                                               [0, -0.048, 0.706, 0.706]))
+    obj = BlockBlueprint(ChronoEasyShapeObject, grab_obj_des)
 
     return obj
 
+
 # Calculate criterion of grabing
-def grab_crtitrion(sim_output: dict[int, SimOut],
-                   weight):
+def grab_crtitrion(sim_output: dict[int, SimOut], weight):
 
     return criterion.criterion_calc(sim_output, weight)
+
 
 # Create criterion function
 def create_grab_criterion_fun(weight):
@@ -40,6 +41,7 @@ def create_grab_criterion_fun(weight):
 
     return fun
 
+
 # Create torque trajectory function
 def create_traj_fun(stop_time: float, time_step: float):
 
@@ -47,6 +49,7 @@ def create_traj_fun(stop_time: float, time_step: float):
         return create_torque_traj_from_x(graph, x, stop_time, time_step)
 
     return fun
+
 
 WEIGHT = [5, 10, 2]
 

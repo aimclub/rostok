@@ -8,7 +8,7 @@ from rostok.block_builder_chrono.block_classes import (BuildingBody, ChronoRevol
 from rostok.block_builder_chrono.blocks_utils import (FrameTransform, DefaultFrame)
 from rostok.block_builder_chrono.chrono_system import register_chrono_system
 from rostok.criterion.flags_simualtions import (ConditionStopSimulation, FlagStopSimualtions)
-from rostok.graph_grammar.node import BlockWrapper, GraphGrammar, BlockBlueprint
+from rostok.graph_grammar.node import GraphGrammar, BlockBlueprint
 from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
 from rostok.virtual_experiment.robot import Robot
 
@@ -92,7 +92,7 @@ class SimulationStepOptimization:
             Control trajectory of one joint have to have format [[time, value], ...].
             Array must be same shape as array of joints.
         graph_mechanism (GraphGrammar): Graph of the robot to be simulated
-        grasp_object (BlockWrapper): Wrapper of :py:class:`ChronoBodyEnv`.
+        grasp_object (BlockBlueprint): Wrapper of :py:class:`ChronoBodyEnv`.
             This is the object that the robot grabs.
     """
 

@@ -1,7 +1,6 @@
 from cmath import sqrt
 
 import numpy as np
-import pychrono as chrono
 
 from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, ChronoTransform,
                                                        PrimitiveBody, JointInputType)
@@ -13,7 +12,6 @@ from rostok.graph_grammar.node import ROOT, GraphGrammar, BlockBlueprint
 from rostok.graph_grammar.node_vocabulary import NodeVocabulary
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 
-import pickle
 # Bodies
 link1 = BlockBlueprint(PrimitiveBody, PrimitiveBodyDes(Box(0.1, 0.6, 0.4)))
 link2 = BlockBlueprint(PrimitiveBody, PrimitiveBodyDes(Box(0.1, 0.6, 0.4)))
