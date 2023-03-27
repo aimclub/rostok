@@ -34,7 +34,7 @@ class BlockWrapper:
 
 @dataclass
 class Node:
-    """Contains information about the label and :py:class:`BlockWrapper`,
+    """Contains information about the label and :py:class:`BlockBlueprint`,
     which is the physical representation of the node in the simulator
     """
     label: str = "*"
@@ -285,7 +285,7 @@ class GraphGrammar(nx.DiGraph):
                     path.append(edge[1])
         return paths
 
-    def build_terminal_wrapper_array(self) -> list[list[UniqueBlueprint]]:
+    def build_unique_blueprint_array(self) -> list[list[UniqueBlueprint]]:
         """Returns a 2-d array of paths from root to each leaf
 
         Raises:

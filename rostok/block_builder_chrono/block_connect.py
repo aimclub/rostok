@@ -2,7 +2,7 @@ import pychrono.core as chrono
 import pychrono.irrlicht as chronoirr
 
 from rostok.block_builder_chrono.block_classes import (BuildingBody, ChronoRevolveJoint,
-                                                       ChronoTransform, PrimitiveBody)
+                                                       ChronoTransform, PrimitiveBody, BLOCK_CLASS_TYPES)
 from rostok.block_builder_chrono.block_types import (Block, BlockBody, BlockBridge, BlockTransform,
                                                      BlockType)
 from rostok.block_builder_chrono.blocks_utils import FrameTransform
@@ -38,7 +38,7 @@ def make_fix_joint(prev_block: BuildingBody, next_block: BuildingBody, system: c
 
 
 # the function places and connects a sequence of blocks. The sequence should start from the root block
-def place_and_connect(sequence: list[Block], system: chrono.ChSystem):
+def place_and_connect(sequence: list[BLOCK_CLASS_TYPES], system: chrono.ChSystem):
     # all connections occurs between bodies
     previous_body_block = None
     previous_joint = None

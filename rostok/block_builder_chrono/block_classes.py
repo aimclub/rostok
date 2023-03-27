@@ -2,7 +2,7 @@ import pathlib
 import random
 from abc import ABC
 from enum import Enum
-from typing import Optional, Union
+from typing import Optional, Union, ClassVar, Type
 
 
 import inspect
@@ -207,7 +207,7 @@ class ChronoTransform(BlockTransform[ChronoTransformDes]):
 
 
 
-class InputType(str, Enum):
+class JointInputType(str, Enum):
     TORQUE = {"Name": "Torque", "TypeMotor": chrono.ChLinkMotorRotationTorque}
     VELOCITY = {"Name": "Speed", "TypeMotor": chrono.ChLinkMotorRotationSpeed}
     POSITION = {"Name": "Angle", "TypeMotor": chrono.ChLinkMotorRotationAngle}
@@ -220,7 +220,7 @@ class InputType(str, Enum):
 
 @dataclass
 class ChronoRevolveJointDes:
-    type_of_input: InputType = InputType.TORQUE
+    type_of_input: JointInputType = JointInputType.TORQUE
     radius: float = 0.07
     length: float = 0.4
     material = DefaultChronoMaterial()
@@ -250,7 +250,7 @@ class ChronoRevolveJoint(BlockBridge[ChronoRevolveJointDes]):
     """
 
     def __init__(self,
-                 type_of_input: InputType = InputType.TORQUE,
+                 type_of_input: JointInputType = JointInputType.TORQUE,
                  radius=0.07,
                  length=0.4,
                  material = DefaultChronoMaterial(),
@@ -547,7 +547,7 @@ BLOCK_DESCRIPTORS_TYPES = Union[ChronoEasyShapeObjectDes, PrimitiveBodyDes, Chro
 
 @dataclass
 class BlockBlueprint:
-    cls: BLOCK_CLASS_TYPES
+    cls: Type[BLOCK_CLASS_TYPES]
     descriptor: BLOCK_DESCRIPTORS_TYPES
     def create_block(self) -> BLOCK_CLASS_TYPES:
         return self.cls.initialize_from_descriptor(self.descriptor) # type: ignore
