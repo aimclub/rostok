@@ -1,35 +1,9 @@
-from copy import deepcopy
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import networkx as nx
 from typing import Optional
 from networkx.algorithms.traversal import dfs_preorder_nodes
 from rostok.block_builder_chrono.block_classes import BlockBlueprint
-
-
-class BlockWrapper:
-    """Class is interface between node and interpretation in simulation.
-
-    The interface allows you to create an interpretation of terminal nodes in the simulation.
-    Interpretation classes is in :py:mod:`node_render`.
-    The instance must be specified when creating the node.
-    When assembling a robot from a graph, an object is created by the 
-    :py:meth:`BlockWrapper.create_block` method.
-    When the object is created, the desired arguments of the interpretation object are set.
-
-    Args:
-        block_cls: Interpretation class of node in simulation
-        args: Arguments py:attr:`BlockWrapper.block_cls`
-        kwargs: Additional arguments py:attr:`BlockWrapper.block_cls`
-    """
-
-    def __init__(self, block_cls, *args, **kwargs):
-        self.block_cls = block_cls
-        self.args = args
-        self.kwargs = kwargs
-
-    def create_block(self):
-        return self.block_cls(*self.args, **self.kwargs)
 
 
 @dataclass

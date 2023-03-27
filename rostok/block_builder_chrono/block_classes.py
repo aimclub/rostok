@@ -415,8 +415,9 @@ class PrimitiveBody(BuildingBody[PrimitiveBodyDes]):
 
 @dataclass
 class ChronoEasyShapeObjectDes:
-    shape=easy_body_shapes.Box()
+    shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
     density: float = 10.0
+    material : DefaultChronoMaterial = DefaultChronoMaterial()
     is_collide: bool = True
     color: Optional[list[int]] = None
     pos: FrameTransform = DefaultFrame
