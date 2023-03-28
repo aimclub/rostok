@@ -71,7 +71,14 @@ Rostok - это  open source Python framework для генеративного 
 
 Исследование проводится при поддержке [Исследовательского центра сильного искусственного интеллекта в промышленности](<https://sai.itmo.ru/>) [Университета ИТМО](https://itmo.ru) в рамках мероприятия программы центра: Разработка и испытания экспериментального образца библиотеки алгоритмов сильного ИИ в части генеративного и интерактивного дизайна плоских механизмов антропоморфных захватных устройств и роботизированных кистей
 
-![logo_aim](/docs/images/AIM-Strong_Sign_Norm-01_Colors.svg)
+<p align="center"> 
+<a href='https://sai.itmo.ru'>
+  <img src='/docs/images/AIM-Strong_Sign_Norm-01_Colors.svg' width='400'>
+</a>
+<a href='https://itmo.ru'>
+  <img src='/docs/images/logo.png' width='400'>
+</a>
+</p> 
 
 ### Разработчики
 
