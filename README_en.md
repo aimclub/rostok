@@ -66,7 +66,14 @@ Examples of usage of independent modules is in `rostok\examples` directory.
 
 ## Acknowledgments
 
-<img src="/docs/images/logo.png" width="200">
+<p align="center"> 
+<a href='https://itmo.ru'>
+  <img src='/docs/images/logo.png' width='400'>
+</a>
+<a href='https://sai.itmo.ru'>
+  <img src='/docs/images/AIM-Strong_Sign_Norm-01_Colors.svg' width='400'>
+</a>
+</p> 
 
 ### Affiliation
 
@@ -76,7 +83,6 @@ The framework was developed in [ITMO University](https://en.itmo.ru/).
 
 The study is supported by the [Research Center Strong Artificial Intelligence in Industry](<https://sai.itmo.ru/>) 
 of [ITMO University](https://en.itmo.ru/) as part of the plan of the center's program: Development and testing of an experimental prototype of a library of strong AI algorithms in terms of generative and interactive design of flat mechanisms of anthropomorphic gripping devices and robotic brushes
-
 
 ### Developers
 
