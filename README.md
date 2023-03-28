@@ -63,15 +63,9 @@ Rostok - это  open source Python framework для генеративного 
 
 Описание проекта и туториалы доступны [на сайте проекта](https://rostok.readthedocs.io/en/latest/) .
 
-## Публикации
-
-* I. I. Borisov, E. E. Khornutov, D. V. Ivolga, N. A. Molchanov, I. A. Maksimov and S. A. Kolyubin, "Reconfigurable Underactuated Adaptive Gripper Designed by Morphological Computation," 2022 International Conference on Robotics and Automation (ICRA), 2022, pp. 1130-1136, doi: 10.1109/ICRA46639.2022.9811738.
-
-
 ## Примеры
 Пример настройки и использования пайплайна генеративного дизайна находится в каталоге `rostok\app`.
 Примеры использования независимых модулей находятся в директории `rostok\examples`.
-
 
 ## Поддержка
 
@@ -93,3 +87,20 @@ Rostok - это  open source Python framework для генеративного 
 * Иван Борисов borisovii@itmo.ru по вопросам работы алгоритмов
 * Кирилл Жарков kdzharkov@itmo.ru по техническим вопросам
 * Сергей Колюбин s.kolyubin@itmo.ru по вопросам сотрудничества
+
+## Цитирование
+
+ГОСТ:
+
+* I. I. Borisov, E. E. Khornutov, D. V. Ivolga, N. A. Molchanov, I. A. Maksimov and S. A. Kolyubin, "Reconfigurable Underactuated Adaptive Gripper Designed by Morphological Computation," 2022 International Conference on Robotics and Automation (ICRA), 2022, pp. 1130-1136, doi: 10.1109/ICRA46639.2022.9811738.
+
+Bibtex:
+
+* @inproceedings{borisov2022reconfigurable,
+  title={Reconfigurable underactuated adaptive gripper designed by morphological computation},
+  author={Borisov, Ivan I and Khornutov, Evgenii E and Ivolga, Dmitriy V and Molchanov, Nikita A and Maksimov, Ivan A and Kolyubin, Sergey A},
+  booktitle={2022 International Conference on Robotics and Automation (ICRA)},
+  pages={1130--1136},
+  year={2022},
+  organization={IEEE}
+}

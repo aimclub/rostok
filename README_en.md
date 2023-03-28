@@ -59,10 +59,6 @@ After the installation of the package one can get an error `Original error was: 
 
 The description of the project and tutorials are available [at project website](https://rostok.readthedocs.io/en/latest/?badge=latest).
 
-## Publications
-
-* I. I. Borisov, E. E. Khornutov, D. V. Ivolga, N. A. Molchanov, I. A. Maksimov and S. A. Kolyubin, "Reconfigurable Underactuated Adaptive Gripper Designed by Morphological Computation," 2022 International Conference on Robotics and Automation (ICRA), 2022, pp. 1130-1136, doi: 10.1109/ICRA46639.2022.9811738.
-
 ## Examples
 
 An example of configuration and usage of the generative pipeline is in `rostok\app` directory.  
@@ -97,3 +93,20 @@ of [ITMO University](https://en.itmo.ru/) as part of the plan of the center's pr
 * Ivan Borisov borisovii@itmo.ru for scientific aspects of the project
 * Kirill Zharkov kdzharkov@itmo.ru for technical questions of the project
 * Sergey Kolyubin s.kolyubin@itmo.ru for collaboration aspects
+
+## Citation
+
+GOST:
+
+* I. I. Borisov, E. E. Khornutov, D. V. Ivolga, N. A. Molchanov, I. A. Maksimov and S. A. Kolyubin, "Reconfigurable Underactuated Adaptive Gripper Designed by Morphological Computation," 2022 International Conference on Robotics and Automation (ICRA), 2022, pp. 1130-1136, doi: 10.1109/ICRA46639.2022.9811738.
+
+Bibtex:
+
+* @inproceedings{borisov2022reconfigurable,
+  title={Reconfigurable underactuated adaptive gripper designed by morphological computation},
+  author={Borisov, Ivan I and Khornutov, Evgenii E and Ivolga, Dmitriy V and Molchanov, Nikita A and Maksimov, Ivan A and Kolyubin, Sergey A},
+  booktitle={2022 International Conference on Robotics and Automation (ICRA)},
+  pages={1130--1136},
+  year={2022},
+  organization={IEEE}
+}
