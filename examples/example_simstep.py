@@ -18,6 +18,7 @@ from rostok.graph_grammar.graph_utils import plot_graph
 mechs = [
     get_terminal_graph_three_finger, get_terminal_graph_no_joints, get_terminal_graph_two_finger
 ]
+mechs = [get_terminal_graph_no_joints]
 for get_graph in mechs:
     # Constants
     MAX_TIME = 1
@@ -49,3 +50,4 @@ for get_graph in mechs:
 
     # Start simulation
     sim_output = sim.simulate_system(TIME_STEP, True)
+    print(sim_output)
