@@ -66,15 +66,6 @@ Examples of usage of independent modules is in `rostok\examples` directory.
 
 ## Acknowledgments
 
-<p align="center"> 
-<a href='https://itmo.ru'>
-  <img src='/docs/images/logo.png' width='400'>
-</a>
-<a href='https://sai.itmo.ru'>
-  <img src='/docs/images/AIM-Strong_Sign_Norm-01_Colors.svg' width='400'>
-</a>
-</p> 
-
 ### Affiliation
 
 The framework was developed in [ITMO University](https://en.itmo.ru/).
