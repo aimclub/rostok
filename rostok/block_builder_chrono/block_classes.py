@@ -82,7 +82,6 @@ class BuildingBody(BlockBody, ABC):
         self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
         self.body.SetCollide(is_collide)
         # Normal Forces
-        self.__contact_reporter = ContactReporter(self.body)
         # set a color for the body, default is random
         if color is None:
             rgb = [random.random(), random.random(), random.random()]
@@ -135,46 +134,6 @@ class BuildingBody(BlockBody, ABC):
             pychrono.ChMarker: The input frame of the body
         """
         return self._ref_frame_in
-
-    @property
-    def normal_force(self) -> float:
-        """Return value normal forces of random collision point.
-
-        Returns:
-            float: Value normal forces of random collision point
-        """
-        system = get_chrono_system()
-        system.GetContactContainer().ReportAllContacts(self.__contact_reporter)
-        return self.__contact_reporter.get_normal_forces()
-
-    @property
-    def list_n_forces(self) -> list:
-        """Return a list of all the contact forces.
-
-        Returns:
-            list: List normal forces of all the contacts points
-        """
-        system = get_chrono_system()
-        container = system.GetContactContainer()
-        contacts = container.GetNcontacts()
-        if contacts:
-            self.__contact_reporter.list_clear()
-            container.ReportAllContacts(self.__contact_reporter)
-        return self.__contact_reporter.get_list_n_forces()
-
-    @property
-    def list_c_coord(self) -> list:
-        """Return a list of all the contact forces.
-        Returns:
-            list: List normal forces of all the contacts points
-        """
-        system = get_chrono_system()
-        container = system.GetContactContainer()
-        contacts = container.GetNcontacts()
-        if contacts:
-            self.__contact_reporter.list_cont_clear()
-            container.ReportAllContacts(self.__contact_reporter)
-        return self.__contact_reporter.get_list_c_coord()
 
 
 class ChronoTransform(BlockTransform):
@@ -453,8 +412,6 @@ class ChronoEasyShapeObject():
         body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
         body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
         body.SetCollide(is_collide)
-        # Normal Forces
-        self.__contact_reporter = ContactReporter(body)
         self.body = body
         if color is None:
             rgb = [random.random(), random.random(), random.random()]
@@ -466,47 +423,6 @@ class ChronoEasyShapeObject():
 
     def set_coord(self, frame: FrameTransform):
         self.body.SetCoord(frame_transform_to_chcoordsys(frame))
-
-    @property
-    def normal_force(self) -> float:
-        """Return value normal forces of random collision point.
-
-        Returns:
-            float: Value normal forces of random collision point
-        """
-        system = get_chrono_system()
-        system.GetContactContainer().ReportAllContacts(self.__contact_reporter)
-        return self.__contact_reporter.get_normal_forces()
-
-    @property
-    def list_n_forces(self) -> list:
-        """Return a list of all the contact forces.
-
-        Returns:
-            list: List normal forces of all the contacts points
-        """
-        system = get_chrono_system()
-        container = system.GetContactContainer()
-        contacts = container.GetNcontacts()
-        if contacts:
-            self.__contact_reporter.list_clear()
-            container.ReportAllContacts(self.__contact_reporter)
-        return self.__contact_reporter.get_list_n_forces()
-
-    @property
-    def list_c_coord(self) -> list:
-        """Return a list of all the contact forces.
-        Returns:
-            list: List normal forces of all the contacts points
-        """
-        system = get_chrono_system()
-        container = system.GetContactContainer()
-        contacts = container.GetNcontacts()
-        if contacts:
-            self.__contact_reporter.list_cont_clear()
-            container.ReportAllContacts(self.__contact_reporter)
-        return self.__contact_reporter.get_list_c_coord()
-
 
 class NodeFeatures:
 
