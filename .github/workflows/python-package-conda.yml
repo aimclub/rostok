@@ -16,10 +16,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python 3.9.12
+    - name: Set up Python 3.9.16
       uses: actions/setup-python@v3
       with:
-        python-version: 3.9.12
+        python-version: 3.9.16
     - name: Add conda to system path
       run: |
         # $CONDA is an environment variable pointing to the root of the miniconda directory
@@ -37,7 +37,7 @@ jobs:
     - name: Install Rostok
       run: |
         pip3 install -e . 
-
+        
     - name: Install Chrono
       run: |
         wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1_oR7JfL4ct6Y0PL4Zpvb2Rbj85jYLT1b' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1_oR7JfL4ct6Y0PL4Zpvb2Rbj85jYLT1b" -O chrono_pckg_anaconda.tar.bz2 && rm -rf /tmp/cookies.txt
