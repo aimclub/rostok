@@ -4,6 +4,14 @@
 
 </p>
 
+[![SAI](https://github.com/ITMO-NSS-team/open-source-ops/blob/master/badges/SAI_badge_flat.svg)](https://sai.itmo.ru/)
+[![ITMO](https://github.com/ITMO-NSS-team/open-source-ops/blob/master/badges/ITMO_badge_flat_rus.svg)](https://en.itmo.ru/en/)
+
+[![Documentation Status](https://readthedocs.org/projects/rostok/badge/?version=latest)](https://rostok.readthedocs.io/en/latest/?badge=latest)
+[![license](https://img.shields.io/github/license/aimclub/rostok)](https://github.com/aimclub/rostok/blob/master/LICENSE)
+[![Eng](https://img.shields.io/badge/lang-en-red.svg)](/README_en.md)
+[![Mirror](https://camo.githubusercontent.com/9bd7b8c5b418f1364e72110a83629772729b29e8f3393b6c86bff237a6b784f6/68747470733a2f2f62616467656e2e6e65742f62616467652f6769746c61622f6d6972726f722f6f72616e67653f69636f6e3d6769746c6162)](https://gitlab.actcognitive.org/itmo-sai-code/rostok/)
+
 # Rostok
 
 Rostok - это  open source Python framework для генеративного дизайна рычажных механизмов для роботехнических систем. Обеспечивает основу для описания механизмов в виде графа, настройки окружения, выполнения моделирования для сгенерированных механизмов, вычисление вознаграждения в виде значения критериев сгенерированного дизайна и поиска наилучшего возможного дизайна.
@@ -51,26 +59,17 @@ Rostok - это  open source Python framework для генеративного 
 
 После установки пакета может появиться ошибка «Исходная ошибка: Ошибка загрузки DLL при импорте _multiarray_umath: указанный модуль не найден», попробуйте переустановить numpy в среде rostok
 
-## Документация [![Documentation Status](https://readthedocs.org/projects/rostok/badge/?version=latest)](https://rostok.readthedocs.io/en/latest/?badge=latest)
+## Документация
 
 Описание проекта и туториалы доступны [на сайте проекта](https://rostok.readthedocs.io/en/latest/) .
-
-## Публикации
-
-* I. I. Borisov, E. E. Khornutov, D. V. Ivolga, N. A. Molchanov, I. A. Maksimov and S. A. Kolyubin, "Reconfigurable Underactuated Adaptive Gripper Designed by Morphological Computation," 2022 International Conference on Robotics and Automation (ICRA), 2022, pp. 1130-1136, doi: 10.1109/ICRA46639.2022.9811738.
-
 
 ## Примеры
 Пример настройки и использования пайплайна генеративного дизайна находится в каталоге `rostok\app`.
 Примеры использования независимых модулей находятся в директории `rostok\examples`.
 
-
 ## Поддержка
 
-Библиотека разработана при поддержке исследовательского центра [**"Сильный искусственный интеллект в промышленности"**](<https://sai.itmo.ru/>) [**Университета ИТМО**](https://itmo.ru) (г. Санкт-Петербург, Россия)
-
-
-![logo_aim](/docs/images/AIM-Strong_Sign_Norm-01_Colors.svg)
+Исследование проводится при поддержке [Исследовательского центра сильного искусственного интеллекта в промышленности](<https://sai.itmo.ru/>) [Университета ИТМО](https://itmo.ru) в рамках мероприятия программы центра: Разработка и испытания экспериментального образца библиотеки алгоритмов сильного ИИ в части генеративного и интерактивного дизайна плоских механизмов антропоморфных захватных устройств и роботизированных кистей
 
 ### Разработчики
 
@@ -86,3 +85,20 @@ Rostok - это  open source Python framework для генеративного 
 * Иван Борисов borisovii@itmo.ru по вопросам работы алгоритмов
 * Кирилл Жарков kdzharkov@itmo.ru по техническим вопросам
 * Сергей Колюбин s.kolyubin@itmo.ru по вопросам сотрудничества
+
+## Цитирование
+
+ГОСТ:
+
+* I. I. Borisov, E. E. Khornutov, D. V. Ivolga, N. A. Molchanov, I. A. Maksimov and S. A. Kolyubin, "Reconfigurable Underactuated Adaptive Gripper Designed by Morphological Computation," 2022 International Conference on Robotics and Automation (ICRA), 2022, pp. 1130-1136, doi: 10.1109/ICRA46639.2022.9811738.
+
+Bibtex:
+
+* @inproceedings{borisov2022reconfigurable,
+  title={Reconfigurable underactuated adaptive gripper designed by morphological computation},
+  author={Borisov, Ivan I and Khornutov, Evgenii E and Ivolga, Dmitriy V and Molchanov, Nikita A and Maksimov, Ivan A and Kolyubin, Sergey A},
+  booktitle={2022 International Conference on Robotics and Automation (ICRA)},
+  pages={1130--1136},
+  year={2022},
+  organization={IEEE}
+}
