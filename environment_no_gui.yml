@@ -9,7 +9,6 @@ dependencies:
   - python=3.9
   - conda-forge::irrlicht=1.8.5
   - conda-forge::pythonocc-core=7.4.1
-  - projectchrono::pychrono=7.*
   - numpy
   - pip
   - pip:
