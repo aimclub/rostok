@@ -7,9 +7,9 @@ channels:
   - https://conda.anaconda.org/conda-forge
 dependencies:
   - python=3.9
-  - pythonocc-core=7.4.1
+  - conda-forge::irrlicht=1.8.5
+  - conda-forge::pythonocc-core=7.4.1
   - projectchrono::pychrono=7.*
-  - irrlicht
   - numpy
   - pip
   - pip:
