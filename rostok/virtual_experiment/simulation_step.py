@@ -165,8 +165,8 @@ class SimulationStepOptimization:
                 Or create yours, that subclasses :py:class:`FlagStopSimualtions`
         """
         self.condion_stop_simulation = ConditionStopSimulation(self.chrono_system, self.grab_robot,
-                                                               self.grasp_object,
-                                                               flags_stop_simulation)
+                                                               self.grasp_object,self.contact_reporter,
+                                                               flags_stop_simulation )
 
     # Add peculiar parameters of chrono system. Like that {"Set_G_acc":chrono.ChVectorD(0,0,0)}
     def change_config_system(self, dict_config: dict):

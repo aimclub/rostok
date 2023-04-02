@@ -127,6 +127,7 @@ class SensorFunctions:
             return dict([(index, amount_contact_force_obj)])
         else:
             return None
+
     @staticmethod
     def abs_coord_COG(body: chrono.ChBody, index:int=-1):
         """Sensor of absolute coordinates of grasp object
