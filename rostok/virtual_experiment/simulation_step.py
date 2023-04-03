@@ -242,11 +242,9 @@ class SimulationStepOptimization:
             self.chrono_system.Update()
             self.chrono_system.DoStepDynamics(time_step)
             # Realtime for fixed step
-
-            if self.chrono_system.GetStepcount() % int(FRAME_STEP / time_step) == 0:
-                if visualize:
-
-                    vis.Run()
+            if visualize:
+                vis.Run()
+                if self.chrono_system.GetStepcount() % int(FRAME_STEP / time_step) == 0:
                     vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
                     vis.Render()
                     vis.EndScene()
