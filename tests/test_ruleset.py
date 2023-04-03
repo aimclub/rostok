@@ -1,25 +1,25 @@
 from cmath import sqrt
 
 import numpy as np
-
-from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, ChronoTransform,
-                                                       PrimitiveBody, JointInputType)
-from rostok.block_builder_chrono.block_classes import (ChronoRevolveJointDes, ChronoTransformDes,
-                                                       PrimitiveBodyDes)
+from rostok.block_builder_api.block_blueprints import TransformBlueprint, PrimitiveBodyBlueprint, \
+EnvironmentBodyBlueprint, RevolveJointBlueprint
 from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.block_builder_chrono.blocks_utils import FrameTransform
-from rostok.graph_grammar.node import ROOT, GraphGrammar, BlockBlueprint
+from rostok.graph_grammar.node import ROOT, GraphGrammar
+from rostok.graph_grammar.node_vocabulary import NodeVocabulary
+from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
+from rostok.block_builder_api.block_parameters import JointInputType
 from rostok.graph_grammar.node_vocabulary import NodeVocabulary
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 
 # Bodies
-link1 = BlockBlueprint(PrimitiveBody, PrimitiveBodyDes(Box(0.1, 0.6, 0.4)))
-link2 = BlockBlueprint(PrimitiveBody, PrimitiveBodyDes(Box(0.1, 0.6, 0.4)))
+link1 = PrimitiveBodyBlueprint(Box(0.1, 0.6, 0.4))
+link2 = PrimitiveBodyBlueprint(Box(0.1, 0.6, 0.4))
 
-flat1 = BlockBlueprint(PrimitiveBody, PrimitiveBodyDes(Box(0.4, 0.2, 0.8)))
-flat2 = BlockBlueprint(PrimitiveBody, PrimitiveBodyDes(Box(0.7, 0.2, 0.8)))
+flat1 = PrimitiveBodyBlueprint(Box(0.4, 0.2, 0.8))
+flat2 = PrimitiveBodyBlueprint(Box(0.7, 0.2, 0.8))
 
-u1 = BlockBlueprint(PrimitiveBody, PrimitiveBodyDes(Box(0.1, 0.1, 0.4)))
+u1 = PrimitiveBodyBlueprint(Box(0.1, 0.1, 0.4))
 
 # Transforms
 RZX = FrameTransform([0, 0, 0], [sqrt(2), 0, sqrt(2), 0])
@@ -32,17 +32,17 @@ MOVE_ZX_MINUS = FrameTransform([-0.3, 0, -0.3], [1, 0, 0, 0])
 MOVE_X_PLUS = FrameTransform([0.3, 0, 0.], [1, 0, 0, 0])
 MOVE_Z_PLUS_X_MINUS = FrameTransform([-0.3, 0, 0.3], [1, 0, 0, 0])
 
-transform_rzx = BlockBlueprint(ChronoTransform, ChronoTransformDes(RZX))
-transform_rzy = BlockBlueprint(ChronoTransform, ChronoTransformDes(RZY))
-transform_rxy = BlockBlueprint(ChronoTransform, ChronoTransformDes(RXY))
-transform_mzx_plus = BlockBlueprint(ChronoTransform, ChronoTransformDes(MOVE_ZX_PLUS))
-transform_mzx_minus = BlockBlueprint(ChronoTransform, ChronoTransformDes(MOVE_ZX_MINUS))
-transform_mx_plus = BlockBlueprint(ChronoTransform, ChronoTransformDes(MOVE_X_PLUS))
-transform_mz_plus_x_minus = BlockBlueprint(ChronoTransform, ChronoTransformDes(MOVE_Z_PLUS_X_MINUS))
+transform_rzx = TransformBlueprint(RZX)
+transform_rzy = TransformBlueprint(RZY)
+transform_rxy = TransformBlueprint(RXY)
+transform_mzx_plus = TransformBlueprint(MOVE_ZX_PLUS)
+transform_mzx_minus = TransformBlueprint(MOVE_ZX_MINUS)
+transform_mx_plus = TransformBlueprint(MOVE_X_PLUS)
+transform_mz_plus_x_minus = TransformBlueprint(MOVE_Z_PLUS_X_MINUS)
 
 
 # Joints
-revolve1 = BlockBlueprint(ChronoRevolveJoint, ChronoRevolveJointDes(JointInputType.TORQUE))
+revolve1 = RevolveJointBlueprint(JointInputType.TORQUE)
 
 node_vocab = NodeVocabulary()
 node_vocab.add_node(ROOT)

@@ -3,27 +3,27 @@ import pychrono as chrono
 
 import rostok.criterion.criterion_calc as criterion
 from rostok.block_builder_api.easy_body_shapes import Cylinder
-from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject, ChronoEasyShapeObjectDes, BlockBlueprint
-from rostok.block_builder_chrono.block_classes import (DefaultChronoMaterial, FrameTransform)
+
+from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
+
 from rostok.criterion.flags_simualtions import FlagMaxTime, FlagNotContact, FlagSlipout
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.trajectory_optimizer.control_optimizer import (ConfigRewardFunction, ControlOptimizer)
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
 from rostok.virtual_experiment.simulation_step import SimOut
-
+from rostok.block_builder_api.block_parameters import DefaultFrame, Material, FrameTransform
 
 # Init grasping object
 def get_object_to_grasp():
-    matich = DefaultChronoMaterial()
+    matich = Material()
     matich.Friction = 0.65
     matich.DampingF = 0.65
-    grab_obj_des = ChronoEasyShapeObjectDes(shape=Cylinder(),
+    obj = EnvironmentBodyBlueprint(shape=Cylinder(),
                                             material=matich,
                                             pos=FrameTransform([0, 1, 0],
                                                                [0, -0.048, 0.706, 0.706]))
-    obj = BlockBlueprint(ChronoEasyShapeObject, grab_obj_des)
-
+    
     return obj
 
 

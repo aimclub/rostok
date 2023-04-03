@@ -3,14 +3,16 @@ import networkx as nx
 import numpy as np
 import pychrono as chrono
 
-from rostok.block_builder_chrono.block_classes import PrimitiveBody, \
-    ChronoRevolveJoint, ChronoTransform
-from rostok.block_builder_chrono.block_classes import PrimitiveBodyDes, \
-    ChronoRevolveJointDes, ChronoTransformDes, FrameTransform, JointInputType
-from rostok.block_builder_chrono.block_classes import BlockBlueprint
+
+import numpy as np
+
+from rostok.block_builder_api.block_blueprints import TransformBlueprint, PrimitiveBodyBlueprint, \
+EnvironmentBodyBlueprint, RevolveJointBlueprint
 from rostok.block_builder_api.easy_body_shapes import Box
+from rostok.block_builder_chrono.blocks_utils import FrameTransform
+from rostok.block_builder_api.block_parameters import JointInputType
 from rostok.graph_grammar import node_vocabulary, rule_vocabulary
-from rostok.graph_grammar.node import ROOT, Node
+from rostok.graph_grammar.node import ROOT
 
 
 def plot_graph(graph):
@@ -31,12 +33,12 @@ def init_extension_rules():
     alpha_right = [180, 150, 120]
     length_link = [0.3, 0.6, 0.8, 1]
 
-    flat = list(map(lambda x: BlockBlueprint(PrimitiveBody, PrimitiveBodyDes(Box(x, 0.05, 0.8))), width))
+    flat = list(map(lambda x: PrimitiveBodyBlueprint((Box(x, 0.05, 0.8))), width))
 
-    link = list(map(lambda x: BlockBlueprint(PrimitiveBody, PrimitiveBodyDes(Box(0.1, x, 0.3))), length_link))
+    link = list(map(lambda x: PrimitiveBodyBlueprint((Box(0.1, x, 0.3))), length_link))
 
-    u1 = BlockBlueprint(PrimitiveBody, PrimitiveBodyDes(Box(0.1, 0.05, 0.3)))
-    u2 = BlockBlueprint(PrimitiveBody, PrimitiveBodyDes(Box(0.2, 0.1, 0.3)))
+    u1 = PrimitiveBodyBlueprint((Box(0.1, 0.05, 0.3)))
+    u2 = PrimitiveBodyBlueprint((Box(0.2, 0.1, 0.3)))
 
     # %% Tranform for extansions rules
     # z_shift = [-0.3, 0, 0.3]
@@ -74,32 +76,32 @@ def init_extension_rules():
     #                                         quat_Y_ang_alpha.e2,quat_Y_ang_alpha.e3])
 
     transform_to_right_mount = list(
-        map(lambda x: BlockBlueprint(ChronoTransform, ChronoTransformDes(x)), MOVE_TO_RIGHT_SIDE))
+        map(lambda x: TransformBlueprint(x), MOVE_TO_RIGHT_SIDE))
     transform_to_right_mount_plus = list(
-        map(lambda x: BlockBlueprint(ChronoTransform, ChronoTransformDes(x)), MOVE_TO_RIGHT_SIDE_PLUS))
+        map(lambda x: TransformBlueprint(x), MOVE_TO_RIGHT_SIDE_PLUS))
     transform_to_right_mount_plus_angle = list(
-        map(lambda x: BlockBlueprint(ChronoTransform, ChronoTransformDes(x)), MOVE_TO_RIGHT_SIDE_PLUS_ANGLE))
+        map(lambda x: TransformBlueprint(x), MOVE_TO_RIGHT_SIDE_PLUS_ANGLE))
     transform_to_right_mount_minus = list(
-        map(lambda x: BlockBlueprint(ChronoTransform, ChronoTransformDes(x)), MOVE_TO_RIGHT_SIDE_MINUS))
+        map(lambda x: TransformBlueprint(x), MOVE_TO_RIGHT_SIDE_MINUS))
     transform_to_right_mount_minus_angle = list(
-        map(lambda x: BlockBlueprint(ChronoTransform, ChronoTransformDes(x)), MOVE_TO_RIGHT_SIDE_MINUS_ANGLE))
+        map(lambda x: TransformBlueprint(x), MOVE_TO_RIGHT_SIDE_MINUS_ANGLE))
     transform_to_left_mount = list(
-        map(lambda x: BlockBlueprint(ChronoTransform, ChronoTransformDes(x)), MOVE_TO_LEFT_SIDE))
+        map(lambda x: TransformBlueprint(x), MOVE_TO_LEFT_SIDE))
     transform_to_left_mount_plus = list(
-        map(lambda x: BlockBlueprint(ChronoTransform, ChronoTransformDes(x)), MOVE_TO_LEFT_SIDE_PLUS))
+        map(lambda x: TransformBlueprint(x), MOVE_TO_LEFT_SIDE_PLUS))
     transform_to_left_mount_plus_angle = list(
-        map(lambda x: BlockBlueprint(ChronoTransform, ChronoTransformDes(x)), MOVE_TO_LEFT_SIDE_PLUS_ANGLE))
+        map(lambda x: TransformBlueprint(x), MOVE_TO_LEFT_SIDE_PLUS_ANGLE))
     transform_to_left_mount_minus = list(
-        map(lambda x: BlockBlueprint(ChronoTransform, ChronoTransformDes(x)), MOVE_TO_LEFT_SIDE_MINUS))
+        map(lambda x: TransformBlueprint(x), MOVE_TO_LEFT_SIDE_MINUS))
     transform_to_left_mount_minus_angle = list(
-        map(lambda x: BlockBlueprint(ChronoTransform, ChronoTransformDes(x)), MOVE_TO_LEFT_SIDE_MINUS_ANGLE))
+        map(lambda x: TransformBlueprint(x), MOVE_TO_LEFT_SIDE_MINUS_ANGLE))
     # transform_to_alpha_rotate = BlockBlueprint(ChronoTransform, ROTATE_TO_ALPHA)
 
     # %%
     type_of_input = JointInputType.TORQUE
 
     # Joints
-    revolve1 = BlockBlueprint(ChronoRevolveJoint, ChronoRevolveJointDes(type_of_input))
+    revolve1 = RevolveJointBlueprint(type_of_input)
 
     # Nodes
     node_vocab = node_vocabulary.NodeVocabulary()

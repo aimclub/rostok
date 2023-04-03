@@ -5,15 +5,13 @@ from test_ruleset import (get_terminal_graph_no_joints, get_terminal_graph_three
                           get_terminal_graph_two_finger)
 
 import rostok.virtual_experiment.simulation_step as step
-from rostok.block_builder_chrono.block_classes import (ChronoEasyShapeObjectDes,
-                                                       DefaultChronoMaterial, ChronoEasyShapeObject,
-                                                       FrameTransform)
+
+from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
 from rostok.criterion.flags_simualtions import FlagMaxTime
-from rostok.block_builder_chrono.block_classes import BlockBlueprint
+from rostok.block_builder_api.block_parameters import Material, FrameTransform
 from rostok.trajectory_optimizer.control_optimizer import num_joints
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
-
 
 
 def test_control_bind_and_create_sim():
@@ -36,15 +34,13 @@ def test_control_bind_and_create_sim():
 
         const_torque_koef = [random.random() for _ in range(number_trq)]
         arr_trj = create_torque_traj_from_x(G, const_torque_koef, 1, 0.1)
-        
-        mat = DefaultChronoMaterial()
+
+        mat = Material()
         mat.Friction = 0.65
         mat.DampingF = 0.65
 
-        grab_obj_des = ChronoEasyShapeObjectDes(material=mat,
-                                                pos=FrameTransform([0, 1, 0],
-                                                                [0, -0.048, 0.706, 0.706]))
-        obj = BlockBlueprint(ChronoEasyShapeObject, grab_obj_des)
+        obj = EnvironmentBodyBlueprint(material=mat,
+                                       pos=FrameTransform([0, 1, 0], [0, -0.048, 0.706, 0.706]))
 
         sim = step.SimulationStepOptimization(arr_trj, G, obj)
         sim.set_flags_stop_simulation(flags)

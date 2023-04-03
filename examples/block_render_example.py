@@ -2,10 +2,9 @@ import pychrono.core as chrono
 import pychrono.irrlicht as chronoirr
 
 from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, ChronoTransform,PrimitiveBody)
-from rostok.block_builder_chrono.block_classes import (ChronoRevolveJointDes, ChronoTransformDes, PrimitiveBodyDes)
 from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.block_builder_chrono.block_connect import place_and_connect                                            
-from rostok.block_builder_chrono.blocks_utils import FrameTransform, DefaultFrame
+from rostok.block_builder_api.block_parameters import  FrameTransform, DefaultFrame
 from rostok.block_builder_chrono.chrono_system import register_chrono_system
 
 # Create Chrono system instance
@@ -13,9 +12,7 @@ mysystem = chrono.ChSystemNSC()
 register_chrono_system(mysystem)
 # Init body blocks
 
-des_b_1 = PrimitiveBodyDes(Box(0.1, 1, 0.4))
-body_1 = PrimitiveBody.initialize_from_descriptor(des_b_1)
-
+body_1 = PrimitiveBody(Box(0.1, 1, 0.4))
 body_2 = PrimitiveBody(Box(0.1, 0.5, 0.4))
 body_3 = PrimitiveBody(Box(0.1, 0.5, 0.4))
 body_4 = PrimitiveBody(Box(0.1, 0.5, 0.4))
@@ -24,7 +21,7 @@ body_6 = PrimitiveBody(Box(0.1, 1, 0.4))
 body_7 = PrimitiveBody(Box(0.1, 1, 0.4))
 
 # Init transforms
-transform1 = ChronoTransform.initialize_from_descriptor(ChronoTransformDes())
+transform1 = ChronoTransform(transform = DefaultFrame)
 
 quat_z_y = chrono.Q_ROTATE_Z_TO_Y
 cord_sys_2 = FrameTransform([0, 0.5, 0], [quat_z_y.e0, quat_z_y.e1, quat_z_y.e2, quat_z_y.e3])
@@ -34,10 +31,8 @@ cord_sys_3 = FrameTransform([0, 0., 0], [quat_z_y.e0, quat_z_y.e1, quat_z_y.e2, 
 transform3 = ChronoTransform(cord_sys_3)
 
 # Init joints
-joint_des1 = ChronoRevolveJointDes()
-joint_des1.starting_angle = 10
 
-joint1 = ChronoRevolveJoint.initialize_from_descriptor(joint_des1)
+joint1 = ChronoRevolveJoint(starting_angle=10)
 joint2 = ChronoRevolveJoint(starting_angle=15)
 joint3 = ChronoRevolveJoint(starting_angle=20)
 
