@@ -5,10 +5,12 @@ import pychrono.irrlicht as chronoirr
 
 import rostok.control_chrono.control as control
 from rostok.block_builder_chrono.block_classes import (BuildingBody, ChronoRevolveJoint, ChronoEasyShapeObject)
-from rostok.block_builder_chrono.blocks_utils import (FrameTransform, DefaultFrame)
+from rostok.block_builder_api.block_parameters import DefaultFrame, FrameTransform
+from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
+from rostok.block_builder_chrono.block_builder_chrono_api import ChronoBlockCreatorInterface as creator
 from rostok.block_builder_chrono.chrono_system import register_chrono_system
 from rostok.criterion.flags_simualtions import (ConditionStopSimulation, FlagStopSimualtions)
-from rostok.graph_grammar.node import GraphGrammar, BlockBlueprint
+from rostok.graph_grammar.node import GraphGrammar
 from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
 from rostok.virtual_experiment.robot import Robot
 
@@ -99,7 +101,7 @@ class SimulationStepOptimization:
     def __init__(self,
                  control_trajectory,
                  graph_mechanism: GraphGrammar,
-                 grasp_object: BlockBlueprint,
+                 grasp_object: EnvironmentBodyBlueprint,
                  start_frame_robot: FrameTransform = DefaultFrame):
         self.control_trajectory = control_trajectory
         self.graph_mechanism = graph_mechanism
@@ -112,7 +114,7 @@ class SimulationStepOptimization:
         self.chrono_system.SetSolverForceTolerance(1e-6)
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
 
-        self.grasp_object = grasp_object.create_block()
+        self.grasp_object = creator.init_block_from_blueprint(grasp_object)
         self.chrono_system.Add(self.grasp_object.body)
         register_chrono_system(self.chrono_system)
 

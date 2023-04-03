@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import networkx as nx
 from typing import Optional
 from networkx.algorithms.traversal import dfs_preorder_nodes
-from rostok.block_builder_chrono.block_classes import BlockBlueprint
+from rostok.block_builder_api.block_blueprints import ALL_BLUEPRINT
 
 
 @dataclass
@@ -15,7 +15,7 @@ class Node:
     is_terminal: bool = False
 
     # None for non-terminal nodes
-    block_blueprint: Optional[BlockBlueprint] = None
+    block_blueprint: Optional[ALL_BLUEPRINT] = None
 
     def __hash__(self) -> int:
         return hash(str(self.label) + str(self.is_terminal))
@@ -65,7 +65,7 @@ class UniqueBlueprint:
         Id - from the generated graph
     """
     id: int
-    block_blueprint: BlockBlueprint  # Set default value
+    block_blueprint: ALL_BLUEPRINT # Set default value
 
 
 ROOT = Node("ROOT")

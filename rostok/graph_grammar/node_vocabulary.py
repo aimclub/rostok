@@ -1,7 +1,8 @@
 """ Module contains NodeVocabulary class."""
 
-from rostok.graph_grammar.node import ROOT, BlockBlueprint, Node
+from rostok.graph_grammar.node import ROOT, Node
 from typing import Optional
+from rostok.block_builder_api.block_blueprints import ALL_BLUEPRINT
 
 class NodeVocabulary():
     """The class contains dictionary of nodes and methods to manipulate with it.
@@ -42,7 +43,7 @@ class NodeVocabulary():
     def create_node(self,
                     label: str,
                     is_terminal: bool = False,
-                    block_blueprint: Optional[BlockBlueprint] = None):
+                    block_blueprint: Optional[ALL_BLUEPRINT] = None):
         """Create a node and add it to the vocabulary.
         
         Args:

@@ -5,11 +5,10 @@ from pychrono.core import ChQuaternionD, ChVectorD
 
 from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.block_builder_chrono.block_connect import place_and_connect
-from rostok.block_builder_chrono.block_types import Block
 from rostok.block_builder_chrono.block_classes import BLOCK_CLASS_TYPES
-from rostok.block_builder_chrono.blocks_utils import (FrameTransform, DefaultFrame)
+from rostok.block_builder_api.block_parameters import FrameTransform, DefaultFrame
 from rostok.graph_grammar.node import GraphGrammar, Node, UniqueBlueprint
-
+from rostok.block_builder_chrono.block_builder_chrono_api import ChronoBlockCreatorInterface as creator
 
 @dataclass
 class RobotNode:
@@ -45,7 +44,7 @@ class Robot:
                 blueprint = unique_blueprint.block_blueprint
 
                 if not (id in uniq_blocks.keys()):
-                    block_buf = blueprint.create_block()
+                    block_buf = creator.init_block_from_blueprint(blueprint)
                     block_line.append(block_buf)
                     uniq_blocks[id] = block_buf
                 else:
