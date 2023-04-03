@@ -5,7 +5,7 @@ import numpy as np
 import pychrono.core as chrono
 
 from rostok.block_builder_chrono.block_types import BlockBody
-
+from rostok.block_builder_api.block_parameters import  FrameTransform
 
 
 

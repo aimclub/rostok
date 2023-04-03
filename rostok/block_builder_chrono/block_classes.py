@@ -1,26 +1,24 @@
 import pathlib
 import random
-from abc import ABC
 from enum import Enum
-from typing import Optional, Union, ClassVar, Type
+from typing import Optional, Union
 
 
-import inspect
+
 import open3d
 import pychrono.core as chrono
-
-from rostok.block_builder_api import easy_body_shapes
-from rostok.block_builder_chrono.block_types import (BlockBody, BlockBridge, BlockTransform, Descriptor)
-from rostok.block_builder_chrono.blocks_utils import (ContactReporter, FrameTransform, DefaultFrame, SpringTorque,
+from rostok.block_builder_api.block_parameters import FrameTransform, DefaultFrame
+import rostok.block_builder_api.easy_body_shapes as easy_body_shapes
+from rostok.block_builder_chrono.block_types import (BlockBody, BlockBridge, BlockTransform)
+from rostok.block_builder_chrono.blocks_utils import (ContactReporter, SpringTorque,
                                                       frame_transform_to_chcoordsys, rotation_z_q)
 from rostok.block_builder_chrono.chrono_system import get_chrono_system
 from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
     DefaultChronoMaterial, struct_material2object_material)
-from dataclasses import dataclass
 
 
-class BuildingBody(BlockBody[Descriptor]):
+class BuildingBody(BlockBody):
     """Abstract class, that interpreting nodes of a robot body part in a
     physics engine (`pychrono <https://projectchrono.org/pychrono/>`_).
     
@@ -179,13 +177,7 @@ class BuildingBody(BlockBody[Descriptor]):
         return self.__contact_reporter.get_list_c_coord()
 
 
-@dataclass
-class ChronoTransformDes:
-    transform: FrameTransform = DefaultFrame
-    is_transform_input = False
-
-
-class ChronoTransform(BlockTransform[ChronoTransformDes]):
+class ChronoTransform(BlockTransform):
     """Class representing node of the transformation in `pychrono <https://projectchrono.org/pychrono/>`_ physical
     engine
 
@@ -207,7 +199,7 @@ class ChronoTransform(BlockTransform[ChronoTransformDes]):
 
 
 
-class JointInputType(str, Enum):
+class JointInputTypeChrono(str, Enum):
     TORQUE = {"Name": "Torque", "TypeMotor": chrono.ChLinkMotorRotationTorque}
     VELOCITY = {"Name": "Speed", "TypeMotor": chrono.ChLinkMotorRotationSpeed}
     POSITION = {"Name": "Angle", "TypeMotor": chrono.ChLinkMotorRotationAngle}
@@ -218,20 +210,7 @@ class JointInputType(str, Enum):
         self.motor = vals["TypeMotor"]
 
 
-@dataclass
-class ChronoRevolveJointDes:
-    type_of_input: JointInputType = JointInputType.TORQUE
-    radius: float = 0.07
-    length: float = 0.4
-    material = DefaultChronoMaterial()
-    density = 10.0
-    starting_angle = 0
-    stiffness: float = 0.
-    damping: float = 0.
-    with_collision = True
-
-
-class ChronoRevolveJoint(BlockBridge[ChronoRevolveJointDes]):
+class ChronoRevolveJoint(BlockBridge):
     """The class representing revolute joint object in `pychrono <https://projectchrono.org/pychrono/>`_ 
     physical engine. It is the embodiment of joint nodes from the mechanism graph in
     simulation.
@@ -250,7 +229,7 @@ class ChronoRevolveJoint(BlockBridge[ChronoRevolveJointDes]):
     """
 
     def __init__(self,
-                 type_of_input: JointInputType = JointInputType.TORQUE,
+                 type_of_input: JointInputTypeChrono = JointInputTypeChrono.TORQUE,
                  radius=0.07,
                  length=0.4,
                  material = DefaultChronoMaterial(),
@@ -353,15 +332,8 @@ class ChronoRevolveJoint(BlockBridge[ChronoRevolveJointDes]):
         self._joint_spring.RegisterTorqueFunctor(self._torque_functor)
         system.Add(self._joint_spring)
 
-@dataclass
-class PrimitiveBodyDes:
-    shape : easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
-    density: float = 10.0
-    material = DefaultChronoMaterial()
-    is_collide: bool = True
-    color: Optional[list[int]] = None
 
-class PrimitiveBody(BuildingBody[PrimitiveBodyDes]):
+class PrimitiveBody(BuildingBody):
     """Class of environments bodies with standard shape, like box, ellipsoid,
     cylinder. It adds solid body in `pychrono <https://projectchrono.org/pychrono/>`_ physical system that is not
     robot part.
@@ -411,16 +383,6 @@ class PrimitiveBody(BuildingBody[PrimitiveBodyDes]):
 
         # Create shape
         super().__init__(body, pos_in_marker, pos_out_marker, color, is_collide)
-
-
-@dataclass
-class ChronoEasyShapeObjectDes:
-    shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
-    density: float = 10.0
-    material : DefaultChronoMaterial = DefaultChronoMaterial()
-    is_collide: bool = True
-    color: Optional[list[int]] = None
-    pos: FrameTransform = DefaultFrame
 
 
 class ChronoEasyShapeObject():
@@ -492,9 +454,6 @@ class ChronoEasyShapeObject():
             color = [x / 256 for x in color]
             self.body.GetVisualShape(0).SetColor(chrono.ChColor(*color))
 
-    @classmethod
-    def initialize_from_descriptor(cls, des: ChronoEasyShapeObjectDes):
-        return cls(**des.__dict__)
 
     def set_coord(self, frame: FrameTransform):
         self.body.SetCoord(frame_transform_to_chcoordsys(frame))
@@ -543,17 +502,3 @@ class ChronoEasyShapeObject():
 
 
 BLOCK_CLASS_TYPES = Union[ChronoEasyShapeObject, PrimitiveBody, ChronoRevolveJoint, ChronoTransform]
-BLOCK_DESCRIPTORS_TYPES = Union[ChronoEasyShapeObjectDes, PrimitiveBodyDes, ChronoRevolveJointDes,
-                                ChronoTransformDes]
-
-@dataclass
-class BlockBlueprint:
-    cls: Type[BLOCK_CLASS_TYPES]
-    descriptor: BLOCK_DESCRIPTORS_TYPES
-    def create_block(self) -> BLOCK_CLASS_TYPES:
-        return self.cls.initialize_from_descriptor(self.descriptor) # type: ignore
-        
-
-if __name__ == "__main__":
-    telo = PrimitiveBody.initialize_from_descriptor(PrimitiveBodyDes())
-    pass
