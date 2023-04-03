@@ -90,7 +90,7 @@ class ControlOptimizer():
 
         return reward
 
-    def start_optimisation(self, generated_graph: GraphGrammar) -> tuple[float, float]:
+    def start_optimisation(self, generated_graph: GraphGrammar) -> tuple[float, list[float]]:
 
         reward_fun = self.create_reward_function(generated_graph)
         multi_bound = create_multidimensional_bounds(generated_graph, self.cfg.bound)
