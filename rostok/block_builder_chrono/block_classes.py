@@ -9,7 +9,7 @@ import inspect
 import open3d
 import pychrono.core as chrono
 
-from rostok.block_builder_chrono import easy_body_shapes
+from rostok.block_builder_api import easy_body_shapes
 from rostok.block_builder_chrono.block_types import (BlockBody, BlockBridge, BlockTransform, Descriptor)
 from rostok.block_builder_chrono.blocks_utils import (ContactReporter, FrameTransform, DefaultFrame, SpringTorque,
                                                       frame_transform_to_chcoordsys, rotation_z_q)

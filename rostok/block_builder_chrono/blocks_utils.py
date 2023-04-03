@@ -6,9 +6,7 @@ import pychrono.core as chrono
 
 from rostok.block_builder_chrono.block_types import BlockBody
 
-FrameTransform = namedtuple('FrameTransform', ["position", "rotation"])
 
-DefaultFrame = FrameTransform([0, 0, 0], [1, 0, 0, 0])
 
 
 def frame_transform_to_chcoordsys(transform: FrameTransform):

@@ -8,7 +8,7 @@ from rostok.block_builder_chrono.block_classes import PrimitiveBody, \
 from rostok.block_builder_chrono.block_classes import PrimitiveBodyDes, \
     ChronoRevolveJointDes, ChronoTransformDes, FrameTransform, JointInputType
 from rostok.block_builder_chrono.block_classes import BlockBlueprint
-from rostok.block_builder_chrono.easy_body_shapes import Box
+from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.graph_grammar import node_vocabulary, rule_vocabulary
 from rostok.graph_grammar.node import ROOT, Node
 

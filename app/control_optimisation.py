@@ -1,5 +1,5 @@
 import rostok.criterion.criterion_calc as criterion
-from rostok.block_builder_chrono.easy_body_shapes import Box, Cylinder
+from rostok.block_builder_api.easy_body_shapes import Box, Cylinder
 from rostok.block_builder_chrono.block_classes import (ChronoEasyShapeObject,
                                               DefaultChronoMaterial,
                                               FrameTransform)

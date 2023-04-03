@@ -3,7 +3,7 @@ import pychrono.irrlicht as chronoirr
 
 from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, ChronoTransform,PrimitiveBody)
 from rostok.block_builder_chrono.block_classes import (ChronoRevolveJointDes, ChronoTransformDes, PrimitiveBodyDes)
-from rostok.block_builder_chrono.easy_body_shapes import Box
+from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.block_builder_chrono.block_connect import place_and_connect                                            
 from rostok.block_builder_chrono.blocks_utils import FrameTransform, DefaultFrame
 from rostok.block_builder_chrono.chrono_system import register_chrono_system

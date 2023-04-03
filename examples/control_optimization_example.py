@@ -2,7 +2,7 @@ import example_vocabulary
 import pychrono as chrono
 
 import rostok.criterion.criterion_calc as criterion
-from rostok.block_builder_chrono.easy_body_shapes import Cylinder
+from rostok.block_builder_api.easy_body_shapes import Cylinder
 from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject, ChronoEasyShapeObjectDes, BlockBlueprint
 from rostok.block_builder_chrono.block_classes import (DefaultChronoMaterial, FrameTransform)
 from rostok.criterion.flags_simualtions import FlagMaxTime, FlagNotContact, FlagSlipout

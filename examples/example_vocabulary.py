@@ -6,7 +6,7 @@ from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, Chron
                                                        PrimitiveBody, JointInputType)
 from rostok.block_builder_chrono.block_classes import (ChronoRevolveJointDes, ChronoTransformDes,
                                                        PrimitiveBodyDes)
-from rostok.block_builder_chrono.easy_body_shapes import Box
+from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.block_builder_chrono.blocks_utils import FrameTransform
 from rostok.graph_grammar.node import ROOT, GraphGrammar, BlockBlueprint
 from rostok.graph_grammar.node_vocabulary import NodeVocabulary
