@@ -5,17 +5,16 @@ name: rostok_no_gui
 channels:
   - https://conda.anaconda.org/intel
   - https://conda.anaconda.org/conda-forge
-  - projectchrono
-  - defaults
 dependencies:
-  - python=3.9.12
-  - pythonocc-core=7.4.1
-  - irrlicht
+  - python=3.9
+  - conda-forge::irrlicht=1.8.5
+  - conda-forge::pythonocc-core=7.4.1
   - numpy
-  
+  - pip
   - pip:
     - networkx==2.8.6
     - matplotlib==3.6.0
     - scipy
     - mcts==1.0.4
     - pytest
+    - open3d

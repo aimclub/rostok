@@ -2,6 +2,13 @@
     <img src="/docs/images/logo_rostok_long.png" width="600">
 </p>
 
+[![SAI](https://github.com/ITMO-NSS-team/open-source-ops/blob/master/badges/SAI_badge_flat.svg)](https://sai.itmo.ru/)
+[![ITMO](https://github.com/ITMO-NSS-team/open-source-ops/blob/master/badges/ITMO_badge_flat_rus.svg)](https://en.itmo.ru/en/)
+
+[![Documentation Status](https://readthedocs.org/projects/rostok/badge/?version=latest)](https://rostok.readthedocs.io/en/latest/?badge=latest)
+[![license](https://img.shields.io/github/license/aimclub/rostok)](https://github.com/aimclub/rostok/blob/master/LICENSE)
+[![Eng](https://img.shields.io/badge/lang-ru-yellow.svg)](/README.md)
+[![Mirror](https://camo.githubusercontent.com/9bd7b8c5b418f1364e72110a83629772729b29e8f3393b6c86bff237a6b784f6/68747470733a2f2f62616467656e2e6e65742f62616467652f6769746c61622f6d6972726f722f6f72616e67653f69636f6e3d6769746c6162)](https://gitlab.actcognitive.org/itmo-sai-code/rostok/)
 
 # Rostok
 
@@ -48,13 +55,9 @@ At some PC's one can see a problem with the tcl module `version conflict for pac
 
 After the installation of the package one can get an error `Original error was: DLL load failed while importing _multiarray_umath: The specified module could not be found`, try to reinstall numpy in the rostok environment
 
-## Documentation [![Documentation Status](https://readthedocs.org/projects/rostok/badge/?version=latest)](https://rostok.readthedocs.io/en/latest/?badge=latest)
+## Documentation
 
 The description of the project and tutorials are available [at project website](https://rostok.readthedocs.io/en/latest/?badge=latest).
-
-## Publications
-
-* I. I. Borisov, E. E. Khornutov, D. V. Ivolga, N. A. Molchanov, I. A. Maksimov and S. A. Kolyubin, "Reconfigurable Underactuated Adaptive Gripper Designed by Morphological Computation," 2022 International Conference on Robotics and Automation (ICRA), 2022, pp. 1130-1136, doi: 10.1109/ICRA46639.2022.9811738.
 
 ## Examples
 
@@ -63,11 +66,14 @@ Examples of usage of independent modules is in `rostok\examples` directory.
 
 ## Acknowledgments
 
-<img src="/docs/images/logo.png" width="200">
-
 ### Affiliation
 
 The framework was developed in [ITMO University](https://en.itmo.ru/).
+
+### Supported by
+
+The study is supported by the [Research Center Strong Artificial Intelligence in Industry](<https://sai.itmo.ru/>) 
+of [ITMO University](https://en.itmo.ru/) as part of the plan of the center's program: Development and testing of an experimental prototype of a library of strong AI algorithms in terms of generative and interactive design of flat mechanisms of anthropomorphic gripping devices and robotic brushes
 
 ### Developers
 
@@ -84,3 +90,20 @@ The framework was developed in [ITMO University](https://en.itmo.ru/).
 * Ivan Borisov borisovii@itmo.ru for scientific aspects of the project
 * Kirill Zharkov kdzharkov@itmo.ru for technical questions of the project
 * Sergey Kolyubin s.kolyubin@itmo.ru for collaboration aspects
+
+## Citation
+
+GOST:
+
+* I. I. Borisov, E. E. Khornutov, D. V. Ivolga, N. A. Molchanov, I. A. Maksimov and S. A. Kolyubin, "Reconfigurable Underactuated Adaptive Gripper Designed by Morphological Computation," 2022 International Conference on Robotics and Automation (ICRA), 2022, pp. 1130-1136, doi: 10.1109/ICRA46639.2022.9811738.
+
+Bibtex:
+
+* @inproceedings{borisov2022reconfigurable,
+  title={Reconfigurable underactuated adaptive gripper designed by morphological computation},
+  author={Borisov, Ivan I and Khornutov, Evgenii E and Ivolga, Dmitriy V and Molchanov, Nikita A and Maksimov, Ivan A and Kolyubin, Sergey A},
+  booktitle={2022 International Conference on Robotics and Automation (ICRA)},
+  pages={1130--1136},
+  year={2022},
+  organization={IEEE}
+}

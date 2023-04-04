@@ -7,7 +7,7 @@ from scipy import interpolate
 
 from rostok.block_builder_chrono.block_classes import ChronoRevolveJoint
 from rostok.block_builder_chrono.block_types import Block
-
+from rostok.block_builder_chrono.block_classes import JointInputTypeChrono
 
 def get_controllable_joints(blocks: list[list[Block]]):
     """Create 2D-list joints from list of blocks. First index is the number
@@ -169,10 +169,10 @@ class ChronoControl(ABC):
         """
         self.__joint = joint_block
         self.type_variants = {
-            ChronoRevolveJoint.InputType.TORQUE: lambda x: self.get_joint().SetTorqueFunction(x),
-            ChronoRevolveJoint.InputType.VELOCITY: lambda x: self.get_joint().SetSpeedFunction(x),
-            ChronoRevolveJoint.InputType.POSITION: lambda x: self.get_joint().SetAngleFunction(x),
-            ChronoRevolveJoint.InputType.UNCONTROL: None
+            JointInputTypeChrono.TORQUE: lambda x: self.get_joint().SetTorqueFunction(x),
+            JointInputTypeChrono.VELOCITY: lambda x: self.get_joint().SetSpeedFunction(x),
+            JointInputTypeChrono.POSITION: lambda x: self.get_joint().SetAngleFunction(x),
+            JointInputTypeChrono.UNCONTROL: None
         }
 
     def get_joint(self):

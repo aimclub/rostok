@@ -4,15 +4,14 @@ import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 
 import rostok.control_chrono.control as control
-from rostok.block_builder_chrono.block_classes import (BuildingBody,
-                                                       ChronoRevolveJoint)
-from rostok.block_builder_chrono.blocks_utils import (FrameTransform,
-                                                      OriginWorldFrame)
+from rostok.block_builder_chrono.block_classes import (BuildingBody, ChronoRevolveJoint, ChronoEasyShapeObject)
+from rostok.block_builder_api.block_parameters import DefaultFrame, FrameTransform
+from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
+from rostok.block_builder_chrono.block_builder_chrono_api import ChronoBlockCreatorInterface as creator
 from rostok.block_builder_chrono.chrono_system import register_chrono_system
-from rostok.criterion.flags_simualtions import (ConditionStopSimulation,
-                                                FlagStopSimualtions)
-from rostok.graph_grammar.node import BlockWrapper, GraphGrammar
-#from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
+from rostok.criterion.flags_simualtions import (ConditionStopSimulation, FlagStopSimualtions)
+from rostok.graph_grammar.node import GraphGrammar
+from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
 from rostok.virtual_experiment.robot import Robot
 from rostok.virtual_experiment.sensors import ContactReporter, SensorFunctions
 
@@ -96,15 +95,15 @@ class SimulationStepOptimization:
             Control trajectory of one joint have to have format [[time, value], ...].
             Array must be same shape as array of joints.
         graph_mechanism (GraphGrammar): Graph of the robot to be simulated
-        grasp_object (BlockWrapper): Wrapper of :py:class:`ChronoBodyEnv`.
+        grasp_object (BlockBlueprint): Wrapper of :py:class:`ChronoBodyEnv`.
             This is the object that the robot grabs.
     """
 
     def __init__(self,
                  control_trajectory,
                  graph_mechanism: GraphGrammar,
-                 grasp_object: BlockWrapper,
-                 start_frame_robot: FrameTransform = OriginWorldFrame):
+                 grasp_object: EnvironmentBodyBlueprint,
+                 start_frame_robot: FrameTransform = DefaultFrame):
         self.control_trajectory = control_trajectory
         self.graph_mechanism = graph_mechanism
         self.controller_joints: list[list[control.ChronoControl]] = []
@@ -116,7 +115,7 @@ class SimulationStepOptimization:
         self.chrono_system.SetSolverForceTolerance(1e-6)
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
 
-        self.grasp_object = grasp_object.create_block()
+        self.grasp_object = creator.init_block_from_blueprint(grasp_object)
         self.chrono_system.Add(self.grasp_object.body)
         register_chrono_system(self.chrono_system)
 
@@ -246,11 +245,9 @@ class SimulationStepOptimization:
             self.chrono_system.Update()
             self.chrono_system.DoStepDynamics(time_step)
             # Realtime for fixed step
-
-            if self.chrono_system.GetStepcount() % int(FRAME_STEP / time_step) == 0:
-                if visualize:
-
-                    vis.Run()
+            if visualize:
+                vis.Run()
+                if self.chrono_system.GetStepcount() % int(FRAME_STEP / time_step) == 0:
                     vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
                     vis.Render()
                     vis.EndScene()

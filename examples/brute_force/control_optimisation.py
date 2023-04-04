@@ -1,35 +1,38 @@
 import rostok.criterion.criterion_calc as criterion
-from rostok.block_builder.envbody_shapes import Box
-from rostok.block_builder.node_render import (ChronoBodyEnv,
+from rostok.block_builder_api.easy_body_shapes import Box, Cylinder
+from rostok.block_builder_chrono.block_classes import (ChronoEasyShapeObject,
                                               DefaultChronoMaterial,
                                               FrameTransform)
-from rostok.graph_grammar.node import BlockWrapper, GraphGrammar, Node
+from rostok.graph_grammar.node import GraphGrammar, Node
+from rostok.block_builder_chrono.block_classes import BlockBlueprint, ChronoEasyShapeObjectDes
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
 from rostok.virtual_experiment.simulation_step import SimOut
+
 
 
 def get_object_to_grasp():
     matich = DefaultChronoMaterial()
     matich.Friction = 0.65
     matich.DampingF = 0.65
-    shape_box = Box(0.2, 0.2, 0.4)
-    obj = BlockWrapper(ChronoBodyEnv,
-                       shape=shape_box,
-                       material=matich,
-                       pos=FrameTransform([0, 0.5, 0], [1, 0, 0, 0]))
+
+    shape_box = Box(0.2, 0.2, 0.5)
+
+    grab_obj_des = ChronoEasyShapeObjectDes(shape_box,
+                                            material=matich,
+                                            pos=FrameTransform([0, 0.5, 0],
+                                                               [0, -0.048, 0.706, 0.706]))
+
+    obj = BlockBlueprint(ChronoEasyShapeObject, grab_obj_des)
 
     return obj
 
 
 def grab_crtitrion(sim_output: dict[int, SimOut], grab_robot, node_feature: list[list[Node]], gait,
                    weight):
-    j_nodes = criterion.nodes_division(grab_robot, node_feature[1])
-    b_nodes = criterion.nodes_division(grab_robot, node_feature[0])
-    rb_nodes = criterion.sort_left_right(grab_robot, node_feature[3], node_feature[0])
-    lb_nodes = criterion.sort_left_right(grab_robot, node_feature[2], node_feature[0])
+  
 
-    return criterion.criterion_calc(sim_output, b_nodes, j_nodes, rb_nodes, lb_nodes, weight, gait)
+    return criterion.criterion_calc(sim_output, weight)
 
 
 def create_grab_criterion_fun(node_features, gait, weight):

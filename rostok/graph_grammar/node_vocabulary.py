@@ -1,7 +1,8 @@
 """ Module contains NodeVocabulary class."""
 
-from rostok.graph_grammar.node import ROOT, BlockWrapper, Node
-
+from rostok.graph_grammar.node import ROOT, Node
+from typing import Optional
+from rostok.block_builder_api.block_blueprints import ALL_BLUEPRINT
 
 class NodeVocabulary():
     """The class contains dictionary of nodes and methods to manipulate with it.
@@ -42,14 +43,14 @@ class NodeVocabulary():
     def create_node(self,
                     label: str,
                     is_terminal: bool = False,
-                    block_wrapper: BlockWrapper = None):
+                    block_blueprint: Optional[ALL_BLUEPRINT] = None):
         """Create a node and add it to the vocabulary.
         
         Args:
             label (str): the label of the new node.
             is_terminal (bool, optional): defines if the new node is a terminal node. Default
                 is False.
-            block_wrapper (BlockWrapper, optional): the object that contains physical properties
+            block_blueprint (BlockBlueprint, optional): the object that contains physical properties
                 of the node. Default is None.
                 
         Raises:
@@ -59,7 +60,7 @@ class NodeVocabulary():
         if label in self.node_dict:
             raise Exception('Attempt to create a Node with a label that is already in dictionary!')
 
-        node = Node(label, is_terminal, block_wrapper)
+        node = Node(label, is_terminal, block_blueprint)
         self.node_dict[label] = node
         if is_terminal:
             self.terminal_node_dict[label] = node

@@ -2,11 +2,11 @@ import pychrono.core as chrono
 import pychrono.irrlicht as chronoirr
 
 from rostok.block_builder_chrono.block_classes import (BuildingBody, ChronoRevolveJoint,
-                                                       ChronoTransform, PrimitiveBody)
+                                                       ChronoTransform, PrimitiveBody, BLOCK_CLASS_TYPES)
 from rostok.block_builder_chrono.block_types import (Block, BlockBody, BlockBridge, BlockTransform,
                                                      BlockType)
 from rostok.block_builder_chrono.blocks_utils import FrameTransform
-from rostok.block_builder_chrono.easy_body_shapes import Box
+from rostok.block_builder_api.easy_body_shapes import Box
 
 
 def place_next_block(prev_block: BuildingBody, next_block: BuildingBody, system: chrono.ChSystem):

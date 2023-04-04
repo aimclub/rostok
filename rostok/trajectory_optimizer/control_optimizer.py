@@ -4,7 +4,7 @@ from typing import Callable
 import pychrono as chrono
 from scipy.optimize import direct, dual_annealing, shgo
 
-from rostok.block_builder_chrono.block_classes import NodeFeatures
+from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.virtual_experiment.robot import Robot
 from rostok.virtual_experiment.simulation_step import (SimOut, SimulationStepOptimization)
@@ -90,7 +90,7 @@ class ControlOptimizer():
 
         return reward
 
-    def start_optimisation(self, generated_graph: GraphGrammar) -> tuple[float, float]:
+    def start_optimisation(self, generated_graph: GraphGrammar) -> tuple[float, list[float]]:
 
         reward_fun = self.create_reward_function(generated_graph)
         multi_bound = create_multidimensional_bounds(generated_graph, self.cfg.bound)
