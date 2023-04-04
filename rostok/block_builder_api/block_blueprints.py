@@ -6,7 +6,6 @@ import rostok.block_builder_api.easy_body_shapes as easy_body_shapes
 from rostok.block_builder_api.block_parameters import DefaultFrame, FrameTransform, JointInputType, Material
 
 
-
 @dataclass
 class BodyBlueprintType:
     """Use for mark block category
@@ -27,10 +26,12 @@ class TransformBlueprintType:
     """
     pass
 
+
 @dataclass
 class TransformBlueprint(TransformBlueprintType):
     transform: FrameTransform = DefaultFrame
     is_transform_input = False
+
 
 @dataclass
 class RevolveJointBlueprint(JointBlueprintType):
@@ -44,6 +45,7 @@ class RevolveJointBlueprint(JointBlueprintType):
     damping: float = 0.
     with_collision = True
 
+
 @dataclass
 class PrimitiveBodyBlueprint(BodyBlueprintType):
     shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
@@ -51,6 +53,7 @@ class PrimitiveBodyBlueprint(BodyBlueprintType):
     material: Material = Material()
     is_collide: bool = True
     color: Optional[list[int]] = None
+
 
 @dataclass
 class EnvironmentBodyBlueprint(BodyBlueprintType):
