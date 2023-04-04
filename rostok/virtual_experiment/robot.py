@@ -3,17 +3,17 @@ from dataclasses import dataclass
 
 from pychrono.core import ChQuaternionD, ChVectorD
 
-from rostok.block_builder_chrono.block_classes import NodeFeatures
+from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.block_builder_chrono.block_connect import place_and_connect
-from rostok.block_builder_chrono.block_types import Block
-from rostok.block_builder_chrono.blocks_utils import (FrameTransform, OriginWorldFrame)
-from rostok.graph_grammar.node import GraphGrammar, Node, WrapperTuple
-
+from rostok.block_builder_chrono.block_classes import BLOCK_CLASS_TYPES
+from rostok.block_builder_api.block_parameters import FrameTransform, DefaultFrame
+from rostok.graph_grammar.node import GraphGrammar, Node, UniqueBlueprint
+from rostok.block_builder_chrono.block_builder_chrono_api import ChronoBlockCreatorInterface as creator
 
 @dataclass
 class RobotNode:
     id: int
-    block: Block
+    block: BLOCK_CLASS_TYPES
     node: Node
 
 
@@ -23,28 +23,28 @@ class Robot:
     def __init__(self,
                  robot_graph: GraphGrammar,
                  simulation,
-                 start_frame: FrameTransform = OriginWorldFrame):
+                 start_frame: FrameTransform = DefaultFrame):
         self.__graph = deepcopy(robot_graph)
         self.__simulation = simulation
         self.bridge_set: set[int] = set()
-        wrapper_tuple_array = self.__graph.build_terminal_wrapper_array()
+        unique_blueprint_array = self.__graph.build_unique_blueprint_array()
         # Map { id from graph : block }
-        self.block_map = self.__build_robot(wrapper_tuple_array, start_frame)
+        self.block_map = self.__build_robot(unique_blueprint_array, start_frame)
         self.__bind_blocks_to_graph()
 
-    def __build_robot(self, wrapper_tuple_array: list[list[WrapperTuple]],
-                      start_frame: FrameTransform) -> dict[int, Block]:
+    def __build_robot(self, unique_blueprint_array: list[list[UniqueBlueprint]],
+                      start_frame: FrameTransform) -> dict[int, BLOCK_CLASS_TYPES]:
         blocks = []
         uniq_blocks = {}
-        for wrapper_tuple_line in wrapper_tuple_array:
+        for unique_blueprint_line in unique_blueprint_array:
             block_line = []
-            for wrapper_tuple in wrapper_tuple_line:
+            for unique_blueprint in unique_blueprint_line:
 
-                id = wrapper_tuple.id
-                wrapper = wrapper_tuple.block_wrapper
+                id = unique_blueprint.id
+                blueprint = unique_blueprint.block_blueprint
 
                 if not (id in uniq_blocks.keys()):
-                    block_buf = wrapper.create_block()
+                    block_buf = creator.init_block_from_blueprint(blueprint)
                     block_line.append(block_buf)
                     uniq_blocks[id] = block_buf
                 else:

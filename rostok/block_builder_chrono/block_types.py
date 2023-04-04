@@ -1,5 +1,8 @@
 from abc import ABC
 from enum import Enum
+from typing import Generic, TypeVar
+
+Descriptor = TypeVar("Descriptor")
 
 
 class BlockType(str, Enum):
@@ -16,14 +19,14 @@ class Block(ABC):
         self.is_build = False
 
 
-class BlockBridge(Block, ABC):
+class BlockBridge(Block):
 
     def __init__(self):
         super().__init__()
         self.block_type = BlockType.BRIDGE
 
 
-class BlockTransform(Block, ABC):
+class BlockTransform(Block):
 
     def __init__(self, is_transform_input: bool = False):
         super().__init__()
@@ -33,7 +36,7 @@ class BlockTransform(Block, ABC):
             self.block_type = BlockType.TRANSFORM_OUT
 
 
-class BlockBody(Block, ABC):
+class BlockBody(Block):
 
     def __init__(self):
         super().__init__()

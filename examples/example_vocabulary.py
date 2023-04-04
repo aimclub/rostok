@@ -1,24 +1,24 @@
 from cmath import sqrt
 
 import numpy as np
-import pychrono as chrono
 
-from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, ChronoTransform,
-                                                       PrimitiveBody)
-from rostok.block_builder_chrono.easy_body_shapes import Box
+from rostok.block_builder_api.block_blueprints import TransformBlueprint, PrimitiveBodyBlueprint, \
+EnvironmentBodyBlueprint, RevolveJointBlueprint
+from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.block_builder_chrono.blocks_utils import FrameTransform
-from rostok.graph_grammar.node import ROOT, BlockWrapper, GraphGrammar
+from rostok.graph_grammar.node import ROOT, GraphGrammar
 from rostok.graph_grammar.node_vocabulary import NodeVocabulary
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
+from rostok.block_builder_api.block_parameters import JointInputType
 
 # Bodies
-link1 = BlockWrapper(PrimitiveBody, Box(0.1, 0.6, 0.4))
-link2 = BlockWrapper(PrimitiveBody, Box(0.1, 0.6, 0.4))
+link1 = PrimitiveBodyBlueprint(Box(0.1, 0.6, 0.4))
+link2 = PrimitiveBodyBlueprint(Box(0.1, 0.6, 0.4))
 
-flat1 = BlockWrapper(PrimitiveBody, Box(0.4, 0.2, 0.8))
-flat2 = BlockWrapper(PrimitiveBody, Box(0.7, 0.2, 0.8))
+flat1 = PrimitiveBodyBlueprint(Box(0.4, 0.2, 0.8))
+flat2 = PrimitiveBodyBlueprint(Box(0.7, 0.2, 0.8))
 
-u1 = BlockWrapper(PrimitiveBody, Box(0.1, 0.1, 0.4))
+u1 = PrimitiveBodyBlueprint(Box(0.1, 0.1, 0.4))
 
 # Transforms
 RZX = FrameTransform([0, 0, 0], [sqrt(2), 0, sqrt(2), 0])
@@ -31,18 +31,17 @@ MOVE_ZX_MINUS = FrameTransform([-0.3, 0, -0.3], [1, 0, 0, 0])
 MOVE_X_PLUS = FrameTransform([0.3, 0, 0.], [1, 0, 0, 0])
 MOVE_Z_PLUS_X_MINUS = FrameTransform([-0.3, 0, 0.3], [1, 0, 0, 0])
 
-transform_rzx = BlockWrapper(ChronoTransform, RZX)
-transform_rzy = BlockWrapper(ChronoTransform, RZY)
-transform_rxy = BlockWrapper(ChronoTransform, RXY)
-transform_mzx_plus = BlockWrapper(ChronoTransform, MOVE_ZX_PLUS)
-transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
-transform_mx_plus = BlockWrapper(ChronoTransform, MOVE_X_PLUS)
-transform_mz_plus_x_minus = BlockWrapper(ChronoTransform, MOVE_Z_PLUS_X_MINUS)
+transform_rzx = TransformBlueprint(RZX)
+transform_rzy = TransformBlueprint(RZY)
+transform_rxy = TransformBlueprint(RXY)
+transform_mzx_plus = TransformBlueprint(MOVE_ZX_PLUS)
+transform_mzx_minus = TransformBlueprint(MOVE_ZX_MINUS)
+transform_mx_plus = TransformBlueprint(MOVE_X_PLUS)
+transform_mz_plus_x_minus = TransformBlueprint(MOVE_Z_PLUS_X_MINUS)
 
-# type_of_input = ChronoRevolveJoint.InputType.POSITION
-type_of_input = ChronoRevolveJoint.InputType.TORQUE
+
 # Joints
-revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z, type_of_input)
+revolve1 = RevolveJointBlueprint(JointInputType.TORQUE)
 
 node_vocab = NodeVocabulary()
 node_vocab.add_node(ROOT)
@@ -53,16 +52,16 @@ node_vocab.create_node("M")
 node_vocab.create_node("EF")
 node_vocab.create_node("EM")
 
-node_vocab.create_node(label="J1", is_terminal=True, block_wrapper=revolve1)
-node_vocab.create_node(label="L1", is_terminal=True, block_wrapper=link1)
-node_vocab.create_node(label="L2", is_terminal=True, block_wrapper=link2)
-node_vocab.create_node(label="F1", is_terminal=True, block_wrapper=flat1)
-node_vocab.create_node(label="F2", is_terminal=True, block_wrapper=flat2)
-node_vocab.create_node(label="U1", is_terminal=True, block_wrapper=u1)
-node_vocab.create_node(label="T1", is_terminal=True, block_wrapper=transform_mx_plus)
-node_vocab.create_node(label="T2", is_terminal=True, block_wrapper=transform_mz_plus_x_minus)
-node_vocab.create_node(label="T3", is_terminal=True, block_wrapper=transform_mzx_plus)
-node_vocab.create_node(label="T4", is_terminal=True, block_wrapper=transform_mzx_minus)
+node_vocab.create_node(label="J1", is_terminal=True, block_blueprint=revolve1)
+node_vocab.create_node(label="L1", is_terminal=True, block_blueprint=link1)
+node_vocab.create_node(label="L2", is_terminal=True, block_blueprint=link2)
+node_vocab.create_node(label="F1", is_terminal=True, block_blueprint=flat1)
+node_vocab.create_node(label="F2", is_terminal=True, block_blueprint=flat2)
+node_vocab.create_node(label="U1", is_terminal=True, block_blueprint=u1)
+node_vocab.create_node(label="T1", is_terminal=True, block_blueprint=transform_mx_plus)
+node_vocab.create_node(label="T2", is_terminal=True, block_blueprint=transform_mz_plus_x_minus)
+node_vocab.create_node(label="T3", is_terminal=True, block_blueprint=transform_mzx_plus)
+node_vocab.create_node(label="T4", is_terminal=True, block_blueprint=transform_mzx_minus)
 
 rule_vocab = RuleVocabulary(node_vocab)
 

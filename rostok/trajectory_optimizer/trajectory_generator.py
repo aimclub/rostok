@@ -2,7 +2,7 @@ from collections.abc import Iterable
 
 import numpy as np
 
-from rostok.block_builder_chrono.block_classes import NodeFeatures
+from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.graph_grammar.node import GraphGrammar, Node
 
 
