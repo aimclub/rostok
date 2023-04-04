@@ -269,6 +269,8 @@ class SimulationStepOptimization:
             current_data_abs_coord_COG_obj = SensorFunctions.abs_coord_COG(self.grasp_object.body)
             current_data_amount_obj_contact_surfaces = SensorFunctions.amount_contact_forces(self.contact_reporter)
 
+            # TODO: Make it possible to get information from the robot blocks 
+
             # current_data_amount_obj_contact_surfaces = dict([
             #     (-1, len([item for item in self.grasp_object.list_n_forces if item != 0]))
             # ])
