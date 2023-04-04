@@ -15,7 +15,7 @@ from rostok.trajectory_optimizer.trajectory_generator import \
 mechs = [
     get_terminal_graph_three_finger, get_terminal_graph_no_joints, get_terminal_graph_two_finger
 ]
-mechs = [get_terminal_graph_no_joints]
+
 for get_graph in mechs:
     # Constants
     MAX_TIME = 1
