@@ -15,7 +15,7 @@ from rostok.block_builder_api.block_parameters import JointInputType
 link1 = PrimitiveBodyBlueprint(Box(0.1, 0.6, 0.4))
 link2 = PrimitiveBodyBlueprint(Box(0.1, 0.6, 0.4))
 
-flat1 = PrimitiveBodyBlueprint(Box(0.4, 0.2, 0.8))
+flat1 = PrimitiveBodyBlueprint(Box(1, 0.2, 0.8))
 flat2 = PrimitiveBodyBlueprint(Box(0.7, 0.2, 0.8))
 
 u1 = PrimitiveBodyBlueprint(Box(0.1, 0.1, 0.4))

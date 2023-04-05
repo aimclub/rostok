@@ -135,7 +135,7 @@ class FlagWithContact(FlagStopSimualtions, ABC):
         Returns:
             bool: True when contact is exsist
         """
-        sum_contacts = np.size(self.contact_reporter.get_list_n_forces())
+        sum_contacts = np.size(self.contact_reporter.get_contact_dict()[-1])
         return not sum_contacts == 0
 
 

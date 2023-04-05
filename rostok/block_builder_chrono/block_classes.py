@@ -3,15 +3,16 @@ import random
 from enum import Enum
 from typing import Optional, Union
 
-
-
 import open3d
 import pychrono.core as chrono
-from rostok.block_builder_api.block_parameters import FrameTransform, DefaultFrame
+
 import rostok.block_builder_api.easy_body_shapes as easy_body_shapes
-from rostok.block_builder_chrono.block_types import (BlockBody, BlockBridge, BlockTransform)
-from rostok.block_builder_chrono.blocks_utils import (ContactReporter, SpringTorque,
-                                                      frame_transform_to_chcoordsys, rotation_z_q)
+from rostok.block_builder_api.block_parameters import (DefaultFrame,
+                                                       FrameTransform)
+from rostok.block_builder_chrono.block_types import (BlockBody, BlockBridge,
+                                                     BlockTransform)
+from rostok.block_builder_chrono.blocks_utils import (
+    ContactReporter, SpringTorque, frame_transform_to_chcoordsys, rotation_z_q)
 from rostok.block_builder_chrono.chrono_system import get_chrono_system
 from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
@@ -192,7 +193,7 @@ class ChronoRevolveJoint(BlockBridge):
                  radius=0.07,
                  length=0.4,
                  material = DefaultChronoMaterial(),
-                 density = 10.0,
+                 density = 100.0,
                  starting_angle=0,
                  stiffness: float = 0.,
                  damping: float = 0.,
@@ -309,7 +310,7 @@ class PrimitiveBody(BuildingBody):
 
     def __init__(self,
                  shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box(),
-                 density: float = 10.0,
+                 density: float = 100.0,
                  material=DefaultChronoMaterial(),
                  is_collide: bool = True,
                  color: Optional[list[int]] = None):
@@ -361,7 +362,7 @@ class ChronoEasyShapeObject():
 
     def __init__(self,
                  shape=easy_body_shapes.Box(),
-                 density: float = 10.0,
+                 density: float = 100.0,
                  material=DefaultChronoMaterial(),
                  is_collide: bool = True,
                  color: Optional[list[int]] = None,

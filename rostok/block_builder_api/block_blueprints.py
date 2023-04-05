@@ -39,7 +39,7 @@ class RevolveJointBlueprint(JointBlueprintType):
     radius: float = 0.07
     length: float = 0.4
     material: Material = Material()
-    density = 10.0
+    density = 100.0
     starting_angle = 0
     stiffness: float = 0.
     damping: float = 0.
@@ -49,7 +49,7 @@ class RevolveJointBlueprint(JointBlueprintType):
 @dataclass
 class PrimitiveBodyBlueprint(BodyBlueprintType):
     shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
-    density: float = 10.0
+    density: float = 100.0
     material: Material = Material()
     is_collide: bool = True
     color: Optional[list[int]] = None
@@ -58,7 +58,7 @@ class PrimitiveBodyBlueprint(BodyBlueprintType):
 @dataclass
 class EnvironmentBodyBlueprint(BodyBlueprintType):
     shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
-    density: float = 10.0
+    density: float = 100.0
     material: Material = Material()
     is_collide: bool = True
     color: Optional[list[int]] = None

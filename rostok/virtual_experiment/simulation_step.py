@@ -11,9 +11,9 @@ from rostok.block_builder_chrono.block_builder_chrono_api import ChronoBlockCrea
 from rostok.block_builder_chrono.chrono_system import register_chrono_system
 from rostok.criterion.flags_simualtions import (ConditionStopSimulation, FlagStopSimualtions)
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
+#from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
 from rostok.virtual_experiment.robot import Robot
-from rostok.virtual_experiment.sensors import ContactReporter, SensorFunctions
+from rostok.virtual_experiment.sensors import ContactReporter, Sensor
 
 
 # Immutable classes with output simulation data for robot block
@@ -107,7 +107,7 @@ class SimulationStepOptimization:
         self.control_trajectory = control_trajectory
         self.graph_mechanism = graph_mechanism
         self.controller_joints: list[list[control.ChronoControl]] = []
-        self.contact_reporter = ContactReporter()
+        
         # Create instance of chrono system and robot: grab mechanism
         self.chrono_system = chrono.ChSystemNSC()
         self.chrono_system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
@@ -120,7 +120,10 @@ class SimulationStepOptimization:
         register_chrono_system(self.chrono_system)
 
         self.grab_robot = Robot(self.graph_mechanism, self.chrono_system, start_frame_robot)
-
+        self.contact_reporter = ContactReporter()
+        self.contact_reporter.set_body_list([(-1, self.grasp_object)])
+        print(self.contact_reporter._body_list)
+        self.contact_reporter.reset_contact_dict()
         # Add grasp object in system and set system without gravity
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
 
@@ -263,11 +266,13 @@ class SimulationStepOptimization:
             # current_data_std_obj_force = RobotSensor.std_contact_forces_object(self.grasp_object)
 
             # Get current variables from object
-            SensorFunctions.reset_reporter_for_objects(self.chrono_system, [self.grasp_object.body], self.contact_reporter)
-            current_data_std_obj_force = SensorFunctions.std_contact_forces(self.contact_reporter)
-            current_data_cont_coord = SensorFunctions.contact_coord(self.contact_reporter)
-            current_data_abs_coord_COG_obj = SensorFunctions.abs_coord_COG(self.grasp_object.body)
-            current_data_amount_obj_contact_surfaces = SensorFunctions.amount_contact_forces(self.contact_reporter)
+            #SensorFunctions.reset_reporter_for_objects(self.chrono_system, [self.grasp_object.body], self.contact_reporter)
+            self.contact_reporter.reset_contact_dict()
+            sensor = Sensor(self.contact_reporter)
+            current_data_std_obj_force = sensor.std_contact_forces()
+            current_data_cont_coord = sensor.contact_coord()
+            current_data_abs_coord_COG_obj = sensor.abs_coord_COG(self.grasp_object.body)
+            current_data_amount_obj_contact_surfaces = sensor.amount_contact_forces()
 
             # TODO: Make it possible to get information from the robot blocks 
 
