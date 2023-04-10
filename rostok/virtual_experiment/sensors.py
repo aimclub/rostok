@@ -48,6 +48,9 @@ class ContactReporter(chrono.ReportContactCallback):
         body_b = chrono.CastToChBody(contactobjB)
         idx_a = None
         idx_b = None
+        #print(plane_coord)
+        if react_forces.x>0 or react_forces.y>0 or react_forces.z>0:
+            print(react_forces.x, react_forces.z, react_forces.y)
         for body_tuple in self._body_list:
             if body_a == body_tuple[1].body:
                 idx_a = body_tuple[0]

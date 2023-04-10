@@ -19,7 +19,7 @@ mechs = [
 mechs = [get_terminal_graph_no_joints]
 for get_graph in mechs:
     # Constants
-    MAX_TIME = 0.5
+    MAX_TIME = 1000
     TIME_STEP = 1e-3
 
     graph = get_graph()
@@ -46,7 +46,8 @@ for get_graph in mechs:
                                           FrameTransform([0, 0.1, 0], [1, 0, 0, 0]))
     sim.set_flags_stop_simulation(flags)
     sim.change_config_system(config_sys)
-
+    #body: chrono.ChBody = sim.grasp_object.body
+    #body.SetPos_dt(chrono.ChVectorD(-1,0,0))
     # Start simulation
     sim_output = sim.simulate_system(TIME_STEP, True)
 

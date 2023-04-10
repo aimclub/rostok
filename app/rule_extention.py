@@ -3,14 +3,12 @@ import networkx as nx
 import numpy as np
 import pychrono as chrono
 
-
-import numpy as np
-
-from rostok.block_builder_api.block_blueprints import TransformBlueprint, PrimitiveBodyBlueprint, \
-EnvironmentBodyBlueprint, RevolveJointBlueprint
+from rostok.block_builder_api.block_blueprints import (
+    EnvironmentBodyBlueprint, PrimitiveBodyBlueprint, RevolveJointBlueprint,
+    TransformBlueprint)
+from rostok.block_builder_api.block_parameters import JointInputType
 from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.block_builder_chrono.blocks_utils import FrameTransform
-from rostok.block_builder_api.block_parameters import JointInputType
 from rostok.graph_grammar import node_vocabulary, rule_vocabulary
 from rostok.graph_grammar.node import ROOT
 
