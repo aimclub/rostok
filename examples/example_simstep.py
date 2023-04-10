@@ -19,7 +19,7 @@ mechs = [
 mechs = [get_terminal_graph_no_joints]
 for get_graph in mechs:
     # Constants
-    MAX_TIME = 0.5
+    MAX_TIME = 2
     TIME_STEP = 1e-3
 
     graph = get_graph()
