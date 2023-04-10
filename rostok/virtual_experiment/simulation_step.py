@@ -121,7 +121,7 @@ class SimulationStepOptimization:
 
         self.grab_robot = Robot(self.graph_mechanism, self.chrono_system, start_frame_robot)
         self.contact_reporter = ContactReporter()
-        self.contact_reporter.set_body_list([(-1, self.grasp_object)])
+        self.contact_reporter.set_body_list([(-1, self.grasp_object),(1,self.grab_robot.get_base_body())])
         print(self.contact_reporter._body_list)
         self.contact_reporter.reset_contact_dict()
         # Add grasp object in system and set system without gravity
@@ -215,7 +215,7 @@ class SimulationStepOptimization:
             vis.SetWindowSize(1024, 768)
             vis.SetWindowTitle('Grab demo')
             vis.Initialize()
-            vis.AddCamera(chrono.ChVectorD(1.5, 3, -2))
+            vis.AddCamera(chrono.ChVectorD(0, 0, -2))
             vis.AddTypicalLights()
             vis.EnableCollisionShapeDrawing(True)
 
@@ -268,7 +268,15 @@ class SimulationStepOptimization:
             # Get current variables from object
             #SensorFunctions.reset_reporter_for_objects(self.chrono_system, [self.grasp_object.body], self.contact_reporter)
             self.contact_reporter.reset_contact_dict()
-            sensor = Sensor(self.contact_reporter)
+
+            sensor = Sensor(self.contact_reporter, self.chrono_system)
+            print("object contacts:")
+            for tuple in self.contact_reporter.get_contacts()[-1]:
+                print(tuple[0], tuple[1])
+            print("robot contacts:")
+            for tuple in self.contact_reporter.get_contacts()[1]:
+                print(tuple[0], tuple[1])
+            print()
             current_data_std_obj_force = sensor.std_contact_forces()
             current_data_cont_coord = sensor.contact_coord()
             current_data_abs_coord_COG_obj = sensor.abs_coord_COG(self.grasp_object.body)

@@ -11,6 +11,7 @@ from rostok.criterion.flags_simualtions import FlagMaxTime, FlagSlipout, FlagNot
 from rostok.trajectory_optimizer.control_optimizer import num_joints
 from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
+from rostok.block_builder_api.easy_body_shapes import Box
 
 mechs = [
     get_terminal_graph_three_finger, get_terminal_graph_no_joints, get_terminal_graph_two_finger
@@ -18,8 +19,8 @@ mechs = [
 mechs = [get_terminal_graph_no_joints]
 for get_graph in mechs:
     # Constants
-    MAX_TIME = 2
-    TIME_STEP = 1e-4
+    MAX_TIME = 0.5
+    TIME_STEP = 1e-3
 
     graph = get_graph()
     # Create trajectory
@@ -34,13 +35,15 @@ for get_graph in mechs:
 
     obj = EnvironmentBodyBlueprint(material=mat,
                                    pos=FrameTransform([0, 0.3, 0], [0, -0.048, 0.706, 0.706]))
+    obj = EnvironmentBodyBlueprint(shape = Box(0.1,0.2,0.5),material=mat,
+                                   pos=FrameTransform([0, 0.4, 0], [1,0,0,0]))
 
     # Configurate simulation
     config_sys = {"Set_G_acc": chrono.ChVectorD(0, -1, 0)}
     flags = [FlagMaxTime(MAX_TIME)]
 
     sim = step.SimulationStepOptimization(arr_trj, graph, obj,
-                                          FrameTransform([0, 0, 0], [1, 0, 0, 0]))
+                                          FrameTransform([0, 0.1, 0], [1, 0, 0, 0]))
     sim.set_flags_stop_simulation(flags)
     sim.change_config_system(config_sys)
 

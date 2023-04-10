@@ -1,6 +1,7 @@
+from typing import Dict, List, Optional, Tuple
+
 import numpy as np
 import pychrono.core as chrono
-from typing import Optional, List, Tuple, Dict
 
 
 class ContactReporter(chrono.ReportContactCallback):
@@ -47,71 +48,26 @@ class ContactReporter(chrono.ReportContactCallback):
         body_b = chrono.CastToChBody(contactobjB)
         idx_a = None
         idx_b = None
-        
         for body_tuple in self._body_list:
-            if body_a == body_tuple[1]:
+            if body_a == body_tuple[1].body:
                 idx_a = body_tuple[0]
-            elif body_b == body_tuple[1]:
+                self.__contact_dict[idx_a].append((pA, react_forces))
+            elif body_b == body_tuple[1].body:
                 idx_b = body_tuple[0]
-            
+                self.__contact_dict[idx_b].append((pB, react_forces))
             if not(idx_a is None or  idx_b is None):
                 break
-        
-        if idx_a is None and idx_b is None: return True
-
-        if not(idx_a is None):
-            self.__contact_dict[idx_a].append((pA, react_forces.x))
-
-        if not(idx_b is None):
-            self.__contact_dict[idx_b].append((pB, react_forces.x))
-
-        # if (body_a in self._current_body_list) or (body_b == self._current_body_list):
-        #     self.__current_normal_forces = react_forces.x  # is it the force that works on body a or b?
-        #     self.__list_normal_forces.append(react_forces.x)
-
-        #     if (body_a in self._current_body_list):
-        #         self.__current_contact_coord = [pA.x, pA.y, pA.z]
-        #         self.__list_contact_coord.append(self.__current_contact_coord)
-        #     elif (body_b == self._current_body_list):
-        #         self.__current_contact_coord = [pB.x, pB.y, pB.z]
-        #         self.__list_contact_coord.append(self.__current_contact_coord)
 
         return True
 
-
     def get_contacts(self):
         return self.__contact_dict
-    # def is_empty(self):
-    #     return len(self.__list_normal_forces) == 0
-
-    # def list_clear(self):
-    #     self.__list_normal_forces.clear()
-
-    # def list_cont_clear(self):
-    #     self.__list_contact_coord.clear()
-
-    # def get_normal_forces(self):
-    #     return self.__current_normal_forces
-
-    # def get_list_n_forces(self):
-    #     return self.__list_normal_forces
-
-    # def get_list_c_coord(self):
-    #     return self.__list_contact_coord
 
 
 class Sensor:
-    def __init__(self, contact_reporter:ContactReporter):
+    def __init__(self, contact_reporter:ContactReporter, system):
         self.reporter:ContactReporter = contact_reporter
-    #@staticmethod
-    # the function fills the lists in the reporter object
-    # def reset_reporter_for_objects(system: chrono.ChSystem, body_list: (List[chrono.ChBody]),
-    #                                contact_reporter: ContactReporter):
-    #     contact_reporter.reset()
-    #     contact_reporter.set_body_list(body_list)
-    #     system.GetContactContainer().ReportAllContacts(contact_reporter)
-
-    # one should use all other functions after resetting the reporter for new objects
+        system.GetContactContainer().ReportAllContacts(contact_reporter)
 
     def std_contact_forces(self, index:int=-1):
         """Sensor of standard deviation of contact forces that affect on object
@@ -126,15 +82,11 @@ class Sensor:
         list_n_forces = []
         forces = contacts[index]
         for force in forces:
-            list_n_forces.append(force[1])
+            list_n_forces.append(force[1].x)
         if len(list_n_forces)>0:
             contact_force_obj = np.std(list_n_forces)
             return dict([(index, contact_force_obj)])
         else: return None
-        # list_n_forces = contact_reporter.get_contacts()
-        # if np.size(list_n_forces) > 0:
-        #     contact_force_obj = np.std(list_n_forces)
-        #     return dict([(index, contact_force_obj)])
 
     def amount_contact_forces(self, index:int=-1):
         """The total amount of contact forces
@@ -148,14 +100,13 @@ class Sensor:
         """
         contacts= self.reporter.get_contacts()
         forces = contacts[index]
-        #list_n_forces
         if np.size(forces) > 0:
             amount_contact_force_obj = np.size(forces)
             return dict([(index, amount_contact_force_obj)])
         else:
             return None
 
-    def abs_coord_COG(self ,body: chrono.ChBody, index:int=-1):
+    def abs_coord_COG(self, body: chrono.ChBody, index:int=-1):
         """Sensor of absolute coordinates of grasp object
         Args:
             obj (ChronoBodyEnv): Grasp object
@@ -172,6 +123,7 @@ class Sensor:
         Returns:
             dict[int, float]: Dictionary which keys are id of object and values of COG of contact point volume in XYZ format
         """
+
         contacts = self.reporter.get_contacts()
         forces = contacts[index]
         list_c_coord = []
@@ -183,9 +135,9 @@ class Sensor:
             coord_y = 0
             coord_z = 0
             for coord in list_c_coord:
-                coord_x += coord[0]
-                coord_y += coord[1]
-                coord_z += coord[2]
+                coord_x += coord.x
+                coord_y += coord.y
+                coord_z += coord.z
             coordinates.append([
                 coord_x / len(list_c_coord), coord_y / len(list_c_coord),
                 coord_z / len(list_c_coord)
