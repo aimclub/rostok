@@ -4,10 +4,12 @@ import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 
 import rostok.control_chrono.control as control
-from rostok.block_builder_chrono.block_classes import (BuildingBody, ChronoRevolveJoint, ChronoEasyShapeObject)
-from rostok.block_builder_api.block_parameters import DefaultFrame, FrameTransform
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
-from rostok.block_builder_chrono.block_builder_chrono_api import ChronoBlockCreatorInterface as creator
+from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform)
+from rostok.block_builder_chrono.block_builder_chrono_api import \
+    ChronoBlockCreatorInterface as creator
+from rostok.block_builder_chrono.block_classes import (BuildingBody, ChronoEasyShapeObject,
+                                                       ChronoRevolveJoint)
 from rostok.block_builder_chrono.chrono_system import register_chrono_system
 from rostok.criterion.flags_simualtions import (ConditionStopSimulation, FlagStopSimualtions)
 from rostok.graph_grammar.node import GraphGrammar
@@ -107,7 +109,7 @@ class SimulationStepOptimization:
         self.control_trajectory = control_trajectory
         self.graph_mechanism = graph_mechanism
         self.controller_joints: list[list[control.ChronoControl]] = []
-        
+
         # Create instance of chrono system and robot: grab mechanism
         self.chrono_system = chrono.ChSystemNSC()
         self.chrono_system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
@@ -121,7 +123,8 @@ class SimulationStepOptimization:
 
         self.grab_robot = Robot(self.graph_mechanism, self.chrono_system, start_frame_robot)
         self.contact_reporter = ContactReporter()
-        self.contact_reporter.set_body_list([(-1, self.grasp_object),(1,self.grab_robot.get_base_body())])
+        self.contact_reporter.set_body_list([(-1, self.grasp_object),
+                                             (1, self.grab_robot.get_base_body())])
         self.contact_reporter.reset_contact_dict()
         # Add grasp object in system and set system without gravity
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
@@ -166,8 +169,9 @@ class SimulationStepOptimization:
                 Or create yours, that subclasses :py:class:`FlagStopSimualtions`
         """
         self.condion_stop_simulation = ConditionStopSimulation(self.chrono_system, self.grab_robot,
-                                                               self.grasp_object,self.contact_reporter,
-                                                               flags_stop_simulation )
+                                                               self.grasp_object,
+                                                               self.contact_reporter,
+                                                               flags_stop_simulation)
 
     # Add peculiar parameters of chrono system. Like that {"Set_G_acc":chrono.ChVectorD(0,0,0)}
     def change_config_system(self, dict_config: dict):
@@ -274,7 +278,7 @@ class SimulationStepOptimization:
             current_data_abs_coord_COG_obj = sensor.abs_coord_COG(self.grasp_object.body)
             current_data_amount_obj_contact_surfaces = sensor.amount_contact_forces()
 
-            # TODO: Make it possible to get information from the robot blocks 
+            # TODO: Make it possible to get information from the robot blocks
 
             # current_data_amount_obj_contact_surfaces = dict([
             #     (-1, len([item for item in self.grasp_object.list_n_forces if item != 0]))

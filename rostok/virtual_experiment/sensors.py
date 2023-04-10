@@ -55,7 +55,7 @@ class ContactReporter(chrono.ReportContactCallback):
             elif body_b == body_tuple[1].body:
                 idx_b = body_tuple[0]
                 self.__contact_dict[idx_b].append((pB, react_forces))
-            if not(idx_a is None or  idx_b is None):
+            if not (idx_a is None or idx_b is None):
                 break
 
         return True
@@ -65,11 +65,12 @@ class ContactReporter(chrono.ReportContactCallback):
 
 
 class Sensor:
-    def __init__(self, contact_reporter:ContactReporter, system):
-        self.reporter:ContactReporter = contact_reporter
+
+    def __init__(self, contact_reporter: ContactReporter, system):
+        self.reporter: ContactReporter = contact_reporter
         system.GetContactContainer().ReportAllContacts(contact_reporter)
 
-    def std_contact_forces(self, index:int=-1):
+    def std_contact_forces(self, index: int = -1):
         """Sensor of standard deviation of contact forces that affect on object
 
         Args:
@@ -83,12 +84,13 @@ class Sensor:
         forces = contacts[index]
         for force in forces:
             list_n_forces.append(force[1].x)
-        if len(list_n_forces)>0:
+        if len(list_n_forces) > 0:
             contact_force_obj = np.std(list_n_forces)
             return dict([(index, contact_force_obj)])
-        else: return None
+        else:
+            return None
 
-    def amount_contact_forces(self, index:int=-1):
+    def amount_contact_forces(self, index: int = -1):
         """The total amount of contact forces
 
         Args:s
@@ -98,7 +100,7 @@ class Sensor:
             dict[int, float]: Dictionary which keys are id object and values of standard
             deviation of contact forces
         """
-        contacts= self.reporter.get_contacts()
+        contacts = self.reporter.get_contacts()
         forces = contacts[index]
         if np.size(forces) > 0:
             amount_contact_force_obj = np.size(forces)
@@ -106,7 +108,7 @@ class Sensor:
         else:
             return None
 
-    def abs_coord_COG(self, body: chrono.ChBody, index:int=-1):
+    def abs_coord_COG(self, body: chrono.ChBody, index: int = -1):
         """Sensor of absolute coordinates of grasp object
         Args:
             obj (ChronoBodyEnv): Grasp object
@@ -116,7 +118,7 @@ class Sensor:
         """
         return dict([(index, [body.GetPos().x, body.GetPos().y, body.GetPos().z])])
 
-    def contact_coord(self, index:int=-1):
+    def contact_coord(self, index: int = -1):
         """Sensor of COG of contact points
         Args:
             obj (ChronoBodyEnv): Grasp object
