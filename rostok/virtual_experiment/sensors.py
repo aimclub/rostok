@@ -3,6 +3,9 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pychrono.core as chrono
 
+CoordinatesContact = chrono.ChVectorD
+ForceVector = chrono.ChVectorD
+
 
 class ContactReporter(chrono.ReportContactCallback):
 
@@ -16,9 +19,9 @@ class ContactReporter(chrono.ReportContactCallback):
                 dict of contacts obtained for the bodies from the body list in the current step. 
                 Each value is a list of contacts of form (position, force)
         """
+
         self._body_list: Optional[List[Tuple[int, chrono.ChBody]]] = None
-        self.__contact_dict_this_step: Dict[int, List[Tuple[chrono.ChVectorD,
-                                                            chrono.ChVectorD]]] = {}
+        self.__contact_dict_this_step: Dict[int, List[Tuple[CoordinatesContact, ForceVector]]] = {}
 
         super().__init__()
 
