@@ -10,10 +10,15 @@ class ContactReporter(chrono.ReportContactCallback):
         """Create a sensor of contact normal forces for the body.
 
         Args:
-            chrono_body (ChBody): The body on which the sensor is installed
+            _body_list (List[Tuple[int, chrono.ChBody]]): list of tuples of type (index, body), 
+                the index will be converted into the key in the contact dictionary
+            __contact_dict_this_step (Dict[int, List[Tuple[chrono.ChVectorD, chrono.ChVectorD]]]): 
+                dict of contacts obtained for the bodies from the body list in the current step. 
+                Each value is a list of contacts of form (position, force)
         """
         self._body_list: Optional[List[Tuple[int, chrono.ChBody]]] = None
-        self.__contact_dict: Dict[int, List[Tuple[chrono.ChVectorD, chrono.ChVectorD]]] = {}
+        self.__contact_dict_this_step: Dict[int, List[Tuple[chrono.ChVectorD,
+                                                            chrono.ChVectorD]]] = {}
 
         super().__init__()
 
@@ -22,7 +27,7 @@ class ContactReporter(chrono.ReportContactCallback):
 
     def reset_contact_dict(self):
         for bt in self._body_list:
-            self.__contact_dict[bt[0]] = []
+            self.__contact_dict_this_step[bt[0]] = []
 
     def OnReportContact(self, pA: chrono.ChVectorD, pB: chrono.ChVectorD,
                         plane_coord: chrono.ChMatrix33D, distance: float, eff_radius: float,
@@ -51,17 +56,17 @@ class ContactReporter(chrono.ReportContactCallback):
         for body_tuple in self._body_list:
             if body_a == body_tuple[1].body:
                 idx_a = body_tuple[0]
-                self.__contact_dict[idx_a].append((pA, react_forces))
+                self.__contact_dict_this_step[idx_a].append((pA, react_forces))
             elif body_b == body_tuple[1].body:
                 idx_b = body_tuple[0]
-                self.__contact_dict[idx_b].append((pB, react_forces))
+                self.__contact_dict_this_step[idx_b].append((pB, react_forces))
             if not (idx_a is None or idx_b is None):
                 break
 
         return True
 
     def get_contacts(self):
-        return self.__contact_dict
+        return self.__contact_dict_this_step
 
 
 class Sensor:

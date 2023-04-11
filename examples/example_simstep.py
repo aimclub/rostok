@@ -16,7 +16,7 @@ from rostok.block_builder_api.easy_body_shapes import Box
 mechs = [
     get_terminal_graph_three_finger, get_terminal_graph_no_joints, get_terminal_graph_two_finger
 ]
-mechs = [get_terminal_graph_no_joints]
+
 for get_graph in mechs:
     # Constants
     MAX_TIME = 2
