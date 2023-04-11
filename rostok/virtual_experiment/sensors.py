@@ -32,9 +32,9 @@ class ContactReporter(chrono.ReportContactCallback):
         for bt in self._body_list:
             self.__contact_dict_this_step[bt[0]] = []
 
-    def OnReportContact(self, pA: chrono.ChVectorD, pB: chrono.ChVectorD,
+    def OnReportContact(self, pA: CoordinatesContact, pB: CoordinatesContact,
                         plane_coord: chrono.ChMatrix33D, distance: float, eff_radius: float,
-                        react_forces: chrono.ChVectorD, react_torques: chrono.ChVectorD,
+                        react_forces: ForceVector, react_torques: chrono.ChVectorD,
                         contactobjA: chrono.ChContactable, contactobjB: chrono.ChContactable):
         """Callback used to report contact points already added to the container
 
