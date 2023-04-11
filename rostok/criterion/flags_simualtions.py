@@ -1,6 +1,7 @@
 from abc import ABC
 from copy import deepcopy
 from functools import reduce
+import numpy as np
 
 import pychrono as chrono
 
@@ -31,8 +32,9 @@ class FlagStopSimualtions(ABC):
         self.robot = None
         self.obj = None
         self.system = None
+        self.contact_reporter = None
 
-    def build(self, chrono_system: chrono.ChSystem, in_robot: robot.Robot, obj: chrono.ChBody):
+    def build(self, chrono_system: chrono.ChSystem, in_robot: robot.Robot, obj: chrono.ChBody, contact_reporter):
         """Build flag on the chrono system, robot and object
 
         Args:
@@ -44,6 +46,7 @@ class FlagStopSimualtions(ABC):
         self.robot = in_robot
         self.obj = obj
         self.system = chrono_system
+        self.contact_reporter = contact_reporter
 
     def _check_builder(self):
         if self.robot is None or self.obj is None or self.system is None:
@@ -132,7 +135,7 @@ class FlagWithContact(FlagStopSimualtions, ABC):
         Returns:
             bool: True when contact is exsist
         """
-        sum_contacts = sum(self.obj.list_n_forces)
+        sum_contacts = np.size(self.contact_reporter.get_contacts()[-1])
         return not sum_contacts == 0
 
 
@@ -212,7 +215,7 @@ class ConditionStopSimulation:
         flags (list[FlagStopSimualtions]): Flag of the stopping simulation
     """
 
-    def __init__(self, chrono_system: chrono.ChSystem, in_robot: robot.Robot, obj: chrono.ChBody,
+    def __init__(self, chrono_system: chrono.ChSystem, in_robot: robot.Robot, obj: chrono.ChBody, contact_reporter,
                  flags: list[FlagStopSimualtions]):
         self.__stop_flag = False
         self.chrono_system = chrono_system
@@ -221,7 +224,7 @@ class ConditionStopSimulation:
         self.flags = deepcopy(flags)
 
         for flag in self.flags:
-            flag.build(self.chrono_system, self.in_robot, self.obj)
+            flag.build(self.chrono_system, self.in_robot, self.obj, contact_reporter)
 
     def flag_stop_simulation(self):
         """Condition of stop simulation

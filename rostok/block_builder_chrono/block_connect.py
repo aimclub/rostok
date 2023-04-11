@@ -1,12 +1,16 @@
 import pychrono.core as chrono
 import pychrono.irrlicht as chronoirr
 
-from rostok.block_builder_chrono.block_classes import (BuildingBody, ChronoRevolveJoint,
-                                                       ChronoTransform, PrimitiveBody, BLOCK_CLASS_TYPES)
-from rostok.block_builder_chrono.block_types import (Block, BlockBody, BlockBridge, BlockTransform,
-                                                     BlockType)
-from rostok.block_builder_chrono.blocks_utils import FrameTransform
 from rostok.block_builder_api.easy_body_shapes import Box
+from rostok.block_builder_chrono.block_classes import (BLOCK_CLASS_TYPES,
+                                                       BuildingBody,
+                                                       ChronoRevolveJoint,
+                                                       ChronoTransform,
+                                                       PrimitiveBody)
+from rostok.block_builder_chrono.block_types import (Block, BlockBody,
+                                                     BlockBridge,
+                                                     BlockTransform, BlockType)
+from rostok.block_builder_chrono.blocks_utils import FrameTransform
 
 
 def place_next_block(prev_block: BuildingBody, next_block: BuildingBody, system: chrono.ChSystem):
@@ -35,7 +39,6 @@ def make_fix_joint(prev_block: BuildingBody, next_block: BuildingBody, system: c
                          next_block.transformed_frame_input)
     system.Add(fix_joint)
     system.Update()
-
 
 # the function places and connects a sequence of blocks. The sequence should start from the root block
 def place_and_connect(sequence: list[Block], system: chrono.ChSystem):
@@ -109,7 +112,6 @@ def place_and_connect(sequence: list[Block], system: chrono.ChSystem):
 
             block.set_prev_body_frame(previous_body_block, system)
             previous_joint = block
-
 
 if __name__ == "__main__":
     chrono_system = chrono.ChSystemNSC()

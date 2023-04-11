@@ -3,15 +3,16 @@ import random
 from enum import Enum
 from typing import Optional, Union
 
-
-
 import open3d
 import pychrono.core as chrono
-from rostok.block_builder_api.block_parameters import FrameTransform, DefaultFrame
+
 import rostok.block_builder_api.easy_body_shapes as easy_body_shapes
-from rostok.block_builder_chrono.block_types import (BlockBody, BlockBridge, BlockTransform)
-from rostok.block_builder_chrono.blocks_utils import (ContactReporter, SpringTorque,
-                                                      frame_transform_to_chcoordsys, rotation_z_q)
+from rostok.block_builder_api.block_parameters import (DefaultFrame,
+                                                       FrameTransform)
+from rostok.block_builder_chrono.block_types import (BlockBody, BlockBridge,
+                                                     BlockTransform)
+from rostok.block_builder_chrono.blocks_utils import (
+    ContactReporter, SpringTorque, frame_transform_to_chcoordsys, rotation_z_q)
 from rostok.block_builder_chrono.chrono_system import get_chrono_system
 from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
@@ -82,7 +83,6 @@ class BuildingBody(BlockBody):
         self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
         self.body.SetCollide(is_collide)
         # Normal Forces
-        self.__contact_reporter = ContactReporter(self.body)
         # set a color for the body, default is random
         if color is None:
             rgb = [random.random(), random.random(), random.random()]
@@ -136,46 +136,6 @@ class BuildingBody(BlockBody):
         """
         return self._ref_frame_in
 
-    @property
-    def normal_force(self) -> float:
-        """Return value normal forces of random collision point.
-
-        Returns:
-            float: Value normal forces of random collision point
-        """
-        system = get_chrono_system()
-        system.GetContactContainer().ReportAllContacts(self.__contact_reporter)
-        return self.__contact_reporter.get_normal_forces()
-
-    @property
-    def list_n_forces(self) -> list:
-        """Return a list of all the contact forces.
-
-        Returns:
-            list: List normal forces of all the contacts points
-        """
-        system = get_chrono_system()
-        container = system.GetContactContainer()
-        contacts = container.GetNcontacts()
-        if contacts:
-            self.__contact_reporter.list_clear()
-            container.ReportAllContacts(self.__contact_reporter)
-        return self.__contact_reporter.get_list_n_forces()
-
-    @property
-    def list_c_coord(self) -> list:
-        """Return a list of all the contact forces.
-        Returns:
-            list: List normal forces of all the contacts points
-        """
-        system = get_chrono_system()
-        container = system.GetContactContainer()
-        contacts = container.GetNcontacts()
-        if contacts:
-            self.__contact_reporter.list_cont_clear()
-            container.ReportAllContacts(self.__contact_reporter)
-        return self.__contact_reporter.get_list_c_coord()
-
 
 class ChronoTransform(BlockTransform):
     """Class representing node of the transformation in `pychrono <https://projectchrono.org/pychrono/>`_ physical
@@ -196,7 +156,6 @@ class ChronoTransform(BlockTransform):
                 chrono.ChQuaternionD(transform.rotation[0], transform.rotation[1],
                                      transform.rotation[2], transform.rotation[3]))
             self.transform = coordsys_transform
-
 
 
 class JointInputTypeChrono(str, Enum):
@@ -233,7 +192,7 @@ class ChronoRevolveJoint(BlockBridge):
                  radius=0.07,
                  length=0.4,
                  material = DefaultChronoMaterial(),
-                 density = 10.0,
+                 density = 100.0,
                  starting_angle=0,
                  stiffness: float = 0.,
                  damping: float = 0.,
@@ -350,34 +309,36 @@ class PrimitiveBody(BuildingBody):
 
     def __init__(self,
                  shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box(),
-                 density: float = 10.0,
+                 density: float = 100.0,
                  material=DefaultChronoMaterial(),
                  is_collide: bool = True,
                  color: Optional[list[int]] = None):
 
+        #offset
+        eps = 0.001
         # Create body
         material = struct_material2object_material(material)
 
         if isinstance(shape, easy_body_shapes.Box):
             body = chrono.ChBodyEasyBox(shape.width_x, shape.length_y, shape.height_z, density,
                                         True, True, material)
-            pos_in_marker = chrono.ChVectorD(0, -shape.length_y * 0.5, 0)
-            pos_out_marker = chrono.ChVectorD(0, shape.length_y * 0.5, 0)
+            pos_in_marker = chrono.ChVectorD(0, -shape.length_y * 0.5-eps, 0)
+            pos_out_marker = chrono.ChVectorD(0, shape.length_y * 0.5+eps, 0)
         elif isinstance(shape, easy_body_shapes.Cylinder):
             body = chrono.ChBodyEasyCylinder(shape.radius, shape.height_y, density, True, True,
                                              material)
-            pos_in_marker = chrono.ChVectorD(0, -shape.height_y * 0.5, 0)
-            pos_out_marker = chrono.ChVectorD(0, shape.height_y * 0.5, 0)
+            pos_in_marker = chrono.ChVectorD(0, -shape.height_y * 0.5-eps, 0)
+            pos_out_marker = chrono.ChVectorD(0, shape.height_y * 0.5+eps, 0)
         elif isinstance(shape, easy_body_shapes.Sphere):
             body = chrono.ChBodyEasySphere(shape.radius, density, True, True, material)
-            pos_in_marker = chrono.ChVectorD(0, -shape.radius * 0.5, 0)
-            pos_out_marker = chrono.ChVectorD(0, shape.radius * 0.5, 0)
+            pos_in_marker = chrono.ChVectorD(0, -shape.radius * 0.5-eps, 0)
+            pos_out_marker = chrono.ChVectorD(0, shape.radius * 0.5+eps, 0)
         elif isinstance(shape, easy_body_shapes.Ellipsoid):
             body = chrono.ChBodyEasyEllipsoid(
                 chrono.ChVectorD(shape.radius_x, shape.radius_y, shape.radius_z), density, True,
                 True, material)
-            pos_in_marker = chrono.ChVectorD(0, -shape.radius_y * 0.5, 0)
-            pos_out_marker = chrono.ChVectorD(0, shape.radius_y * 0.5, 0)
+            pos_in_marker = chrono.ChVectorD(0, -shape.radius_y * 0.5-eps, 0)
+            pos_out_marker = chrono.ChVectorD(0, shape.radius_y * 0.5+eps, 0)
         else:
             raise Exception("Unknown shape for ChronoBodyEnv object")
 
@@ -402,7 +363,7 @@ class ChronoEasyShapeObject():
 
     def __init__(self,
                  shape=easy_body_shapes.Box(),
-                 density: float = 10.0,
+                 density: float = 100.0,
                  material=DefaultChronoMaterial(),
                  is_collide: bool = True,
                  color: Optional[list[int]] = None,
@@ -443,8 +404,6 @@ class ChronoEasyShapeObject():
         body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
         body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
         body.SetCollide(is_collide)
-        # Normal Forces
-        self.__contact_reporter = ContactReporter(body)
         self.body = body
         if color is None:
             rgb = [random.random(), random.random(), random.random()]
@@ -457,47 +416,6 @@ class ChronoEasyShapeObject():
 
     def set_coord(self, frame: FrameTransform):
         self.body.SetCoord(frame_transform_to_chcoordsys(frame))
-
-    @property
-    def normal_force(self) -> float:
-        """Return value normal forces of random collision point.
-
-        Returns:
-            float: Value normal forces of random collision point
-        """
-        system = get_chrono_system()
-        system.GetContactContainer().ReportAllContacts(self.__contact_reporter)
-        return self.__contact_reporter.get_normal_forces()
-
-    @property
-    def list_n_forces(self) -> list:
-        """Return a list of all the contact forces.
-
-        Returns:
-            list: List normal forces of all the contacts points
-        """
-        system = get_chrono_system()
-        container = system.GetContactContainer()
-        contacts = container.GetNcontacts()
-        if contacts:
-            self.__contact_reporter.list_clear()
-            container.ReportAllContacts(self.__contact_reporter)
-        return self.__contact_reporter.get_list_n_forces()
-
-    @property
-    def list_c_coord(self) -> list:
-        """Return a list of all the contact forces.
-        Returns:
-            list: List normal forces of all the contacts points
-        """
-        system = get_chrono_system()
-        container = system.GetContactContainer()
-        contacts = container.GetNcontacts()
-        if contacts:
-            self.__contact_reporter.list_cont_clear()
-            container.ReportAllContacts(self.__contact_reporter)
-        return self.__contact_reporter.get_list_c_coord()
-
 
 
 
