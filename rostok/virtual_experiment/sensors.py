@@ -2,9 +2,10 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pychrono.core as chrono
+from typing_extensions import TypeAlias
 
-CoordinatesContact = chrono.ChVectorD
-ForceVector = chrono.ChVectorD
+CoordinatesContact: TypeAlias = chrono.ChVectorD
+ForceVector: TypeAlias = chrono.ChVectorD
 
 
 class ContactReporter(chrono.ReportContactCallback):
