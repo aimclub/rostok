@@ -73,7 +73,7 @@ The framework was developed in [ITMO University](https://en.itmo.ru/).
 ### Supported by
 
 The study is supported by the [Research Center Strong Artificial Intelligence in Industry](<https://sai.itmo.ru/>) 
-of [ITMO University](https://en.itmo.ru/) as part of the plan of the center's program: Development and testing of an experimental prototype of a library of strong AI algorithms in terms of generative and interactive design of flat mechanisms of anthropomorphic gripping devices and robotic brushes
+of [ITMO University](https://en.itmo.ru/) as part of the plan of the center's program: Development and testing of an experimental prototype of a library of strong AI algorithms in terms of generative and interactive design of planar mechanisms of anthropomorphic gripping devices and robotic hands
 
 ### Developers
 
@@ -95,13 +95,13 @@ of [ITMO University](https://en.itmo.ru/) as part of the plan of the center's pr
 
 GOST:
 
-* I. I. Borisov, E. E. Khornutov, D. V. Ivolga, N. A. Molchanov, I. A. Maksimov and S. A. Kolyubin, "Reconfigurable Underactuated Adaptive Gripper Designed by Morphological Computation," 2022 International Conference on Robotics and Automation (ICRA), 2022, pp. 1130-1136, doi: 10.1109/ICRA46639.2022.9811738.
+* I. I. Borisov, E. E. Khomutov, D. V. Ivolga, N. A. Molchanov, I. A. Maksimov and S. A. Kolyubin, "Reconfigurable Underactuated Adaptive Gripper Designed by Morphological Computation," 2022 International Conference on Robotics and Automation (ICRA), 2022, pp. 1130-1136, doi: 10.1109/ICRA46639.2022.9811738.
 
 Bibtex:
 
 * @inproceedings{borisov2022reconfigurable,
   title={Reconfigurable underactuated adaptive gripper designed by morphological computation},
-  author={Borisov, Ivan I and Khornutov, Evgenii E and Ivolga, Dmitriy V and Molchanov, Nikita A and Maksimov, Ivan A and Kolyubin, Sergey A},
+  author={Borisov, Ivan I and Khomutov, Evgenii E and Ivolga, Dmitriy V and Molchanov, Nikita A and Maksimov, Ivan A and Kolyubin, Sergey A},
   booktitle={2022 International Conference on Robotics and Automation (ICRA)},
   pages={1130--1136},
   year={2022},
