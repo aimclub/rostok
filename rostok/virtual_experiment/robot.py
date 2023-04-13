@@ -2,7 +2,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 
 from pychrono.core import ChQuaternionD, ChVectorD
-
+import pychrono.core as chrono
 from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.block_builder_chrono.block_connect import place_and_connect
 from rostok.block_builder_chrono.block_classes import BLOCK_CLASS_TYPES
@@ -16,7 +16,25 @@ class RobotNode:
     block: BLOCK_CLASS_TYPES
     node: Node
 
+class BuildedGraph:
+    def __init__(self, graph, system, is_base_fixed = True):
+        self.__graph:GraphGrammar = deepcopy(graph)
+        self.block_map = []
+        self.build_into_system(self.__graph)
+        
 
+    def build_into_system(self, system: chrono.ChSystem):
+        paths = self.__graph.get_root_based_paths()
+        for path in paths:
+            for idx in path:
+                if self.__graph.get_node_by_id(idx)
+
+
+    def get_base_body(self):
+        ids_blocks = list(self.block_map.keys())
+        base_id = self.__graph.get_root_id()
+        return self.block_map[base_id]
+        
 class Robot:
     __fixed = False
 
