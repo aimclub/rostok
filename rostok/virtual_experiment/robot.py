@@ -1,11 +1,12 @@
 from copy import deepcopy
 from dataclasses import dataclass
+from typing import List, Tuple
 
 from pychrono.core import ChQuaternionD, ChVectorD
 import pychrono.core as chrono
 from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.block_builder_chrono.block_connect import place_and_connect
-from rostok.block_builder_chrono.block_classes import BLOCK_CLASS_TYPES
+from rostok.block_builder_chrono.block_classes import BLOCK_CLASS_TYPES, PrimitiveBody, ChronoRevolveJoint
 from rostok.block_builder_api.block_parameters import FrameTransform, DefaultFrame
 from rostok.graph_grammar.node import GraphGrammar, Node, UniqueBlueprint
 from rostok.block_builder_chrono.block_builder_chrono_api import ChronoBlockCreatorInterface as creator
@@ -16,25 +17,69 @@ class RobotNode:
     block: BLOCK_CLASS_TYPES
     node: Node
 
-class BuildedGraph:
-    def __init__(self, graph, system, is_base_fixed = True):
+class BuiltGraph:
+    def __init__(self, graph, system, is_base_fixed = True, initial_position:FrameTransform = DefaultFrame):
         self.__graph:GraphGrammar = deepcopy(graph)
-        self.block_map = []
-        self.build_into_system(self.__graph)
-        
+        self.block_map:List[PrimitiveBody] = []
+        self.block_vector:List[Tuple[int,PrimitiveBody]] = []
+        self.joint_map:List[ChronoRevolveJoint] = []
+        self.joint_vector:List[Tuple[int,ChronoRevolveJoint]] = []
+        self.build_into_system(system, initial_position)
+        if is_base_fixed:
+            self.fix_base()
+        self.fill_maps()
 
-    def build_into_system(self, system: chrono.ChSystem):
+    def fill_maps(self):
         paths = self.__graph.get_root_based_paths()
         for path in paths:
+            joint_path = []
+            block_path = []
             for idx in path:
-                if self.__graph.get_node_by_id(idx)
+                if NodeFeatures.is_joint(self.__graph.nodes[idx]["Node"]):
+                    joint_path.append(idx)
+                if NodeFeatures.is_body(self.__graph.nodes[idx]["Node"]):
+                    block_path.append(idx)
+            self.block_map.append(block_path)
+            self.joint_map.append(joint_path)
 
+    def build_into_system(self, system: chrono.ChSystem, initial_position:FrameTransform = DefaultFrame):
+        paths = self.__graph.get_root_based_paths()
+        block_chains:List[BLOCK_CLASS_TYPES] = []
+        for path in paths:
+            chain:List[BLOCK_CLASS_TYPES] = []
+            for idx in path:
+                # if the node hasn't been built yet
+                if self.__graph.nodes[idx].get("Blocks", None) is None:
+                    # build all objects relevant to the node and add them into graph
+                    blueprint = self.__graph.nodes[idx]["Node"].block_blueprint
+                    created_blocks = creator.init_block_from_blueprint(blueprint)
+                    if NodeFeatures.is_joint(self.__graph.nodes[idx].get("Node", None)):
+                        self.joint_vector.append((idx, created_blocks))
+                    elif NodeFeatures.is_body(self.__graph.nodes[idx].get("Node", None)):
+                        self.block_vector.append((idx, created_blocks))
 
-    def get_base_body(self):
-        ids_blocks = list(self.block_map.keys())
-        base_id = self.__graph.get_root_id()
-        return self.block_map[base_id]
+                    chain.append(created_blocks)
+                    self.__graph.nodes[idx]["Blocks"] = created_blocks
+                else:
+                    chain.append(self.__graph.nodes[idx].get("Blocks", None))
         
+        chrono_vector_position = ChVectorD(*initial_position.position)
+
+        chrono_quat_rotation = ChQuaternionD(*initial_position.rotation)
+
+        base_id = self.__graph.get_root_id()
+        base = self.__graph.nodes[base_id].get("Blocks", None)
+        base.body.SetPos(chrono_vector_position)
+        base.body.SetRot(chrono_quat_rotation)
+        for line in block_chains:
+            place_and_connect(line, system)
+
+    def fix_base(self):
+        # Fixation palm of grab mechanism
+        base_id = self.__graph.get_root_id()
+        base = self.__graph.nodes[base_id].get("Blocks", None)
+        base.body.SetBodyFixed(True)
+
 class Robot:
     __fixed = False
 
