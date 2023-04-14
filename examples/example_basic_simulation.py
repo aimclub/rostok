@@ -25,4 +25,4 @@ for get_graph in mechs:
     graph = get_graph()
     sim = BasicSimulation()
     sim.add_design(graph)
-    sim.simulate(1000, 0.01, 10)
+    sim.simulate(10000, 0.01, 10, True)

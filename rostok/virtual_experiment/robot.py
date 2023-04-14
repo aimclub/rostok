@@ -62,7 +62,7 @@ class BuiltGraph:
                     self.__graph.nodes[idx]["Blocks"] = created_blocks
                 else:
                     chain.append(self.__graph.nodes[idx].get("Blocks", None))
-        
+            block_chains.append(chain)
         chrono_vector_position = ChVectorD(*initial_position.position)
 
         chrono_quat_rotation = ChQuaternionD(*initial_position.rotation)
@@ -72,6 +72,7 @@ class BuiltGraph:
         base.body.SetPos(chrono_vector_position)
         base.body.SetRot(chrono_quat_rotation)
         for line in block_chains:
+            #print(line)
             place_and_connect(line, system)
 
     def fix_base(self):
