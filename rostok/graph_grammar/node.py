@@ -340,6 +340,15 @@ class GraphGrammar(nx.DiGraph):
             return self_dfs_paths_lbl == rhs_dfs_paths_lbl
         return False
 
+    def get_sorted_root_based_paths(self):
+        root_based_paths = self.get_root_based_paths()
+        def transform_into_string(path):
+            string_path = [self.get_node_by_id(x).label for x in path]
+            return "".join(string_path)
+
+        root_based_paths.sort(key = transform_into_string)
+        return root_based_paths
+
     def get_uniq_representation(self) -> list[list[str]]:
         """Returns dfs partition node labels. 
         Where branches is sorted by lexicographic order
