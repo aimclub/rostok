@@ -1,8 +1,9 @@
 from dataclasses import dataclass
+from typing import Optional
 
 import networkx as nx
-from typing import Optional
 from networkx.algorithms.traversal import dfs_preorder_nodes
+
 from rostok.block_builder_api.block_blueprints import ALL_BLUEPRINT
 
 
@@ -65,7 +66,7 @@ class UniqueBlueprint:
         Id - from the generated graph
     """
     id: int
-    block_blueprint: ALL_BLUEPRINT # Set default value
+    block_blueprint: ALL_BLUEPRINT  # Set default value
 
 
 ROOT = Node("ROOT")
@@ -342,11 +343,12 @@ class GraphGrammar(nx.DiGraph):
 
     def get_sorted_root_based_paths(self):
         root_based_paths = self.get_root_based_paths()
+
         def transform_into_string(path):
             string_path = [self.get_node_by_id(x).label for x in path]
             return "".join(string_path)
 
-        root_based_paths.sort(key = transform_into_string)
+        root_based_paths.sort(key=transform_into_string)
         return root_based_paths
 
     def get_uniq_representation(self) -> list[list[str]]:
@@ -357,7 +359,7 @@ class GraphGrammar(nx.DiGraph):
             list[list[str]]: dfs branches 
         """
 
-        self_dfs_paths = self.graph_partition_dfs()
+        self_dfs_paths = self.get_root_based_paths()
         self_dfs_paths_lbl = []
         for path in self_dfs_paths:
             self_dfs_paths_lbl.append([self.get_node_by_id(x).label for x in path])
