@@ -26,7 +26,7 @@ class ContactReporter(chrono.ReportContactCallback):
 
         super().__init__()
 
-    def set_body_list(self, body_list: List[chrono.ChBody]):
+    def set_body_list(self, body_list: List[Tuple[int, chrono.ChBody]]):
         self._body_list = body_list
 
     def reset_contact_dict(self):
@@ -71,6 +71,9 @@ class ContactReporter(chrono.ReportContactCallback):
 
     def get_contacts(self):
         return self.__contact_dict_this_step
+    
+    def collect_current_contacts(self, system:chrono.ChSystem):
+        system.GetContactContainer().ReportAllContacts(self)
 
 
 class Sensor:

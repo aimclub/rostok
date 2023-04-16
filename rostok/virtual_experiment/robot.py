@@ -2,14 +2,21 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import List, Tuple
 
-from pychrono.core import ChQuaternionD, ChVectorD
 import pychrono.core as chrono
-from rostok.graph_grammar.node_block_typing import NodeFeatures
+from pychrono.core import ChQuaternionD, ChVectorD
+
+from rostok.block_builder_api.block_parameters import (DefaultFrame,
+                                                       FrameTransform)
+from rostok.block_builder_chrono.block_builder_chrono_api import \
+    ChronoBlockCreatorInterface as creator
+from rostok.block_builder_chrono.block_classes import (BLOCK_CLASS_TYPES,
+                                                       ChronoRevolveJoint,
+                                                       PrimitiveBody)
 from rostok.block_builder_chrono.block_connect import place_and_connect
-from rostok.block_builder_chrono.block_classes import BLOCK_CLASS_TYPES, PrimitiveBody, ChronoRevolveJoint
-from rostok.block_builder_api.block_parameters import FrameTransform, DefaultFrame
 from rostok.graph_grammar.node import GraphGrammar, Node, UniqueBlueprint
-from rostok.block_builder_chrono.block_builder_chrono_api import ChronoBlockCreatorInterface as creator
+from rostok.graph_grammar.node_block_typing import NodeFeatures
+from rostok.virtual_experiment.sensors import ContactReporter
+
 
 @dataclass
 class RobotNode:
@@ -17,20 +24,26 @@ class RobotNode:
     block: BLOCK_CLASS_TYPES
     node: Node
 
+
 class BuiltGraph:
-    def __init__(self, graph, system, is_base_fixed = True, initial_position:FrameTransform = DefaultFrame):
-        self.__graph:GraphGrammar = deepcopy(graph)
-        self.block_map:List[PrimitiveBody] = []
-        self.block_vector:List[Tuple[int,PrimitiveBody]] = []
-        self.joint_map:List[ChronoRevolveJoint] = []
-        self.joint_vector:List[Tuple[int,ChronoRevolveJoint]] = []
+
+    def __init__(self,
+                 graph,
+                 system,
+                 is_base_fixed=True,
+                 initial_position: FrameTransform = DefaultFrame):
+        self.__graph: GraphGrammar = deepcopy(graph)
+        self.block_map: List[PrimitiveBody] = []
+        self.block_vector: List[Tuple[int, PrimitiveBody]] = []
+        self.joint_map: List[ChronoRevolveJoint] = []
+        self.joint_vector: List[Tuple[int, ChronoRevolveJoint]] = []
         self.build_into_system(system, initial_position)
         if is_base_fixed:
             self.fix_base()
         self.fill_maps()
 
     def fill_maps(self):
-        paths = self.__graph.get_root_based_paths()
+        paths = self.__graph.get_sorted_root_based_paths()
         for path in paths:
             joint_path = []
             block_path = []
@@ -42,11 +55,13 @@ class BuiltGraph:
             self.block_map.append(block_path)
             self.joint_map.append(joint_path)
 
-    def build_into_system(self, system: chrono.ChSystem, initial_position:FrameTransform = DefaultFrame):
-        paths = self.__graph.get_root_based_paths()
-        block_chains:List[BLOCK_CLASS_TYPES] = []
+    def build_into_system(self,
+                          system: chrono.ChSystem,
+                          initial_position: FrameTransform = DefaultFrame):
+        paths = self.__graph.get_sorted_root_based_paths()
+        block_chains: List[BLOCK_CLASS_TYPES] = []
         for path in paths:
-            chain:List[BLOCK_CLASS_TYPES] = []
+            chain: List[BLOCK_CLASS_TYPES] = []
             for idx in path:
                 # if the node hasn't been built yet
                 if self.__graph.nodes[idx].get("Blocks", None) is None:
@@ -81,15 +96,22 @@ class BuiltGraph:
         base = self.__graph.nodes[base_id].get("Blocks", None)
         base.body.SetBodyFixed(True)
 
-class Robot:
-    __fixed = False
 
+
+
+from rostok.control_chrono.controller import RobotControllerChrono
+class Robot:
     def __init__(self,
                  robot_graph: GraphGrammar,
-                 simulation,
+                 system,
+                 control_parameters,
                  start_frame: FrameTransform = DefaultFrame):
-        self.__graph = deepcopy(robot_graph)
-        self.__simulation = simulation
+        self.__built_graph = BuiltGraph(robot_graph, system, start_frame)
+        self.contact_reporter = ContactReporter()
+        self.contact_reporter.set_body_list(self.__built_graph.block_vector)
+
+        self.controller = RobotControllerChrono(self.__built_graph.joint_vector, control_parameters)
+        
         self.bridge_set: set[int] = set()
         unique_blueprint_array = self.__graph.build_unique_blueprint_array()
         # Map { id from graph : block }
