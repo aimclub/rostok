@@ -1,4 +1,4 @@
-
+import random
 
 import pychrono as chrono
 from example_vocabulary import (get_terminal_graph_no_joints, get_terminal_graph_three_finger,
@@ -18,6 +18,9 @@ mechs = [
 ]
 
 for get_graph in mechs:
+    # Constants
+    MAX_TIME = 2
+    TIME_STEP = 1e-3
 
     graph = get_graph()
     sim = SystemPreview()

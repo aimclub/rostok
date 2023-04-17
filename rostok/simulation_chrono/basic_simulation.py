@@ -1,9 +1,10 @@
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 
-from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform)
+from rostok.block_builder_api.block_parameters import (DefaultFrame,
+                                                       FrameTransform)
 from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject
 from rostok.virtual_experiment.robot import BuiltGraph, Robot
 from rostok.virtual_experiment.sensors import ContactReporter
@@ -56,11 +57,18 @@ class SystemPreview:
 class RobotSimulationChrono():
 
     def __init__(self,
-                 object_list: List[Tuple[ChronoEasyShapeObject, bool]], 
+                 object_list: List[Tuple[ChronoEasyShapeObject, bool]],
                  visualize: bool = True):
-        super().__init__(visualize)
+
+        self.chrono_system = chrono.ChSystemNSC()
+        self.chrono_system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
+        self.chrono_system.SetSolverMaxIterations(100)
+        self.chrono_system.SetSolverForceTolerance(1e-6)
+        self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
+        self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
+
         self.data = None
-        self.robot_list:List[Robot] = []
+        self.robot:Optional[Robot] = None
         self.env_reporter = ContactReporter()
         self.objects: List[ChronoEasyShapeObject] = []
         self.active_body_counter = 0
@@ -72,7 +80,7 @@ class RobotSimulationChrono():
         pass
 
     def add_design(self, graph, control_parameters, Frame: FrameTransform = DefaultFrame):
-        self.robot_list.append(Robot(graph, self.chrono_system, Frame))
+        self.robot = Robot(graph, self.chrono_system, control_parameters, Frame)
 
     def add_object(self, obj: ChronoEasyShapeObject, read_data: bool = False):
         self.chrono_system.AddBody(obj.body)
@@ -83,19 +91,19 @@ class RobotSimulationChrono():
             self.env_reporter.set_body_list(self.active_objects)
 
     def update_data(self):
-        pass
+        self.env_reporter.collect_current_contacts(self.chrono_system)
+
+    def get_current_data(self):
+        None
 
     def simulate_step(self, time_step: float):
         self.chrono_system.Update()
         self.chrono_system.DoStepDynamics(time_step)
-        self.env_reporter.collect_current_contacts(self.chrono_system)
-        for robot in self.robot_list:
-            robot.contact_reporter.collect_current_contacts(self.chrono_system)
-
-        for robot in self.robot_list:
-            robot.controller.update_functions()
-
         self.update_data()
+
+        robot:Robot = self.robot
+        robot.contact_reporter.collect_current_contacts(self.chrono_system)
+        robot.controller.update_functions(robot.get_data(), self.get_current_data())
 
     def simulate(self,
                  number_of_steps: int,
@@ -124,3 +132,5 @@ class RobotSimulationChrono():
             vis.GetDevice().closeDevice()
 
         return self.data
+
+
