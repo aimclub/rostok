@@ -13,9 +13,9 @@ from rostok.block_builder_chrono.block_classes import (BLOCK_CLASS_TYPES,
                                                        ChronoRevolveJoint,
                                                        PrimitiveBody)
 from rostok.block_builder_chrono.block_connect import place_and_connect
-from rostok.graph_grammar.node import GraphGrammar, Node, UniqueBlueprint
+from rostok.graph_grammar.node import GraphGrammar, Node
 from rostok.graph_grammar.node_block_typing import NodeFeatures
-from rostok.virtual_experiment.sensors import ContactReporter, Sensor
+from rostok.virtual_experiment.sensors import Sensor
 
 
 @dataclass

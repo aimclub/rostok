@@ -1,6 +1,6 @@
 import numpy as np
 
-from rostok.virtual_experiment.robot_new import Robot
+from rostok.virtual_experiment.robot import Robot
 
 
 def nodes_division(rob: Robot, type_node: list):
