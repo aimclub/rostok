@@ -118,7 +118,7 @@ class RobotSimulationChrono():
             vis.SetWindowSize(1024, 768)
             vis.SetWindowTitle('Grab demo')
             vis.Initialize()
-            vis.AddCamera(chrono.ChVectorD(1.5, 3, -2))
+            vis.AddCamera(chrono.ChVectorD(1.5, 3, -4))
             vis.AddTypicalLights()
             vis.EnableCollisionShapeDrawing(True)
 

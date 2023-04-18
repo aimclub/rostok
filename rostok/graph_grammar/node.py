@@ -162,11 +162,17 @@ class GraphGrammar(nx.DiGraph):
         """
 
         root_id = self.get_root_id()
+        def sort_by_root_path(node_id):
+            paths = self.get_sorted_root_based_paths()
+            for path in paths:
+                if node_id in path:
+                    return paths.index(path)
 
         def sort_by_root_distance(node_id):
             return len(nx.shortest_path(self, root_id, node_id))
 
-        sorta = sorted(list_ids, key=sort_by_root_distance)
+        sorta = sorted(list_ids, key=sort_by_root_path)
+        sorta = sorted(sorta, key=sort_by_root_distance)
         return sorta[0]
 
     def get_root_id(self) -> int:
@@ -344,11 +350,14 @@ class GraphGrammar(nx.DiGraph):
     def get_sorted_root_based_paths(self):
         root_based_paths = self.get_root_based_paths()
 
-        def transform_into_string(path):
+        def primary_key(path):
+            return len(path)
+        def secondaty_key(path):
             string_path = [self.get_node_by_id(x).label for x in path]
             return "".join(string_path)
 
-        root_based_paths.sort(key=transform_into_string)
+        root_based_paths.sort(key=secondaty_key)
+        root_based_paths.sort(key=primary_key)
         return root_based_paths
 
     def get_uniq_representation(self) -> list[list[str]]:
