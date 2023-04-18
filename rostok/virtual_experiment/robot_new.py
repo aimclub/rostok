@@ -15,7 +15,7 @@ from rostok.block_builder_chrono.block_classes import (BLOCK_CLASS_TYPES,
 from rostok.block_builder_chrono.block_connect import place_and_connect
 from rostok.graph_grammar.node import GraphGrammar, Node, UniqueBlueprint
 from rostok.graph_grammar.node_block_typing import NodeFeatures
-from rostok.virtual_experiment.sensors import ContactReporter
+from rostok.virtual_experiment.sensors import ContactReporter, Sensor
 
 
 @dataclass
@@ -30,8 +30,8 @@ class BuiltGraph:
     def __init__(self,
                  graph,
                  system,
-                 is_base_fixed=True,
-                 initial_position: FrameTransform = DefaultFrame):
+                 
+                 initial_position: FrameTransform = DefaultFrame,is_base_fixed=True):
         self.__graph: GraphGrammar = deepcopy(graph)
         self.block_map: List[PrimitiveBody] = []
         self.block_vector: List[Tuple[int, PrimitiveBody]] = []
@@ -107,8 +107,7 @@ class Robot:
                  control_parameters,
                  start_frame: FrameTransform = DefaultFrame):
         self.__built_graph = BuiltGraph(robot_graph, system, start_frame)
-        self.contact_reporter = ContactReporter()
-        self.contact_reporter.set_body_list(self.__built_graph.block_vector)
+        self.sensor = Sensor(self.__built_graph.block_vector)
         self.controller = RobotControllerChrono(self.__built_graph.joint_vector, control_parameters)
 
     def get_data(self):

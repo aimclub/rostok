@@ -3,7 +3,7 @@ import pychrono as chrono
 
 from rostok.block_builder_chrono.block_classes import (BuildingBody, ChronoEasyShapeObject,
                                                        ChronoRevolveJoint)
-from rostok.virtual_experiment.robot import Robot
+from rostok.virtual_experiment.robot_new import Robot
 
 
 class RobotSensor:

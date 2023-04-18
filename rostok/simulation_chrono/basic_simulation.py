@@ -6,8 +6,8 @@ import pychrono.irrlicht as chronoirr
 from rostok.block_builder_api.block_parameters import (DefaultFrame,
                                                        FrameTransform)
 from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject
-from rostok.virtual_experiment.robot import BuiltGraph, Robot
-from rostok.virtual_experiment.sensors import ContactReporter
+from rostok.virtual_experiment.robot_new import BuiltGraph, Robot
+from rostok.virtual_experiment.sensors import ContactReporter,  Sensor
 
 
 class SystemPreview:
@@ -69,7 +69,7 @@ class RobotSimulationChrono():
 
         self.data = None
         self.robot:Optional[Robot] = None
-        self.env_reporter = ContactReporter()
+        self.env_sensor = Sensor([])
         self.objects: List[ChronoEasyShapeObject] = []
         self.active_body_counter = 0
         self.active_objects: List[Tuple[int, ChronoEasyShapeObject]] = []
@@ -88,10 +88,11 @@ class RobotSimulationChrono():
         if read_data:
             self.active_objects.append((self.active_body_counter, obj))
             self.active_body_counter += 1
-            self.env_reporter.set_body_list(self.active_objects)
+            self.env_sensor.contact_reporter.set_body_list(self.active_objects)
 
     def update_data(self):
-        self.env_reporter.collect_current_contacts(self.chrono_system)
+        self.env_sensor.contact_reporter.reset_contact_dict()
+        self.env_sensor.update_current_contact_info(self.chrono_system)
 
     def get_current_data(self):
         None
@@ -102,7 +103,8 @@ class RobotSimulationChrono():
         self.update_data()
 
         robot:Robot = self.robot
-        robot.contact_reporter.collect_current_contacts(self.chrono_system)
+        robot.sensor.contact_reporter.reset_contact_dict()
+        robot.sensor.update_current_contact_info(self.chrono_system)
         robot.controller.update_functions(robot.get_data(), self.get_current_data())
 
     def simulate(self,

@@ -16,7 +16,7 @@ class RobotControllerChrono:
             raise Exception("some joints are not parametrized")
 
         for i, joint in enumerate(self.joints):
-            chr_function = chrono.ChFunction_Const(parameters[i])
+            chr_function = chrono.ChFunction_Const(float(parameters[i]))
             joint[1].joint.SetTorqueFunction(chr_function)
 
     def update_functions(self, robot_data, environment_data):

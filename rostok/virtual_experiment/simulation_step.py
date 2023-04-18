@@ -14,7 +14,7 @@ from rostok.block_builder_chrono.chrono_system import register_chrono_system
 from rostok.criterion.flags_simualtions import (ConditionStopSimulation, FlagStopSimualtions)
 from rostok.graph_grammar.node import GraphGrammar
 #from rostok.virtual_experiment.auxilarity_sensors import RobotSensor
-from rostok.virtual_experiment.robot import Robot
+from rostok.virtual_experiment.robot_new import Robot
 from rostok.virtual_experiment.sensors import ContactReporter, Sensor
 
 

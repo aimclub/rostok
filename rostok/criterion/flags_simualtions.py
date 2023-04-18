@@ -5,7 +5,7 @@ import numpy as np
 
 import pychrono as chrono
 
-import rostok.virtual_experiment.robot as robot
+import rostok.virtual_experiment.robot_new as robot_new
 from rostok.block_builder_chrono.block_classes import BuildingBody
 
 
@@ -34,7 +34,7 @@ class FlagStopSimualtions(ABC):
         self.system = None
         self.contact_reporter = None
 
-    def build(self, chrono_system: chrono.ChSystem, in_robot: robot.Robot, obj: chrono.ChBody, contact_reporter):
+    def build(self, chrono_system: chrono.ChSystem, in_robot: robot_new.Robot, obj: chrono.ChBody, contact_reporter):
         """Build flag on the chrono system, robot and object
 
         Args:
@@ -215,7 +215,7 @@ class ConditionStopSimulation:
         flags (list[FlagStopSimualtions]): Flag of the stopping simulation
     """
 
-    def __init__(self, chrono_system: chrono.ChSystem, in_robot: robot.Robot, obj: chrono.ChBody, contact_reporter,
+    def __init__(self, chrono_system: chrono.ChSystem, in_robot: robot_new.Robot, obj: chrono.ChBody, contact_reporter,
                  flags: list[FlagStopSimualtions]):
         self.__stop_flag = False
         self.chrono_system = chrono_system
