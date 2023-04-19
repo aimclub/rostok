@@ -97,7 +97,7 @@ class RobotSimulationChrono():
     def get_current_data(self):
         None
 
-    def simulate_step(self, time_step: float):
+    def simulate_step(self, time_step: float, current_time):
         self.chrono_system.Update()
         self.chrono_system.DoStepDynamics(time_step)
         self.update_data()
@@ -105,7 +105,7 @@ class RobotSimulationChrono():
         robot:Robot = self.robot
         robot.sensor.contact_reporter.reset_contact_dict()
         robot.sensor.update_current_contact_info(self.chrono_system)
-        robot.controller.update_functions(robot.get_data(), self.get_current_data())
+        robot.controller.update_functions(current_time, robot.controller.parameters,robot.get_data(), self.get_current_data())
 
     def simulate(self,
                  number_of_steps: int,
@@ -123,7 +123,7 @@ class RobotSimulationChrono():
             vis.EnableCollisionShapeDrawing(True)
 
         for i in range(number_of_steps):
-            self.simulate_step(step_length)
+            self.simulate_step(step_length, self.chrono_system.GetChTime())
             if vis:
                 vis.Run()
                 if i % frame_update == 0:

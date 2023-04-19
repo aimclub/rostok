@@ -22,7 +22,10 @@ for get_graph in mechs:
 
     graph = get_graph()
     print(get_joint_vector_from_graph(graph))
-    controll_parameters = np.random.randint(1, 15, len(get_joint_vector_from_graph(graph)))
+    controll_parameters = []
+    for _ in range(len(get_joint_vector_from_graph(graph))):
+        controll_parameters.append([2.0,np.random.normal(0,1,1)[0]])
+
     print(controll_parameters)
 
     sim = RobotSimulationChrono([])

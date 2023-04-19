@@ -1,7 +1,6 @@
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import List, Tuple
-
+from typing import List, Tuple, Dict
 import pychrono.core as chrono
 from pychrono.core import ChQuaternionD, ChVectorD
 
@@ -16,6 +15,7 @@ from rostok.block_builder_chrono.block_connect import place_and_connect
 from rostok.graph_grammar.node import GraphGrammar, Node
 from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.virtual_experiment.sensors import Sensor
+from rostok.control_chrono.controller import RobotControllerChrono, SinControllerChrono, SinControllerChronoFn
 
 
 @dataclass
@@ -37,10 +37,12 @@ class BuiltGraph:
         self.block_vector: List[Tuple[int, PrimitiveBody]] = []
         self.joint_map: List[ChronoRevolveJoint] = []
         self.joint_vector: List[Tuple[int, ChronoRevolveJoint]] = []
+        self.joint_link_map:Dict[int:Tuple[int,int]] = {}
         self.build_into_system(system, initial_position)
         if is_base_fixed:
             self.fix_base()
         self.fill_maps()
+        
 
     def fill_maps(self):
         paths = self.__graph.get_sorted_root_based_paths()
@@ -54,6 +56,27 @@ class BuiltGraph:
                     block_path.append(idx)
             self.block_map.append(block_path)
             self.joint_map.append(joint_path)
+
+    def build_joint_link_map(self):
+        paths = self.__graph.get_sorted_root_based_paths()
+        for path in paths:
+            pre_block = None
+            current_joint = None
+            after_block = None
+            for idx in path:
+                if NodeFeatures.is_joint(self.__graph.nodes[idx]["Node"]):
+                    current_joint = idx
+                if NodeFeatures.is_body(self.__graph.nodes[idx]["Node"]):
+                    if pre_block is None:
+                        pre_block = idx
+                    else:
+                        if current_joint is None:
+                            pre_block = idx
+                        else:
+                            self.build_joint_link_map[current_joint] = (pre_block, idx)
+                            pre_block = None
+                            current_joint = None
+                
 
     def build_into_system(self,
                           system: chrono.ChSystem,
@@ -97,9 +120,6 @@ class BuiltGraph:
         base.body.SetBodyFixed(True)
 
 
-
-
-from rostok.control_chrono.controller import RobotControllerChrono
 class Robot:
     def __init__(self,
                  robot_graph: GraphGrammar,
@@ -108,7 +128,8 @@ class Robot:
                  start_frame: FrameTransform = DefaultFrame):
         self.__built_graph = BuiltGraph(robot_graph, system, start_frame)
         self.sensor = Sensor(self.__built_graph.block_vector)
-        self.controller = RobotControllerChrono(self.__built_graph.joint_vector, control_parameters)
+        #self.controller = RobotControllerChrono(self.__built_graph.joint_vector, control_parameters)
+        self.controller = SinControllerChrono(self.__built_graph.joint_vector, control_parameters)
 
     def get_data(self):
         return None
