@@ -109,12 +109,12 @@ rule_action_terminal_two_finger = np.asarray([
 rule_action_two_finger = np.r_[rule_action_non_terminal_two_finger, rule_action_terminal_two_finger]
 
 rule_action_non_terminal_no_joints = np.asarray(["FlatCreate", "Mount"])
-rule_action_non_terminal_no_joints = np.asarray(["FlatCreate"])
+rule_action_non_terminal_no_joints = np.asarray(["FlatCreate", "Mount", "FingerUpper"])
 
 rule_action_terminal_no_joints = np.asarray(
     ["TerminalFlat1", "TerminalTransformL", "TerminalEndLimb"])
 rule_action_terminal_no_joints = np.asarray(
-    ["TerminalFlat1"])
+    ["TerminalFlat1", "TerminalTransformL","TerminalJoint", "TerminalL2", "TerminalEndLimb"])
 
 rule_action_no_joints = np.r_[rule_action_non_terminal_no_joints, rule_action_terminal_no_joints]
 

@@ -69,7 +69,7 @@ class RobotSimulationChrono():
 
         self.data = None
         self.robot:Optional[Robot] = None
-        self.env_sensor = Sensor([])
+        self.env_sensor = Sensor([], {})
         self.objects: List[ChronoEasyShapeObject] = []
         self.active_body_counter = 0
         self.active_objects: List[Tuple[int, ChronoEasyShapeObject]] = []
@@ -105,7 +105,7 @@ class RobotSimulationChrono():
         robot:Robot = self.robot
         robot.sensor.contact_reporter.reset_contact_dict()
         robot.sensor.update_current_contact_info(self.chrono_system)
-        robot.controller.update_functions(current_time, robot.controller.parameters,robot.get_data(), self.get_current_data())
+        robot.controller.update_functions(current_time, robot.sensor, self.get_current_data())
 
     def simulate(self,
                  number_of_steps: int,

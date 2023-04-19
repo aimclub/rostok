@@ -1,7 +1,7 @@
 import numpy as np
 
 import pychrono as chrono
-from example_vocabulary import (get_terminal_graph_three_finger, get_terminal_graph_two_finger)
+from example_vocabulary import (get_terminal_graph_three_finger, get_terminal_graph_two_finger, get_terminal_graph_no_joints)
 from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
 
 from rostok.block_builder_api.block_parameters import Material, FrameTransform
@@ -12,7 +12,7 @@ from rostok.block_builder_chrono.block_builder_chrono_api import ChronoBlockCrea
 
 mechs = [get_terminal_graph_three_finger, get_terminal_graph_two_finger]
 
-
+mechs = [get_terminal_graph_no_joints]
 def rotation_x(alpha):
     quat_X_ang_alpha = chrono.Q_from_AngX(np.deg2rad(alpha))
     return [quat_X_ang_alpha.e0, quat_X_ang_alpha.e1, quat_X_ang_alpha.e2, quat_X_ang_alpha.e3]
@@ -23,9 +23,12 @@ for get_graph in mechs:
     graph = get_graph()
     print(get_joint_vector_from_graph(graph))
     controll_parameters = []
-    for _ in range(len(get_joint_vector_from_graph(graph))):
-        controll_parameters.append([2.0,np.random.normal(0,1,1)[0]])
+    # for _ in range(len(get_joint_vector_from_graph(graph))):
+    #     controll_parameters.append([2.0,np.random.normal(0,1,1)[0]])
 
+    for _ in range(len(get_joint_vector_from_graph(graph))):
+        controll_parameters.append(np.random.normal(0,1,1)[0])
+    controll_parameters = [10]
     print(controll_parameters)
 
     sim = RobotSimulationChrono([])
@@ -41,5 +44,5 @@ for get_graph in mechs:
     sim.add_object(creator.init_block_from_blueprint(obj))
 
     sim.add_design(graph, controll_parameters, FrameTransform([0, 2.5, 0], rotation_x(180)))
-
-    sim.simulate(10000, 0.01, 10, True)
+    print(sim.robot.sensor.joint_body_map)
+    sim.simulate(100000, 0.01, 10, True)

@@ -23,6 +23,7 @@ class ContactReporter(chrono.ReportContactCallback):
 
         self._body_list: Optional[List[Tuple[int, chrono.ChBody]]] = None
         self.__contact_dict_this_step: Dict[int, List[Tuple[CoordinatesContact, ForceVector]]] = {}
+        self.__outer_contact_dict_this_step: Dict[int, List[Tuple[CoordinatesContact, ForceVector]]] = {}
 
         super().__init__()
 
@@ -32,6 +33,7 @@ class ContactReporter(chrono.ReportContactCallback):
     def reset_contact_dict(self):
         for bt in self._body_list:
             self.__contact_dict_this_step[bt[0]] = []
+            self.__outer_contact_dict_this_step[bt[0]] = []
 
     def OnReportContact(self, pA: CoordinatesContact, pB: CoordinatesContact,
                         plane_coord: chrono.ChMatrix33D, distance: float, eff_radius: float,
@@ -60,17 +62,23 @@ class ContactReporter(chrono.ReportContactCallback):
         for body_tuple in self._body_list:
             if body_a == body_tuple[1].body:
                 idx_a = body_tuple[0]
-                self.__contact_dict_this_step[idx_a].append((pA, react_forces))
             elif body_b == body_tuple[1].body:
                 idx_b = body_tuple[0]
-                self.__contact_dict_this_step[idx_b].append((pB, react_forces))
-            if not (idx_a is None or idx_b is None):
-                break
+        if idx_a:
+            self.__contact_dict_this_step[idx_a].append((pA, react_forces))
+            if idx_b is None:
+                self.__outer_contact_dict_this_step[idx_a].append((pA, react_forces))
+        if idx_b:
+            self.__contact_dict_this_step[idx_b].append((pB, react_forces))
+            if idx_a is None:
+                self.__outer_contact_dict_this_step[idx_b].append((pB, react_forces))
 
         return True
 
     def get_contacts(self):
         return self.__contact_dict_this_step
+    def get_outer_contacts(self):
+        return self.__outer_contact_dict_this_step
     
     # def collect_current_contacts(self, system:chrono.ChSystem):
     #     system.GetContactContainer().ReportAllContacts(self)
@@ -78,10 +86,11 @@ class ContactReporter(chrono.ReportContactCallback):
 
 class Sensor:
 
-    def __init__(self, body_list) -> None:
+    def __init__(self, body_list, joint_body_map) -> None:
         self.contact_reporter: ContactReporter = ContactReporter()
         self.contact_reporter.set_body_list(body_list)
         self.body_list = body_list
+        self.joint_body_map:Dict[int:Tuple[int, int]] = joint_body_map
 
     def update_current_contact_info(self, system:chrono.ChSystem):
         system.GetContactContainer().ReportAllContacts(self.contact_reporter)
@@ -117,6 +126,24 @@ class Sensor:
             deviation of contact forces
         """
         contacts = self.contact_reporter.get_contacts()
+        forces = contacts[index]
+        if np.size(forces) > 0:
+            amount_contact_force_obj = np.size(forces)
+            return dict([(index, amount_contact_force_obj)])
+        else:
+            return None
+        
+    def amount_outer_contact_forces(self, index: int = -1):
+        """The total amount of contact forces
+
+        Args:s
+            in_robot (Robot): Robot to measure sum of contact forces
+
+        Returns:
+            dict[int, float]: Dictionary which keys are id object and values of standard
+            deviation of contact forces
+        """
+        contacts = self.contact_reporter.get_outer_contacts()
         forces = contacts[index]
         if np.size(forces) > 0:
             amount_contact_force_obj = np.size(forces)
