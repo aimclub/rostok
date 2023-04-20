@@ -79,8 +79,8 @@ class RobotSimulationChrono():
     def initialize(self):
         pass
 
-    def add_design(self, graph, control_parameters, Frame: FrameTransform = DefaultFrame):
-        self.robot = Robot(graph, self.chrono_system, control_parameters, Frame)
+    def add_design(self, graph, control_parameters, control_trajectories=None,Frame: FrameTransform = DefaultFrame):
+        self.robot = Robot(graph, self.chrono_system, control_parameters,control_trajectories ,Frame)
 
     def add_object(self, obj: ChronoEasyShapeObject, read_data: bool = False):
         self.chrono_system.AddBody(obj.body)

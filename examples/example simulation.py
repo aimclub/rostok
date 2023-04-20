@@ -28,9 +28,10 @@ for get_graph in mechs:
 
     for _ in range(len(get_joint_vector_from_graph(graph))):
         controll_parameters.append(np.random.normal(0,1,1)[0])
-    #controll_parameters = [10]
-    print(controll_parameters)
+    controll_parameters = [10]
 
+    print(controll_parameters)
+    control_trajectories = [chrono.ChFunction_Sine(0,0.1,1.5)]
     sim = RobotSimulationChrono([])
 
     # Create object to grasp
@@ -43,6 +44,6 @@ for get_graph in mechs:
                                    pos=FrameTransform([0, -0.4, 0], [1, 0, 0, 0]))
     sim.add_object(creator.init_block_from_blueprint(obj))
 
-    sim.add_design(graph, controll_parameters, FrameTransform([0, 2.5, 0], rotation_x(180)))
+    sim.add_design(graph, controll_parameters, control_trajectories,FrameTransform([0, 2.5, 0], rotation_x(180)))
     print(sim.robot.sensor.joint_body_map)
-    sim.simulate(100000, 0.01, 10, True)
+    sim.simulate(100000, 0.001, 10, True)

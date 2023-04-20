@@ -67,7 +67,7 @@ rule_vocab = RuleVocabulary(node_vocab)
 
 rule_vocab.create_rule("FlatCreate", ["ROOT"], ["F"], 0, 0)
 rule_vocab.create_rule("Mount", ["F"], ["F", "M", "EM"], 0, 0, [(0, 1), (1, 2)])
-rule_vocab.create_rule("MountAdd", ["M"], ["M", "EM"], 0, 1, [(0, 1)])
+#rule_vocab.create_rule("MountAdd", ["M"], ["M", "EM"], 0, 1, [(0, 1)])
 rule_vocab.create_rule("FingerUpper", ["EM"], ["J", "L", "EM"], 0, 2, [(0, 1), (1, 2)])
 
 rule_vocab.create_rule("TerminalFlat1", ["F"], ["F1"], 0, 0)

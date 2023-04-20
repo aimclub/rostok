@@ -16,7 +16,9 @@ from rostok.block_builder_chrono.block_connect import place_and_connect
 from rostok.control_chrono.controller import (ConstReverseControllerChrono,
                                               RobotControllerChrono,
                                               SinControllerChrono,
-                                              SinControllerChronoFn)
+                                              SinControllerChronoFn, 
+                                              RobotControllerTorqueTrajectoryChrono, 
+                                              RobotControllerAngleTrajectoryChrono)
 from rostok.graph_grammar.node import GraphGrammar, Node
 from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.virtual_experiment.sensors import Sensor
@@ -127,12 +129,13 @@ class Robot:
     def __init__(self,
                  robot_graph: GraphGrammar,
                  system,
-                 control_parameters,
+                 control_parameters, control_trajectories = None,
                  start_frame: FrameTransform = DefaultFrame):
         self.__built_graph = BuiltGraph(robot_graph, system, start_frame)
         self.sensor = Sensor(self.__built_graph.block_vector, self.__built_graph.joint_link_map)
         #self.controller = RobotControllerChrono(self.__built_graph.joint_vector, control_parameters)
         #self.controller = SinControllerChrono(self.__built_graph.joint_vector, control_parameters)
-        self.controller = ConstReverseControllerChrono(self.__built_graph.joint_vector, control_parameters)
+        #self.controller = RobotControllerTorqueTrajectoryChrono(self.__built_graph.joint_vector, control_parameters, control_trajectories)
+        self.controller = RobotControllerAngleTrajectoryChrono(self.__built_graph.joint_vector, control_parameters, control_trajectories)
     def get_data(self):
         return None
