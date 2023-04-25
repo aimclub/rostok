@@ -6,13 +6,15 @@ import pychrono.irrlicht as chronoirr
 from rostok.block_builder_api.block_parameters import (DefaultFrame,
                                                        FrameTransform)
 from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject
-from rostok.virtual_experiment.robot_new import BuiltGraph, Robot
-from rostok.virtual_experiment.sensors import ContactReporter,  Sensor
+from rostok.virtual_experiment.robot_new import BuiltGraphChrono, RobotChrono
+from rostok.virtual_experiment.sensors import ContactReporter, Sensor
+from rostok.graph_grammar.node import GraphGrammar
 
 
-class SystemPreview:
-
+class SystemPreviewChrono:
+    """A simulation of the motionless environment and design"""
     def __init__(self):
+        """Initialize the chroon system with default parameters"""
         self.chrono_system = chrono.ChSystemNSC()
         self.chrono_system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
         self.chrono_system.SetSolverMaxIterations(100)
@@ -21,7 +23,14 @@ class SystemPreview:
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
 
     def add_design(self, graph, frame: FrameTransform = DefaultFrame):
-        BuiltGraph(graph, self.chrono_system, frame, True)
+        """Add a design into the system
+
+            Args:
+                graph (GraphGrammar): graph of the design
+                frame (FrameTransform): initial position of the base body
+                """
+
+        BuiltGraphChrono(graph:GraphGrammar, self.chrono_system, frame, True)
 
     def simulate_step(self, time_step: float):
         self.chrono_system.Update()

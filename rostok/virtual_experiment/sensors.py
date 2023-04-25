@@ -78,9 +78,6 @@ class ContactReporter(chrono.ReportContactCallback):
         return self.__contact_dict_this_step
     def get_outer_contacts(self):
         return self.__outer_contact_dict_this_step
-    
-    # def collect_current_contacts(self, system:chrono.ChSystem):
-    #     system.GetContactContainer().ReportAllContacts(self)
 
 
 class Sensor:
@@ -96,9 +93,11 @@ class Sensor:
 
     def update_current_contact_info(self, system:chrono.ChSystem):
         system.GetContactContainer().ReportAllContacts(self.contact_reporter)
+
     def update_trajectories(self):
         for x in  self.body_list:
             self.trajectories[x[0]].append([round(x[1].body.GetPos().x,3),round(x[1].body.GetPos().y,3), round(x[1].body.GetPos().z,3)])
+
     def std_contact_forces(self, index: int = -1):
         """Sensor of standard deviation of contact forces that affect on object
 
@@ -136,7 +135,7 @@ class Sensor:
             return dict([(index, amount_contact_force_obj)])
         else:
             return None
-        
+
     def amount_outer_contact_forces(self, index: int = -1):
         """The total amount of contact forces
 
@@ -168,7 +167,6 @@ class Sensor:
                 body = tp[1]
                 return dict([(index, [body.GetPos().x, body.GetPos().y, body.GetPos().z])])
         return None
-        
 
     def contact_coord(self, index: int = -1):
         """Sensor of COG of contact points

@@ -167,10 +167,12 @@ class GraphGrammar(nx.DiGraph):
             for path in paths:
                 if node_id in path:
                     return paths.index(path)
+            return None
 
         def sort_by_root_distance(node_id):
             return len(nx.shortest_path(self, root_id, node_id))
-
+        # after two sorts the nodes are sorted by distance to root and nodes
+        # at the same distance are sorted by paths according to sorted root paths
         sorta = sorted(list_ids, key=sort_by_root_path)
         sorta = sorted(sorta, key=sort_by_root_distance)
         return sorta[0]
@@ -348,6 +350,7 @@ class GraphGrammar(nx.DiGraph):
         return False
 
     def get_sorted_root_based_paths(self):
+        """Sort root based paths by lengh and same lengths lexicographically."""
         root_based_paths = self.get_root_based_paths()
 
         def primary_key(path):
