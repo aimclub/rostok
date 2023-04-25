@@ -28,20 +28,36 @@ class SystemPreviewChrono:
             Args:
                 graph (GraphGrammar): graph of the design
                 frame (FrameTransform): initial position of the base body
-                """
+        """
 
-        BuiltGraphChrono(graph:GraphGrammar, self.chrono_system, frame, True)
-
-    def simulate_step(self, time_step: float):
-        self.chrono_system.Update()
-        self.chrono_system.DoStepDynamics(time_step)
+        BuiltGraphChrono(graph, self.chrono_system, frame, True)
 
     def add_object(self, obj: ChronoEasyShapeObject):
+        """Add an object to the environment.
+
+            Args:
+                obj (ChronoEasyShapeObject): one of the simple chrono objects"""
         self.chrono_system.AddBody(obj.body)
+
+    def simulate_step(self, time_step: float):
+        """Simulate one step"""
+        self.chrono_system.Update()
+        self.chrono_system.DoStepDynamics(time_step)
+        # TODO: add some check for collisions that can reveal the errors in objects or design positions.
 
     def simulate(self,
                  number_of_steps: int,
-                 visualize=False):
+                 visualize:bool = True):
+        """Simulate several steps and visualize system.
+
+            The simulation purpose is to check the initial positions of objects and visualize the 
+                environment and the mech design. More steps == longer simulation.
+
+            Args:
+                number_of_steps (int): the number of steps for simulation
+                visualize (bool): the flag for visualization
+        """
+        #TODO: try to replace the number_of_steps for the stop by a button.
         if visualize:
             vis = chronoirr.ChVisualSystemIrrlicht()
             vis.AttachSystem(self.chrono_system)
@@ -64,11 +80,23 @@ class SystemPreviewChrono:
 
 
 class RobotSimulationChrono():
-
+    """The simulation of a robot within an environment.
+    
+        Attributes:
+            chrono_system (chrono.ChSystem): the chrono simulation system that controls the current simulation
+            self.data : the object for final output of the simulation
+            env_sensor (Sensor): sensor attached to the environment
+            objects : list of objects added to the environment
+            active_body_counter: counter for environment bodies that added to the sensor
+            active_objects : environment objects added to the env_sensor
+            robot : the robot added to the simulation
+        """
     def __init__(self,
-                 object_list: List[Tuple[ChronoEasyShapeObject, bool]],
-                 visualize: bool = True):
-
+                 object_list: List[Tuple[ChronoEasyShapeObject, bool]]):
+        """Create a simulation system with some environment objects
+        
+            The robot and additional environment objects should be added using class methods.
+            object_list : bodies to add to the environment and their active/passive status"""
         self.chrono_system = chrono.ChSystemNSC()
         self.chrono_system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
         self.chrono_system.SetSolverMaxIterations(100)
@@ -77,8 +105,8 @@ class RobotSimulationChrono():
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
 
         self.data = None
-        self.robot:Optional[Robot] = None
-        self.env_sensor = Sensor([], {})
+        self.robot:Optional[RobotChrono] = None
+        self.env_sensor: Sensor = Sensor([], {})
         self.objects: List[ChronoEasyShapeObject] = []
         self.active_body_counter = 0
         self.active_objects: List[Tuple[int, ChronoEasyShapeObject]] = []
@@ -89,7 +117,8 @@ class RobotSimulationChrono():
         pass
 
     def add_design(self, graph, control_parameters, control_trajectories=None,Frame: FrameTransform = DefaultFrame):
-        self.robot = Robot(graph, self.chrono_system, control_parameters,control_trajectories ,Frame)
+        """"""
+        self.robot = RobotChrono(graph, self.chrono_system, control_parameters,control_trajectories ,Frame)
 
     def add_object(self, obj: ChronoEasyShapeObject, read_data: bool = False):
         self.chrono_system.AddBody(obj.body)
@@ -144,5 +173,3 @@ class RobotSimulationChrono():
             vis.GetDevice().closeDevice()
 
         return self.data
-
-
