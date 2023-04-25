@@ -36,8 +36,7 @@ class BuiltGraph:
     def __init__(self,
                  graph,
                  system,
-                 
-                 initial_position: FrameTransform = DefaultFrame,is_base_fixed=True):
+                 initial_position: FrameTransform = DefaultFrame, is_base_fixed=True):
         self.__graph: GraphGrammar = deepcopy(graph)
         self.block_map: List[PrimitiveBody] = []
         self.block_vector: List[Tuple[int, PrimitiveBody]] = []

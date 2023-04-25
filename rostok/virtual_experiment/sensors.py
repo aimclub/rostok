@@ -7,7 +7,6 @@ from typing_extensions import TypeAlias
 CoordinatesContact: TypeAlias = chrono.ChVectorD
 ForceVector: TypeAlias = chrono.ChVectorD
 
-
 class ContactReporter(chrono.ReportContactCallback):
 
     def __init__(self) -> None:
@@ -90,11 +89,16 @@ class Sensor:
         self.contact_reporter: ContactReporter = ContactReporter()
         self.contact_reporter.set_body_list(body_list)
         self.body_list = body_list
-        self.joint_body_map:Dict[int:Tuple[int, int]] = joint_body_map
+        self.joint_body_map:Dict[int, Tuple[int, int]] = joint_body_map
+        self.trajectories={}
+        for x in  body_list:
+            self.trajectories[x[0]] = [[round(x[1].body.GetPos().x,3),round(x[1].body.GetPos().y,3), round(x[1].body.GetPos().z,3)]]
 
     def update_current_contact_info(self, system:chrono.ChSystem):
         system.GetContactContainer().ReportAllContacts(self.contact_reporter)
-
+    def update_trajectories(self):
+        for x in  self.body_list:
+            self.trajectories[x[0]].append([round(x[1].body.GetPos().x,3),round(x[1].body.GetPos().y,3), round(x[1].body.GetPos().z,3)])
     def std_contact_forces(self, index: int = -1):
         """Sensor of standard deviation of contact forces that affect on object
 

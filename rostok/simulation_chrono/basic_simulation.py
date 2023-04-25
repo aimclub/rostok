@@ -21,7 +21,7 @@ class SystemPreview:
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
 
     def add_design(self, graph, frame: FrameTransform = DefaultFrame):
-        BuiltGraph(graph, self.chrono_system, True, frame)
+        BuiltGraph(graph, self.chrono_system, frame, True)
 
     def simulate_step(self, time_step: float):
         self.chrono_system.Update()
@@ -105,6 +105,7 @@ class RobotSimulationChrono():
         robot:Robot = self.robot
         robot.sensor.contact_reporter.reset_contact_dict()
         robot.sensor.update_current_contact_info(self.chrono_system)
+        robot.sensor.update_trajectories()
         robot.controller.update_functions(current_time, robot.sensor, self.get_current_data())
 
     def simulate(self,
