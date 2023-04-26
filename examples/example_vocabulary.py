@@ -29,6 +29,7 @@ MOVE_ZX_PLUS = FrameTransform([0.3, 0, 0.3], [1, 0, 0, 0])
 MOVE_ZX_MINUS = FrameTransform([-0.3, 0, -0.3], [1, 0, 0, 0])
 
 MOVE_X_PLUS = FrameTransform([0.3, 0, 0.], [1, 0, 0, 0])
+MOVE_X_MINUS = FrameTransform([-0.3, 0, 0.], [1, 0, 0, 0])
 MOVE_Z_PLUS_X_MINUS = FrameTransform([-0.3, 0, 0.3], [1, 0, 0, 0])
 
 transform_rzx = TransformBlueprint(RZX)
@@ -38,6 +39,7 @@ transform_mzx_plus = TransformBlueprint(MOVE_ZX_PLUS)
 transform_mzx_minus = TransformBlueprint(MOVE_ZX_MINUS)
 transform_mx_plus = TransformBlueprint(MOVE_X_PLUS)
 transform_mz_plus_x_minus = TransformBlueprint(MOVE_Z_PLUS_X_MINUS)
+transform_mx_minus = TransformBlueprint(MOVE_X_MINUS)
 
 
 # Joints
@@ -62,6 +64,7 @@ node_vocab.create_node(label="T1", is_terminal=True, block_blueprint=transform_m
 node_vocab.create_node(label="T2", is_terminal=True, block_blueprint=transform_mz_plus_x_minus)
 node_vocab.create_node(label="T3", is_terminal=True, block_blueprint=transform_mzx_plus)
 node_vocab.create_node(label="T4", is_terminal=True, block_blueprint=transform_mzx_minus)
+node_vocab.create_node(label="T5", is_terminal=True, block_blueprint=transform_mx_minus)
 
 rule_vocab = RuleVocabulary(node_vocab)
 
@@ -77,6 +80,7 @@ rule_vocab.create_rule("TerminalL1", ["L"], ["L1"], 0, 0)
 rule_vocab.create_rule("TerminalL2", ["L"], ["L2"], 0, 0)
 
 rule_vocab.create_rule("TerminalTransformRX", ["M"], ["T1"], 0, 0)
+rule_vocab.create_rule("TerminalTransformLX", ["M"], ["T5"], 0, 0)
 rule_vocab.create_rule("TerminalTransformLZ", ["M"], ["T2"], 0, 0)
 rule_vocab.create_rule("TerminalTransformR", ["M"], ["T3"], 0, 0)
 rule_vocab.create_rule("TerminalTransformL", ["M"], ["T4"], 0, 0)
@@ -107,6 +111,20 @@ rule_action_terminal_two_finger = np.asarray([
     "TerminalJoint", "TerminalJoint", "TerminalJoint", "TerminalJoint", "TerminalJoint"
 ])
 rule_action_two_finger = np.r_[rule_action_non_terminal_two_finger, rule_action_terminal_two_finger]
+
+
+rule_action_non_terminal_two_finger_exmpl = np.asarray([
+    "FlatCreate", "Mount", "Mount", "FingerUpper", "FingerUpper", "FingerUpper", "FingerUpper",
+    "FingerUpper", "FingerUpper"
+])
+
+rule_action_terminal_two_finger_exmpl = np.asarray([
+    "TerminalFlat1", "TerminalL1", "TerminalL1",  "TerminalL1", "TerminalL2", "TerminalL2", "TerminalL2",
+    "TerminalTransformRX", "TerminalTransformLX", "TerminalEndLimb", "TerminalEndLimb",
+    "TerminalJoint", "TerminalJoint", "TerminalJoint", "TerminalJoint", "TerminalJoint", "TerminalJoint"
+])
+
+rule_action_two_finger_exmpl = np.r_[rule_action_non_terminal_two_finger_exmpl, rule_action_terminal_two_finger_exmpl]
 
 rule_action_non_terminal_no_joints = np.asarray(["FlatCreate", "Mount"])
 rule_action_non_terminal_no_joints = np.asarray(["FlatCreate", "Mount", "FingerUpper"])
@@ -139,6 +157,12 @@ def get_terminal_graph_two_finger():
         G.apply_rule(rule_vocab.get_rule(i))
     return G
 
+
+def get_terminal_graph_two_finger_exmpl():
+    G = GraphGrammar()
+    for i in list(rule_action_two_finger_exmpl):
+        G.apply_rule(rule_vocab.get_rule(i))
+    return G
 
 def get_nonterminal_graph_two_finger():
     G = GraphGrammar()

@@ -122,10 +122,11 @@ class SimulationStepOptimization:
         register_chrono_system(self.chrono_system)
 
         self.grab_robot = Robot(self.graph_mechanism, self.chrono_system, start_frame_robot)
-        self.contact_reporter = ContactReporter()
-        self.contact_reporter.set_body_list([(-1, self.grasp_object),
-                                             (1, self.grab_robot.get_base_body())])
-        self.contact_reporter.reset_contact_dict()
+        self.contact_reporter = None
+        # self.contact_reporter = ContactReporter()
+        # self.contact_reporter.set_body_list([(-1, self.grasp_object),
+        #                                      (1, self.grab_robot.get_base_body())])
+        # self.contact_reporter.reset_contact_dict()
         # Add grasp object in system and set system without gravity
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
 
@@ -270,13 +271,13 @@ class SimulationStepOptimization:
 
             # Get current variables from object
             #SensorFunctions.reset_reporter_for_objects(self.chrono_system, [self.grasp_object.body], self.contact_reporter)
-            self.contact_reporter.reset_contact_dict()
+            # self.contact_reporter.reset_contact_dict()
 
-            sensor = Sensor(self.contact_reporter, self.chrono_system)
-            current_data_std_obj_force = sensor.std_contact_forces()
-            current_data_cont_coord = sensor.contact_coord()
-            current_data_abs_coord_COG_obj = sensor.abs_coord_COG(self.grasp_object.body)
-            current_data_amount_obj_contact_surfaces = sensor.amount_contact_forces()
+            # sensor = Sensor(self.contact_reporter, self.chrono_system)
+            # current_data_std_obj_force = sensor.std_contact_forces()
+            # current_data_cont_coord = sensor.contact_coord()
+            # current_data_abs_coord_COG_obj = sensor.abs_coord_COG(self.grasp_object.body)
+            # current_data_amount_obj_contact_surfaces = sensor.amount_contact_forces()
 
             # TODO: Make it possible to get information from the robot blocks
 
@@ -300,25 +301,25 @@ class SimulationStepOptimization:
             #     map(append_arr_in_dict, current_data_amount_contact_surfaces.items(),
             #         arrays_simulation_data_amount_contact_surfaces))
 
-            if current_data_std_obj_force is not None:
-                arrays_simulation_data_obj_force = map(append_arr_in_dict,
-                                                       current_data_std_obj_force.items(),
-                                                       arrays_simulation_data_obj_force)
+            # if current_data_std_obj_force is not None:
+            #     arrays_simulation_data_obj_force = map(append_arr_in_dict,
+            #                                            current_data_std_obj_force.items(),
+            #                                            arrays_simulation_data_obj_force)
 
-            if current_data_amount_obj_contact_surfaces is not None:
-                arrays_simulation_data_amount_obj_contact_surfaces = map(
-                    append_arr_in_dict, current_data_amount_obj_contact_surfaces.items(),
-                    arrays_simulation_data_amount_obj_contact_surfaces)
+            # if current_data_amount_obj_contact_surfaces is not None:
+            #     arrays_simulation_data_amount_obj_contact_surfaces = map(
+            #         append_arr_in_dict, current_data_amount_obj_contact_surfaces.items(),
+            #         arrays_simulation_data_amount_obj_contact_surfaces)
 
-            if current_data_cont_coord is not None:
-                arrays_simulation_data_cont_coord = list(
-                    map(append_arr_in_dict, current_data_cont_coord.items(),
-                        arrays_simulation_data_cont_coord))
+            # if current_data_cont_coord is not None:
+            #     arrays_simulation_data_cont_coord = list(
+            #         map(append_arr_in_dict, current_data_cont_coord.items(),
+            #             arrays_simulation_data_cont_coord))
 
-            if current_data_abs_coord_COG_obj is not None:
-                arrays_simulation_data_abs_coord_COG_obj = list(
-                    map(append_arr_in_dict, current_data_abs_coord_COG_obj.items(),
-                        arrays_simulation_data_abs_coord_COG_obj))
+            # if current_data_abs_coord_COG_obj is not None:
+            #     arrays_simulation_data_abs_coord_COG_obj = list(
+            #         map(append_arr_in_dict, current_data_abs_coord_COG_obj.items(),
+            #             arrays_simulation_data_abs_coord_COG_obj))
 
         if visualize:
             vis.GetDevice().closeDevice()
