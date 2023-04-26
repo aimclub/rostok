@@ -57,7 +57,8 @@ def create_rules():
     turn_transform_P = TransformBlueprint(TURN_P)
     turn_transform_N = TransformBlueprint(TURN_N)
 
-    revolve = RevolveJointBlueprint(JointInputType.POSITION)
+    #revolve = RevolveJointBlueprint(JointInputType.POSITION)
+    revolve = RevolveJointBlueprint(JointInputType.TORQUE)
     # Nodes
     node_vocab = node_vocabulary.NodeVocabulary()
     node_vocab.add_node(ROOT)

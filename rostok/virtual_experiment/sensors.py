@@ -53,7 +53,9 @@ class ContactReporter(chrono.ReportContactCallback):
         Returns:
             bool: If returns false, the contact scanning will be stopped
         """
-
+        # The threshold for the force sensitivity
+        if react_forces.Length()<0.001:
+            return True
         body_a = chrono.CastToChBody(contactobjA)
         body_b = chrono.CastToChBody(contactobjB)
         idx_a = None
@@ -64,13 +66,13 @@ class ContactReporter(chrono.ReportContactCallback):
             elif body_b == body_tuple[1].body:
                 idx_b = body_tuple[0]
         if idx_a:
-            self.__contact_dict_this_step[idx_a].append((pA, react_forces))
+            self.__contact_dict_this_step[idx_a].append((pA, - plane_coord*react_forces))
             if idx_b is None:
-                self.__outer_contact_dict_this_step[idx_a].append((pA, react_forces))
+                self.__outer_contact_dict_this_step[idx_a].append((pA, - plane_coord*react_forces))
         if idx_b:
-            self.__contact_dict_this_step[idx_b].append((pB, react_forces))
+            self.__contact_dict_this_step[idx_b].append((pB, plane_coord*react_forces))
             if idx_a is None:
-                self.__outer_contact_dict_this_step[idx_b].append((pB, react_forces))
+                self.__outer_contact_dict_this_step[idx_b].append((pB, plane_coord*react_forces ))
 
         return True
 
@@ -82,21 +84,27 @@ class ContactReporter(chrono.ReportContactCallback):
 
 class Sensor:
 
-    def __init__(self, body_list, joint_body_map) -> None:
+    def __init__(self, body_list, joint_list) -> None:
         self.contact_reporter: ContactReporter = ContactReporter()
         self.contact_reporter.set_body_list(body_list)
         self.body_list = body_list
-        self.joint_body_map:Dict[int, Tuple[int, int]] = joint_body_map
-        self.trajectories={}
+        self.joint_list = joint_list
+        #self.joint_body_map:Dict[int, Tuple[int, int]] = joint_body_map
+        self.body_trajectories={}
+        self.joint_trajectories = {}
         for x in  body_list:
-            self.trajectories[x[0]] = [[round(x[1].body.GetPos().x,3),round(x[1].body.GetPos().y,3), round(x[1].body.GetPos().z,3)]]
+            self.body_trajectories[x[0]] = [[round(x[1].body.GetPos().x,3),round(x[1].body.GetPos().y,3), round(x[1].body.GetPos().z,3)]]
+        for x in  joint_list:
+            self.joint_trajectories[x[0]] = [round(x[1].joint.GetMotorRot(), 3)]
 
     def update_current_contact_info(self, system:chrono.ChSystem):
         system.GetContactContainer().ReportAllContacts(self.contact_reporter)
 
     def update_trajectories(self):
         for x in  self.body_list:
-            self.trajectories[x[0]].append([round(x[1].body.GetPos().x,3),round(x[1].body.GetPos().y,3), round(x[1].body.GetPos().z,3)])
+            self.body_trajectories[x[0]].append([round(x[1].body.GetPos().x,3),round(x[1].body.GetPos().y,3), round(x[1].body.GetPos().z,3)])
+        for x in self.joint_list:
+            self.joint_trajectories[x[0]].append(round(x[1].joint.GetMotorRot(), 3))
 
     def std_contact_forces(self, index: int = -1):
         """Sensor of standard deviation of contact forces that affect on object

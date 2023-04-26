@@ -28,24 +28,23 @@ for get_graph in mechs:
 
     for _ in range(len(get_joint_vector_from_graph(graph))):
         controll_parameters.append(np.random.normal(0,1,1)[0])
-    controll_parameters = [10, 10]
 
+    controll_parameters = [[1, 0.1], [2,0.2]]
     print(controll_parameters)
-    control_trajectories = [chrono.ChFunction_Sine(0,0.1,1), chrono.ChFunction_Sine(0,0.1,1)]
+    #control_trajectories = [chrono.ChFunction_Sine(0,0.1,1), chrono.ChFunction_Sine(0,0.1,1)]
     sim = RobotSimulationChrono([])
-
     # Create object to grasp
     mat = Material()
     mat.Friction = 0.65
     mat.DampingF = 0.65
-
     obj = EnvironmentBodyBlueprint(shape=Box(3, 0.2, 3),
                                    material=mat,
                                    pos=FrameTransform([0, -0.4, 0], [1, 0, 0, 0]))
     sim.add_object(creator.init_block_from_blueprint(obj))
+    sim.add_design(graph, controll_parameters, None, FrameTransform([0, 2.5, 0], rotation_x(180)))
+    #print(sim.robot.sensor.joint_body_map)
+    sim.simulate(100, 0.01, 10, True)
+    #print(sim.robot.sensor.trajectories)
+    print(sim.robot.sensor.joint_trajectories)
 
-    sim.add_design(graph, controll_parameters, control_trajectories,FrameTransform([0, 2.5, 0], rotation_x(180)))
-    print(sim.robot.sensor.joint_body_map)
-    sim.simulate(10, 0.001, 10, True)
-    print(sim.robot.sensor.trajectories)
-    
+

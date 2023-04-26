@@ -13,7 +13,7 @@ from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
 import numpy as np
 from rostok.block_builder_api.easy_body_shapes import Box
-from rostok.simulation_chrono.basic_simulation import SystemPreview
+from rostok.simulation_chrono.basic_simulation import SystemPreviewChrono
 from rostok.block_builder_chrono.block_builder_chrono_api import ChronoBlockCreatorInterface as creator
 mechs = [
     get_terminal_graph_three_finger, get_terminal_graph_no_joints, get_terminal_graph_two_finger
@@ -24,7 +24,7 @@ def rotation_x(alpha):
 for get_graph in mechs:
 
     graph = get_graph()
-    sim = SystemPreview()
+    sim = SystemPreviewChrono()
 
     # Create object to grasp
     mat = Material()

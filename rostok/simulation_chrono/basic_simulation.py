@@ -20,7 +20,7 @@ class SystemPreviewChrono:
         self.chrono_system.SetSolverMaxIterations(100)
         self.chrono_system.SetSolverForceTolerance(1e-6)
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
-        self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
+        self.chrono_system.Set_G_acc(chrono.ChVectorD(0, -10, 0))
 
     def add_design(self, graph, frame: FrameTransform = DefaultFrame):
         """Add a design into the system
@@ -42,7 +42,7 @@ class SystemPreviewChrono:
     def simulate_step(self, time_step: float):
         """Simulate one step"""
         self.chrono_system.Update()
-        self.chrono_system.DoStepDynamics(time_step)
+        #self.chrono_system.DoStepDynamics(time_step)
         # TODO: add some check for collisions that can reveal the errors in objects or design positions.
 
     def simulate(self,
@@ -67,9 +67,10 @@ class SystemPreviewChrono:
             vis.AddCamera(chrono.ChVectorD(1.5, 3, -2))
             vis.AddTypicalLights()
             vis.EnableCollisionShapeDrawing(True)
-
+        self.chrono_system.Update()
+        self.chrono_system.DoStepDynamics(1e-4)
         for _ in range(number_of_steps):
-            self.simulate_step(10e-3)
+            self.simulate_step(1e-4)
             if vis:
                 vis.Run()
                 vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
@@ -116,7 +117,7 @@ class RobotSimulationChrono():
     def initialize(self):
         pass
 
-    def add_design(self, graph, control_parameters, control_trajectories=None,Frame: FrameTransform = DefaultFrame):
+    def add_design(self, graph, control_parameters, control_trajectories=None, Frame: FrameTransform = DefaultFrame):
         """"""
         self.robot = RobotChrono(graph, self.chrono_system, control_parameters,control_trajectories ,Frame)
 
@@ -133,14 +134,14 @@ class RobotSimulationChrono():
         self.env_sensor.update_current_contact_info(self.chrono_system)
 
     def get_current_data(self):
-        None
+        return None
 
     def simulate_step(self, time_step: float, current_time):
         self.chrono_system.Update()
         self.chrono_system.DoStepDynamics(time_step)
         self.update_data()
 
-        robot:Robot = self.robot
+        robot:RobotChrono = self.robot
         robot.sensor.contact_reporter.reset_contact_dict()
         robot.sensor.update_current_contact_info(self.chrono_system)
         robot.sensor.update_trajectories()

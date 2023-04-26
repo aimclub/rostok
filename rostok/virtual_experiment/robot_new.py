@@ -166,13 +166,8 @@ class RobotChrono:
                 control_trajectories : list of trajectories for joints
                 start_frame: initial position of the base body"""
         self.__built_graph = BuiltGraphChrono(robot_graph, system, start_frame)
-        self.sensor = Sensor(self.__built_graph.block_vector, self.__built_graph.joint_link_map)
-        #self.controller = RobotControllerChrono(self.__built_graph.joint_vector, control_parameters)
-        #self.controller = SinControllerChrono(self.__built_graph.joint_vector, control_parameters)
-        #self.controller = RobotControllerTorqueTrajectoryChrono(self.__built_graph.joint_vector, control_parameters, control_trajectories)
-        self.controller = RobotControllerAngleTrajectoryChrono(self.__built_graph.joint_vector,
-                                                               control_parameters,
-                                                               control_trajectories)
+        self.sensor = Sensor(self.__built_graph.block_vector, self.__built_graph.joint_vector)
+        self.controller = SinControllerChrono(self.__built_graph.joint_vector, control_parameters)
 
     def get_data(self):
         return self.sensor.trajectories
