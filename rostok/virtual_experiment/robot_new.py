@@ -170,4 +170,4 @@ class RobotChrono:
         self.controller = SinControllerChrono(self.__built_graph.joint_vector, control_parameters)
 
     def get_data(self):
-        return self.sensor.trajectories
+        return self.sensor.body_trajectories
