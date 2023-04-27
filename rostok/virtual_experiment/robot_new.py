@@ -18,7 +18,7 @@ from rostok.control_chrono.controller import (
     SinControllerChrono, SinControllerChronoFn)
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_block_typing import NodeFeatures
-from rostok.virtual_experiment.sensors import Sensor
+from rostok.virtual_experiment.sensors import Sensor, DataStorage
 
 
 class BuiltGraphChrono:
@@ -168,6 +168,12 @@ class RobotChrono:
         self.__built_graph = BuiltGraphChrono(robot_graph, system, start_frame)
         self.sensor = Sensor(self.__built_graph.block_vector, self.__built_graph.joint_vector)
         self.controller = SinControllerChrono(self.__built_graph.joint_vector, control_parameters)
+        self.data_storage = DataStorage()
+        self.data_storage.add_data_type("contacts", self.__built_graph.block_vector)
+        self.data_storage.add_data_type("body_trajectories", self.__built_graph.block_vector)
+        self.data_storage.add_data_type("joint_trajectories", self.__built_graph.joint_vector)
+        self.data_storage.add_data("body_trajectories",self.sensor.get_body_trajectory_point(), 0)
+        self.data_storage.add_data("joint_trajectories",self.sensor.get_joint_trajectory_point(), 0)
 
     def get_data(self):
         return self.sensor.body_trajectories

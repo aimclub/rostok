@@ -1,28 +1,12 @@
 from math import sin
 from typing import Any, Dict, List, Tuple
-
+from abc import abstractmethod
 import pychrono.core as chrono
 
 from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint,
                                                        JointInputTypeChrono)
 from rostok.virtual_experiment.sensors import Sensor
 
-class MyConst(chrono.ChFunction_Const):
-    def __init__(self, c):
-        print("My const init")
-        super().__init__(c)
-
-    def Get_y(self, x):
-        print(f"Get_y of the const called with: {x}")
-        super().Get_y(x)
-
-    def Get_yconst(self):
-        print(f"Get_yconst of the const called with: {x}")
-        super().Get_yconst(x)
-
-    def Get_y_dx(self, x):
-        print(f"Get_y_dx of the const called with: {x}")
-        super().Get_y_dx(x)
 
 class RobotControllerChrono:
     """General controller. Any controller should be subclass of this class.
@@ -52,7 +36,7 @@ class RobotControllerChrono:
         """Attach initial functions to the joints."""
         if len(self.parameters) != len(self.joints):
             raise Exception("Parameter list should have the length of joint list!")
-
+    @abstractmethod
     def update_functions(self, time, robot_data, environment_data):
         pass
 
@@ -88,7 +72,7 @@ class SinControllerChrono(RobotControllerChrono):
     def initialize_functions(self):
         super().initialize_functions()
         for _, joint in enumerate(self.joints):
-            f = MyConst(0.0)
+            f = chrono.ChFunction_Const(0.0)
             joint[1].joint.SetTorqueFunction(f)
             self.functions.append(f)
 

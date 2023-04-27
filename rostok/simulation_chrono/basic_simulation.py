@@ -136,15 +136,20 @@ class RobotSimulationChrono():
     def get_current_data(self):
         return None
 
-    def simulate_step(self, time_step: float, current_time):
+    def simulate_step(self, time_step: float, current_time, step_n):
         self.chrono_system.Update()
         self.chrono_system.DoStepDynamics(time_step)
         self.update_data()
 
         robot:RobotChrono = self.robot
+        ds = robot.data_storage
         robot.sensor.contact_reporter.reset_contact_dict()
         robot.sensor.update_current_contact_info(self.chrono_system)
-        robot.sensor.update_trajectories()
+        ds.add_data("contacts", robot.sensor.get_amount_contacts(), step_n)
+        ds.add_data("body_trajectories", robot.sensor.get_body_trajectory_point(), step_n+1)
+        ds.add_data("joint_trajectories", robot.sensor.get_joint_trajectory_point(), step_n+1)
+
+        #controller gets current states of the robot and environment and updates control functions
         robot.controller.update_functions(current_time, robot.sensor, self.get_current_data())
 
     def simulate(self,
@@ -163,7 +168,7 @@ class RobotSimulationChrono():
             vis.EnableCollisionShapeDrawing(True)
 
         for i in range(number_of_steps):
-            self.simulate_step(step_length, self.chrono_system.GetChTime())
+            self.simulate_step(step_length, self.chrono_system.GetChTime(), i)
             if vis:
                 vis.Run()
                 if i % frame_update == 0:

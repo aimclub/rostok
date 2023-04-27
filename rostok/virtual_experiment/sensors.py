@@ -7,6 +7,7 @@ from typing_extensions import TypeAlias
 CoordinatesContact: TypeAlias = chrono.ChVectorD
 ForceVector: TypeAlias = chrono.ChVectorD
 
+
 class ContactReporter(chrono.ReportContactCallback):
 
     def __init__(self) -> None:
@@ -22,8 +23,8 @@ class ContactReporter(chrono.ReportContactCallback):
 
         self._body_list: Optional[List[Tuple[int, chrono.ChBody]]] = None
         self.__contact_dict_this_step: Dict[int, List[Tuple[CoordinatesContact, ForceVector]]] = {}
-        self.__outer_contact_dict_this_step: Dict[int, List[Tuple[CoordinatesContact, ForceVector]]] = {}
-
+        self.__outer_contact_dict_this_step: Dict[int, List[Tuple[CoordinatesContact,
+                                                                  ForceVector]]] = {}
         super().__init__()
 
     def set_body_list(self, body_list: List[Tuple[int, chrono.ChBody]]):
@@ -54,7 +55,7 @@ class ContactReporter(chrono.ReportContactCallback):
             bool: If returns false, the contact scanning will be stopped
         """
         # The threshold for the force sensitivity
-        if react_forces.Length()<0.001:
+        if react_forces.Length() < 0.001:
             return True
         body_a = chrono.CastToChBody(contactobjA)
         body_b = chrono.CastToChBody(contactobjB)
@@ -66,45 +67,70 @@ class ContactReporter(chrono.ReportContactCallback):
             elif body_b == body_tuple[1].body:
                 idx_b = body_tuple[0]
         if idx_a:
-            self.__contact_dict_this_step[idx_a].append((pA, - plane_coord*react_forces))
+            self.__contact_dict_this_step[idx_a].append((pA, -plane_coord * react_forces))
             if idx_b is None:
-                self.__outer_contact_dict_this_step[idx_a].append((pA, - plane_coord*react_forces))
+                self.__outer_contact_dict_this_step[idx_a].append((pA, -plane_coord * react_forces))
         if idx_b:
-            self.__contact_dict_this_step[idx_b].append((pB, plane_coord*react_forces))
+            self.__contact_dict_this_step[idx_b].append((pB, plane_coord * react_forces))
             if idx_a is None:
-                self.__outer_contact_dict_this_step[idx_b].append((pB, plane_coord*react_forces ))
+                self.__outer_contact_dict_this_step[idx_b].append((pB, plane_coord * react_forces))
 
         return True
 
     def get_contacts(self):
         return self.__contact_dict_this_step
+
     def get_outer_contacts(self):
         return self.__outer_contact_dict_this_step
 
 
 class Sensor:
-
+    """Control data obtained in the current step of the simulation"""
     def __init__(self, body_list, joint_list) -> None:
         self.contact_reporter: ContactReporter = ContactReporter()
         self.contact_reporter.set_body_list(body_list)
         self.body_list = body_list
         self.joint_list = joint_list
-        #self.joint_body_map:Dict[int, Tuple[int, int]] = joint_body_map
-        self.body_trajectories={}
-        self.joint_trajectories = {}
-        for x in  body_list:
-            self.body_trajectories[x[0]] = [[round(x[1].body.GetPos().x,3),round(x[1].body.GetPos().y,3), round(x[1].body.GetPos().z,3)]]
-        for x in  joint_list:
-            self.joint_trajectories[x[0]] = [round(x[1].joint.GetMotorRot(), 3)]
+        # for x in body_list:
+        #     self.body_trajectories[x[0]] = [[
+        #         round(x[1].body.GetPos().x, 3),
+        #         round(x[1].body.GetPos().y, 3),
+        #         round(x[1].body.GetPos().z, 3)
+        #     ]]
+        # for x in joint_list:
+        #     self.joint_trajectories[x[0]] = [round(x[1].joint.GetMotorRot(), 3)]
 
-    def update_current_contact_info(self, system:chrono.ChSystem):
+    def update_current_contact_info(self, system: chrono.ChSystem):
         system.GetContactContainer().ReportAllContacts(self.contact_reporter)
 
-    def update_trajectories(self):
-        for x in  self.body_list:
-            self.body_trajectories[x[0]].append([round(x[1].body.GetPos().x,3),round(x[1].body.GetPos().y,3), round(x[1].body.GetPos().z,3)])
+    def get_body_trajectory_point(self):
+        output = []
+        for x in self.body_list:
+            output.append((x[0], [
+                round(x[1].body.GetPos().x, 3),
+                round(x[1].body.GetPos().y, 3),
+                round(x[1].body.GetPos().z, 3)
+            ]))
+        return output
+
+    def get_joint_trajectory_point(self):
+        output = []
         for x in self.joint_list:
-            self.joint_trajectories[x[0]].append(round(x[1].joint.GetMotorRot(), 3))
+            output.append((x[0], round(x[1].joint.GetMotorRot(), 3)))
+        return output
+
+    def get_forces(self):
+        output = []
+        contacts = self.contact_reporter.get_contacts()
+        for x in self.body_list:
+            output.append((x[0], contacts[x[0]]))
+        return output
+
+    def get_amount_contacts(self):
+        output = []
+        contacts = self.contact_reporter.get_contacts()
+        for x in self.body_list:
+            output.append((x[0], len(contacts[x[0]])))
 
     def std_contact_forces(self, index: int = -1):
         """Sensor of standard deviation of contact forces that affect on object
@@ -171,7 +197,7 @@ class Sensor:
             and value of object COG in XYZ format
         """
         for tp in self.body_list:
-            if tp[0]==index:
+            if tp[0] == index:
                 body = tp[1]
                 return dict([(index, [body.GetPos().x, body.GetPos().y, body.GetPos().z])])
         return None
@@ -208,3 +234,24 @@ class Sensor:
             ])])
         else:
             return None
+
+
+class DataStorage():
+    """Class aggregates data from all steps of the simulation."""
+
+    def __init__(self):
+        self.main_storage = {}
+
+    def add_data_type(self, key: str, object_list):
+        d = {}
+        for x in object_list:
+            d[x[0]] = []
+        self.main_storage[key] = d
+
+    def add_data(self, key, data_list, step_n):
+        if data_list:
+            for data in data_list:
+                self.main_storage[key][data[0]].append((step_n,data[1]))
+
+    def get_data(self, key):
+        return self.main_storage[key]

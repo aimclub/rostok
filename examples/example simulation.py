@@ -45,6 +45,4 @@ for get_graph in mechs:
     #print(sim.robot.sensor.joint_body_map)
     sim.simulate(100, 0.01, 10, True)
     #print(sim.robot.sensor.trajectories)
-    print(sim.robot.sensor.joint_trajectories)
-
-
+    print(sim.robot.data_storage.get_data("joint_trajectories"))

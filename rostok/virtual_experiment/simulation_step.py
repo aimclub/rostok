@@ -123,6 +123,7 @@ class SimulationStepOptimization:
 
         self.grab_robot = Robot(self.graph_mechanism, self.chrono_system, start_frame_robot)
         self.sensor = Sensor([(-1, self.grasp_object)], [])
+        self.sensor.contact_reporter.reset_contact_dict()
         # Add grasp object in system and set system without gravity
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
 
@@ -167,7 +168,7 @@ class SimulationStepOptimization:
         """
         self.condion_stop_simulation = ConditionStopSimulation(self.chrono_system, self.grab_robot,
                                                                self.grasp_object,
-                                                               self.contact_reporter,
+                                                               self.sensor,
                                                                flags_stop_simulation)
 
     # Add peculiar parameters of chrono system. Like that {"Set_G_acc":chrono.ChVectorD(0,0,0)}
