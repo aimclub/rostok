@@ -12,10 +12,7 @@ from rostok.block_builder_chrono.block_classes import (BLOCK_CLASS_TYPES,
                                                        ChronoRevolveJoint,
                                                        PrimitiveBody)
 from rostok.block_builder_chrono.block_connect import place_and_connect
-from rostok.control_chrono.controller import (
-    ConstReverseControllerChrono, RobotControllerAngleTrajectoryChrono,
-    RobotControllerChrono, RobotControllerTorqueTrajectoryChrono,
-    SinControllerChrono, SinControllerChronoFn)
+from rostok.control_chrono.controller import ConstController
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.virtual_experiment.sensors import Sensor, DataStorage
@@ -49,30 +46,14 @@ class BuiltGraphChrono:
                 is_base_fixed (bool): determines if the base is fixed in the simulation"""
 
         self.__graph: GraphGrammar = deepcopy(graph)
-        self.block_ids: List[int] = []
-        self.block_vector: List[Tuple[int, PrimitiveBody]] = []
-        self.joint_ids: List[int] = []
-        self.joint_vector: List[Tuple[int, ChronoRevolveJoint]] = []
+        self.block_map: Dict[int, PrimitiveBody] = {}
+        self.joint_map: Dict[int, ChronoRevolveJoint] = {}
         self.joint_link_map: Dict[int, Tuple[int, int]] = {}
         self.build_into_system(system, initial_position)
         if is_base_fixed:
             self.fix_base()
-        self.fill_ids()
-        self.build_joint_link_map()
 
-    def fill_ids(self):
-        """Fill the attributes block_ids and joint_ids"""
-        paths = self.__graph.get_sorted_root_based_paths()
-        for path in paths:
-            joint_path = []
-            block_path = []
-            for idx in path:
-                if NodeFeatures.is_joint(self.__graph.nodes[idx]["Node"]):
-                    joint_path.append(idx)
-                if NodeFeatures.is_body(self.__graph.nodes[idx]["Node"]):
-                    block_path.append(idx)
-            self.block_ids.append(block_path)
-            self.joint_ids.append(joint_path)
+        self.build_joint_link_map()
 
     def build_joint_link_map(self):
         """Build the joint_link_map"""
@@ -105,7 +86,7 @@ class BuiltGraphChrono:
                 initial_position (FrameTransform): starting position of the base block"""
         # builds the root based paths in the sorted root based paths order
         paths = self.__graph.get_sorted_root_based_paths()
-        block_chains: List[BLOCK_CLASS_TYPES] = []
+        block_chains: List[List[BLOCK_CLASS_TYPES]] = []
         for path in paths:
             chain: List[BLOCK_CLASS_TYPES] = []
             for idx in path:
@@ -115,9 +96,9 @@ class BuiltGraphChrono:
                     blueprint = self.__graph.nodes[idx]["Node"].block_blueprint
                     created_blocks = creator.init_block_from_blueprint(blueprint)
                     if NodeFeatures.is_joint(self.__graph.nodes[idx].get("Node", None)):
-                        self.joint_vector.append((idx, created_blocks))
+                        self.joint_map[idx] = created_blocks
                     elif NodeFeatures.is_body(self.__graph.nodes[idx].get("Node", None)):
-                        self.block_vector.append((idx, created_blocks))
+                        self.block_map[idx] = created_blocks
 
                     chain.append(created_blocks)
                     self.__graph.nodes[idx]["Blocks"] = created_blocks

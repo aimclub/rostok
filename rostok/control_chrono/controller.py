@@ -17,25 +17,31 @@ class RobotControllerChrono:
             trajectories: trajectories for the joints
             functions: list of functions currently attached to joints
     """
-    def __init__(self, joint_vector, parameters: Dict[int, Any], trajectories=None):
+    def __init__(self, joint_map, parameters: Dict[str, Any], trajectories=None):
         """Initialize class fields and call the initialize_functions() to set starting state"""
-        self.joints: List[Tuple[int, ChronoRevolveJoint]] = joint_vector
+        self.joint_map: Dict[int, ChronoRevolveJoint] = joint_map
         self.parameters = parameters
         self.trajectories = trajectories
-        self.functions = []
+        self.functions: List[chrono.ChFunction_Const] = []
         self.initialize_functions()
+        self.chrono_joint_setters:Dict[JointInputTypeChrono, str] = {}
+        self.do_nothing = lambda x : pass
 
-    def get_joint_by_id(self, idx: int):
-        """Returns joint object by its id in the graph."""
-        for joint in self.joints:
-            if joint[0] == idx:
-                return joint[1]
-        return None
+    def set_function(self, joint):
+        self.chrono_joint_setters = {
+            JointInputTypeChrono.TORQUE : 'SetTorqueFunction',
+            JointInputTypeChrono.VELOCITY : 'SetSpeedFunction',
+            JointInputTypeChrono.POSITION: 'SetAngleFunction',
+            JointInputTypeChrono.UNCONTROL: 'DoNothing'
+        }
 
     def initialize_functions(self):
         """Attach initial functions to the joints."""
-        if len(self.parameters) != len(self.joints):
-            raise Exception("Parameter list should have the length of joint list!")
+        for i, joint in self.joint_map.items():
+            chr_function = chrono.ChFunction_Const(float(self.parameters["initial_value"][i]))
+            getattr(joint[1].input_type, self.chrono_joint_setters(chr_function))
+            self.functions.append(chr_function)
+
     @abstractmethod
     def update_functions(self, time, robot_data, environment_data):
         pass
@@ -44,41 +50,33 @@ class ConstController(RobotControllerChrono):
 
     def initialize_functions(self):
         super().initialize_functions()
-        for i, joint in enumerate(self.joints):
-            chr_function = chrono.ChFunction_Const(float(self.parameters[i]))
-            joint[1].joint.SetTorqueFunction(chr_function)
-            self.functions.append(chr_function)
 
     def update_functions(self, time, robot_data, environment_data):
         pass
 
 
-class SinControllerChronoFn(RobotControllerChrono):
-    """Controller that set sinusoidal torques for all joints."""
-    def initialize_functions(self):
-        super().initialize_functions()
-        parameters = self.parameters
-        for i, joint in enumerate(self.joints):
-            chr_function = chrono.ChFunction_Sine(0.0, parameters[i][1] / 6.28, parameters[i][0])
-            joint[1].joint.SetTorqueFunction(chr_function)
-            self.functions.append(chr_function)
+# class SinControllerChronoFn(RobotControllerChrono):
+#     """Controller that set sinusoidal torques for all joints."""
+#     def initialize_functions(self):
+#         super().initialize_functions()
+#         parameters = self.parameters
+#         for i, joint in enumerate(self.joints):
+#             chr_function = chrono.ChFunction_Sine(0.0, parameters[i][1] / 6.28, parameters[i][0])
+#             joint[1].joint.SetTorqueFunction(chr_function)
+#             self.functions.append(chr_function)
 
-    def update_functions(self, time, robot_data, environment_data):
-        pass
+#     def update_functions(self, time, robot_data, environment_data):
+#         pass
 
 
 class SinControllerChrono(RobotControllerChrono):
     """Controller that sets sinusoidal torques using constant update at each step."""
     def initialize_functions(self):
         super().initialize_functions()
-        for _, joint in enumerate(self.joints):
-            f = chrono.ChFunction_Const(0.0)
-            joint[1].joint.SetTorqueFunction(f)
-            self.functions.append(f)
 
     def update_functions(self, time, robot_data, environment_data):
         for i, _ in enumerate(self.joints):
-            current_const = self.parameters[i][0] * sin(self.parameters[i][1] * time)
+            current_const = self.parameters['sin_parameters'][i][0] * sin(self.parameters['sin_parameters'][i][1] * time)
             self.functions[i].Set_yconst(current_const)
 
 
@@ -87,26 +85,18 @@ class ConstReverseControllerChrono(RobotControllerChrono):
     def __init__(self, joint_vector, parameters: Dict[int, Any], trajectories=None):
         super().__init__(joint_vector, parameters, trajectories=None)
         self.change_prev_step = False
-        self.function_list = []
 
     def initialize_functions(self):
-        if len(self.parameters) != len(self.joints):
-            raise Exception("some joints are not parametrized")
-        for i, joint in enumerate(self.joints):
-            chr_function = chrono.ChFunction_Const(float(self.parameters[i]))
-            joint[1].joint.SetTorqueFunction(chr_function)
-            self.function_list.append(chr_function)
+        super().initialize_functions()
 
     def update_functions(self, time, robot_data: Sensor, environment_data):
         i = 0
         for item in robot_data.joint_body_map.items():
             if not robot_data.amount_contact_forces(
                     item[1][1]) is None and not self.change_prev_step:
-                joint: ChronoRevolveJoint = self.get_joint_by_id(item[0])
-                current_const = joint.joint.GetTorqueFunction().Get_y(0)
-                
-                #joint.joint.SetTorqueFunction(chrono.ChFunction_Const(-current_const))
-                #joint.joint.GetTorqueFunction
+                joint: ChronoRevolveJoint = self.joint_map(item[0])
+                current_const = - joint.joint.GetTorqueFunction().Get_y(0)
+                self.functions[i].Set_yconst(current_const)
                 self.change_prev_step = True
                 return
 

@@ -84,7 +84,8 @@ class RobotSimulationChrono():
     """The simulation of a robot within an environment.
     
         Attributes:
-            chrono_system (chrono.ChSystem): the chrono simulation system that controls the current simulation
+            chrono_system (chrono.ChSystem): the chrono simulation system that controls the 
+                current simulation
             self.data : the object for final output of the simulation
             env_sensor (Sensor): sensor attached to the environment
             objects : list of objects added to the environment
@@ -98,13 +99,15 @@ class RobotSimulationChrono():
         
             The robot and additional environment objects should be added using class methods.
             object_list : bodies to add to the environment and their active/passive status"""
+        # We assume that all simulations in one search are carried out with the same parameters that 
+        # can be set in the simulation constructor
         self.chrono_system = chrono.ChSystemNSC()
         self.chrono_system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
         self.chrono_system.SetSolverMaxIterations(100)
         self.chrono_system.SetSolverForceTolerance(1e-6)
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
-
+        # the simulating mechanism is to be added with function add_design, the value in constructor is None
         self.data = None
         self.robot:Optional[RobotChrono] = None
         self.env_sensor: Sensor = Sensor([], {})
