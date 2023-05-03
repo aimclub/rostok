@@ -46,3 +46,5 @@ def test_control_bind_and_create_sim():
         sim.set_flags_stop_simulation(flags)
         sim.change_config_system(config_sys)
         sim_output = sim.simulate_system(times_step)
+
+test_control_bind_and_create_sim()
