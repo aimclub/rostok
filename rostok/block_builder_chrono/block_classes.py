@@ -165,12 +165,10 @@ class JointInputTypeChrono(str, Enum):
     UNCONTROL = {"Name": "Uncontrol", "TypeMotor": chrono.ChLinkRevolute}
 
     def __init__(self, vals):
-        print(vals)
         self.num = vals["Name"]
         self.motor = vals["TypeMotor"]
-        print(self.num, self.motor)
 
-print(JointInputTypeChrono.TORQUE.num)
+
 class ChronoRevolveJoint(BlockBridge):
     """The class represent revolute joint object in `pychrono <https://projectchrono.org/pychrono/>` 
     physical engine. It is the embodiment of joint nodes from the mechanism graph in
