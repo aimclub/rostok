@@ -27,7 +27,7 @@ class ContactReporter(chrono.ReportContactCallback):
                                                                   ForceVector]]] = {}
         super().__init__()
 
-    def set_body_list(self, body_map: Dict[int, chrono.ChBody]):
+    def set_body_map(self, body_map: Dict[int, chrono.ChBody]):
         self._body_map = body_map
 
     def reset_contact_dict(self):
@@ -88,9 +88,9 @@ class Sensor:
     """Control data obtained in the current step of the simulation"""
     def __init__(self, body_map, joint_map) -> None:
         self.contact_reporter: ContactReporter = ContactReporter()
-        self.contact_reporter.set_body_list(body_map)
-        self.body_map:Dict[int, chrono.ChBody] = body_map
-        self.joint_map:Dict[int, chrono.ChLink] = joint_map
+        self.contact_reporter.set_body_map(body_map)
+        self.body_map:Dict[int, Any] = body_map
+        self.joint_map:Dict[int, Any] = joint_map
 
     def update_current_contact_info(self, system: chrono.ChSystem):
         system.GetContactContainer().ReportAllContacts(self.contact_reporter)

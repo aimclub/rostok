@@ -371,9 +371,9 @@ class GraphGrammar(nx.DiGraph):
             list[list[str]]: dfs branches 
         """
 
-        self_dfs_paths = self.get_root_based_paths()
+        self_root_base_paths = self.get_root_based_paths()
         self_dfs_paths_lbl = []
-        for path in self_dfs_paths:
+        for path in self_root_base_paths:
             self_dfs_paths_lbl.append([self.get_node_by_id(x).label for x in path])
 
         self_dfs_paths_lbl.sort(key=lambda x: "".join(x))

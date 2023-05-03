@@ -49,16 +49,11 @@ class RobotControllerChrono:
 
 class ConstController(RobotControllerChrono):
 
-    def initialize_functions(self):
-        super().initialize_functions()
-
     def update_functions(self, time, robot_data, environment_data):
         pass
 
 class SinControllerChrono(RobotControllerChrono):
     """Controller that sets sinusoidal torques using constant update at each step."""
-    def initialize_functions(self):
-        super().initialize_functions()
 
     def update_functions(self, time, robot_data, environment_data):
         for i, _ in enumerate(self.joint_map):
@@ -68,12 +63,9 @@ class SinControllerChrono(RobotControllerChrono):
 
 class ConstReverseControllerChrono(RobotControllerChrono):
 
-    def __init__(self, joint_vector, parameters: Dict[int, Any], trajectories=None):
+    def __init__(self, joint_map, parameters: Dict[int, Any], trajectories=None):
         super().__init__(joint_vector, parameters, trajectories=None)
         self.change_prev_step = False
-
-    def initialize_functions(self):
-        super().initialize_functions()
 
     def update_functions(self, time, robot_data: Sensor, environment_data):
         i = 0
@@ -87,3 +79,11 @@ class ConstReverseControllerChrono(RobotControllerChrono):
                 return
 
         self.change_prev_step = False
+
+# class TorqueTrajectoryControllerChrono(RobotControllerChrono):
+#     def __init__(self, joint_map, parameters: Dict[int, Any], trajectories):
+#         super().__init__(joint_map, parameters, trajectories)
+        
+#     def update_functions(self, time, robot_data: Sensor, environment_data):
+#         for i, trajectory in enumerate(self.trajectories):
+#             if time > trajectory[0][1]
