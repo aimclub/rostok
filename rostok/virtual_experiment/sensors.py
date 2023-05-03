@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
 
 import numpy as np
 import pychrono.core as chrono
@@ -21,19 +21,19 @@ class ContactReporter(chrono.ReportContactCallback):
                 Each value is a list of contacts of form (position, force)
         """
 
-        self._body_list: Optional[List[Tuple[int, chrono.ChBody]]] = None
+        self._body_map: Optional[Dict[int, chrono.ChBody]] = {}
         self.__contact_dict_this_step: Dict[int, List[Tuple[CoordinatesContact, ForceVector]]] = {}
         self.__outer_contact_dict_this_step: Dict[int, List[Tuple[CoordinatesContact,
                                                                   ForceVector]]] = {}
         super().__init__()
 
-    def set_body_list(self, body_list: List[Tuple[int, chrono.ChBody]]):
-        self._body_list = body_list
+    def set_body_list(self, body_map: Dict[int, chrono.ChBody]):
+        self._body_map = body_map
 
     def reset_contact_dict(self):
-        for bt in self._body_list:
-            self.__contact_dict_this_step[bt[0]] = []
-            self.__outer_contact_dict_this_step[bt[0]] = []
+        for idx in self._body_map:
+            self.__contact_dict_this_step[idx] = []
+            self.__outer_contact_dict_this_step[idx] = []
 
     def OnReportContact(self, pA: CoordinatesContact, pB: CoordinatesContact,
                         plane_coord: chrono.ChMatrix33D, distance: float, eff_radius: float,
@@ -61,11 +61,11 @@ class ContactReporter(chrono.ReportContactCallback):
         body_b = chrono.CastToChBody(contactobjB)
         idx_a = None
         idx_b = None
-        for body_tuple in self._body_list:
-            if body_a == body_tuple[1].body:
-                idx_a = body_tuple[0]
-            elif body_b == body_tuple[1].body:
-                idx_b = body_tuple[0]
+        for idx, body in self._body_map.items():
+            if body_a == body.body:
+                idx_a = idx
+            elif body_b == body.body:
+                idx_b = idx
         if idx_a:
             self.__contact_dict_this_step[idx_a].append((pA, -plane_coord * react_forces))
             if idx_b is None:
@@ -86,51 +86,43 @@ class ContactReporter(chrono.ReportContactCallback):
 
 class Sensor:
     """Control data obtained in the current step of the simulation"""
-    def __init__(self, body_list, joint_list) -> None:
+    def __init__(self, body_map, joint_map) -> None:
         self.contact_reporter: ContactReporter = ContactReporter()
-        self.contact_reporter.set_body_list(body_list)
-        self.body_list = body_list
-        self.joint_list = joint_list
-        # for x in body_list:
-        #     self.body_trajectories[x[0]] = [[
-        #         round(x[1].body.GetPos().x, 3),
-        #         round(x[1].body.GetPos().y, 3),
-        #         round(x[1].body.GetPos().z, 3)
-        #     ]]
-        # for x in joint_list:
-        #     self.joint_trajectories[x[0]] = [round(x[1].joint.GetMotorRot(), 3)]
+        self.contact_reporter.set_body_list(body_map)
+        self.body_map:Dict[int, chrono.ChBody] = body_map
+        self.joint_map:Dict[int, chrono.ChLink] = joint_map
 
     def update_current_contact_info(self, system: chrono.ChSystem):
         system.GetContactContainer().ReportAllContacts(self.contact_reporter)
 
     def get_body_trajectory_point(self):
         output = []
-        for x in self.body_list:
-            output.append((x[0], [
-                round(x[1].body.GetPos().x, 3),
-                round(x[1].body.GetPos().y, 3),
-                round(x[1].body.GetPos().z, 3)
+        for idx, body in self.body_map.items():
+            output.append((idx, [
+                round(body.body.GetPos().x, 3),
+                round(body.body.GetPos().y, 3),
+                round(body.body.GetPos().z, 3)
             ]))
         return output
 
     def get_joint_trajectory_point(self):
         output = []
-        for x in self.joint_list:
-            output.append((x[0], round(x[1].joint.GetMotorRot(), 3)))
+        for idx, joint in self.joint_map.items():
+            output.append((idx, round(joint.joint.GetMotorRot(), 3)))
         return output
 
     def get_forces(self):
         output = []
         contacts = self.contact_reporter.get_contacts()
-        for x in self.body_list:
-            output.append((x[0], contacts[x[0]]))
+        for idx in self.body_map:
+            output.append((idx, contacts[idx]))
         return output
 
     def get_amount_contacts(self):
         output = []
         contacts = self.contact_reporter.get_contacts()
-        for x in self.body_list:
-            output.append((x[0], len(contacts[x[0]])))
+        for idx in self.body_map:
+            output.append((idx, len(contacts[idx])))
 
     def std_contact_forces(self, index: int = -1):
         """Sensor of standard deviation of contact forces that affect on object
@@ -196,9 +188,9 @@ class Sensor:
             dict[int, chrono.ChVectorD]: Dictionary which keys are id of object 
             and value of object COG in XYZ format
         """
-        for tp in self.body_list:
-            if tp[0] == index:
-                body = tp[1]
+        for idx, body in self.body_map.items():
+            if idx == index:
+                body = body.body
                 return dict([(index, [body.GetPos().x, body.GetPos().y, body.GetPos().z])])
         return None
 
@@ -242,11 +234,11 @@ class DataStorage():
     def __init__(self):
         self.main_storage = {}
 
-    def add_data_type(self, key: str, object_list):
-        d = {}
-        for x in object_list:
-            d[x[0]] = []
-        self.main_storage[key] = d
+    def add_data_type(self, key: str, object_map):
+        empty_dict:Dict[str, List[Any]] = {}
+        for idx in object_map:
+            empty_dict[idx] = []
+        self.main_storage[key] = empty_dict
 
     def add_data(self, key, data_list, step_n):
         if data_list:
