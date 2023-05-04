@@ -59,6 +59,8 @@ def create_rules():
 
     #revolve = RevolveJointBlueprint(JointInputType.POSITION)
     revolve = RevolveJointBlueprint(JointInputType.TORQUE)
+    revolve_45 = RevolveJointBlueprint(JointInputType.TORQUE, starting_angle=45)
+    no_control = RevolveJointBlueprint(JointInputType.UNCONTROL)
     # Nodes
     node_vocab = node_vocabulary.NodeVocabulary()
     node_vocab.add_node(ROOT)
@@ -94,12 +96,13 @@ def create_rules():
     node_vocab.create_node(label="RP", is_terminal=True, block_blueprint=turn_transform_P)
     node_vocab.create_node(label="RN", is_terminal=True, block_blueprint=turn_transform_N)
 
+    node_vocab.create_node(label="NJ1", is_terminal=True, block_blueprint=no_control)
     node_vocab.create_node(label="J1", is_terminal=True, block_blueprint=revolve)
     node_vocab.create_node(label="J2", is_terminal=True, block_blueprint=revolve)
     node_vocab.create_node(label="J3", is_terminal=True, block_blueprint=revolve)
     node_vocab.create_node(label="J4", is_terminal=True, block_blueprint=revolve)
     node_vocab.create_node(label="J5", is_terminal=True, block_blueprint=revolve)
-    node_vocab.create_node(label="J6", is_terminal=True, block_blueprint=revolve)
+    node_vocab.create_node(label="J6", is_terminal=True, block_blueprint=revolve_45)
     node_vocab.create_node(label="J7", is_terminal=True, block_blueprint=revolve)
     node_vocab.create_node(label="J8", is_terminal=True, block_blueprint=revolve)
     node_vocab.create_node(label="J9", is_terminal=True, block_blueprint=revolve)
@@ -144,6 +147,7 @@ def create_rules():
     rule_vocab.create_rule("Terminal_Link2", ["L"], ["L2"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Link3", ["L"], ["L3"], 0, 0, [])
     
+    rule_vocab.create_rule("Terminal_NoControlJoint", ["J"], ["NJ1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Joint1", ["J"], ["J1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Joint2", ["J"], ["J2"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Joint3", ["J"], ["J3"], 0, 0, [])

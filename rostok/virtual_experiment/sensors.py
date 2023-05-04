@@ -27,8 +27,8 @@ class ContactReporter(chrono.ReportContactCallback):
                                                                   ForceVector]]] = {}
         super().__init__()
 
-    def set_body_map(self, body_map: Dict[int, chrono.ChBody]):
-        self._body_map = body_map
+    def set_body_map(self, body_map_ordered: Dict[int, chrono.ChBody]):
+        self._body_map = body_map_ordered
 
     def reset_contact_dict(self):
         for idx in self._body_map:
@@ -86,18 +86,18 @@ class ContactReporter(chrono.ReportContactCallback):
 
 class Sensor:
     """Control data obtained in the current step of the simulation"""
-    def __init__(self, body_map, joint_map) -> None:
+    def __init__(self, body_map_ordered, joint_map_ordered) -> None:
         self.contact_reporter: ContactReporter = ContactReporter()
-        self.contact_reporter.set_body_map(body_map)
-        self.body_map:Dict[int, Any] = body_map
-        self.joint_map:Dict[int, Any] = joint_map
+        self.contact_reporter.set_body_map(body_map_ordered)
+        self.body_map_ordered:Dict[int, Any] = body_map_ordered
+        self.joint_map_ordered:Dict[int, Any] = joint_map_ordered
 
     def update_current_contact_info(self, system: chrono.ChSystem):
         system.GetContactContainer().ReportAllContacts(self.contact_reporter)
 
     def get_body_trajectory_point(self):
         output = []
-        for idx, body in self.body_map.items():
+        for idx, body in self.body_map_ordered.items():
             output.append((idx, [
                 round(body.body.GetPos().x, 3),
                 round(body.body.GetPos().y, 3),
@@ -105,23 +105,26 @@ class Sensor:
             ]))
         return output
 
-    def get_joint_trajectory_point(self):
+    def get_joint_trajectory_point(self)->List[Any]:
         output = []
-        for idx, joint in self.joint_map.items():
-            output.append((idx, round(joint.joint.GetMotorRot(), 3)))
+        for idx, joint in self.joint_map_ordered.items():
+            master_body:chrono.ChBodyFrame = joint.joint.GetBody2()
+            slave_body:chrono.ChBodyFrame = joint.joint.GetBody1()
+            angle = (master_body.GetInverse()*slave_body).GetRotAngle()
+            output.append((idx, round(angle, 3)))
         return output
 
     def get_forces(self):
         output = []
         contacts = self.contact_reporter.get_contacts()
-        for idx in self.body_map:
+        for idx in self.body_map_ordered:
             output.append((idx, contacts[idx]))
         return output
 
     def get_amount_contacts(self):
         output = []
         contacts = self.contact_reporter.get_contacts()
-        for idx in self.body_map:
+        for idx in self.body_map_ordered:
             output.append((idx, len(contacts[idx])))
 
     def std_contact_forces(self, index: int = -1):
@@ -188,7 +191,7 @@ class Sensor:
             dict[int, chrono.ChVectorD]: Dictionary which keys are id of object 
             and value of object COG in XYZ format
         """
-        for idx, body in self.body_map.items():
+        for idx, body in self.body_map_ordered.items():
             if idx == index:
                 body = body.body
                 return dict([(index, [body.GetPos().x, body.GetPos().y, body.GetPos().z])])

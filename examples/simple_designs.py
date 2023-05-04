@@ -146,3 +146,19 @@ def get_two_link_one_finger():
         G.apply_rule(rule_vocabul.get_rule(rule))
 
     return G
+
+def get_three_link_one_finger_with_no_control():
+    G = GraphGrammar()
+    rules = ["Init", 
+            "AddFinger",  "Terminal_Radial_Translate1", "Phalanx", "Phalanx",  "Phalanx", "Remove_FG", "Terminal_Link3", "Terminal_Joint1", "Terminal_Joint6", "Terminal_Link1", "Terminal_Link2", "Terminal_NoControlJoint", 
+            "RemoveFinger_N", 
+            "RemoveFinger_R", 
+            "RemoveFinger_RN", 
+            "RemoveFinger_P",
+            "RemoveFinger_RP"
+            ]
+    rule_vocabul, _ = create_rules()
+    for rule in rules:
+        G.apply_rule(rule_vocabul.get_rule(rule))
+
+    return G

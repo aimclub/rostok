@@ -120,9 +120,9 @@ class RobotSimulationChrono():
     def initialize(self):
         pass
 
-    def add_design(self, graph, control_parameters, control_trajectories=None, Frame: FrameTransform = DefaultFrame):
+    def add_design(self, graph, control_parameters,  Frame: FrameTransform = DefaultFrame):
         """"""
-        self.robot = RobotChrono(graph, self.chrono_system, control_parameters,control_trajectories ,Frame)
+        self.robot = RobotChrono(graph, self.chrono_system, control_parameters,Frame)
 
     def add_object(self, obj: ChronoEasyShapeObject, read_data: bool = False):
         self.chrono_system.AddBody(obj.body)
@@ -130,7 +130,7 @@ class RobotSimulationChrono():
         if read_data:
             self.active_objects.append((self.active_body_counter, obj))
             self.active_body_counter += 1
-            self.env_sensor.contact_reporter.set_body_list(self.active_objects)
+            self.env_sensor.contact_reporter.set_body_map(self.active_objects)
 
     def update_data(self):
         self.env_sensor.contact_reporter.reset_contact_dict()

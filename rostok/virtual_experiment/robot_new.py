@@ -46,8 +46,8 @@ class BuiltGraphChrono:
                 is_base_fixed (bool): determines if the base is fixed in the simulation"""
 
         self.__graph: GraphGrammar = deepcopy(graph)
-        self.block_map: Dict[int, PrimitiveBody] = {}
-        self.joint_map: Dict[int, ChronoRevolveJoint] = {}
+        self.body_map_ordered: Dict[int, PrimitiveBody] = {}
+        self.joint_map_ordered: Dict[int, ChronoRevolveJoint] = {}
         self.joint_link_map: Dict[int, Tuple[int, int]] = {}
         self.build_into_system(system, initial_position)
         if is_base_fixed:
@@ -96,9 +96,9 @@ class BuiltGraphChrono:
                     blueprint = self.__graph.nodes[idx]["Node"].block_blueprint
                     created_blocks = creator.init_block_from_blueprint(blueprint)
                     if NodeFeatures.is_joint(self.__graph.nodes[idx].get("Node", None)):
-                        self.joint_map[idx] = created_blocks
+                        self.joint_map_ordered[idx] = created_blocks
                     elif NodeFeatures.is_body(self.__graph.nodes[idx].get("Node", None)):
-                        self.block_map[idx] = created_blocks
+                        self.body_map_ordered[idx] = created_blocks
 
                     chain.append(created_blocks)
                     self.__graph.nodes[idx]["Blocks"] = created_blocks
@@ -136,7 +136,6 @@ class RobotChrono:
                  robot_graph: GraphGrammar,
                  system: chrono.ChSystem,
                  control_parameters,
-                 control_trajectories=None,
                  start_frame: FrameTransform = DefaultFrame):
         """Build mechanism into system and bind sensor to robot blocks.
         
@@ -147,12 +146,12 @@ class RobotChrono:
                 control_trajectories : list of trajectories for joints
                 start_frame: initial position of the base body"""
         self.__built_graph = BuiltGraphChrono(robot_graph, system, start_frame)
-        self.sensor = Sensor(self.__built_graph.block_map, self.__built_graph.joint_map)
-        self.controller = SinControllerChrono(self.__built_graph.joint_map, control_parameters, control_trajectories)
+        self.sensor = Sensor(self.__built_graph.body_map_ordered, self.__built_graph.joint_map_ordered)
+        self.controller = SinControllerChrono(self.__built_graph.joint_map_ordered, control_parameters)
         self.data_storage = DataStorage()
-        self.data_storage.add_data_type("contacts", self.__built_graph.block_map)
-        self.data_storage.add_data_type("body_trajectories", self.__built_graph.block_map)
-        self.data_storage.add_data_type("joint_trajectories", self.__built_graph.joint_map)
+        self.data_storage.add_data_type("contacts", self.__built_graph.body_map_ordered)
+        self.data_storage.add_data_type("body_trajectories", self.__built_graph.body_map_ordered)
+        self.data_storage.add_data_type("joint_trajectories", self.__built_graph.joint_map_ordered)
         self.data_storage.add_data("body_trajectories",self.sensor.get_body_trajectory_point(), 0)
         self.data_storage.add_data("joint_trajectories",self.sensor.get_joint_trajectory_point(), 0)
 
