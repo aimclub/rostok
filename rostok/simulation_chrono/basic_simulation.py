@@ -139,9 +139,9 @@ class RobotSimulationChrono():
     def get_current_data(self):
         return None
 
-    def simulate_step(self, time_step: float, current_time, step_n):
+    def simulate_step(self, step_length: float, current_time, step_n):
         self.chrono_system.Update()
-        self.chrono_system.DoStepDynamics(time_step)
+        self.chrono_system.DoStepDynamics(step_length)
         self.update_data()
 
         robot:RobotChrono = self.robot

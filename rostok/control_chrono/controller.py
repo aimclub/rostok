@@ -64,7 +64,7 @@ class SinControllerChrono(RobotControllerChrono):
 class ConstReverseControllerChrono(RobotControllerChrono):
 
     def __init__(self, joint_map, parameters: Dict[int, Any], trajectories=None):
-        super().__init__(joint_vector, parameters, trajectories=None)
+        super().__init__(joint_map, parameters, trajectories=None)
         self.change_prev_step = False
 
     def update_functions(self, time, robot_data: Sensor, environment_data):
