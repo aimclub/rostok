@@ -82,8 +82,9 @@ of [ITMO University](https://en.itmo.ru/) as part of the plan of the center's pr
 * Yefim Osipov - developer
 * Dmitriy Ivolga - developer
 * Kirill Nasonov - developer
+* Mikhail Chaikovskii - developer
 * Sergey Kolyubin - chief scientist
-<!-- * Mikhail Chaikovskii - reaserch developer -->
+
 
 ## Contacts
 
