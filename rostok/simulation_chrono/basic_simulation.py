@@ -6,9 +6,9 @@ import pychrono.irrlicht as chronoirr
 from rostok.block_builder_api.block_parameters import (DefaultFrame,
                                                        FrameTransform)
 from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject
+from rostok.graph_grammar.node import GraphGrammar
 from rostok.virtual_experiment.robot_new import BuiltGraphChrono, RobotChrono
 from rostok.virtual_experiment.sensors import ContactReporter, Sensor
-from rostok.graph_grammar.node import GraphGrammar
 
 
 class SystemPreviewChrono:
@@ -178,6 +178,10 @@ class RobotSimulationChrono():
                     vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
                     vis.Render()
                     vis.EndScene()
+
+            if self.condion_stop_simulation.flag_stop_simulation():
+                break
+
         if visualize:
             vis.GetDevice().closeDevice()
 

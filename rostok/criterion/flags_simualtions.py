@@ -19,7 +19,7 @@ class BuilderNotInitializedError(Exception):
 
     def __str__(self):
         return_str = 'Builder Not Initialized: {0}!'.format(
-            self.message) if self.message else 'Builder Not Initialized before use it!'
+            self.message) if self.message else 'Attempt to use Builder before Initialization!'
         return return_str
 
 
