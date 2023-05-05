@@ -1,8 +1,9 @@
 from dataclasses import dataclass
+from typing import Optional
 
 import networkx as nx
-from typing import Optional
 from networkx.algorithms.traversal import dfs_preorder_nodes
+
 from rostok.block_builder_api.block_blueprints import ALL_BLUEPRINT
 
 
@@ -65,7 +66,7 @@ class UniqueBlueprint:
         Id - from the generated graph
     """
     id: int
-    block_blueprint: ALL_BLUEPRINT # Set default value
+    block_blueprint: ALL_BLUEPRINT  # Set default value
 
 
 ROOT = Node("ROOT")
@@ -161,11 +162,19 @@ class GraphGrammar(nx.DiGraph):
         """
 
         root_id = self.get_root_id()
+        def sort_by_root_path(node_id):
+            paths = self.get_sorted_root_based_paths()
+            for path in paths:
+                if node_id in path:
+                    return paths.index(path)
+            return None
 
         def sort_by_root_distance(node_id):
             return len(nx.shortest_path(self, root_id, node_id))
-
-        sorta = sorted(list_ids, key=sort_by_root_distance)
+        # after two sorts the nodes are sorted by distance to root and nodes
+        # at the same distance are sorted by paths according to sorted root paths
+        sorta = sorted(list_ids, key=sort_by_root_path)
+        sorta = sorted(sorta, key=sort_by_root_distance)
         return sorta[0]
 
     def get_root_id(self) -> int:
@@ -340,6 +349,20 @@ class GraphGrammar(nx.DiGraph):
             return self_dfs_paths_lbl == rhs_dfs_paths_lbl
         return False
 
+    def get_sorted_root_based_paths(self):
+        """Sort root based paths by lengh and same lengths lexicographically."""
+        root_based_paths = self.get_root_based_paths()
+
+        def primary_key(path):
+            return len(path)
+        def secondaty_key(path):
+            string_path = [self.get_node_by_id(x).label for x in path]
+            return "".join(string_path)
+
+        root_based_paths.sort(key=secondaty_key)
+        root_based_paths.sort(key=primary_key)
+        return root_based_paths
+
     def get_uniq_representation(self) -> list[list[str]]:
         """Returns dfs partition node labels. 
         Where branches is sorted by lexicographic order
@@ -348,9 +371,9 @@ class GraphGrammar(nx.DiGraph):
             list[list[str]]: dfs branches 
         """
 
-        self_dfs_paths = self.graph_partition_dfs()
+        self_root_base_paths = self.get_root_based_paths()
         self_dfs_paths_lbl = []
-        for path in self_dfs_paths:
+        for path in self_root_base_paths:
             self_dfs_paths_lbl.append([self.get_node_by_id(x).label for x in path])
 
         self_dfs_paths_lbl.sort(key=lambda x: "".join(x))

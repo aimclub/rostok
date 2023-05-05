@@ -39,6 +39,7 @@ class RevolveJointBlueprint(JointBlueprintType):
     radius: float = 0.07
     length: float = 0.4
     material: Material = Material()
+    starting_angle: float = 0
     density = 100.0
     starting_angle = 0
     stiffness: float = 0.

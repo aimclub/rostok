@@ -122,10 +122,8 @@ class SimulationStepOptimization:
         register_chrono_system(self.chrono_system)
 
         self.grab_robot = Robot(self.graph_mechanism, self.chrono_system, start_frame_robot)
-        self.contact_reporter = ContactReporter()
-        self.contact_reporter.set_body_list([(-1, self.grasp_object),
-                                             (1, self.grab_robot.get_base_body())])
-        self.contact_reporter.reset_contact_dict()
+        self.sensor = Sensor({-1: self.grasp_object}, [])
+        self.sensor.contact_reporter.reset_contact_dict()
         # Add grasp object in system and set system without gravity
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
 
@@ -170,7 +168,7 @@ class SimulationStepOptimization:
         """
         self.condion_stop_simulation = ConditionStopSimulation(self.chrono_system, self.grab_robot,
                                                                self.grasp_object,
-                                                               self.contact_reporter,
+                                                               self.sensor,
                                                                flags_stop_simulation)
 
     # Add peculiar parameters of chrono system. Like that {"Set_G_acc":chrono.ChVectorD(0,0,0)}
@@ -270,13 +268,12 @@ class SimulationStepOptimization:
 
             # Get current variables from object
             #SensorFunctions.reset_reporter_for_objects(self.chrono_system, [self.grasp_object.body], self.contact_reporter)
-            self.contact_reporter.reset_contact_dict()
-
-            sensor = Sensor(self.contact_reporter, self.chrono_system)
-            current_data_std_obj_force = sensor.std_contact_forces()
-            current_data_cont_coord = sensor.contact_coord()
-            current_data_abs_coord_COG_obj = sensor.abs_coord_COG(self.grasp_object.body)
-            current_data_amount_obj_contact_surfaces = sensor.amount_contact_forces()
+            self.sensor.contact_reporter.reset_contact_dict()
+            self.sensor.update_current_contact_info(self.chrono_system)
+            current_data_std_obj_force = self.sensor.std_contact_forces()
+            current_data_cont_coord = self.sensor.contact_coord()
+            current_data_abs_coord_COG_obj = self.sensor.abs_coord_COG(self.grasp_object.body)
+            current_data_amount_obj_contact_surfaces = self.sensor.amount_contact_forces()
 
             # TODO: Make it possible to get information from the robot blocks
 

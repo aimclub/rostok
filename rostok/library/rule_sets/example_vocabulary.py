@@ -1,24 +1,25 @@
 from cmath import sqrt
 
 import numpy as np
+import pychrono as chrono
 
-from rostok.block_builder_api.block_blueprints import TransformBlueprint, PrimitiveBodyBlueprint, \
-EnvironmentBodyBlueprint, RevolveJointBlueprint
-from rostok.block_builder_api.easy_body_shapes import Box
+from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, ChronoTransform,
+                                                       ChronoEasyShape, UniversalBox)
 from rostok.block_builder_chrono.blocks_utils import FrameTransform
-from rostok.graph_grammar.node import ROOT, GraphGrammar
-from rostok.graph_grammar.node_vocabulary import NodeVocabulary
+from rostok.graph.node import BlockWrapper
+from rostok.graph.graph import ROOT
+from rostok.graph.node_vocabulary import NodeVocabulary
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
-from rostok.block_builder_api.block_parameters import JointInputType
+from rostok.graph_grammar.graph_grammar import GraphGrammar
 
 # Bodies
-link1 = PrimitiveBodyBlueprint(Box(0.1, 0.6, 0.4))
-link2 = PrimitiveBodyBlueprint(Box(0.1, 0.6, 0.4))
+link1 = BlockWrapper(UniversalBox, x=0.1, y=0.6, z=0.3)
+link2 = BlockWrapper(UniversalBox, x=0.1, y=0.4, z=0.3)
 
-flat1 = PrimitiveBodyBlueprint(Box(1, 0.2, 0.8))
-flat2 = PrimitiveBodyBlueprint(Box(0.7, 0.2, 0.8))
+flat1 = BlockWrapper(UniversalBox, x=0.4, y=0.2, z=0.8)
+flat2 = BlockWrapper(UniversalBox, x=0.7, y=0.2, z=0.8)
 
-u1 = PrimitiveBodyBlueprint(Box(0.1, 0.2, 0.4))
+u1 = BlockWrapper(UniversalBox, x=0.1, y=0.1, z=0.3)
 
 # Transforms
 RZX = FrameTransform([0, 0, 0], [sqrt(2), 0, sqrt(2), 0])
@@ -31,17 +32,18 @@ MOVE_ZX_MINUS = FrameTransform([-0.3, 0, -0.3], [1, 0, 0, 0])
 MOVE_X_PLUS = FrameTransform([0.3, 0, 0.], [1, 0, 0, 0])
 MOVE_Z_PLUS_X_MINUS = FrameTransform([-0.3, 0, 0.3], [1, 0, 0, 0])
 
-transform_rzx = TransformBlueprint(RZX)
-transform_rzy = TransformBlueprint(RZY)
-transform_rxy = TransformBlueprint(RXY)
-transform_mzx_plus = TransformBlueprint(MOVE_ZX_PLUS)
-transform_mzx_minus = TransformBlueprint(MOVE_ZX_MINUS)
-transform_mx_plus = TransformBlueprint(MOVE_X_PLUS)
-transform_mz_plus_x_minus = TransformBlueprint(MOVE_Z_PLUS_X_MINUS)
+transform_rzx = BlockWrapper(ChronoTransform, RZX)
+transform_rzy = BlockWrapper(ChronoTransform, RZY)
+transform_rxy = BlockWrapper(ChronoTransform, RXY)
+transform_mzx_plus = BlockWrapper(ChronoTransform, MOVE_ZX_PLUS)
+transform_mzx_minus = BlockWrapper(ChronoTransform, MOVE_ZX_MINUS)
+transform_mx_plus = BlockWrapper(ChronoTransform, MOVE_X_PLUS)
+transform_mz_plus_x_minus = BlockWrapper(ChronoTransform, MOVE_Z_PLUS_X_MINUS)
 
-
+# type_of_input = ChronoRevolveJoint.InputType.POSITION
+type_of_input = ChronoRevolveJoint.InputType.TORQUE
 # Joints
-revolve1 = RevolveJointBlueprint(JointInputType.TORQUE)
+revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z, type_of_input)
 
 node_vocab = NodeVocabulary()
 node_vocab.add_node(ROOT)
@@ -52,22 +54,22 @@ node_vocab.create_node("M")
 node_vocab.create_node("EF")
 node_vocab.create_node("EM")
 
-node_vocab.create_node(label="J1", is_terminal=True, block_blueprint=revolve1)
-node_vocab.create_node(label="L1", is_terminal=True, block_blueprint=link1)
-node_vocab.create_node(label="L2", is_terminal=True, block_blueprint=link2)
-node_vocab.create_node(label="F1", is_terminal=True, block_blueprint=flat1)
-node_vocab.create_node(label="F2", is_terminal=True, block_blueprint=flat2)
-node_vocab.create_node(label="U1", is_terminal=True, block_blueprint=u1)
-node_vocab.create_node(label="T1", is_terminal=True, block_blueprint=transform_mx_plus)
-node_vocab.create_node(label="T2", is_terminal=True, block_blueprint=transform_mz_plus_x_minus)
-node_vocab.create_node(label="T3", is_terminal=True, block_blueprint=transform_mzx_plus)
-node_vocab.create_node(label="T4", is_terminal=True, block_blueprint=transform_mzx_minus)
+node_vocab.create_node(label="J1", is_terminal=True, block_wrapper=revolve1)
+node_vocab.create_node(label="L1", is_terminal=True, block_wrapper=link1)
+node_vocab.create_node(label="L2", is_terminal=True, block_wrapper=link2)
+node_vocab.create_node(label="F1", is_terminal=True, block_wrapper=flat1)
+node_vocab.create_node(label="F2", is_terminal=True, block_wrapper=flat2)
+node_vocab.create_node(label="U1", is_terminal=True, block_wrapper=u1)
+node_vocab.create_node(label="T1", is_terminal=True, block_wrapper=transform_mx_plus)
+node_vocab.create_node(label="T2", is_terminal=True, block_wrapper=transform_mz_plus_x_minus)
+node_vocab.create_node(label="T3", is_terminal=True, block_wrapper=transform_mzx_plus)
+node_vocab.create_node(label="T4", is_terminal=True, block_wrapper=transform_mzx_minus)
 
 rule_vocab = RuleVocabulary(node_vocab)
 
 rule_vocab.create_rule("FlatCreate", ["ROOT"], ["F"], 0, 0)
 rule_vocab.create_rule("Mount", ["F"], ["F", "M", "EM"], 0, 0, [(0, 1), (1, 2)])
-#rule_vocab.create_rule("MountAdd", ["M"], ["M", "EM"], 0, 1, [(0, 1)])
+rule_vocab.create_rule("MountAdd", ["M"], ["M", "EM"], 0, 1, [(0, 1)])
 rule_vocab.create_rule("FingerUpper", ["EM"], ["J", "L", "EM"], 0, 2, [(0, 1), (1, 2)])
 
 rule_vocab.create_rule("TerminalFlat1", ["F"], ["F1"], 0, 0)
@@ -109,12 +111,9 @@ rule_action_terminal_two_finger = np.asarray([
 rule_action_two_finger = np.r_[rule_action_non_terminal_two_finger, rule_action_terminal_two_finger]
 
 rule_action_non_terminal_no_joints = np.asarray(["FlatCreate", "Mount"])
-rule_action_non_terminal_no_joints = np.asarray(["FlatCreate", "Mount", "FingerUpper"])
 
 rule_action_terminal_no_joints = np.asarray(
     ["TerminalFlat1", "TerminalTransformL", "TerminalEndLimb"])
-rule_action_terminal_no_joints = np.asarray(
-    ["TerminalFlat1", "TerminalTransformL","TerminalJoint", "TerminalL2", "TerminalEndLimb"])
 
 rule_action_no_joints = np.r_[rule_action_non_terminal_no_joints, rule_action_terminal_no_joints]
 
@@ -145,12 +144,3 @@ def get_nonterminal_graph_two_finger():
     for i in list(rule_action_non_terminal_two_finger):
         G.apply_rule(rule_vocab.get_rule(i))
     return G
-
-
-J_NODES = [node_vocab.get_node("J"), node_vocab.get_node("J1")]
-B_NODES = list(map(node_vocab.get_node, ["L", "L1", "L2", "F1", "F2", "U1"]))
-T_EXAMPLE = list(map(node_vocab.get_node, ["T1", "T2"]))
-RM_MOUNTS = list(map(node_vocab.get_node, ["T1", "T3"]))
-LM_MOUNTS = list(map(node_vocab.get_node, ["T2", "T4"]))
-PALM_LIST = list(map(node_vocab.get_node, ["F1", "F2"]))
-NODE_FEATURES = [B_NODES, J_NODES, LM_MOUNTS, RM_MOUNTS]
