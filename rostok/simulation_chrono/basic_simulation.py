@@ -114,6 +114,7 @@ class RobotSimulationChrono():
         self.objects: List[ChronoEasyShapeObject] = []
         self.active_body_counter = 0
         self.active_objects: List[Tuple[int, ChronoEasyShapeObject]] = []
+        self.flag_container = 
         for obj in object_list:
             self.add_object(obj[0], obj[1])
 
@@ -139,6 +140,7 @@ class RobotSimulationChrono():
     def get_current_data(self):
         return None
 
+    def build_flags(self, flags: list[FlagStopSimualtions]):
     def simulate_step(self, step_length: float, current_time, step_n):
         self.chrono_system.Update()
         self.chrono_system.DoStepDynamics(step_length)
@@ -159,7 +161,8 @@ class RobotSimulationChrono():
                  number_of_steps: int,
                  step_length: float,
                  frame_update: int,
-                 visualize=False):
+                 flag_container = None,
+                 visualize=False, ):
         if visualize:
             vis = chronoirr.ChVisualSystemIrrlicht()
             vis.AttachSystem(self.chrono_system)
@@ -179,8 +182,9 @@ class RobotSimulationChrono():
                     vis.Render()
                     vis.EndScene()
 
-            if self.condion_stop_simulation.flag_stop_simulation():
-                break
+            if self.flag_container:
+                if self.flag_container.flag_stop_simulation(): 
+                    break
 
         if visualize:
             vis.GetDevice().closeDevice()

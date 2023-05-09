@@ -4,10 +4,11 @@ from typing import Callable
 import pychrono as chrono
 from scipy.optimize import direct, dual_annealing, shgo
 
-from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.graph_grammar.node import GraphGrammar
+from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.virtual_experiment.robot import Robot
-from rostok.virtual_experiment.simulation_step import (SimOut, SimulationStepOptimization)
+from rostok.virtual_experiment.simulation_step import (
+    SimOut, SimulationStepOptimization)
 
 
 @dataclass
@@ -98,3 +99,21 @@ class ControlOptimizer():
             return (0, 0)
         result = dual_annealing(reward_fun, multi_bound, maxiter=self.cfg.iters)
         return (result.fun, result.x)
+
+
+class GraphRewardCounter:
+    def __init__(self):
+        pass
+
+    def count_reward(self, graph: GraphGrammar):
+        pass
+
+class CounterWithOptimization(GraphRewardCounter):
+    def __init__(self):
+        pass
+    def simulate_with_control_parameters(self, x, graph):
+        pass
+    def count_reward(self, graph: GraphGrammar):
+        def reward_with_parameters(x):
+            sim_output = self.simulate_with_control_parameters(x, graph)
+            return self.
