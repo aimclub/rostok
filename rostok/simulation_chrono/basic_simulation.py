@@ -140,7 +140,8 @@ class RobotSimulationChrono():
     def get_current_data(self):
         return None
 
-    def build_flags(self, flags: list[FlagStopSimualtions]):
+    #def build_flags(self, flags: list[FlagStopSimualtions]):
+
     def simulate_step(self, step_length: float, current_time, step_n):
         self.chrono_system.Update()
         self.chrono_system.DoStepDynamics(step_length)
@@ -183,10 +184,39 @@ class RobotSimulationChrono():
                     vis.EndScene()
 
             if self.flag_container:
-                if self.flag_container.flag_stop_simulation(): 
-                    break
+                for flag in flag_container: 
+                    if flag.state:
+                        break
 
         if visualize:
             vis.GetDevice().closeDevice()
 
         return self.data
+
+class ParametrizedSimulation:
+    def __init__(self, step_length, simulation_length):
+        self.step_length = step_length
+        self.simulation_length = simulation_length
+
+    def run_simulation(self, graph, data):
+        pass
+
+class ConstTorqueGrasp(ParametrizedSimulation):
+    def __init__(self, step_length, simulation_length):
+        self.grasp_object_callback = None
+        self.flag_container = []
+
+    def add_flag(self, flag):
+        self.flag_container.append(flag)
+
+    def run_simulation(self, graph, data):
+        simulation = RobotSimulationChrono()
+        chrono_system = simulation.chrono_system
+        simulation.add_design(graph, data)
+        grasp_object = self.grasp_object_callback()
+        simulation.add_object(grasp_object, True)
+        n_steps = int(self.simulation_length/self.step_length)
+        simulation.simulate(n_steps, self.step_length, 10, self.flag_container, False)
+
+
+        
