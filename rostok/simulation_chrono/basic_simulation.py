@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
@@ -9,7 +9,7 @@ from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.virtual_experiment.robot_new import BuiltGraphChrono, RobotChrono
 from rostok.virtual_experiment.sensors import ContactReporter, Sensor
-
+from rostok.criterion.simulation_flags import FlagStopSimualtions
 
 class SystemPreviewChrono:
     """A simulation of the motionless environment and design"""
@@ -113,8 +113,7 @@ class RobotSimulationChrono():
         self.env_sensor: Sensor = Sensor([], {})
         self.objects: List[ChronoEasyShapeObject] = []
         self.active_body_counter = 0
-        self.active_objects: List[Tuple[int, ChronoEasyShapeObject]] = []
-        self.flag_container = 
+        self.active_objects: Dict[int, ChronoEasyShapeObject] = {}
         for obj in object_list:
             self.add_object(obj[0], obj[1])
 
@@ -123,13 +122,13 @@ class RobotSimulationChrono():
 
     def add_design(self, graph, control_parameters,  Frame: FrameTransform = DefaultFrame):
         """"""
-        self.robot = RobotChrono(graph, self.chrono_system, control_parameters,Frame)
+        self.robot = RobotChrono(graph, self.chrono_system, control_parameters, Frame)
 
     def add_object(self, obj: ChronoEasyShapeObject, read_data: bool = False):
         self.chrono_system.AddBody(obj.body)
         self.objects.append(obj)
         if read_data:
-            self.active_objects.append((self.active_body_counter, obj))
+            self.active_objects[self.active_body_counter] = obj
             self.active_body_counter += 1
             self.env_sensor.contact_reporter.set_body_map(self.active_objects)
 
@@ -139,8 +138,6 @@ class RobotSimulationChrono():
 
     def get_current_data(self):
         return None
-
-    #def build_flags(self, flags: list[FlagStopSimualtions]):
 
     def simulate_step(self, step_length: float, current_time, step_n):
         self.chrono_system.Update()
@@ -164,6 +161,7 @@ class RobotSimulationChrono():
                  frame_update: int,
                  flag_container = None,
                  visualize=False, ):
+        vis = None
         if visualize:
             vis = chronoirr.ChVisualSystemIrrlicht()
             vis.AttachSystem(self.chrono_system)
@@ -175,6 +173,7 @@ class RobotSimulationChrono():
             vis.EnableCollisionShapeDrawing(True)
 
         for i in range(number_of_steps):
+            print(i)
             self.simulate_step(step_length, self.chrono_system.GetChTime(), i)
             if vis:
                 vis.Run()
@@ -183,7 +182,7 @@ class RobotSimulationChrono():
                     vis.Render()
                     vis.EndScene()
 
-            if self.flag_container:
+            if flag_container:
                 for flag in flag_container: 
                     if flag.state:
                         break
@@ -201,22 +200,26 @@ class ParametrizedSimulation:
     def run_simulation(self, graph, data):
         pass
 
+
 class ConstTorqueGrasp(ParametrizedSimulation):
     def __init__(self, step_length, simulation_length):
+        super().__init__(step_length, simulation_length)
         self.grasp_object_callback = None
-        self.flag_container = []
+        self.flag_container: List[FlagStopSimualtions] = []
 
     def add_flag(self, flag):
         self.flag_container.append(flag)
-
+    def reset_flags(self):
+        for flag in self.flag_container:
+            flag.state = False
     def run_simulation(self, graph, data):
-        simulation = RobotSimulationChrono()
-        chrono_system = simulation.chrono_system
+        self.reset_flags()
+        simulation = RobotSimulationChrono([])
         simulation.add_design(graph, data)
         grasp_object = self.grasp_object_callback()
         simulation.add_object(grasp_object, True)
         n_steps = int(self.simulation_length/self.step_length)
-        simulation.simulate(n_steps, self.step_length, 10, self.flag_container, False)
+        simulation.simulate(n_steps, self.step_length, 10, self.flag_container, True)
 
 
         

@@ -100,7 +100,7 @@ class ControlOptimizer():
         result = dual_annealing(reward_fun, multi_bound, maxiter=self.cfg.iters)
         return (result.fun, result.x)
 
-
+from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
 class GraphRewardCounter:
     def __init__(self):
         pass
@@ -109,11 +109,19 @@ class GraphRewardCounter:
         pass
 
 class CounterWithOptimization(GraphRewardCounter):
-    def __init__(self):
-        pass
-    def simulate_with_control_parameters(self, x, graph):
-        pass
+    def __init__(self, simulation_control, criterion_callback, optimization_bounds = [6, 15], optimization_limit = 10):
+        self.simulation_control = simulation_control
+        self.criterion_callback = criterion_callback
+    def simulate_with_control_parameters(self, data, graph):
+        self.simulation_control.run_simulation(graph, data)
     def count_reward(self, graph: GraphGrammar):
         def reward_with_parameters(x):
-            sim_output = self.simulate_with_control_parameters(x, graph)
-            return self.
+            data = {"initial-value": x}
+            sim_output = self.simulate_with_control_parameters(data, graph)
+            reward = self.criterion_callback(sim_output)
+            return reward
+        
+        graph.
+
+
+

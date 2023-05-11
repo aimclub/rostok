@@ -20,12 +20,12 @@ class ContactReporter(chrono.ReportContactCallback):
                 dict of contacts obtained for the bodies from the body list in the current step. 
                 Each value is a list of contacts of form (position, force)
         """
-
+        super().__init__()
         self._body_map: Optional[Dict[int, chrono.ChBody]] = {}
         self.__contact_dict_this_step: Dict[int, List[Tuple[CoordinatesContact, ForceVector]]] = {}
         self.__outer_contact_dict_this_step: Dict[int, List[Tuple[CoordinatesContact,
                                                                   ForceVector]]] = {}
-        super().__init__()
+
 
     def set_body_map(self, body_map_ordered: Dict[int, chrono.ChBody]):
         self._body_map = body_map_ordered
@@ -66,14 +66,14 @@ class ContactReporter(chrono.ReportContactCallback):
                 idx_a = idx
             elif body_b == body.body:
                 idx_b = idx
-        if idx_a:
-            self.__contact_dict_this_step[idx_a].append((pA, -plane_coord * react_forces))
+        if not idx_a is None:
+            self.__contact_dict_this_step[idx_a].append((pA, -(plane_coord * react_forces)))
             if idx_b is None:
-                self.__outer_contact_dict_this_step[idx_a].append((pA, -plane_coord * react_forces))
-        if idx_b:
-            self.__contact_dict_this_step[idx_b].append((pB, plane_coord * react_forces))
+                self.__outer_contact_dict_this_step[idx_a].append((pA, -(plane_coord * react_forces)))
+        if not idx_b is None:
+            self.__contact_dict_this_step[idx_b].append((pB, -(plane_coord * react_forces)))
             if idx_a is None:
-                self.__outer_contact_dict_this_step[idx_b].append((pB, plane_coord * react_forces))
+                self.__outer_contact_dict_this_step[idx_b].append((pB, -(plane_coord * react_forces)))
 
         return True
 

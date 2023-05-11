@@ -9,6 +9,8 @@ from rostok.trajectory_optimizer.trajectory_generator import \
     create_torque_traj_from_x
 from rostok.virtual_experiment.simulation_step import SimOut
 from rostok.block_builder_api.block_parameters import DefaultFrame, Material, FrameTransform
+from rostok.block_builder_chrono.block_builder_chrono_api import \
+    ChronoBlockCreatorInterface as creator
 
 
 def get_object_to_grasp():
@@ -18,11 +20,10 @@ def get_object_to_grasp():
 
     shape_box = Box(0.2, 0.2, 0.5)
 
-    obj = EnvironmentBodyBlueprint(shape_box,
+    object_blueprint = EnvironmentBodyBlueprint(shape_box,
                                    material=matich,
                                    pos=FrameTransform([0, 0.5, 0], [0, -0.048, 0.706, 0.706]))
-
-    
+    obj = creator.init_block_from_blueprint(object_blueprint)
     return obj
 
 
@@ -38,10 +39,3 @@ def create_grab_criterion_fun(weight):
 
     return fun
 
-
-def create_traj_fun(stop_time: float, time_step: float):
-
-    def fun(graph: GraphGrammar, x: list[float]):
-        return create_torque_traj_from_x(graph, x, stop_time, time_step)
-
-    return fun

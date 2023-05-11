@@ -44,6 +44,6 @@ for get_graph in mechs:
     sim.add_object(creator.init_block_from_blueprint(obj))
     sim.add_design(graph, controll_parameters, FrameTransform([0, 2.5, 0], rotation_x(180)))
     #print(sim.robot.sensor.joint_body_map)
-    sim.simulate(100, 0.01, 10, True)
+    sim.simulate(100, 0.01, 10, None, True)
     #print(sim.robot.sensor.trajectories)
     print(sim.robot.data_storage.get_data("joint_trajectories"))

@@ -47,6 +47,7 @@ class FlagSlipout(FlagStopSimualtions):
 
 class FlagContactTimeOut(FlagStopSimualtions):
     def __init__(self, ref_time):
+        super().__init__()
         self.reference_time = ref_time
 
     def update_state(self, current_time, robot_data:Sensor, env_data:Sensor): 
