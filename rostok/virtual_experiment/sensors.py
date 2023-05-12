@@ -27,7 +27,7 @@ class ContactReporter(chrono.ReportContactCallback):
                                                                   ForceVector]]] = {}
 
 
-    def set_body_map(self, body_map_ordered: Dict[int, chrono.ChBody]):
+    def set_body_map(self, body_map_ordered: Dict[int, Any]):
         self._body_map = body_map_ordered
 
     def reset_contact_dict(self):
@@ -126,6 +126,26 @@ class Sensor:
         contacts = self.contact_reporter.get_contacts()
         for idx in self.body_map_ordered:
             output.append((idx, len(contacts[idx])))
+
+    def get_outer_force_center(self):
+        output = []
+        contacts = self.contact_reporter.get_outer_contacts()
+        for idx in self.body_map_ordered:
+            if len(contacts[idx])>0:
+                body_contact_coordinates_sum = sum([x[0] for x in contacts[idx]])*(1/len(contacts[idx]))
+                output.append((idx, [body_contact_coordinates_sum.GetPos().x, body_contact_coordinates_sum.GetPos().y, body_contact_coordinates_sum.GetPos().z] ))
+            else:
+                output.append((idx, None))
+
+        return output
+    
+    def get_COG(self):
+        output = []
+        for idx, body in self.body_map_ordered.items():
+            body = body.body
+            output.append((idx, [body.GetPos().x, body.GetPos().y, body.GetPos().z]))
+
+        return output
 
     def std_contact_forces(self, index: int = -1):
         """Sensor of standard deviation of contact forces that affect on object
@@ -246,7 +266,7 @@ class DataStorage():
     def add_data(self, key, data_list, step_n):
         if data_list:
             for data in data_list:
-                self.main_storage[key][data[0]].append((step_n,data[1]))
+                self.main_storage[key][data[0]].append((step_n, data[1]))
 
     def get_data(self, key):
         return self.main_storage[key]

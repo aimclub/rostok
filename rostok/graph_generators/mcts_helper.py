@@ -11,7 +11,7 @@ from rostok.graph_grammar.graph_utils import (plot_graph_reward,
                                               save_graph_plot_reward)
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
-from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
+from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer, CounterWithOptimization
 from rostok.utils.pickle_save import Saveable
 from rostok.utils.states import (MCTSOptimizedState, OptimizedGraph,
                                  OptimizedState, RobotState)
@@ -310,7 +310,7 @@ class MCTSGraphEnvironment(GraphVocabularyEnvironment):
                  initial_graph: GraphGrammar,
                  helper: MCTSHelper,
                  graph_vocabulary: RuleVocabulary,
-                 optimizer: ControlOptimizer,
+                 optimizer: CounterWithOptimization,
                  max_numbers_rules_non_terminal: int = 20):
         """Create state from the graph
 
@@ -337,7 +337,7 @@ class MCTSGraphEnvironment(GraphVocabularyEnvironment):
             print('seen reward:', self.reward)
             return self.reward
 
-        result_optimizer = self.helper.optimizer.start_optimisation(self.graph)
+        result_optimizer = self.helper.optimizer.count_reward(self.graph)
         self.reward = -result_optimizer[0]
         self.movments_trajectory = result_optimizer[1]
         self.helper.report.seen_graphs.add_graph(self.graph, self.reward, self.movments_trajectory)

@@ -1,8 +1,9 @@
-import numpy as np
 from abc import ABC
 
+import numpy as np
 
 from rostok.virtual_experiment.sensors import Sensor
+
 
 class FlagStopSimualtions(ABC):
     def __init__(self):

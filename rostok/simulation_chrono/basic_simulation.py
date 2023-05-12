@@ -8,7 +8,7 @@ from rostok.block_builder_api.block_parameters import (DefaultFrame,
 from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.virtual_experiment.robot_new import BuiltGraphChrono, RobotChrono
-from rostok.virtual_experiment.sensors import ContactReporter, Sensor
+from rostok.virtual_experiment.sensors import ContactReporter, Sensor, DataStorage
 from rostok.criterion.simulation_flags import FlagStopSimualtions
 
 class SystemPreviewChrono:
@@ -108,17 +108,22 @@ class RobotSimulationChrono():
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
         # the simulating mechanism is to be added with function add_design, the value in constructor is None
-        self.data = None
+        self.env_data = DataStorage()
         self.robot:Optional[RobotChrono] = None
-        self.env_sensor: Sensor = Sensor([], {})
+        self.env_sensor: Sensor = Sensor({}, {})
         self.objects: List[ChronoEasyShapeObject] = []
         self.active_body_counter = 0
-        self.active_objects: Dict[int, ChronoEasyShapeObject] = {}
+        self.active_objects_ordered: Dict[int, ChronoEasyShapeObject] = {}
         for obj in object_list:
             self.add_object(obj[0], obj[1])
 
     def initialize(self):
-        pass
+        
+        self.env_sensor: Sensor = Sensor(self.active_objects_ordered, {})
+        self.env_data.add_data_type("contacts", self.active_objects_ordered)
+        self.env_data.add_data_type("forces", self.active_objects_ordered)
+        self.env_data.add_data_type("COG", self.active_objects_ordered)
+        self.env_data.add_data_type("force_center", self.active_objects_ordered)
 
     def add_design(self, graph, control_parameters,  Frame: FrameTransform = DefaultFrame):
         """"""
@@ -128,13 +133,17 @@ class RobotSimulationChrono():
         self.chrono_system.AddBody(obj.body)
         self.objects.append(obj)
         if read_data:
-            self.active_objects[self.active_body_counter] = obj
+            self.active_objects_ordered[self.active_body_counter] = obj
             self.active_body_counter += 1
-            self.env_sensor.contact_reporter.set_body_map(self.active_objects)
 
-    def update_data(self):
+    def update_data(self, step_n):
         self.env_sensor.contact_reporter.reset_contact_dict()
         self.env_sensor.update_current_contact_info(self.chrono_system)
+        self.env_data.add_data("n_contacts", self.env_sensor.get_amount_contacts(), step_n)
+        self.env_data.add_data("forces",self.env_sensor.get_forces(), step_n)
+        self.env_data.add_data("COG", self.env_sensor.get_COG(), step_n)
+        self.env_data.add_data("force_center", self.env_sensor.get_outer_force_center(), step_n)
+
 
     def get_current_data(self):
         return None
@@ -142,13 +151,14 @@ class RobotSimulationChrono():
     def simulate_step(self, step_length: float, current_time, step_n):
         self.chrono_system.Update()
         self.chrono_system.DoStepDynamics(step_length)
-        self.update_data()
+        self.update_data(step_n)
 
         robot:RobotChrono = self.robot
         ds = robot.data_storage
         robot.sensor.contact_reporter.reset_contact_dict()
         robot.sensor.update_current_contact_info(self.chrono_system)
-        ds.add_data("contacts", robot.sensor.get_amount_contacts(), step_n)
+        ds.add_data("n_contacts", robot.sensor.get_amount_contacts(), step_n)
+        ds.add_data("forces", robot.sensor.get_forces(), step_n)
         ds.add_data("body_trajectories", robot.sensor.get_body_trajectory_point(), step_n+1)
         ds.add_data("joint_trajectories", robot.sensor.get_joint_trajectory_point(), step_n+1)
 
@@ -161,6 +171,7 @@ class RobotSimulationChrono():
                  frame_update: int,
                  flag_container = None,
                  visualize=False, ):
+        self.initialize()
         vis = None
         if visualize:
             vis = chronoirr.ChVisualSystemIrrlicht()
@@ -173,7 +184,6 @@ class RobotSimulationChrono():
             vis.EnableCollisionShapeDrawing(True)
 
         for i in range(number_of_steps):
-            print(i)
             self.simulate_step(step_length, self.chrono_system.GetChTime(), i)
             if vis:
                 vis.Run()
@@ -190,7 +200,7 @@ class RobotSimulationChrono():
         if visualize:
             vis.GetDevice().closeDevice()
 
-        return self.data
+        return self.chrono_system.GetChTime(), self.env_data, self.robot.data_storage
 
 class ParametrizedSimulation:
     def __init__(self, step_length, simulation_length):
@@ -219,7 +229,4 @@ class ConstTorqueGrasp(ParametrizedSimulation):
         grasp_object = self.grasp_object_callback()
         simulation.add_object(grasp_object, True)
         n_steps = int(self.simulation_length/self.step_length)
-        simulation.simulate(n_steps, self.step_length, 10, self.flag_container, True)
-
-
-        
+        return simulation.simulate(n_steps, self.step_length, 10, self.flag_container, False)

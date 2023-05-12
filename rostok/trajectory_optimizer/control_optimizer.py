@@ -3,7 +3,7 @@ from typing import Callable
 
 import pychrono as chrono
 from scipy.optimize import direct, dual_annealing, shgo
-
+from rostok.criterion.criterion_calc import SimulationReward
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.virtual_experiment.robot import Robot
@@ -101,6 +101,7 @@ class ControlOptimizer():
         return (result.fun, result.x)
 
 from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
+
 class GraphRewardCounter:
     def __init__(self):
         pass
@@ -108,22 +109,25 @@ class GraphRewardCounter:
     def count_reward(self, graph: GraphGrammar):
         pass
 
+
 class CounterWithOptimization(GraphRewardCounter):
-    def __init__(self, simulation_control, criterion_callback, optimization_bounds = (6, 15), optimization_limit = 10):
+    def __init__(self, simulation_control, rewarder: SimulationReward, optimization_bounds = (6, 15), optimization_limit = 10):
         self.simulation_control = simulation_control
-        self.criterion_callback = criterion_callback
+        self.rewarder: SimulationReward = rewarder
         self.bounds = optimization_bounds
         self.limit = optimization_limit
     def simulate_with_control_parameters(self, data, graph):
-        self.simulation_control.run_simulation(graph, data)
+        return self.simulation_control.run_simulation(graph, data)
     def count_reward(self, graph: GraphGrammar):
         def reward_with_parameters(x):
-            data = {"initial-value": x}
+            data = {"initial_value": x}
             sim_output = self.simulate_with_control_parameters(data, graph)
-            reward = self.criterion_callback(sim_output)
+            reward = self.rewarder.calculate_reward(sim_output)
             return reward
-        
+
         n_joints = len(get_joint_vector_from_graph(graph))
+        if n_joints == 0:
+            return (0, [])
         multi_bound = []
         for _ in range(n_joints):
             multi_bound.append(self.bounds)
