@@ -114,6 +114,7 @@ class SimulationReward:
         for criterion in self.criteria:
             partial_rewards.append(criterion.calculate_reward(simulation_output))
 
+        print(partial_rewards)
         total_reward = -sum([a*b for a,b in zip(partial_rewards, self.weights)])
         return total_reward
 

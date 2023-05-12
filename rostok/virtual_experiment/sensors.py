@@ -132,8 +132,13 @@ class Sensor:
         contacts = self.contact_reporter.get_outer_contacts()
         for idx in self.body_map_ordered:
             if len(contacts[idx])>0:
-                body_contact_coordinates_sum = sum([x[0] for x in contacts[idx]])*(1/len(contacts[idx]))
-                output.append((idx, [body_contact_coordinates_sum.GetPos().x, body_contact_coordinates_sum.GetPos().y, body_contact_coordinates_sum.GetPos().z] ))
+                body_contact_coordinates = [x[0] for x in contacts[idx]]
+                body_contact_coordinates_sum = chrono.ChVectorD(0,0,0)
+                for contact in body_contact_coordinates:
+                    body_contact_coordinates_sum+=contact
+
+                body_contact_coordinates_sum = body_contact_coordinates_sum*(1/len(contacts[idx]))
+                output.append((idx, [body_contact_coordinates_sum.x, body_contact_coordinates_sum.y, body_contact_coordinates_sum.z] ))
             else:
                 output.append((idx, None))
 
