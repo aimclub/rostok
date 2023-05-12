@@ -109,9 +109,11 @@ class GraphRewardCounter:
         pass
 
 class CounterWithOptimization(GraphRewardCounter):
-    def __init__(self, simulation_control, criterion_callback, optimization_bounds = [6, 15], optimization_limit = 10):
+    def __init__(self, simulation_control, criterion_callback, optimization_bounds = (6, 15), optimization_limit = 10):
         self.simulation_control = simulation_control
         self.criterion_callback = criterion_callback
+        self.bounds = optimization_bounds
+        self.limit = optimization_limit
     def simulate_with_control_parameters(self, data, graph):
         self.simulation_control.run_simulation(graph, data)
     def count_reward(self, graph: GraphGrammar):
@@ -121,7 +123,13 @@ class CounterWithOptimization(GraphRewardCounter):
             reward = self.criterion_callback(sim_output)
             return reward
         
-        graph.
+        n_joints = len(get_joint_vector_from_graph(graph))
+        multi_bound = []
+        for _ in range(n_joints):
+            multi_bound.append(self.bounds)
+
+        result = dual_annealing(reward_with_parameters, multi_bound, maxiter=self.limit)
+        return (result.fun, result.x)
 
 
 
