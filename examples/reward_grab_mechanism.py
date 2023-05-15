@@ -6,7 +6,7 @@ from example_vocabulary import (get_terminal_graph_three_finger)
 
 import rostok.virtual_experiment.simulation_step as step
 
-from rostok.criterion.criterion_calc import criterion_calc
+from rostok.criterion.criterion_calculation import criterion_calc
 from rostok.criterion.flags_simualtions import FlagMaxTime, FlagNotContact, FlagSlipout
 from example_vocabulary import (get_terminal_graph_no_joints, get_terminal_graph_three_finger,
                                 get_terminal_graph_two_finger)

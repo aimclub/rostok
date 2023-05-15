@@ -360,7 +360,7 @@ class MCTSGraphEnvironment(GraphVocabularyEnvironment):
 
 def prepare_mcts_state_and_helper(graph: GraphGrammar,
                                   rule_vocabulary: RuleVocabulary,
-                                  optimizer: ControlOptimizer,
+                                  optimizer: CounterWithOptimization,
                                   num_of_rules: int,
                                   path: Path = Path("./results")):
     """Set the MCTSHelper and initial MCTSGraphEnvironment

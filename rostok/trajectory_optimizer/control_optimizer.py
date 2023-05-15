@@ -3,7 +3,7 @@ from typing import Callable
 
 import pychrono as chrono
 from scipy.optimize import direct, dual_annealing, shgo
-from rostok.criterion.criterion_calc import SimulationReward
+from rostok.criterion.criterion_calculation import SimulationReward
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.virtual_experiment.robot import Robot
@@ -116,8 +116,10 @@ class CounterWithOptimization(GraphRewardCounter):
         self.rewarder: SimulationReward = rewarder
         self.bounds = optimization_bounds
         self.limit = optimization_limit
+
     def simulate_with_control_parameters(self, data, graph):
         return self.simulation_control.run_simulation(graph, data)
+
     def count_reward(self, graph: GraphGrammar):
         def reward_with_parameters(x):
             data = {"initial_value": x}
@@ -136,4 +138,27 @@ class CounterWithOptimization(GraphRewardCounter):
         return (result.fun, result.x)
 
 
+class CounterGraphOptimization(GraphRewardCounter):
+    def __init__(self, simulation_control, rewarder: SimulationReward, torque_dict):
+        self.simulation_control = simulation_control
+        self.rewarder: SimulationReward = rewarder
+        self.torque_dict = torque_dict
 
+    def build_control_from_graph(self, graph: GraphGrammar):
+        joints = get_joint_vector_from_graph(graph)
+        control_sequence = []
+        for idx in joints:
+            node = graph.get_node_by_id(idx)
+            control_sequence.append(self.torque_dict[node])
+        return control_sequence
+
+    def count_reward(self, graph: GraphGrammar):
+
+        n_joints = get_joint_vector_from_graph(graph)
+        if n_joints == 0:
+            return (0, [])
+        control_sequence = self.build_control_from_graph(graph)
+        data = {"initial_value": control_sequence}
+        simulation_output = self.simulation_control.run_simulation(graph, data)
+        reward = self.rewarder.calculate_reward(simulation_output)
+        return (reward, control_sequence)

@@ -1,7 +1,7 @@
 import example_vocabulary
 import pychrono as chrono
 
-import rostok.criterion.criterion_calc as criterion
+import rostok.criterion.criterion_calculation as criterion
 from rostok.block_builder_api.easy_body_shapes import Cylinder
 
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint

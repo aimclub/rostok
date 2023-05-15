@@ -10,7 +10,8 @@ from rostok.graph_grammar.node import GraphGrammar
 from rostok.virtual_experiment.robot_new import BuiltGraphChrono, RobotChrono
 from rostok.virtual_experiment.sensors import ContactReporter, Sensor, DataStorage
 from rostok.criterion.simulation_flags import FlagStopSimualtions
-
+from rostok.block_builder_chrono.block_builder_chrono_api import \
+    ChronoBlockCreatorInterface as creator
 class SystemPreviewChrono:
     """A simulation of the motionless environment and design"""
     def __init__(self):
@@ -219,9 +220,11 @@ class ConstTorqueGrasp(ParametrizedSimulation):
 
     def add_flag(self, flag):
         self.flag_container.append(flag)
+
     def reset_flags(self):
         for flag in self.flag_container:
             flag.state = False
+
     def run_simulation(self, graph, data):
         self.reset_flags()
         simulation = RobotSimulationChrono([])

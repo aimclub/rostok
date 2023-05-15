@@ -11,7 +11,6 @@ from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransf
 from rostok.block_builder_chrono.block_types import (BlockBody, BlockBridge, BlockTransform)
 from rostok.block_builder_chrono.blocks_utils import (ContactReporter, SpringTorque,
                                                       frame_transform_to_chcoordsys, rotation_z_q)
-from rostok.block_builder_chrono.chrono_system import get_chrono_system
 from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
     DefaultChronoMaterial, struct_material2object_material)

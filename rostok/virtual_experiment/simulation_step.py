@@ -10,7 +10,6 @@ from rostok.block_builder_chrono.block_builder_chrono_api import \
     ChronoBlockCreatorInterface as creator
 from rostok.block_builder_chrono.block_classes import (BuildingBody, ChronoEasyShapeObject,
                                                        ChronoRevolveJoint)
-from rostok.block_builder_chrono.chrono_system import register_chrono_system
 from rostok.criterion.flags_simualtions import (ConditionStopSimulation, FlagStopSimualtions)
 from rostok.graph_grammar.node import GraphGrammar
 #from rostok.virtual_experiment.auxilarity_sensors import RobotSensor

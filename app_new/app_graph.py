@@ -1,35 +1,26 @@
 import time
-from pathlib import Path
-
 import matplotlib.pyplot as plt
 import mcts
-import numpy as np
-from simple_designs import (get_three_link_one_finger_with_no_control,
-                            get_two_link_one_finger)
-
-from rostok.criterion.criterion_calculation import (ForceCriterion,
-                                                    ObjectCOGCriterion,
-                                                    SimulationReward,
-                                                    TimeCriterion)
-from rostok.criterion.simulation_flags import (FlagContactTimeOut,
-                                               FlagFlyingApart, FlagSlipout)
-from rostok.graph_generators.mcts_helper import (make_mcts_step,
-                                                 prepare_mcts_state_and_helper)
-from rostok.graph_grammar.node import GraphGrammar
-from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
-from rostok.library.obj_grasp.objects import get_object_parametrized_sphere
-from rostok.library.rule_sets.ruleset_old_style import create_rules
+from pathlib import Path
 from rostok.simulation_chrono.basic_simulation import ConstTorqueGrasp
+from rostok.criterion.simulation_flags import FlagContactTimeOut, FlagFlyingApart, FlagSlipout
+from simple_designs import get_three_link_one_finger_with_no_control, get_two_link_one_finger
+from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
+from rostok.criterion.criterion_calculation import SimulationReward, TimeCriterion, ForceCriterion, ObjectCOGCriterion
 from rostok.trajectory_optimizer.control_optimizer import CounterWithOptimization
+from rostok.graph_grammar.node import GraphGrammar
+from rostok.graph_generators.mcts_helper import (make_mcts_step, prepare_mcts_state_and_helper)
+from rostok.library.rule_sets.ruleset_old_style_graph import create_rules
+from rostok.library.obj_grasp.objects import get_object_parametrized_sphere
 from rostok.block_builder_chrono.block_builder_chrono_api import \
     ChronoBlockCreatorInterface as creator
 
-
-rule_vocabul = create_rules()
+rule_vocabul, = create_rules()
 # construct a simulation manager
 simulation_control = ConstTorqueGrasp(0.005, 3)
 # add object to grasp
-simulation_control.grasp_object_callback = lambda :creator.create_environment_body(get_object_parametrized_sphere(0.2, 1))
+simulation_control.grasp_object_callback = lambda: creator.create_environment_body(
+    get_object_parametrized_sphere(0.2, 1))
 # create flags
 simulation_control.add_flag(FlagContactTimeOut(2))
 simulation_control.add_flag(FlagFlyingApart(10))

@@ -1,4 +1,4 @@
-import rostok.criterion.criterion_calc as criterion
+import rostok.criterion.criterion_calculation as criterion
 from rostok.block_builder_api.block_blueprints import TransformBlueprint, PrimitiveBodyBlueprint, \
 EnvironmentBodyBlueprint, RevolveJointBlueprint
 from rostok.block_builder_api.easy_body_shapes import Box
