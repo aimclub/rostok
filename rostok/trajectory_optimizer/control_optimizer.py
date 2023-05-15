@@ -80,6 +80,39 @@ class CounterWithOptimization(GraphRewardCounter):
         return (result.fun, result.x)
 
 
+class CounterWithOptimizationDirect(GraphRewardCounter):
+
+    def __init__(self,
+                 simulation_control,
+                 rewarder: SimulationReward,
+                 optimization_bounds=(6, 15),
+                 optimization_limit=10):
+        self.simulation_control = simulation_control
+        self.rewarder: SimulationReward = rewarder
+        self.bounds = optimization_bounds
+        self.limit = optimization_limit
+
+    def simulate_with_control_parameters(self, data, graph):
+        return self.simulation_control.run_simulation(graph, data)
+
+    def count_reward(self, graph: GraphGrammar):
+
+        def reward_with_parameters(parameters):
+            data = {"initial_value": parameters}
+            sim_output = self.simulate_with_control_parameters(data, graph)
+            reward = self.rewarder.calculate_reward(sim_output)
+            return reward
+
+        n_joints = len(get_joint_vector_from_graph(graph))
+        if n_joints == 0:
+            return (0, [])
+        multi_bound = []
+        for _ in range(n_joints):
+            multi_bound.append(self.bounds)
+
+        result = direct(reward_with_parameters, multi_bound, maxiter=self.limit)
+        return (result.fun, result.x)
+
 class CounterGraphOptimization(GraphRewardCounter):
 
     def __init__(self, simulation_control, rewarder: SimulationReward, torque_dict):

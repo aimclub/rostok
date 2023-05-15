@@ -1,6 +1,7 @@
 import time
+import sys
 from pathlib import Path
-
+import hyperparameters as hp
 import matplotlib.pyplot as plt
 import mcts
 import numpy as np
@@ -29,7 +30,8 @@ rule_vocabul = create_rules()
 # construct a simulation manager
 simulation_control = ConstTorqueGrasp(0.005, 3)
 # add object to grasp
-simulation_control.grasp_object_callback = lambda :creator.create_environment_body(get_object_parametrized_sphere(0.2, 1))
+grasp_object_blueprint = get_object_parametrized_sphere(0.2, 1)
+simulation_control.grasp_object_callback = lambda :creator.create_environment_body(grasp_object_blueprint)
 # create flags
 simulation_control.add_flag(FlagContactTimeOut(2))
 simulation_control.add_flag(FlagFlyingApart(10))
@@ -81,3 +83,37 @@ while not finish:
           f"reward: {mcts_helper.report.get_best_info()[1]}")
 ex = time.time() - start
 print(f"time :{ex}")
+
+report = mcts_helper.report
+path = report.make_time_dependent_path()
+report.save()
+report.save_visuals()
+report.save_lists()
+report.save_means()
+
+
+# additions to the file
+with open(Path(path, "mcts_result.txt"), "a") as file:
+    gb_params = grasp_object_blueprint.kwargs
+    original_stdout = sys.stdout
+    sys.stdout = file
+    print()
+    print("Object to grasp:", gb_params.get("shape"))
+    print("Object initial coordinats:", gb_params.get("pos"))
+    print("Time optimization:", ex)
+    print("MAX_NUMBER_RULES:", hp.MAX_NUMBER_RULES)
+    print("BASE_ITERATION_LIMIT:", hp.BASE_ITERATION_LIMIT)
+    print("ITERATION_REDUCTION_TIME:", hp.ITERATION_REDUCTION_TIME)
+    print("CRITERION_WEIGHTS:", hp.CRITERION_WEIGHTS)
+    print("CONTROL_OPTIMIZATION_ITERATION:", hp.CONTROL_OPTIMIZATION_ITERATION)
+    print("TIME_STEP_SIMULATION:", hp.TIME_STEP_SIMULATION)
+    print("TIME_SIMULATION:", hp.TIME_SIMULATION)
+    print("FLAG_TIME_NO_CONTACT:", hp.FLAG_TIME_NO_CONTACT)
+    print("FLAG_TIME_SLIPOUT:", hp.FLAG_TIME_SLIPOUT)
+    sys.stdout = original_stdout
+
+# visualisation in the end of the search
+best_graph, reward, best_control = mcts_helper.report.get_best_info()
+func_reward = control_optimizer.create_reward_function(best_graph)
+res = -func_reward(best_control, True)
+print("Best reward obtained in the MCTS search:", res)

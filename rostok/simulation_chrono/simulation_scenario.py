@@ -29,11 +29,11 @@ class ConstTorqueGrasp(ParametrizedSimulation):
         for flag in self.flag_container:
             flag.state = False
 
-    def run_simulation(self, graph: GraphGrammar, data):
+    def run_simulation(self, graph: GraphGrammar, data, vis = False):
         self.reset_flags()
         simulation = RobotSimulationChrono([])
         simulation.add_design(graph, data)
         grasp_object = self.grasp_object_callback()
         simulation.add_object(grasp_object, True)
         n_steps = int(self.simulation_length / self.step_length)
-        return simulation.simulate(n_steps, self.step_length, 10, self.flag_container, False)
+        return simulation.simulate(n_steps, self.step_length, 10, self.flag_container, vis)
