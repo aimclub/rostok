@@ -162,6 +162,7 @@ class GraphGrammar(nx.DiGraph):
         """
 
         root_id = self.get_root_id()
+
         def sort_by_root_path(node_id):
             paths = self.get_sorted_root_based_paths()
             for path in paths:
@@ -171,6 +172,7 @@ class GraphGrammar(nx.DiGraph):
 
         def sort_by_root_distance(node_id):
             return len(nx.shortest_path(self, root_id, node_id))
+
         # after two sorts the nodes are sorted by distance to root and nodes
         # at the same distance are sorted by paths according to sorted root paths
         sorta = sorted(list_ids, key=sort_by_root_path)
@@ -355,6 +357,7 @@ class GraphGrammar(nx.DiGraph):
 
         def primary_key(path):
             return len(path)
+
         def secondaty_key(path):
             string_path = [self.get_node_by_id(x).label for x in path]
             return "".join(string_path)

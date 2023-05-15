@@ -1,8 +1,10 @@
 """ Module contains NodeVocabulary class."""
 
-from rostok.graph_grammar.node import ROOT, Node
 from typing import Optional
+
 from rostok.block_builder_api.block_blueprints import ALL_BLUEPRINT
+from rostok.graph_grammar.node import ROOT, Node
+
 
 class NodeVocabulary():
     """The class contains dictionary of nodes and methods to manipulate with it.

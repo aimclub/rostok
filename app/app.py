@@ -1,60 +1,59 @@
-import sys
 import time
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import mcts
-# imports from standard libs
-import networkx as nx
-# chrono imports
-import pychrono as chrono
-import rule_extention
-from control_optimisation import (create_grab_criterion_fun, create_traj_fun, get_object_to_grasp)
+import numpy as np
+from simple_designs import (get_three_link_one_finger_with_no_control,
+                            get_two_link_one_finger)
 
-from rostok.criterion.flags_simualtions import (FlagMaxTime, FlagNotContact, FlagSlipout)
-from rostok.graph_generators.mcts_helper import (make_mcts_step, prepare_mcts_state_and_helper)
+from rostok.criterion.criterion_calculation import (ForceCriterion,
+                                                    ObjectCOGCriterion,
+                                                    SimulationReward,
+                                                    TimeCriterion)
+from rostok.criterion.simulation_flags import (FlagContactTimeOut,
+                                               FlagFlyingApart, FlagSlipout)
+from rostok.graph_generators.mcts_helper import (make_mcts_step,
+                                                 prepare_mcts_state_and_helper)
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.trajectory_optimizer.control_optimizer import (ConfigRewardFunction, ControlOptimizer)
+from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
+from rostok.library.obj_grasp.objects import get_object_parametrized_sphere
+from rostok.library.rule_sets.ruleset_old_style import create_rules
+from rostok.simulation_chrono.simulation_scenario import ConstTorqueGrasp
+from rostok.trajectory_optimizer.control_optimizer import CounterWithOptimization
+from rostok.block_builder_chrono.block_builder_chrono_api import \
+    ChronoBlockCreatorInterface as creator
 
 
-def plot_graph(graph: GraphGrammar):
-    plt.figure()
-    nx.draw_networkx(graph,
-                     pos=nx.kamada_kawai_layout(graph, dim=2),
-                     node_size=800,
-                     labels={n: graph.nodes[n]["Node"].label for n in graph})
-    plt.show()
+rule_vocabul = create_rules()
+# construct a simulation manager
+simulation_control = ConstTorqueGrasp(0.005, 3)
+# add object to grasp
+simulation_control.grasp_object_callback = lambda :creator.create_environment_body(get_object_parametrized_sphere(0.2, 1))
+# create flags
+simulation_control.add_flag(FlagContactTimeOut(2))
+simulation_control.add_flag(FlagFlyingApart(10))
+simulation_control.add_flag(FlagSlipout(1.5))
+#create criterion manager
+simulation_rewarder = SimulationReward()
+#create criterions and add them to manager
+simulation_rewarder.add_criterion(TimeCriterion(3), 10.0)
+simulation_rewarder.add_criterion(ForceCriterion(), 5.0)
+simulation_rewarder.add_criterion(ObjectCOGCriterion(), 2.0)
+#create optimization manager
+control_optimizer = CounterWithOptimization(simulation_control, simulation_rewarder)
 
+# graph = get_two_link_one_finger()
 
-# %% Create extension rule vocabulary
-rule_vocabul, _ = rule_extention.init_extension_rules()
+# print(optimizer.count_reward(graph))
 
-# %% Create config optimizing control
+# print(get_joint_vector_from_graph(graph))
+# control = np.random.random(len(get_joint_vector_from_graph(graph)))
+# print(control)
+#data = {"initial_value": list(control)}
+#simulation_control.run_simulation(graph, data)
 
-# List of weights for each criterion (force, time, COG)
-WEIGHT = [5, 10, 2]
-
-# At least 20 iterations are needed for good results
-cfg = ConfigRewardFunction()
-cfg.bound = (-7, 7)
-cfg.iters = 20
-cfg.sim_config = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
-cfg.time_step = 0.005
-cfg.time_sim = 2
-cfg.flags = [FlagMaxTime(cfg.time_sim), FlagNotContact(1), FlagSlipout(0.5, 0.5)]
-"""Wraps function call"""
-
-criterion_callback = create_grab_criterion_fun(WEIGHT)
-traj_generator_fun = create_traj_fun(cfg.time_sim, cfg.time_step)
-
-cfg.criterion_callback = criterion_callback
-cfg.get_rgab_object_callback = get_object_to_grasp
-cfg.params_to_timesiries_callback = traj_generator_fun
-
-control_optimizer = ControlOptimizer(cfg)
-# %% Init mcts parameters
-
-# Hyperparameters mctss
+# Hyperparameters mcts
 base_iteration_limit = 50
 
 # Initialize MCTS
@@ -69,7 +68,6 @@ mcts_helper = graph_env.helper
 mcts_helper.report.non_terminal_rules_limit = max_numbers_rules
 mcts_helper.report.search_parameter = base_iteration_limit
 n_steps = 0
-#%% Run first algorithm
 start = time.time()
 # the constant that determines how we reduce the number of iterations in the MCTS search
 iteration_reduction_rate = 0.7
@@ -83,25 +81,3 @@ while not finish:
           f"reward: {mcts_helper.report.get_best_info()[1]}")
 ex = time.time() - start
 print(f"time :{ex}")
-# saving results of the search
-report = mcts_helper.report
-path = report.make_time_dependent_path()
-report.save()
-report.save_visuals()
-report.save_lists()
-report.save_means()
-# additions to the file
-with open(Path(path, "mcts_result.txt"), "a") as file:
-    gb_params = get_object_to_grasp().kwargs
-    original_stdout = sys.stdout
-    sys.stdout = file
-    print()
-    print("Object to grasp:", gb_params.get("shape"))
-    print("Object initial coordinats:", gb_params.get("pos"))
-    sys.stdout = original_stdout
-
-# visualisation in the end of the search
-best_graph, reward, best_control = mcts_helper.report.get_best_info()
-func_reward = control_optimizer.create_reward_function(best_graph)
-res = -func_reward(best_control, True)
-print("Best reward obtained in the MCTS search:", res)

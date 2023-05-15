@@ -1,12 +1,13 @@
 from copy import deepcopy
 
-from matplotlib import pyplot as plt
 import networkx as nx
+from matplotlib import pyplot as plt
+
 from rostok.graph_generators.graph_reward import Reward
 from rostok.graph_grammar.node import GraphGrammar, Rule
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
-from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
 from rostok.utils.states import RobotState
+from rostok.trajectory_optimizer.control_optimizer import GraphRewardCounter
 
 
 def rule_is_terminal(rule: Rule):
@@ -183,7 +184,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
     def __init__(self,
                  initilize_graph: GraphGrammar,
                  graph_vocabulary: RuleVocabulary,
-                 optimizer: ControlOptimizer,
+                 optimizer: GraphRewardCounter,
                  max_numbers_rules_non_terminal: int = 20):
         """Subclass graph environment on rule vocabulary instead rules and with real reward on
         simulation and control optimizing

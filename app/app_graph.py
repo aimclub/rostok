@@ -2,12 +2,12 @@ import time
 import matplotlib.pyplot as plt
 import mcts
 from pathlib import Path
-from rostok.simulation_chrono.basic_simulation import ConstTorqueGrasp
+from rostok.simulation_chrono.simulation_scenario import ConstTorqueGrasp
 from rostok.criterion.simulation_flags import FlagContactTimeOut, FlagFlyingApart, FlagSlipout
 from simple_designs import get_three_link_one_finger_with_no_control, get_two_link_one_finger
 from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
 from rostok.criterion.criterion_calculation import SimulationReward, TimeCriterion, ForceCriterion, ObjectCOGCriterion
-from rostok.trajectory_optimizer.control_optimizer import CounterWithOptimization
+from rostok.trajectory_optimizer.control_optimizer import CounterGraphOptimization
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_generators.mcts_helper import (make_mcts_step, prepare_mcts_state_and_helper)
 from rostok.library.rule_sets.ruleset_old_style_graph import create_rules
@@ -15,7 +15,7 @@ from rostok.library.obj_grasp.objects import get_object_parametrized_sphere
 from rostok.block_builder_chrono.block_builder_chrono_api import \
     ChronoBlockCreatorInterface as creator
 
-rule_vocabul, = create_rules()
+rule_vocabul, torque_dict = create_rules()
 # construct a simulation manager
 simulation_control = ConstTorqueGrasp(0.005, 3)
 # add object to grasp
@@ -28,11 +28,11 @@ simulation_control.add_flag(FlagSlipout(1.5))
 #create criterion manager
 simulation_rewarder = SimulationReward()
 #create criterions and add them to manager
-simulation_rewarder.add_criterion(TimeCriterion(), 10.0)
+simulation_rewarder.add_criterion(TimeCriterion(3), 10.0)
 simulation_rewarder.add_criterion(ForceCriterion(), 5.0)
 simulation_rewarder.add_criterion(ObjectCOGCriterion(), 2.0)
 #create optimization manager
-control_optimizer = CounterWithOptimization(simulation_control, simulation_rewarder)
+control_optimizer = CounterGraphOptimization(simulation_control, simulation_rewarder, torque_dict)
 
 # graph = get_two_link_one_finger()
 

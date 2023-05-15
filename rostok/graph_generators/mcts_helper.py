@@ -7,14 +7,12 @@ import matplotlib.pyplot as plt
 
 from rostok.graph_generators.graph_environment import \
     GraphVocabularyEnvironment
-from rostok.graph_grammar.graph_utils import (plot_graph_reward,
-                                              save_graph_plot_reward)
+from rostok.graph_grammar.graph_utils import (plot_graph_reward, save_graph_plot_reward)
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
-from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer, CounterWithOptimization
+from rostok.trajectory_optimizer.control_optimizer import GraphRewardCounter
 from rostok.utils.pickle_save import Saveable
-from rostok.utils.states import (MCTSOptimizedState, OptimizedGraph,
-                                 OptimizedState, RobotState)
+from rostok.utils.states import (MCTSOptimizedState, OptimizedGraph, OptimizedState, RobotState)
 
 
 def convert_control_to_list(control):
@@ -175,7 +173,9 @@ class MCTSSaveable(Saveable):
 
         plt.figure()
         plt.plot(mean_rewards)
-        plt.title(f'Iterations: {self.search_parameter}. Non-terminal rules: {self.non_terminal_rules_limit}')
+        plt.title(
+            f'Iterations: {self.search_parameter}. Non-terminal rules: {self.non_terminal_rules_limit}'
+        )
         plt.xlabel('Steps')
         plt.ylabel('Rewards')
         plt.savefig(Path(self.path, "step_means.png"))
@@ -196,10 +196,11 @@ class MCTSSaveable(Saveable):
             print('control:', *self.best_simulated_state.control)
             print('reward:', self.best_simulated_state.reward)
             print()
-            print('max number of non-terminal rules:', self.non_terminal_rules_limit, 
-            'search parameter:', self.search_parameter)
+            print('max number of non-terminal rules:', self.non_terminal_rules_limit,
+                  'search parameter:', self.search_parameter)
             print()
-            print("Number of unique mechanisms tested in current MCTS run: ", len(self.seen_graphs.graph_list))
+            print("Number of unique mechanisms tested in current MCTS run: ",
+                  len(self.seen_graphs.graph_list))
             print("Number of states ", len(self.seen_states.state_list))
             sys.stdout = original_stdout
 
@@ -238,7 +239,7 @@ class MCTSHelper():
 
     def __init__(self,
                  rule_vocabulary: RuleVocabulary,
-                 optimizer: ControlOptimizer,
+                 optimizer: GraphRewardCounter,
                  path=Path("./results")) -> None:
         """Initialize empty instance of the MCTSHelper.
 
@@ -310,7 +311,7 @@ class MCTSGraphEnvironment(GraphVocabularyEnvironment):
                  initial_graph: GraphGrammar,
                  helper: MCTSHelper,
                  graph_vocabulary: RuleVocabulary,
-                 optimizer: CounterWithOptimization,
+                 optimizer: GraphRewardCounter,
                  max_numbers_rules_non_terminal: int = 20):
         """Create state from the graph
 
@@ -360,7 +361,7 @@ class MCTSGraphEnvironment(GraphVocabularyEnvironment):
 
 def prepare_mcts_state_and_helper(graph: GraphGrammar,
                                   rule_vocabulary: RuleVocabulary,
-                                  optimizer: CounterWithOptimization,
+                                  optimizer: GraphRewardCounter,
                                   num_of_rules: int,
                                   path: Path = Path("./results")):
     """Set the MCTSHelper and initial MCTSGraphEnvironment
