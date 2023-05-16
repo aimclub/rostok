@@ -28,11 +28,9 @@ from rostok.block_builder_chrono.block_builder_chrono_api import \
 from mcts_run_setup import config_with_standard
 
 rule_vocabul = create_rules()
-# construct a simulation manager
-simulation_control = ConstTorqueGrasp(0.005, 3)
 # add object to grasp
 grasp_object_blueprint = get_object_parametrized_sphere(0.2, 1)
-control_optimizer = config_with_standard(grasp_object_blueprint)
+control_optimizer= config_with_standard(grasp_object_blueprint)
 # Initialize MCTS
 base_iteration_limit = hp.BASE_ITERATION_LIMIT
 max_numbers_rules = hp.MAX_NUMBER_RULES
@@ -71,17 +69,16 @@ report.save_means()
 
 # additions to the file
 with open(Path(path, "mcts_result.txt"), "a") as file:
-    gb_params = grasp_object_blueprint.kwargs
     original_stdout = sys.stdout
     sys.stdout = file
     print()
-    print("Object to grasp:", gb_params.get("shape"))
-    print("Object initial coordinats:", gb_params.get("pos"))
+    print("Object to grasp:", grasp_object_blueprint.shape)
+    print("Object initial coordinats:", grasp_object_blueprint.pos)
     print("Time optimization:", ex)
     print("MAX_NUMBER_RULES:", hp.MAX_NUMBER_RULES)
     print("BASE_ITERATION_LIMIT:", hp.BASE_ITERATION_LIMIT)
     print("ITERATION_REDUCTION_TIME:", hp.ITERATION_REDUCTION_TIME)
-    print("CRITERION_WEIGHTS:", hp.CRITERION_WEIGHTS)
+    print("CRITERION_WEIGHTS:", [hp.TIME_CRITERION_WEIGHT, hp.FORCE_CRITERION_WEIGHT, hp.OBJECT_COG_CRITERION_WEIGHT])
     print("CONTROL_OPTIMIZATION_ITERATION:", hp.CONTROL_OPTIMIZATION_ITERATION)
     print("TIME_STEP_SIMULATION:", hp.TIME_STEP_SIMULATION)
     print("TIME_SIMULATION:", hp.TIME_SIMULATION)
@@ -89,8 +86,11 @@ with open(Path(path, "mcts_result.txt"), "a") as file:
     print("FLAG_TIME_SLIPOUT:", hp.FLAG_TIME_SLIPOUT)
     sys.stdout = original_stdout
 
+simulation_rewarder = control_optimizer.rewarder
+simulation_manager = control_optimizer.simulation_control
 # visualisation in the end of the search
 best_graph, reward, best_control = mcts_helper.report.get_best_info()
-func_reward = control_optimizer.create_reward_function(best_graph)
-res = -func_reward(best_control, True)
+data = {"initial_value": best_control}
+simulation_output = simulation_manager.run_simulation(best_graph, data, True)
+res = - simulation_rewarder.calculate_reward(simulation_output)
 print("Best reward obtained in the MCTS search:", res)

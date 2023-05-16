@@ -1,6 +1,6 @@
 from abc import ABC
 from typing import Dict, List, Optional, Tuple, Union
-
+import pychrono.core as chrono
 import numpy as np
 from scipy.spatial import distance
 
@@ -16,12 +16,15 @@ class ForceCriterion(Criterion):
 
     def calculate_reward(self, simulation_output):
         env_data = simulation_output[1]
-        body_contacts = env_data.get_data("contacts")[
-            0]  # List[Tuple[step_n,List[Tuple[Coordinates, Force]]]]
+        # List[Tuple[step_n,List[Tuple[Coordinates, Force]]]]
+        body_contacts = env_data.get_data("forces")[0]  
         force_modules = []
         for data in body_contacts:
             if len(data[1]) > 0:
-                total_force = sum([x[1] for x in data[1]])
+                total_force = chrono.ChVectorD()
+                for force in data[1]:
+                    total_force+=force[1]
+
                 force_modules.append(total_force.Length())
 
         if len(force_modules) > 0:
@@ -36,7 +39,7 @@ class TimeCriterion(Criterion):
 
     def calculate_reward(self, simulation_output):
         if (simulation_output[0]) > 0:
-            return (simulation_output[0])**2 / self.max_simulation_time
+            return (simulation_output[0])**2 / (self.max_simulation_time)**2
         else:
             return 0
 
@@ -77,6 +80,6 @@ class SimulationReward:
         for criterion in self.criteria:
             partial_rewards.append(criterion.calculate_reward(simulation_output))
 
-        #print(partial_rewards)
+        print([round(x,3) for x in  partial_rewards])
         total_reward = -sum([a * b for a, b in zip(partial_rewards, self.weights)])
-        return total_reward
+        return round(total_reward,3)

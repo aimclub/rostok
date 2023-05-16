@@ -102,7 +102,7 @@ def get_obj_cyl_pos_parametrize(yaw=0, pitch=0, roll=0):
     return obj
 
 
-def get_object_parametrized_sphere(r, h):
+def get_object_parametrized_sphere(r, h) -> EnvironmentBodyBlueprint:
     """Medium task"""
     matich = DefaultChronoMaterial()
     matich.Friction = 0.65

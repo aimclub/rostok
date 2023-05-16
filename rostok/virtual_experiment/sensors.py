@@ -112,35 +112,42 @@ class Sensor:
             slave_body:chrono.ChBodyFrame = joint.joint.GetBody1()
             angle = (master_body.GetInverse()*slave_body).GetRotAngle()
             output.append((idx, round(angle, 3)))
+
         return output
 
     def get_forces(self):
         output = []
         contacts = self.contact_reporter.get_contacts()
         for idx in self.body_map_ordered:
-            output.append((idx, contacts[idx]))
+            contacts_idx = contacts[idx]
+            if len(contacts_idx)>0:
+                output.append((idx, contacts_idx))
+
         return output
 
     def get_amount_contacts(self):
         output = []
         contacts = self.contact_reporter.get_contacts()
         for idx in self.body_map_ordered:
-            output.append((idx, len(contacts[idx])))
+            contacts_idx = contacts[idx]
+            if len(contacts_idx)>0:
+                output.append((idx, len(contacts_idx)))
+
+        return output
 
     def get_outer_force_center(self):
         output = []
         contacts = self.contact_reporter.get_outer_contacts()
         for idx in self.body_map_ordered:
-            if len(contacts[idx])>0:
-                body_contact_coordinates = [x[0] for x in contacts[idx]]
+            contacts_idx = contacts[idx]
+            if len(contacts_idx)>0:
+                body_contact_coordinates = [x[0] for x in contacts_idx]
                 body_contact_coordinates_sum = chrono.ChVectorD(0,0,0)
                 for contact in body_contact_coordinates:
                     body_contact_coordinates_sum+=contact
 
-                body_contact_coordinates_sum = body_contact_coordinates_sum*(1/len(contacts[idx]))
+                body_contact_coordinates_sum = body_contact_coordinates_sum*(1/len(contacts_idx))
                 output.append((idx, [body_contact_coordinates_sum.x, body_contact_coordinates_sum.y, body_contact_coordinates_sum.z] ))
-            else:
-                output.append((idx, None))
 
         return output
     
@@ -151,110 +158,6 @@ class Sensor:
             output.append((idx, [body.GetPos().x, body.GetPos().y, body.GetPos().z]))
 
         return output
-
-    def std_contact_forces(self, index: int = -1):
-        """Sensor of standard deviation of contact forces that affect on object
-
-        Args:
-            contact_reporter(ContactReporter): the reset ContactReporter object 
-        Returns:
-            dict[int, float]: Dictionary which keys are id object and values of standard deviation
-              of contact forces
-        """
-        contacts = self.contact_reporter.get_contacts()
-        list_n_forces = []
-        forces = contacts[index]
-        for force in forces:
-            list_n_forces.append(force[1].x)
-        if len(list_n_forces) > 0:
-            contact_force_obj = np.std(list_n_forces)
-            return dict([(index, contact_force_obj)])
-        else:
-            return None
-
-    def amount_contact_forces(self, index: int = -1):
-        """The total amount of contact forces
-
-        Args:s
-            in_robot (Robot): Robot to measure sum of contact forces
-
-        Returns:
-            dict[int, float]: Dictionary which keys are id object and values of standard
-            deviation of contact forces
-        """
-        contacts = self.contact_reporter.get_contacts()
-        forces = contacts[index]
-        if np.size(forces) > 0:
-            amount_contact_force_obj = np.size(forces)
-            return dict([(index, amount_contact_force_obj)])
-        else:
-            return None
-
-    def amount_outer_contact_forces(self, index: int = -1):
-        """The total amount of contact forces
-
-        Args:s
-            in_robot (Robot): Robot to measure sum of contact forces
-
-        Returns:
-            dict[int, float]: Dictionary which keys are id object and values of standard
-            deviation of contact forces
-        """
-        contacts = self.contact_reporter.get_outer_contacts()
-        forces = contacts[index]
-        if np.size(forces) > 0:
-            amount_contact_force_obj = np.size(forces)
-            return dict([(index, amount_contact_force_obj)])
-        else:
-            return None
-
-    def abs_coord_COG(self, index: int = -1):
-        """Sensor of absolute coordinates of grasp object
-        Args:
-            obj (ChronoBodyEnv): Grasp object
-        Returns:
-            dict[int, chrono.ChVectorD]: Dictionary which keys are id of object 
-            and value of object COG in XYZ format
-        """
-        for idx, body in self.body_map_ordered.items():
-            if idx == index:
-                body = body.body
-                return dict([(index, [body.GetPos().x, body.GetPos().y, body.GetPos().z])])
-        return None
-
-    def contact_coord(self, index: int = -1):
-        """Sensor of COG of contact points
-        Args:
-            obj (ChronoBodyEnv): Grasp object
-        Returns:
-            dict[int, float]: Dictionary which keys are id of object and values of COG of contact point volume in XYZ format
-        """
-
-        contacts = self.contact_reporter.get_contacts()
-        forces = contacts[index]
-        list_c_coord = []
-        for force in forces:
-            list_c_coord.append(force[0])
-        if np.size(list_c_coord) > 0:
-            coordinates = []
-            coord_x = 0
-            coord_y = 0
-            coord_z = 0
-            for coord in list_c_coord:
-                coord_x += coord.x
-                coord_y += coord.y
-                coord_z += coord.z
-            coordinates.append([
-                coord_x / len(list_c_coord), coord_y / len(list_c_coord),
-                coord_z / len(list_c_coord)
-            ])
-            return dict([(index, [
-                coord_x / len(list_c_coord), coord_y / len(list_c_coord),
-                coord_z / len(list_c_coord)
-            ])])
-        else:
-            return None
-
 
 class DataStorage():
     """Class aggregates data from all steps of the simulation."""

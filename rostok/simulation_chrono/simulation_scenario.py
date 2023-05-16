@@ -27,7 +27,7 @@ class ConstTorqueGrasp(ParametrizedSimulation):
 
     def reset_flags(self):
         for flag in self.flag_container:
-            flag.state = False
+            flag.reset_flag()
 
     def run_simulation(self, graph: GraphGrammar, data, vis = False):
         self.reset_flags()

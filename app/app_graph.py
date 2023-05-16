@@ -1,70 +1,42 @@
-import time
 import sys
+import time
+from pathlib import Path
+
+import hyperparameters as hp
 import matplotlib.pyplot as plt
 import mcts
-import hyperparameters as hp
-from pathlib import Path
-from rostok.simulation_chrono.simulation_scenario import ConstTorqueGrasp
-from rostok.criterion.simulation_flags import FlagContactTimeOut, FlagFlyingApart, FlagSlipout
-from simple_designs import get_three_link_one_finger_with_no_control, get_two_link_one_finger
-from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
-from rostok.criterion.criterion_calculation import SimulationReward, TimeCriterion, ForceCriterion, ObjectCOGCriterion
-from rostok.trajectory_optimizer.control_optimizer import CounterGraphOptimization
-from rostok.graph_grammar.node import GraphGrammar
-from rostok.graph_generators.mcts_helper import (make_mcts_step, prepare_mcts_state_and_helper)
-from rostok.library.rule_sets.ruleset_old_style_graph import create_rules
-from rostok.library.obj_grasp.objects import get_object_parametrized_sphere
-from rostok.block_builder_chrono.block_builder_chrono_api import \
-    ChronoBlockCreatorInterface as creator
+from mcts_run_setup import config_with_standard_graph
 
+from rostok.graph_generators.mcts_helper import (make_mcts_step, prepare_mcts_state_and_helper)
+from rostok.graph_grammar.node import GraphGrammar
+from rostok.library.obj_grasp.objects import get_object_parametrized_sphere
+from rostok.library.rule_sets.ruleset_old_style_graph import create_rules
 
 rule_vocabul, torque_dict = create_rules()
 # construct a simulation manager
-simulation_control = ConstTorqueGrasp(0.005, 3)
+
 # add object to grasp
-grasp_object_blueprint = get_object_parametrized_sphere(0.2, 1)
-simulation_control.grasp_object_callback = lambda :creator.create_environment_body(grasp_object_blueprint)
-# create flags
-simulation_control.add_flag(FlagContactTimeOut(2))
-simulation_control.add_flag(FlagFlyingApart(10))
-simulation_control.add_flag(FlagSlipout(1.5))
+grasp_object_blueprint = get_object_parametrized_sphere(0.4, 0.7)
+
 #create criterion manager
-simulation_rewarder = SimulationReward()
-#create criterions and add them to manager
-simulation_rewarder.add_criterion(TimeCriterion(3), 10.0)
-simulation_rewarder.add_criterion(ForceCriterion(), 5.0)
-simulation_rewarder.add_criterion(ObjectCOGCriterion(), 2.0)
-#create optimization manager
-control_optimizer = CounterGraphOptimization(simulation_control, simulation_rewarder, torque_dict)
 
-# graph = get_two_link_one_finger()
-
-# print(optimizer.count_reward(graph))
-
-# print(get_joint_vector_from_graph(graph))
-# control = np.random.random(len(get_joint_vector_from_graph(graph)))
-# print(control)
-#data = {"initial_value": list(control)}
-#simulation_control.run_simulation(graph, data)
-
-# Hyperparameters mcts
-base_iteration_limit = 50
-
+control_optimizer = config_with_standard_graph(grasp_object_blueprint, torque_dict)
 # Initialize MCTS
-finish = False
-
+base_iteration_limit = hp.BASE_ITERATION_LIMIT
+max_numbers_rules = hp.MAX_NUMBER_RULES
 initial_graph = GraphGrammar()
-max_numbers_rules = 20
-# Create graph environments for algorithm (not gym)
 graph_env = prepare_mcts_state_and_helper(initial_graph, rule_vocabul, control_optimizer,
                                           max_numbers_rules, Path("./results"))
 mcts_helper = graph_env.helper
 mcts_helper.report.non_terminal_rules_limit = max_numbers_rules
 mcts_helper.report.search_parameter = base_iteration_limit
-n_steps = 0
-start = time.time()
+
 # the constant that determines how we reduce the number of iterations in the MCTS search
-iteration_reduction_rate = 0.7
+iteration_reduction_rate = hp.ITERATION_REDUCTION_TIME
+
+start = time.time()
+finish = False
+n_steps = 0
 while not finish:
     iteration_limit = base_iteration_limit - int(graph_env.counter_action / max_numbers_rules *
                                                  (base_iteration_limit * iteration_reduction_rate))
@@ -83,30 +55,31 @@ report.save_visuals()
 report.save_lists()
 report.save_means()
 
-
 # additions to the file
 with open(Path(path, "mcts_result.txt"), "a") as file:
-    gb_params = grasp_object_blueprint.kwargs
     original_stdout = sys.stdout
     sys.stdout = file
     print()
-    print("Object to grasp:", gb_params.get("shape"))
-    print("Object initial coordinats:", gb_params.get("pos"))
+    print("Object to grasp:", grasp_object_blueprint.shape)
+    print("Object initial coordinats:", grasp_object_blueprint.pos)
     print("Time optimization:", ex)
     print("MAX_NUMBER_RULES:", hp.MAX_NUMBER_RULES)
     print("BASE_ITERATION_LIMIT:", hp.BASE_ITERATION_LIMIT)
     print("ITERATION_REDUCTION_TIME:", hp.ITERATION_REDUCTION_TIME)
-    print("CRITERION_WEIGHTS:", hp.CRITERION_WEIGHTS)
+    print("CRITERION_WEIGHTS:",
+          [hp.TIME_CRITERION_WEIGHT, hp.FORCE_CRITERION_WEIGHT, hp.OBJECT_COG_CRITERION_WEIGHT])
     print("CONTROL_OPTIMIZATION_ITERATION:", hp.CONTROL_OPTIMIZATION_ITERATION)
     print("TIME_STEP_SIMULATION:", hp.TIME_STEP_SIMULATION)
     print("TIME_SIMULATION:", hp.TIME_SIMULATION)
     print("FLAG_TIME_NO_CONTACT:", hp.FLAG_TIME_NO_CONTACT)
     print("FLAG_TIME_SLIPOUT:", hp.FLAG_TIME_SLIPOUT)
-    sys.stdout = original_stdout   
+    sys.stdout = original_stdout
 
+simulation_rewarder = control_optimizer.rewarder
+simulation_manager = control_optimizer.simulation_control
 # visualisation in the end of the search
 best_graph, reward, best_control = mcts_helper.report.get_best_info()
 data = {"initial_value": best_control}
-simulation_output = simulation_control.run_simulation(best_graph, data, True)
-res = - simulation_rewarder.calculate_reward(simulation_output)
+simulation_output = simulation_manager.run_simulation(best_graph, data, True)
+res = -simulation_rewarder.calculate_reward(simulation_output)
 print("Best reward obtained in the MCTS search:", res)

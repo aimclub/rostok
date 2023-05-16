@@ -117,7 +117,7 @@ class RobotSimulationChrono():
     def initialize(self):
 
         self.env_sensor: Sensor = Sensor(self.active_objects_ordered, {})
-        self.env_data.add_data_type("contacts", self.active_objects_ordered)
+        self.env_data.add_data_type("n_contacts", self.active_objects_ordered)
         self.env_data.add_data_type("forces", self.active_objects_ordered)
         self.env_data.add_data_type("COG", self.active_objects_ordered)
         self.env_data.add_data_type("force_center", self.active_objects_ordered)
@@ -142,7 +142,7 @@ class RobotSimulationChrono():
         self.env_data.add_data("force_center", self.env_sensor.get_outer_force_center(), step_n)
 
     def get_current_data(self):
-        return None
+        return self.env_data
 
     def simulate_step(self, step_length: float, current_time, step_n):
         self.chrono_system.Update()
@@ -181,19 +181,24 @@ class RobotSimulationChrono():
             vis.AddTypicalLights()
             vis.EnableCollisionShapeDrawing(True)
 
+        stop_flag = False
         for i in range(number_of_steps):
-            self.simulate_step(step_length, self.chrono_system.GetChTime(), i)
+            current_time = self.chrono_system.GetChTime()
+            self.simulate_step(step_length, current_time, i)
             if vis:
                 vis.Run()
                 if i % frame_update == 0:
                     vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
                     vis.Render()
                     vis.EndScene()
+            for flag in flag_container:
+                flag.update_state(current_time, self.robot.sensor, self.env_sensor)
 
             if flag_container:
-                for flag in flag_container:
-                    if flag.state:
-                        break
+                stop_flag = sum([flag.state for flag in flag_container])
+
+            if stop_flag:
+                break
 
         if visualize:
             vis.GetDevice().closeDevice()

@@ -121,8 +121,8 @@ class MCTSSaveable(Saveable):
         self.seen_graphs: OptimizedGraphReport = OptimizedGraphReport(path)
         self.seen_states: OptimizedMCTSStateReport = OptimizedMCTSStateReport(path)
         self.main_state: RobotState = RobotState(rules=rule_vocabulary)
-        self.main_simulated_state = OptimizedState(self.main_state, 0, None)
-        self.best_simulated_state = OptimizedState(self.main_state, 0, None)
+        self.main_simulated_state = OptimizedState(self.main_state, 0, [])
+        self.best_simulated_state = OptimizedState(self.main_state, 0, [])
         self.non_terminal_rules_limit: int = 0
         self.search_parameter = 0
 
@@ -249,7 +249,7 @@ class MCTSHelper():
             path (Path): path to save the results of the MCTS run
         """
         self.actions: RuleVocabulary = rule_vocabulary
-        self.optimizer: ControlOptimizer = optimizer
+        self.optimizer: GraphRewardCounter = optimizer
         self.step_counter: int = 0
         self.report: MCTSSaveable = MCTSSaveable(rule_vocabulary, path)
 

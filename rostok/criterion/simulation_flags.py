@@ -1,12 +1,15 @@
 from abc import ABC
 
 import numpy as np
-
-from rostok.virtual_experiment.sensors import Sensor
+import pychrono.core as chrono
+from rostok.virtual_experiment.sensors import Sensor, DataStorage
 
 
 class FlagStopSimualtions(ABC):
     def __init__(self):
+        self.state = False
+
+    def reset_flag(self):
         self.state = False
 
     def update_state(self, current_time,robot_data, env_data):
@@ -32,27 +35,33 @@ class FlagSlipout(FlagStopSimualtions):
         self.reference_time = ref_time
 
     def update_state(self, current_time, robot_data:Sensor, env_data:Sensor): 
-        contact = env_data.amount_contact_forces()[0][1] > 0
+        contact = len(env_data.get_amount_contacts()) > 0
         if contact:
             self.time_last_contact = current_time
             self.state = False
-            return
         else:
             if self.time_last_contact is None:
-                return False
+                self.state = False
             else: 
                 if current_time - self.time_last_contact > self.reference_time:
-                    self.state = False
-                else:
                     self.state = True
+                else:
+                    self.state = False
 
 class FlagContactTimeOut(FlagStopSimualtions):
     def __init__(self, ref_time):
         super().__init__()
         self.reference_time = ref_time
+        self.contact = False
+
+    def reset_flag(self):
+        super().reset_flag()
+        self.contact = False
 
     def update_state(self, current_time, robot_data:Sensor, env_data:Sensor): 
-        contact = env_data.amount_contact_forces()[0][1] > 0
-        if not (contact or self.state):
+        if not self.contact:
+            self.contact = len(env_data.get_amount_contacts()) > 0
+
+        if not (self.contact or self.state):
             if current_time > self.reference_time:
                 self.state = True

@@ -125,7 +125,7 @@ class CounterGraphOptimization(GraphRewardCounter):
         control_sequence = []
         for idx in joints:
             node = graph.get_node_by_id(idx)
-            control_sequence.append(self.torque_dict[node])
+            control_sequence.append(self.torque_dict[node]*0.1)
         return control_sequence
 
     def count_reward(self, graph: GraphGrammar):
