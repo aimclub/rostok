@@ -86,7 +86,7 @@ class LateForceCriterion(Criterion):
                     counter+=1
 
         return counter/ (self.total_steps-step_cutoff)
-    
+
 class LateForceAmountCriterion(Criterion):
     def __init__(self, total_steps, cut_off):
         self.total_steps = total_steps
@@ -103,7 +103,7 @@ class LateForceAmountCriterion(Criterion):
             else:
                 counter += data[1]
 
-        return counter/ (self.total_steps-step_cutoff)
+        return counter/(self.total_steps-step_cutoff)
 
 
 class SimulationReward:
