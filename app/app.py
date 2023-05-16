@@ -25,54 +25,31 @@ from rostok.trajectory_optimizer.control_optimizer import CounterWithOptimizatio
 from rostok.block_builder_chrono.block_builder_chrono_api import \
     ChronoBlockCreatorInterface as creator
 
+from mcts_run_setup import config_with_standard
 
 rule_vocabul = create_rules()
 # construct a simulation manager
 simulation_control = ConstTorqueGrasp(0.005, 3)
 # add object to grasp
 grasp_object_blueprint = get_object_parametrized_sphere(0.2, 1)
-simulation_control.grasp_object_callback = lambda :creator.create_environment_body(grasp_object_blueprint)
-# create flags
-simulation_control.add_flag(FlagContactTimeOut(2))
-simulation_control.add_flag(FlagFlyingApart(10))
-simulation_control.add_flag(FlagSlipout(1.5))
-#create criterion manager
-simulation_rewarder = SimulationReward()
-#create criterions and add them to manager
-simulation_rewarder.add_criterion(TimeCriterion(3), 10.0)
-simulation_rewarder.add_criterion(ForceCriterion(), 5.0)
-simulation_rewarder.add_criterion(ObjectCOGCriterion(), 2.0)
-#create optimization manager
-control_optimizer = CounterWithOptimization(simulation_control, simulation_rewarder)
-
-# graph = get_two_link_one_finger()
-
-# print(optimizer.count_reward(graph))
-
-# print(get_joint_vector_from_graph(graph))
-# control = np.random.random(len(get_joint_vector_from_graph(graph)))
-# print(control)
-#data = {"initial_value": list(control)}
-#simulation_control.run_simulation(graph, data)
-
-# Hyperparameters mcts
-base_iteration_limit = 50
-
+control_optimizer = config_with_standard(grasp_object_blueprint)
 # Initialize MCTS
-finish = False
-
+base_iteration_limit = hp.BASE_ITERATION_LIMIT
+max_numbers_rules = hp.MAX_NUMBER_RULES
 initial_graph = GraphGrammar()
-max_numbers_rules = 20
-# Create graph environments for algorithm (not gym)
 graph_env = prepare_mcts_state_and_helper(initial_graph, rule_vocabul, control_optimizer,
                                           max_numbers_rules, Path("./results"))
 mcts_helper = graph_env.helper
 mcts_helper.report.non_terminal_rules_limit = max_numbers_rules
 mcts_helper.report.search_parameter = base_iteration_limit
-n_steps = 0
-start = time.time()
+
 # the constant that determines how we reduce the number of iterations in the MCTS search
-iteration_reduction_rate = 0.7
+iteration_reduction_rate = hp.ITERATION_REDUCTION_TIME
+
+start = time.time()
+finish = False
+n_steps = 0
+
 while not finish:
     iteration_limit = base_iteration_limit - int(graph_env.counter_action / max_numbers_rules *
                                                  (base_iteration_limit * iteration_reduction_rate))
