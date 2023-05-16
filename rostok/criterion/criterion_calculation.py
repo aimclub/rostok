@@ -64,6 +64,47 @@ class ObjectCOGCriterion(Criterion):
 
         return cog_crit
 
+class LateForceCriterion(Criterion):
+    def __init__(self, total_steps, cut_off, force_threshold):
+        self.total_steps = total_steps
+        self.cut_off = cut_off
+        self.force_threshold = force_threshold
+
+    def calculate_reward(self, simulation_output):
+        env_data = simulation_output[1]
+        body_contacts = env_data.get_data("forces")[0]
+        step_cutoff = int(self.total_steps * self.cut_off) 
+        counter = 0
+        for data in body_contacts:
+            if data[0] < step_cutoff:
+                continue
+            else:
+                total_force_module = 0
+                for contact in data[1]:
+                    total_force_module+=contact[1].Length()
+                if total_force_module > self.force_threshold:
+                    counter+=1
+
+        return counter/ (self.total_steps-step_cutoff)
+    
+class LateForceAmountCriterion(Criterion):
+    def __init__(self, total_steps, cut_off):
+        self.total_steps = total_steps
+        self.cut_off = cut_off
+
+    def calculate_reward(self, simulation_output):
+        env_data = simulation_output[1]
+        body_contacts = env_data.get_data("n_contacts")[0]
+        step_cutoff = int(self.total_steps * self.cut_off) 
+        counter = 0
+        for data in body_contacts:
+            if data[0] < step_cutoff:
+                continue
+            else:
+                counter += data[1]
+
+        return counter/ (self.total_steps-step_cutoff)
+
 
 class SimulationReward:
 

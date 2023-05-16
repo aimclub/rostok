@@ -1,14 +1,17 @@
 import hyperparameters as hp
-from rostok.simulation_chrono.simulation_scenario import ConstTorqueGrasp
+
 from rostok.block_builder_chrono.block_builder_chrono_api import \
     ChronoBlockCreatorInterface as creator
-from rostok.criterion.simulation_flags import (FlagContactTimeOut,
-                                               FlagFlyingApart, FlagSlipout)
 from rostok.criterion.criterion_calculation import (ForceCriterion,
                                                     ObjectCOGCriterion,
                                                     SimulationReward,
                                                     TimeCriterion)
-from rostok.trajectory_optimizer.control_optimizer import CounterWithOptimization, CounterWithOptimizationDirect,CounterGraphOptimization
+from rostok.criterion.simulation_flags import (FlagContactTimeOut,
+                                               FlagFlyingApart, FlagSlipout)
+from rostok.simulation_chrono.simulation_scenario import ConstTorqueGrasp
+from rostok.trajectory_optimizer.control_optimizer import (
+    CounterGraphOptimization, CounterWithOptimization,
+    CounterWithOptimizationDirect)
 
 
 def config_with_standard(grasp_object_blueprint):
