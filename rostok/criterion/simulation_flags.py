@@ -12,19 +12,20 @@ class FlagStopSimualtions(ABC):
     def reset_flag(self):
         self.state = False
 
-    def update_state(self, current_time,robot_data, env_data):
+    def update_state(self, current_time, robot_data, env_data):
         pass
 
-class FlagFlyingApart(FlagStopSimualtions): 
+class FlagFlyingApart(FlagStopSimualtions):
     def __init__(self, max_distance:float):
         super().__init__()
         self.max_distance = max_distance
 
     def update_state(self, current_time, robot_data:Sensor, env_data:Sensor):
-        base_position = robot_data.get_body_trajectory_point()[0][1]
-        for block in robot_data.get_body_trajectory_point():
-            position = block[1]
-            if sum((np.array(base_position) - np.array(position))**2) > self.max_distance:
+        trajectory_points = robot_data.get_body_trajectory_point()
+        base_position = trajectory_points[next(iter(trajectory_points))]
+        for block in trajectory_points.values():
+            position = block
+            if np.linalg.norm(np.array(base_position) - np.array(position)) > self.max_distance:
                 self.state = True
                 break
 

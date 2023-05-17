@@ -98,69 +98,69 @@ class Sensor:
         system.GetContactContainer().ReportAllContacts(self.contact_reporter)
 
     def get_body_trajectory_point(self):
-        output = []
+        output = {}
         for idx, body in self.body_map_ordered.items():
-            output.append((idx, [
+            output[idx]=[
                 round(body.body.GetPos().x, 3),
                 round(body.body.GetPos().y, 3),
                 round(body.body.GetPos().z, 3)
-            ]))
+            ]
         return output
 
     def get_joint_trajectory_point(self)->List[Any]:
-        output = []
+        output = {}
         for idx, joint in self.joint_map_ordered.items():
             master_body:chrono.ChBodyFrame = joint.joint.GetBody2()
             slave_body:chrono.ChBodyFrame = joint.joint.GetBody1()
             angle = (master_body.GetInverse()*slave_body).GetRotAngle()
-            output.append((idx, round(angle, 3)))
+            output[idx] = round(angle, 3)
 
         return output
 
     def get_forces(self):
-        output = []
+        output = {}
         contacts = self.contact_reporter.get_contacts()
         for idx in self.body_map_ordered:
             contacts_idx = contacts[idx]
             if len(contacts_idx)>0:
-                output.append((idx, contacts_idx))
+                output[idx] = contacts_idx
             else:
-                output.append((idx, []))
+                output[idx]= []
 
         return output
 
     def get_amount_contacts(self):
-        output = []
+        output = {}
         contacts = self.contact_reporter.get_contacts()
         for idx in self.body_map_ordered:
             contacts_idx = contacts[idx]
-            output.append((idx, len(contacts_idx)))
+            output[idx] = len(contacts_idx)
 
         return output
 
     def get_outer_force_center(self):
-        output = []
+        output = {}
         contacts = self.contact_reporter.get_outer_contacts()
         for idx in self.body_map_ordered:
             contacts_idx = contacts[idx]
             if len(contacts_idx)>0:
                 body_contact_coordinates = [x[0] for x in contacts_idx]
-                body_contact_coordinates_sum = chrono.ChVectorD(0,0,0)
+                body_contact_coordinates_sum = np.zeros(3)
                 for contact in body_contact_coordinates:
-                    body_contact_coordinates_sum+=contact
+                    body_contact_coordinates_sum+=np.array(contact)
 
                 body_contact_coordinates_sum = body_contact_coordinates_sum*(1/len(contacts_idx))
-                output.append((idx, [body_contact_coordinates_sum.x, body_contact_coordinates_sum.y, body_contact_coordinates_sum.z] ))
+                output[idx] = list(body_contact_coordinates_sum)
             else:
-                output.append((idx, None))
+                output[idx] = None
 
         return output
 
     def get_COG(self):
-        output = []
+        output = {}
         for idx, body in self.body_map_ordered.items():
             body = body.body
-            output.append((idx, [body.GetPos().x, body.GetPos().y, body.GetPos().z]))
+            output[idx] = [body.GetPos().x, body.GetPos().y, body.GetPos().z]
 
         return output
 
@@ -173,17 +173,19 @@ class DataStorage():
     def add_data_type(self, key: str, object_map, step_number, starting_values = None):
         empty_dict:Dict[int, np.NDArray] = {}
         for idx in object_map:
-            empty_dict[idx] = np.empty(shape=(step_number,))
-            empty_dict[idx].fill(np.nan)
+            empty_dict[idx] = [np.nan]*(step_number+1)
+            if starting_values:
+                empty_dict[idx][0] = np.array(starting_values[idx])
+
         self.main_storage[key] = empty_dict
 
     def add_data(self, key, data_list, step_n):
         if data_list:
-            for data in data_list:
-                if not data[1] is None:
-                    self.main_storage[key][data[0]][step_n] = np.array[data[1]]
+            for idx, data in data_list.items():
+                if not data is None:
+                    self.main_storage[key][idx][step_n+1] = np.array(data)
                 else:
-                    self.main_storage[key][data[0]][step_n] = np.nan
+                    self.main_storage[key][idx][step_n+1] = np.nan
 
     def get_data(self, key):
         return self.main_storage[key]

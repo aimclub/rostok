@@ -32,10 +32,10 @@ def config_with_standard(grasp_object_blueprint):
     simulation_rewarder.add_criterion(ForceCriterion(), hp.FORCE_CRITERION_WEIGHT)
     simulation_rewarder.add_criterion(ObjectCOGCriterion(), hp.OBJECT_COG_CRITERION_WEIGHT)
     simulation_rewarder.add_criterion(
-        LateForceCriterion(int(hp.TIME_SIMULATION / hp.TIME_STEP_SIMULATION), 0.5, 3),
+        LateForceCriterion(0.5, 3),
         hp.OBJECT_COG_CRITERION_WEIGHT)
     simulation_rewarder.add_criterion(
-        LateForceAmountCriterion(int(hp.TIME_SIMULATION / hp.TIME_STEP_SIMULATION), 0.5),
+        LateForceAmountCriterion(0.5),
         hp.OBJECT_COG_CRITERION_WEIGHT)
 
     control_optimizer = CounterWithOptimizationDirect(simulation_manager, simulation_rewarder,
@@ -60,10 +60,10 @@ def config_with_standard_graph(grasp_object_blueprint, torque_dict):
     simulation_rewarder.add_criterion(ForceCriterion(), hp.FORCE_CRITERION_WEIGHT)
     simulation_rewarder.add_criterion(ObjectCOGCriterion(), hp.OBJECT_COG_CRITERION_WEIGHT)
     simulation_rewarder.add_criterion(
-        LateForceCriterion(int(hp.TIME_SIMULATION / hp.TIME_STEP_SIMULATION) - 1, 0.5, 3),
+        LateForceCriterion(0.5, 3),
         hp.OBJECT_COG_CRITERION_WEIGHT)
     simulation_rewarder.add_criterion(
-        LateForceAmountCriterion(int(hp.TIME_SIMULATION / hp.TIME_STEP_SIMULATION) - 1, 0.5),
+        LateForceAmountCriterion(0.5),
         hp.OBJECT_COG_CRITERION_WEIGHT)
 
     control_optimizer = CounterGraphOptimization(simulation_manager, simulation_rewarder,

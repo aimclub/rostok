@@ -114,17 +114,17 @@ class RobotSimulationChrono():
         for obj in object_list:
             self.add_object(obj[0], obj[1])
 
-    def initialize(self):
+    def initialize(self, step_number)->None:
         self.env_sensor: Sensor = Sensor(self.active_objects_ordered, {})
-        self.env_data.add_data_type("n_contacts", self.active_objects_ordered)
-        self.env_data.add_data_type("forces", self.active_objects_ordered)
-        self.env_data.add_data_type("COG", self.active_objects_ordered)
-        self.env_data.add_data_type("force_center", self.active_objects_ordered)
+        self.env_data.add_data_type("n_contacts", self.active_objects_ordered, step_number)
+        self.env_data.add_data_type("forces", self.active_objects_ordered, step_number)
+        self.env_data.add_data_type("COG", self.active_objects_ordered, step_number,self.env_sensor.get_COG())
+        self.env_data.add_data_type("force_center", self.active_objects_ordered, step_number)
 
-        self.robot.data_storage.add_data_type("n_contacts", self.robot.__built_graph.body_map_ordered)
-        self.robot.data_storage.add_data_type("forces", self.robot.__built_graph.body_map_ordered)
-        self.robot.data_storage.add_data_type("body_trajectories", self.robot.__built_graph.body_map_ordered)
-        self.robot.data_storage.add_data_type("joint_trajectories", self.robot.__built_graph.body_map_ordered)
+        self.robot.data_storage.add_data_type("n_contacts", self.robot.get_graph().body_map_ordered, step_number)
+        self.robot.data_storage.add_data_type("forces", self.robot.get_graph().body_map_ordered, step_number)
+        self.robot.data_storage.add_data_type("body_trajectories", self.robot.get_graph().body_map_ordered, step_number,self.robot.sensor.get_body_trajectory_point())
+        self.robot.data_storage.add_data_type("joint_trajectories", self.robot.get_graph().joint_map_ordered, step_number, self.robot.sensor.get_joint_trajectory_point())
 
     def add_design(self, graph, control_parameters, Frame: FrameTransform = DefaultFrame):
         """"""
@@ -159,8 +159,8 @@ class RobotSimulationChrono():
         robot.sensor.update_current_contact_info(self.chrono_system)
         ds.add_data("n_contacts", robot.sensor.get_amount_contacts(), step_n)
         ds.add_data("forces", robot.sensor.get_forces(), step_n)
-        ds.add_data("body_trajectories", robot.sensor.get_body_trajectory_point(), step_n + 1)
-        ds.add_data("joint_trajectories", robot.sensor.get_joint_trajectory_point(), step_n + 1)
+        ds.add_data("body_trajectories", robot.sensor.get_body_trajectory_point(), step_n)
+        ds.add_data("joint_trajectories", robot.sensor.get_joint_trajectory_point(), step_n)
 
         #controller gets current states of the robot and environment and updates control functions
         robot.controller.update_functions(current_time, robot.sensor, self.get_current_data())
@@ -173,7 +173,7 @@ class RobotSimulationChrono():
         flag_container=None,
         visualize=False,
     ):
-        self.initialize()
+        self.initialize(number_of_steps)
         vis = None
         if visualize:
             vis = chronoirr.ChVisualSystemIrrlicht()

@@ -18,6 +18,7 @@ class ForceCriterion(Criterion):
         env_data = simulation_output[1]
         # NDArray[List[Tuple(coord, force)]]
         body_contacts:np.ndarray[np.ndarray] = env_data.get_data("forces")[0]
+        body_contacts.pop(0)
         force_modules = []
         for data in body_contacts:
             if data.size > 0:
@@ -25,7 +26,7 @@ class ForceCriterion(Criterion):
                 for force in data:
                     total_force+=force[1]
 
-                force_modules.append(total_force.Length())
+                force_modules.append(np.linalg.norm(total_force))
 
         if len(force_modules) > 0:
             return 1 / (1 + np.mean(np.array(force_modules)))
@@ -53,8 +54,8 @@ class ObjectCOGCriterion(Criterion):
         body_outer_force_center = env_data.get_data("force_center")[0]  
         dist_list = []
         for cog, force in zip(body_COG, body_outer_force_center):
-            if force[1] != np.nan:
-                dist_list.append(distance.euclidean(cog[1], force[1]))
+            if not force is np.nan:
+                dist_list.append(distance.euclidean(cog, force))
 
         if np.size(dist_list) > 0:
             cog_crit = 1 / (1 + np.mean(dist_list))
@@ -84,7 +85,7 @@ class LateForceCriterion(Criterion):
         return counter/ (len(body_contacts_cut))
 
 class LateForceAmountCriterion(Criterion):
-    def __init__(self, total_steps, cut_off):
+    def __init__(self, cut_off):
         self.cut_off = cut_off
 
     def calculate_reward(self, simulation_output):
