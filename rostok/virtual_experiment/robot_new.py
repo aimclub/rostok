@@ -149,10 +149,7 @@ class RobotChrono:
         self.sensor = Sensor(self.__built_graph.body_map_ordered, self.__built_graph.joint_map_ordered)
         self.controller = ConstController(self.__built_graph.joint_map_ordered, control_parameters)
         self.data_storage = DataStorage()
-        self.data_storage.add_data_type("n_contacts", self.__built_graph.body_map_ordered)
-        self.data_storage.add_data_type("forces", self.__built_graph.body_map_ordered)
-        self.data_storage.add_data_type("body_trajectories", self.__built_graph.body_map_ordered)
-        self.data_storage.add_data_type("joint_trajectories", self.__built_graph.joint_map_ordered)
+
         self.data_storage.add_data("body_trajectories",self.sensor.get_body_trajectory_point(), 0)
         self.data_storage.add_data("joint_trajectories",self.sensor.get_joint_trajectory_point(), 0)
 

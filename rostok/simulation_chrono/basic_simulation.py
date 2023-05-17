@@ -115,12 +115,16 @@ class RobotSimulationChrono():
             self.add_object(obj[0], obj[1])
 
     def initialize(self):
-
         self.env_sensor: Sensor = Sensor(self.active_objects_ordered, {})
         self.env_data.add_data_type("n_contacts", self.active_objects_ordered)
         self.env_data.add_data_type("forces", self.active_objects_ordered)
         self.env_data.add_data_type("COG", self.active_objects_ordered)
         self.env_data.add_data_type("force_center", self.active_objects_ordered)
+
+        self.robot.data_storage.add_data_type("n_contacts", self.robot.__built_graph.body_map_ordered)
+        self.robot.data_storage.add_data_type("forces", self.robot.__built_graph.body_map_ordered)
+        self.robot.data_storage.add_data_type("body_trajectories", self.robot.__built_graph.body_map_ordered)
+        self.robot.data_storage.add_data_type("joint_trajectories", self.robot.__built_graph.body_map_ordered)
 
     def add_design(self, graph, control_parameters, Frame: FrameTransform = DefaultFrame):
         """"""

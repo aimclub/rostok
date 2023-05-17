@@ -14,15 +14,15 @@ class Criterion(ABC):
 
 class ForceCriterion(Criterion):
 
-    def calculate_reward(self, simulation_output):
+    def calculate_reward(self, simulation_output)-> float:
         env_data = simulation_output[1]
-        # List[Tuple[step_n,List[Tuple[Coordinates, Force]]]]
-        body_contacts = env_data.get_data("forces")[0]  
+        # NDArray[List[Tuple(coord, force)]]
+        body_contacts:np.ndarray[np.ndarray] = env_data.get_data("forces")[0]
         force_modules = []
         for data in body_contacts:
-            if len(data[1]) > 0:
-                total_force = chrono.ChVectorD()
-                for force in data[1]:
+            if data.size > 0:
+                total_force = np.zeros(3)
+                for force in data:
                     total_force+=force[1]
 
                 force_modules.append(total_force.Length())
@@ -50,12 +50,11 @@ class ObjectCOGCriterion(Criterion):
         dist_list = []
         env_data = simulation_output[1]
         body_COG = env_data.get_data("COG")[0]  # List[Tuple[step_n, List[x,y,z]]]
-        body_outer_force_center = env_data.get_data("force_center")[
-            0]  # List[Tuple[step_n,List[x,y,z]]]
+        body_outer_force_center = env_data.get_data("force_center")[0]  
         dist_list = []
         for cog, force in zip(body_COG, body_outer_force_center):
-            if force[1]:
-                dist_list.append(distance.euclidean(np.array(cog[1]), np.array(force[1])))
+            if force[1] != np.nan:
+                dist_list.append(distance.euclidean(cog[1], force[1]))
 
         if np.size(dist_list) > 0:
             cog_crit = 1 / (1 + np.mean(dist_list))
@@ -65,45 +64,39 @@ class ObjectCOGCriterion(Criterion):
         return cog_crit
 
 class LateForceCriterion(Criterion):
-    def __init__(self, total_steps, cut_off, force_threshold):
-        self.total_steps = total_steps
+    def __init__(self, cut_off, force_threshold):
         self.cut_off = cut_off
         self.force_threshold = force_threshold
 
     def calculate_reward(self, simulation_output):
         env_data = simulation_output[1]
         body_contacts = env_data.get_data("forces")[0]
-        step_cutoff = int(self.total_steps * self.cut_off) 
+        step_cutoff = int(len(body_contacts) * self.cut_off)
+        body_contacts_cut = body_contacts[step_cutoff: : ]
         counter = 0
-        for data in body_contacts:
-            if data[0] < step_cutoff:
-                continue
-            else:
-                total_force_module = 0
-                for contact in data[1]:
-                    total_force_module+=contact[1].Length()
+        for data in body_contacts_cut:
+            total_force_module = 0
+            for contact in data:
+                total_force_module += np.linalg.norm(contact[1])
                 if total_force_module > self.force_threshold:
                     counter+=1
 
-        return counter/ (self.total_steps-step_cutoff)
+        return counter/ (len(body_contacts_cut))
 
 class LateForceAmountCriterion(Criterion):
     def __init__(self, total_steps, cut_off):
-        self.total_steps = total_steps
         self.cut_off = cut_off
 
     def calculate_reward(self, simulation_output):
         env_data = simulation_output[1]
         body_contacts = env_data.get_data("n_contacts")[0]
-        step_cutoff = int(self.total_steps * self.cut_off) 
+        step_cutoff = int(len(body_contacts) * self.cut_off) 
         counter = 0
-        for data in body_contacts:
-            if data[0] < step_cutoff:
-                continue
-            else:
-                counter += data[1]
+        body_contacts_cut = body_contacts[step_cutoff: : ]
+        for data in body_contacts_cut:
+            counter += data
 
-        return counter/(self.total_steps-step_cutoff)
+        return counter/(len(body_contacts_cut))
 
 
 class SimulationReward:

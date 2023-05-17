@@ -67,13 +67,15 @@ class ContactReporter(chrono.ReportContactCallback):
             elif body_b == body.body:
                 idx_b = idx
         if not idx_a is None:
-            self.__contact_dict_this_step[idx_a].append((pA, -(plane_coord * react_forces)))
+            temp_vec = -(plane_coord * react_forces)
+            self.__contact_dict_this_step[idx_a].append(([pA.x, pA.y, pA.z], [temp_vec.x, temp_vec.y, temp_vec.z]))
             if idx_b is None:
-                self.__outer_contact_dict_this_step[idx_a].append((pA, -(plane_coord * react_forces)))
+                self.__outer_contact_dict_this_step[idx_a].append(([pA.x, pA.y, pA.z], [temp_vec.x, temp_vec.y, temp_vec.z]))
         if not idx_b is None:
-            self.__contact_dict_this_step[idx_b].append((pB, -(plane_coord * react_forces)))
+            temp_vec = -(plane_coord * react_forces)
+            self.__contact_dict_this_step[idx_b].append(([pB.x, pB.y, pB.z], [temp_vec.x, temp_vec.y, temp_vec.z]))
             if idx_a is None:
-                self.__outer_contact_dict_this_step[idx_b].append((pB, -(plane_coord * react_forces)))
+                self.__outer_contact_dict_this_step[idx_b].append(([pB.x, pB.y, pB.z], [temp_vec.x, temp_vec.y, temp_vec.z]))
 
         return True
 
@@ -122,6 +124,8 @@ class Sensor:
             contacts_idx = contacts[idx]
             if len(contacts_idx)>0:
                 output.append((idx, contacts_idx))
+            else:
+                output.append((idx, []))
 
         return output
 
@@ -130,8 +134,7 @@ class Sensor:
         contacts = self.contact_reporter.get_contacts()
         for idx in self.body_map_ordered:
             contacts_idx = contacts[idx]
-            if len(contacts_idx)>0:
-                output.append((idx, len(contacts_idx)))
+            output.append((idx, len(contacts_idx)))
 
         return output
 
@@ -148,9 +151,11 @@ class Sensor:
 
                 body_contact_coordinates_sum = body_contact_coordinates_sum*(1/len(contacts_idx))
                 output.append((idx, [body_contact_coordinates_sum.x, body_contact_coordinates_sum.y, body_contact_coordinates_sum.z] ))
+            else:
+                output.append((idx, None))
 
         return output
-    
+
     def get_COG(self):
         output = []
         for idx, body in self.body_map_ordered.items():
@@ -165,16 +170,20 @@ class DataStorage():
     def __init__(self):
         self.main_storage = {}
 
-    def add_data_type(self, key: str, object_map):
-        empty_dict:Dict[str, List[Any]] = {}
+    def add_data_type(self, key: str, object_map, step_number, starting_values = None):
+        empty_dict:Dict[int, np.NDArray] = {}
         for idx in object_map:
-            empty_dict[idx] = []
+            empty_dict[idx] = np.empty(shape=(step_number,))
+            empty_dict[idx].fill(np.nan)
         self.main_storage[key] = empty_dict
 
     def add_data(self, key, data_list, step_n):
         if data_list:
             for data in data_list:
-                self.main_storage[key][data[0]].append((step_n, data[1]))
+                if not data[1] is None:
+                    self.main_storage[key][data[0]][step_n] = np.array[data[1]]
+                else:
+                    self.main_storage[key][data[0]][step_n] = np.nan
 
     def get_data(self, key):
         return self.main_storage[key]
