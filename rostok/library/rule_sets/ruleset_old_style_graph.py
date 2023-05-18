@@ -40,7 +40,7 @@ def create_rules():
     reverse_transform = TransformBlueprint(REVERSE_Y)
     turn_transform_P = TransformBlueprint(TURN_P)
     turn_transform_N = TransformBlueprint(TURN_N)
-
+    turn_90_transform = TransformBlueprint(FrameTransform([0, 0, 0], rotation_y(90)))
     #revolve = RevolveJointBlueprint(JointInputType.POSITION)
     revolve = RevolveJointBlueprint(JointInputType.TORQUE)
     revolve_45 = RevolveJointBlueprint(JointInputType.TORQUE, starting_angle=45)
@@ -78,6 +78,7 @@ def create_rules():
     node_vocab.create_node(label="RP", is_terminal=True, block_blueprint=turn_transform_P)
     node_vocab.create_node(label="RN", is_terminal=True, block_blueprint=turn_transform_N)
 
+    node_vocab.create_node(label="JT", is_terminal=True, block_blueprint=turn_90_transform)
     node_vocab.create_node(label="J1", is_terminal=True, block_blueprint=revolve)
     node_vocab.create_node(label="J2", is_terminal=True, block_blueprint=revolve)
     node_vocab.create_node(label="J3", is_terminal=True, block_blueprint=revolve)
@@ -94,7 +95,7 @@ def create_rules():
                            [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6)])
 
     rule_vocab.create_rule("Phalanx", ["FG"], ["J", "L", "FG"], 0, 0, [(0, 1), (1, 2)])
-
+    rule_vocab.create_rule("Double_Joint_Phalanx", ["FG"], ["J","JT","J", "L", "FG"], 0, 0, [(0, 1), (1, 2), (2,3),(3,4)])
     rule_vocab.create_rule("AddFinger", ["F"], ["RT", "RE", "FG"], 0, 0, [(0, 1), (1, 2)])
     rule_vocab.create_rule("AddFinger_R", ["RF"], ["RE", "RT", "RE", "FG"], 0, 0, [(0, 1), (1, 2),
                                                                                    (2, 3)])
