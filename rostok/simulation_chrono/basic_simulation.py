@@ -195,11 +195,12 @@ class RobotSimulationChrono():
                     vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
                     vis.Render()
                     vis.EndScene()
-            for flag in flag_container:
-                flag.update_state(current_time, self.robot.sensor, self.env_sensor)
-
             if flag_container:
-                stop_flag = sum([flag.state for flag in flag_container])
+                for flag in flag_container:
+                    flag.update_state(current_time, self.robot.sensor, self.env_sensor)
+
+                if flag_container:
+                    stop_flag = sum([flag.state for flag in flag_container])
 
             if stop_flag:
                 break

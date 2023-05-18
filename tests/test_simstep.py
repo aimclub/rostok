@@ -35,6 +35,8 @@ def test_control_bind_and_create_sim():
 
         sim = RobotSimulationChrono([])
         sim.add_design(graph, controll_parameters)
-        sim.add_object(creator(obj_bp), True)
+        sim.add_object(creator().create_environment_body(obj_bp), True)
 
         sim_output = sim.simulate(10000, times_step, 10)
+
+
