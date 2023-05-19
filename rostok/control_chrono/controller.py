@@ -68,6 +68,15 @@ class SinControllerChrono(RobotControllerChrono):
                 self.parameters['sin_parameters'][i][1] * time)
             func.Set_yconst(current_const)
 
+class LinearSinControllerChrono(RobotControllerChrono):
+    """Controller that sets sinusoidal torques using constant update at each step."""
+
+    def update_functions(self, time, robot_data, environment_data):
+        for i, func in enumerate(self.functions):
+            current_const = self.parameters['sin_parameters'][i][2]*time*self.parameters['sin_parameters'][i][0] * sin(
+                self.parameters['sin_parameters'][i][1] * time)
+            func.Set_yconst(current_const)
+
 
 # class TorqueTrajectoryControllerChrono(RobotControllerChrono):
 #     def __init__(self, joint_map_ordered, parameters: Dict[int, Any], trajectories):

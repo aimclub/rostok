@@ -8,10 +8,10 @@ import pychrono.core as chrono
 
 import rostok.block_builder_api.easy_body_shapes as easy_body_shapes
 from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform)
-from rostok.block_builder_chrono.block_types import (BlockBody, BlockBridge, BlockTransform)
-from rostok.block_builder_chrono.blocks_utils import (ContactReporter, SpringTorque,
+from rostok.block_builder_chrono_alt.block_types import (BlockBody, BlockBridge, BlockTransform)
+from rostok.block_builder_chrono_alt.blocks_utils import (ContactReporter, SpringTorque,
                                                       frame_transform_to_chcoordsys, rotation_z_q)
-from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
+from rostok.block_builder_chrono_alt.mesh import o3d_to_chrono_trianglemesh
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
     DefaultChronoMaterial, struct_material2object_material)
 
@@ -213,7 +213,8 @@ class ChronoRevolveJoint(BlockBridge):
         material = struct_material2object_material(material)
         self.material = material
         # cylinder without collision
-        self.body = chrono.ChBodyEasyCylinder(self.radius, self.length, self.density, True,
+        eps = self.radius * 0.01
+        self.body = chrono.ChBodyEasyCylinder(self.radius-eps, self.length, self.density, True,
                                                  False, self.material)
         input_marker = chrono.ChMarker()
         out_marker = chrono.ChMarker()
@@ -224,16 +225,16 @@ class ChronoRevolveJoint(BlockBridge):
         self.body.AddMarker(input_marker)
         self.body.AddMarker(out_marker)
         self.body.AddMarker(transformed_out_marker)
-        # input marker 
+        # input marker
         turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROTATE_Y_TO_Z)
-        y_move = chrono.ChCoordsysD(chrono.ChVectorD(0, radius, 0), chrono.Q_ROTATE_Y_TO_Z)
         input_marker.SetCoord(turn)
+        y_move = chrono.ChCoordsysD(chrono.ChVectorD(0, radius, 0), chrono.ChQuaternionD(1, 0, 0, 0))
         out_marker.SetCoord(turn * y_move)
         transformed_out_marker.SetCoord(out_marker.GetCoord())
         self._ref_frame_in = input_marker
         self._ref_frame_out = out_marker
         self.transformed_frame_out = transformed_out_marker
-        
+
         # Spring Damper params
         self._joint_spring: Optional[chrono.ChLinkRSDA] = None
         self._torque_functor: Optional[SpringTorque] = None
@@ -254,9 +255,9 @@ class ChronoRevolveJoint(BlockBridge):
 
     def apply_cental_transform(self, transform):
         frame_coord = self._ref_frame_in.GetCoord()
-        frame_coord = self.transformed_frame_out.GetCoord()
         frame_coord = frame_coord * transform
         self.transformed_frame_out.SetCoord(frame_coord)
+
 
     # def set_next_body_frame(self, next_block: BuildingBody, system: chrono.ChSystem):
     #     additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(0, -self.radius, 0),

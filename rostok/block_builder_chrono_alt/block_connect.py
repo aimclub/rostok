@@ -13,12 +13,17 @@ from rostok.block_builder_chrono_alt.block_types import (Block, BlockBody,
 from rostok.block_builder_chrono_alt.blocks_utils import FrameTransform
 
 
-def place_next_block(prev_block: BuildingBody, next_block: BuildingBody, system: chrono.ChSystem):
+def place_next_block(prev_block, next_block, system: chrono.ChSystem):
     system.Update()
     # prev_body is already added to the system
     next_body: chrono.ChBody = next_block.body
-    total_transformation = prev_block.transformed_frame_out.GetAbsCoord() * chrono.ChFrameD(
-        next_block.transformed_frame_input).GetInverse().GetCoord()
+    if next_block.block_type is BlockType.BODY:
+        total_transformation = prev_block.transformed_frame_out.GetAbsCoord() * chrono.ChFrameD(
+            next_block.transformed_frame_input).GetInverse().GetCoord()
+    elif next_block.block_type is BlockType.BRIDGE:
+        total_transformation = prev_block.transformed_frame_out.GetAbsCoord() * chrono.ChFrameD(
+            next_block._ref_frame_in).GetInverse().GetCoord()
+        
     # print(prev_block.transformed_frame_out.GetAbsCoord().pos,
     #       prev_block.transformed_frame_out.GetAbsCoord().rot)
     # print(chrono.ChFrameD(next_block.transformed_frame_input).GetInverse().GetCoord().pos)
@@ -49,9 +54,10 @@ def place_and_connect(sequence: list[BLOCK_CLASS_TYPES], system: chrono.ChSystem
         system.Update()
 
     previous_joint = None
+
     for it, block in enumerate(sequence):
         if it == 0: continue
-
+        system.Update()
         if block.block_type is BlockType.BODY:
             if not block.is_build:
                 # check for the input transforms
@@ -70,19 +76,20 @@ def place_and_connect(sequence: list[BLOCK_CLASS_TYPES], system: chrono.ChSystem
                             continue
                 # if there is no previous joint the body connects to the previous bodywith fix joint
                 if previous_joint is None:
-                        place_next_block(previous_body_block, block, system)
-                        make_fix_joint(previous_body_block, block, system)
+                    place_next_block(previous_body_block, block, system)
+                    make_fix_joint(previous_body_block, block, system)
                 # if there is a joint the body connects to it with a fix joint
                 else:
                     place_next_block(previous_joint, block, system)
                     make_fix_joint(previous_joint, block, system)
-                    previous_joint = None
+                previous_joint = None
+                block.is_build = True
             else:
                 previous_joint = None
-            previous_body_block = block
 
-            block.is_build = True
-        
+            previous_body_block = block
+            
+
         # transforms follow the block and shift the outer transformed frame,
         # using inner function `apply_transform`
         elif block.block_type is BlockType.TRANSFORM_OUT:
@@ -105,6 +112,7 @@ def place_and_connect(sequence: list[BLOCK_CLASS_TYPES], system: chrono.ChSystem
                         current_transform = current_transform * sequence[k].transform
 
                     sequence[it - i].apply_cental_transform(current_transform)
+                    system.Update()
                 else:
                     continue
         # self transformations follows are applied to the next body input frame
@@ -112,16 +120,16 @@ def place_and_connect(sequence: list[BLOCK_CLASS_TYPES], system: chrono.ChSystem
             continue
 
         elif block.block_type is BlockType.BRIDGE:
-            
-            if previous_joint is None:
-                # it pulls the prev body transformed frame in its y direction for the radius of the joint
-                block.set_prev_body_frame(previous_body_block, system)
-                place_next_block(previous_body_block, block, system)
-                block.connect(previous_body_block, system)
-            else:
-                place_next_block(previous_joint, block, system)
-                previous_joint.connect(block, system)
-
+            if not block.is_build:
+                if previous_joint is None:
+                    # it pulls the prev body transformed frame in its y direction for the radius of the joint
+                    block.set_prev_body_frame(previous_body_block, system)
+                    place_next_block(previous_body_block, block, system)
+                    block.connect(previous_body_block, system)
+                else:
+                    place_next_block(previous_joint, block, system)
+                    block.connect(previous_joint, system)
+                block.is_build = True
             previous_joint = block
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ from rostok.block_builder_chrono_alt.block_classes import (BLOCK_CLASS_TYPES,
                                                        ChronoRevolveJoint,
                                                        PrimitiveBody)
 from rostok.block_builder_chrono_alt.block_connect import place_and_connect
-from rostok.control_chrono.controller import SinControllerChrono, ConstController
+from rostok.control_chrono.controller import SinControllerChrono, ConstController, LinearSinControllerChrono
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.virtual_experiment.sensors import Sensor, DataStorage
@@ -147,7 +147,7 @@ class RobotChrono:
                 start_frame: initial position of the base body"""
         self.__built_graph = BuiltGraphChrono(robot_graph, system, start_frame)
         self.sensor = Sensor(self.__built_graph.body_map_ordered, self.__built_graph.joint_map_ordered)
-        self.controller = ConstController(self.__built_graph.joint_map_ordered, control_parameters)
+        self.controller = LinearSinControllerChrono(self.__built_graph.joint_map_ordered, control_parameters)
         self.data_storage = DataStorage()
     def get_graph(self):
         return self.__built_graph

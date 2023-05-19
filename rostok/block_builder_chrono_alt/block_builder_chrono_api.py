@@ -1,7 +1,7 @@
 from copy import deepcopy
 from rostok.block_builder_api.block_blueprints import BlockCreatorInterface, EnvironmentBodyBlueprint, PrimitiveBodyBlueprint, RevolveJointBlueprint, TransformBlueprint
-from rostok.block_builder_chrono.block_classes import PrimitiveBody, ChronoTransform, ChronoRevolveJoint, ChronoEasyShapeObject, BLOCK_CLASS_TYPES
-from rostok.block_builder_chrono.adapt_block_blueprint import convert_joint_input_type_to_chrono, convert_material_to_chrono
+from rostok.block_builder_chrono_alt.block_classes import PrimitiveBody, ChronoTransform, ChronoRevolveJoint, ChronoEasyShapeObject, BLOCK_CLASS_TYPES
+from rostok.block_builder_chrono_alt.adapt_block_blueprint import convert_joint_input_type_to_chrono, convert_material_to_chrono
 
 
 class ChronoBlockCreatorInterface(BlockCreatorInterface):
