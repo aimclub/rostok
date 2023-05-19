@@ -213,7 +213,7 @@ class ChronoRevolveJoint(BlockBridge):
         material = struct_material2object_material(material)
         self.material = material
         # cylinder without collision
-        self.body = cylinder = chrono.ChBodyEasyCylinder(self.radius, self.length, self.density, True,
+        self.body = chrono.ChBodyEasyCylinder(self.radius, self.length, self.density, True,
                                                  False, self.material)
         input_marker = chrono.ChMarker()
         out_marker = chrono.ChMarker()

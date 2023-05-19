@@ -38,12 +38,12 @@ class RobotControllerChrono:
     def initialize_functions(self):
         """Attach initial functions to the joints."""
         i = 0
-        for joint in self.joint_map_ordered.items():
-            if self.chrono_joint_setters[joint[1].input_type] == 'Uncontrol':
+        for idx, joint in self.joint_map_ordered.items():
+            if self.chrono_joint_setters[joint.input_type] == 'Uncontrol':
                 pass
             else:
                 chr_function = chrono.ChFunction_Const(float(self.parameters["initial_value"][i]))
-                joint_setter = getattr(joint[1].joint, self.chrono_joint_setters[joint[1].input_type])
+                joint_setter = getattr(joint.joint, self.chrono_joint_setters[joint.input_type])
                 joint_setter(chr_function)
                 self.functions.append(chr_function)
                 i += 1

@@ -11,6 +11,7 @@ from rostok.simulation_chrono.basic_simulation import RobotSimulationChrono
 from rostok.block_builder_chrono.block_builder_chrono_api import ChronoBlockCreatorInterface as creator
 from simple_designs import get_three_link_one_finger_with_no_control, get_two_link_one_finger, get_one_link_one_finger_double_joint
 mechs = [get_terminal_graph_three_finger, get_terminal_graph_two_finger]
+from rostok.graph_grammar.graph_utils import plot_graph, plot_graph_ids
 
 mechs = [get_two_link_one_finger
          , get_three_link_one_finger_with_no_control
@@ -24,6 +25,8 @@ def rotation_x(alpha):
 for get_graph in mechs:
 
     graph = get_graph()
+    plot_graph(graph)
+    plot_graph_ids(graph)
     print(get_joint_vector_from_graph(graph))
     controll_parameters = []
     # for _ in range(len(get_joint_vector_from_graph(graph))):

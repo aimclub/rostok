@@ -111,12 +111,13 @@ def place_and_connect(sequence: list[BLOCK_CLASS_TYPES], system: chrono.ChSystem
         elif block.block_type is BlockType.TRANSFORM_INPUT:
             continue
 
-        if block.block_type is BlockType.BRIDGE:
+        elif block.block_type is BlockType.BRIDGE:
             
             if previous_joint is None:
                 # it pulls the prev body transformed frame in its y direction for the radius of the joint
                 block.set_prev_body_frame(previous_body_block, system)
                 place_next_block(previous_body_block, block, system)
+                block.connect(previous_body_block, system)
             else:
                 place_next_block(previous_joint, block, system)
                 previous_joint.connect(block, system)
