@@ -103,7 +103,7 @@ class RobotSimulationChrono():
         self.chrono_system.SetSolverMaxIterations(100)
         self.chrono_system.SetSolverForceTolerance(1e-6)
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
-        self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
+        self.chrono_system.Set_G_acc(chrono.ChVectorD(0, -1, 0))
         # the simulating mechanism is to be added with function add_design, the value in constructor is None
         self.env_data = DataStorage()
         self.robot: Optional[RobotChrono] = None
@@ -126,11 +126,13 @@ class RobotSimulationChrono():
         self.robot.data_storage.add_data_type("body_trajectories", self.robot.get_graph().body_map_ordered, step_number,self.robot.sensor.get_body_trajectory_point())
         self.robot.data_storage.add_data_type("joint_trajectories", self.robot.get_graph().joint_map_ordered, step_number, self.robot.sensor.get_joint_trajectory_point())
 
-    def add_design(self, graph, control_parameters, Frame: FrameTransform = DefaultFrame):
+    def add_design(self, graph, control_parameters, Frame: FrameTransform = DefaultFrame, is_fixed = True):
         """"""
-        self.robot = RobotChrono(graph, self.chrono_system, control_parameters, Frame)
+        self.robot = RobotChrono(graph, self.chrono_system, control_parameters, Frame, is_fixed)
 
-    def add_object(self, obj: ChronoEasyShapeObject, read_data: bool = False):
+    def add_object(self, obj: ChronoEasyShapeObject, read_data: bool = False, is_fixed = False):
+        if is_fixed:
+            obj.body.SetBodyFixed(True)
         self.chrono_system.AddBody(obj.body)
         self.objects.append(obj)
         if read_data:

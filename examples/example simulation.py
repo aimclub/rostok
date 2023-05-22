@@ -13,7 +13,6 @@ from simple_designs import get_three_link_one_finger_with_no_control, get_two_li
 mechs = [get_terminal_graph_three_finger, get_terminal_graph_two_finger]
 
 mechs = [get_two_link_one_finger
-         , get_three_link_one_finger_with_no_control
          ]
 def rotation_x(alpha):
     quat_X_ang_alpha = chrono.Q_from_AngX(np.deg2rad(alpha))
@@ -38,12 +37,12 @@ for get_graph in mechs:
     mat = Material()
     mat.Friction = 0.65
     mat.DampingF = 0.65
-    obj = EnvironmentBodyBlueprint(shape=Box(3, 0.2, 3),
+    obj = EnvironmentBodyBlueprint(shape=Box(15, 0.2, 15),
                                    material=mat,
                                    pos=FrameTransform([0, -0.4, 0], [1, 0, 0, 0]))
-    sim.add_object(creator.init_block_from_blueprint(obj))
-    sim.add_design(graph, controll_parameters, FrameTransform([0, 2.5, 0], rotation_x(180)))
+    sim.add_object(creator.init_block_from_blueprint(obj),is_fixed=True)
+    sim.add_design(graph, controll_parameters, FrameTransform([0, 2.5, 0], rotation_x(180)), False)
     #print(sim.robot.sensor.joint_body_map)
-    sim.simulate(100, 0.01, 10, None, True)
+    sim.simulate(100000, 0.01, 10, None, True)
     #print(sim.robot.sensor.trajectories)
     print(sim.robot.data_storage.get_data("joint_trajectories"))
