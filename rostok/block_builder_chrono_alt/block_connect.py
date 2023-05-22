@@ -40,9 +40,8 @@ def make_fix_joint(prev_block: BuildingBody, next_block: BuildingBody, system: c
     next_body = next_block.body
 
     fix_joint = chrono.ChLinkMateFix()
-    fix_joint.Initialize(prev_body, next_body, True, prev_block.transformed_frame_out,
-                         next_block.transformed_frame_input)
-    system.Add(fix_joint)
+    fix_joint.Initialize(next_body, prev_body, chrono.ChFrameD(prev_block.transformed_frame_out.GetAbsCoord()))
+    system.AddLink(fix_joint)
     system.Update()
 
 # the function places and connects a sequence of blocks. The sequence should start from the root block
@@ -51,6 +50,7 @@ def place_and_connect(sequence: list[BLOCK_CLASS_TYPES], system: chrono.ChSystem
     previous_body_block = sequence[0]
     if not previous_body_block.is_build:
         system.AddBody(previous_body_block.body)
+        previous_body_block.is_build = True
         system.Update()
 
     previous_joint = None

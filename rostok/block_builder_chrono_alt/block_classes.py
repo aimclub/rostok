@@ -191,10 +191,10 @@ class ChronoRevolveJoint(BlockBridge):
 
     def __init__(self,
                  type_of_input: JointInputTypeChrono = JointInputTypeChrono.TORQUE,
-                 radius=0.07,
-                 length=0.4,
+                 radius=0.05,
+                 length=0.3,
                  material=DefaultChronoMaterial(),
-                 density=100.0,
+                 density=1000.0,
                  starting_angle=0,
                  stiffness: float = 0.,
                  damping: float = 0.,
@@ -213,7 +213,7 @@ class ChronoRevolveJoint(BlockBridge):
         material = struct_material2object_material(material)
         self.material = material
         # cylinder without collision
-        eps = self.radius * 0.01
+        eps = self.radius * 0.02
         self.body = chrono.ChBodyEasyCylinder(self.radius-eps, self.length, self.density, True,
                                                  False, self.material)
         input_marker = chrono.ChMarker()
@@ -277,8 +277,7 @@ class ChronoRevolveJoint(BlockBridge):
         """
         system.Update()
         self.joint = self.input_type.motor()
-        self.joint.Initialize(in_block.body, self.body, True, in_block.transformed_frame_out,
-                              self._ref_frame_in)
+        self.joint.Initialize(self.body, in_block.body, chrono.ChFrameD(in_block.transformed_frame_out.GetAbsCoord()))
         system.AddLink(self.joint)
 
         if (self.stiffness != 0) or (self.damping != 0):

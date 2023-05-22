@@ -67,6 +67,13 @@ def create_rules():
     rule_vocab.create_rule("Init_4", ["MB"], ["MB", "ZTN", "YTN",  "FG"], 0, 0, [(0, 1),
                                                                                             (1, 2),
                                                                                             (2, 3)])
+    
+    rule_vocab.create_rule("Init_5", ["ROOT"], ["MB", "ZTP", "YTN","J1" ,"FG"], 0, 0, [(0, 1),
+                                                                                            (1, 2),
+                                                                                            (2, 3),(3,4)])
+    rule_vocab.create_rule("Init_6", ["MB"], ["MB", "ZTN", "YTN","J1",  "FG"], 0, 0, [(0, 1),
+                                                                                            (1, 2),
+                                                                                            (2, 3),(3,4)])
 
     rule_vocab.create_rule("Terminal_Link1", ["L"], ["L1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Link2", ["L"], ["L2"], 0, 0, [])
@@ -124,7 +131,18 @@ def get_box():
 def get_box_joints():
     G = GraphGrammar()
     rules = [
-        "Init_3", "Init_4", "Phalanx", "Phalanx", "Remove_FG_2", "Remove_FG_2", "Terminal_Link2", "Terminal_Link2"
+        "Init_5", "Init_6",  "Remove_FG_2", "Remove_FG_2"
+    ]
+    rule_vocabul = create_rules()
+    for rule in rules:
+        G.apply_rule(rule_vocabul.get_rule(rule))
+
+    return G
+
+def get_box_one_joint():
+    G = GraphGrammar()
+    rules = [
+        "Init_5", "Remove_FG_2"
     ]
     rule_vocabul = create_rules()
     for rule in rules:

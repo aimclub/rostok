@@ -4,7 +4,7 @@ import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 
 from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform)
-from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject
+from rostok.block_builder_chrono_alt.block_classes import ChronoEasyShapeObject
 from rostok.virtual_experiment.robot_new import BuiltGraphChrono, RobotChrono
 from rostok.virtual_experiment.sensors import DataStorage, Sensor
 
@@ -19,7 +19,7 @@ class SystemPreviewChrono:
         self.chrono_system.SetSolverMaxIterations(100)
         self.chrono_system.SetSolverForceTolerance(1e-6)
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
-        self.chrono_system.Set_G_acc(chrono.ChVectorD(0, -10, 0))
+        self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
 
     def add_design(self, graph, frame: FrameTransform = DefaultFrame):
         """Add a design into the system
@@ -103,7 +103,7 @@ class RobotSimulationChrono():
         self.chrono_system.SetSolverMaxIterations(100)
         self.chrono_system.SetSolverForceTolerance(1e-6)
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
-        self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
+        self.chrono_system.Set_G_acc(chrono.ChVectorD(0, -10, 0))
         # the simulating mechanism is to be added with function add_design, the value in constructor is None
         self.env_data = DataStorage()
         self.robot: Optional[RobotChrono] = None

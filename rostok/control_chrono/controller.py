@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Tuple
 from abc import abstractmethod
 import pychrono.core as chrono
 
-from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, JointInputTypeChrono)
+from rostok.block_builder_chrono_alt.block_classes import (ChronoRevolveJoint, JointInputTypeChrono)
 from rostok.virtual_experiment.sensors import Sensor
 
 

@@ -1,7 +1,7 @@
 import numpy as np
 import pychrono as chrono
 
-from rostok.block_builder_chrono.blocks_utils import FrameTransform
+from rostok.block_builder_chrono_alt.blocks_utils import FrameTransform
 from rostok.graph_grammar.node_vocabulary import NodeVocabulary
 from rostok.graph_grammar.node import ROOT
 from rostok.graph_grammar import rule_vocabulary
