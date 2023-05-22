@@ -12,10 +12,11 @@ from rostok.block_builder_chrono.block_builder_chrono_api import ChronoBlockCrea
 from simple_designs import get_three_link_one_finger_with_no_control, get_two_link_one_finger, get_one_link_one_finger_double_joint, get_one_link_one_finger
 mechs = [get_terminal_graph_three_finger, get_terminal_graph_two_finger]
 from rostok.graph_grammar.graph_utils import plot_graph, plot_graph_ids
+from rostok.library.rule_sets.ruleset_locomotion import get_bip, get_bip_single, get_box, get_box_joints
 
 mechs = [get_one_link_one_finger]
 mechs = [get_two_link_one_finger]
-mechs = [get_one_link_one_finger_double_joint]
+mechs = [get_box_joints]
 def rotation_x(alpha):
     quat_X_ang_alpha = chrono.Q_from_AngX(np.deg2rad(alpha))
     return [quat_X_ang_alpha.e0, quat_X_ang_alpha.e1, quat_X_ang_alpha.e2, quat_X_ang_alpha.e3]
@@ -34,7 +35,9 @@ for get_graph in mechs:
     for _ in range(len(get_joint_vector_from_graph(graph))):
         controll_parameters.append(np.random.normal(0,1,1)[0])
 
-    controll_parameters = {"initial_value": [0, 0,0,0,0,0,], "sin_parameters" : [[0.0001, 0.1, 0.1], [0.0001, 0.1, 0.2]]}
+    controll_parameters = {"initial_value": [0, 0, 0, 0, 0, 0 ,0 ,0, 0, 0], "sin_parameters" : [[0.000, 0.1, 0.1], [0.000, 0.1, 0.2],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1]]}
+    controll_parameters = {"initial_value": [0, 0, 0, 0, 0, 0 ,0 ,0], "sin_parameters" : [[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1]]}
+
     #controll_parameters = {"initial_value": [0], "sin_parameters" : [[0.001, 0.1, 0.1]]}
     print(controll_parameters)
     sim = RobotSimulationChrono([])
@@ -44,10 +47,20 @@ for get_graph in mechs:
     mat.DampingF = 0.65
     obj = EnvironmentBodyBlueprint(shape=Box(3, 0.2, 3),
                                    material=mat,
-                                   pos=FrameTransform([0, -0.4, 0], [1, 0, 0, 0]))
+                                   pos=FrameTransform([0, 0, 0], [1, 0, 0, 0]))
     sim.add_object(creator.init_block_from_blueprint(obj))
-    sim.add_design(graph, controll_parameters, FrameTransform([0, 2.5, 0], rotation_x(180)))
+    sim.objects[0].body.SetBodyFixed(True)
+    sim.add_design(graph, controll_parameters, FrameTransform([0, 2.5, 0], rotation_x(180)), False)
+    i=0
+    # for idx, body in sim.robot.get_graph().body_map_ordered.items():
+    #     if i == 2:
+    #         body.body.SetBodyFixed(True)
+    #     i+=1
     #print(sim.robot.sensor.joint_body_map)
-    sim.simulate(10000, 0.01, 10, None, True)
+    sim.simulate(100, 0.00000000001, 1, None, True)
     #print(sim.robot.sensor.trajectories)
     #print(sim.robot.data_storage.get_data("joint_trajectories"))
+    for idx, value in sim.robot.data_storage.get_data('forces').items():
+        print(idx)
+
+    print(sim.robot.data_storage.get_data('forces'))

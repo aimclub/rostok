@@ -126,9 +126,9 @@ class RobotSimulationChrono():
         self.robot.data_storage.add_data_type("body_trajectories", self.robot.get_graph().body_map_ordered, step_number,self.robot.sensor.get_body_trajectory_point())
         self.robot.data_storage.add_data_type("joint_trajectories", self.robot.get_graph().joint_map_ordered, step_number, self.robot.sensor.get_joint_trajectory_point())
 
-    def add_design(self, graph, control_parameters, Frame: FrameTransform = DefaultFrame):
+    def add_design(self, graph, control_parameters, Frame: FrameTransform = DefaultFrame, is_fixed = True):
         """"""
-        self.robot = RobotChrono(graph, self.chrono_system, control_parameters, Frame)
+        self.robot = RobotChrono(graph, self.chrono_system, control_parameters, Frame, is_fixed)
 
     def add_object(self, obj: ChronoEasyShapeObject, read_data: bool = False):
         self.chrono_system.AddBody(obj.body)

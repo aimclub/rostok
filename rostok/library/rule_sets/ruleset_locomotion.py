@@ -16,8 +16,8 @@ def create_rules():
     main_body = PrimitiveBodyBlueprint(Box(0.8, 0.8, 0.8))
     foot = PrimitiveBodyBlueprint(Box(0.2, 0.2, 0.5))
     link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.1, x, 0.1)), length_link))
-    Z_MOVE_POSITIVE = FrameTransform([0, 0, 0.6], [1, 0, 0, 0])
-    Z_MOVE_NEGATIVE = FrameTransform([0, 0, -0.6], [1, 0, 0, 0])
+    Z_MOVE_POSITIVE = FrameTransform([0, 0, 0.7], [1, 0, 0, 0])
+    Z_MOVE_NEGATIVE = FrameTransform([0, 0, -0.7], [1, 0, 0, 0])
     Y_MOVE_NEGATIVE = FrameTransform([0, -0.4, 0], [1, 0, 0, 0])
 
     z_move_positive = TransformBlueprint(Z_MOVE_POSITIVE)
@@ -61,6 +61,12 @@ def create_rules():
                                                                                             (2, 3),
                                                                                             (3, 4),
                                                                                             (4, 5)])
+    rule_vocab.create_rule("Init_3", ["ROOT"], ["MB", "ZTP", "YTN", "FG"], 0, 0, [(0, 1),
+                                                                                            (1, 2),
+                                                                                            (2, 3)])
+    rule_vocab.create_rule("Init_4", ["MB"], ["MB", "ZTN", "YTN",  "FG"], 0, 0, [(0, 1),
+                                                                                            (1, 2),
+                                                                                            (2, 3)])
 
     rule_vocab.create_rule("Terminal_Link1", ["L"], ["L1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Link2", ["L"], ["L2"], 0, 0, [])
@@ -69,6 +75,7 @@ def create_rules():
     rule_vocab.create_rule("Double_Joint_Phalanx", ["FG"], ["J1", "JT", "J1", "L", "FG"], 0, 0,
                            [(0, 1), (1, 2), (2, 3), (3, 4)])
     rule_vocab.create_rule("Remove_FG", ["FG"], ["J1", "JT", "J1","F"], 0, 0, [(0, 1), (1, 2), (2, 3)])
+    rule_vocab.create_rule("Remove_FG_2", ["FG"], [], 0, 0, [])
     rule_vocab.create_rule("Rev_Turn", ["FG"], ["JTN", "FG"], 0, 1,[(0,1)])
     rule_vocab.create_rule("Terminal_Joint1", ["J"], ["J1"], 0, 0, [])
 
@@ -83,6 +90,41 @@ def get_bip():
     rules = [
         "Init", "Init_2", "Phalanx", "Phalanx","Rev_Turn","Rev_Turn" ,"Phalanx", "Phalanx", "Remove_FG", "Remove_FG",
         "Terminal_Link2", "Terminal_Link2", "Terminal_Link3", "Terminal_Link3"
+    ]
+    rule_vocabul = create_rules()
+    for rule in rules:
+        G.apply_rule(rule_vocabul.get_rule(rule))
+
+    return G
+
+def get_bip_single():
+    G = GraphGrammar()
+    rules = [
+        "Init_3", "Init_4", "Phalanx", "Phalanx", "Phalanx", "Phalanx", "Remove_FG_2", "Remove_FG_2",
+        "Terminal_Link2", "Terminal_Link2", "Terminal_Link3", "Terminal_Link3"
+    ]
+    rule_vocabul = create_rules()
+    for rule in rules:
+        G.apply_rule(rule_vocabul.get_rule(rule))
+
+    return G
+
+
+def get_box():
+    G = GraphGrammar()
+    rules = [
+        "Init_3", "Init_4",  "Remove_FG_2", "Remove_FG_2"
+    ]
+    rule_vocabul = create_rules()
+    for rule in rules:
+        G.apply_rule(rule_vocabul.get_rule(rule))
+
+    return G
+
+def get_box_joints():
+    G = GraphGrammar()
+    rules = [
+        "Init_3", "Init_4", "Phalanx", "Phalanx", "Remove_FG_2", "Remove_FG_2", "Terminal_Link2", "Terminal_Link2"
     ]
     rule_vocabul = create_rules()
     for rule in rules:

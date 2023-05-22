@@ -136,7 +136,7 @@ class RobotChrono:
                  robot_graph: GraphGrammar,
                  system: chrono.ChSystem,
                  control_parameters,
-                 start_frame: FrameTransform = DefaultFrame):
+                 start_frame: FrameTransform = DefaultFrame, is_fixed = True):
         """Build mechanism into system and bind sensor to robot blocks.
         
             Args:
@@ -145,7 +145,7 @@ class RobotChrono:
                 control_parameters : list of parameters for controller
                 control_trajectories : list of trajectories for joints
                 start_frame: initial position of the base body"""
-        self.__built_graph = BuiltGraphChrono(robot_graph, system, start_frame)
+        self.__built_graph = BuiltGraphChrono(robot_graph, system, start_frame, is_fixed)
         self.sensor = Sensor(self.__built_graph.body_map_ordered, self.__built_graph.joint_map_ordered)
         self.controller = LinearSinControllerChrono(self.__built_graph.joint_map_ordered, control_parameters)
         self.data_storage = DataStorage()

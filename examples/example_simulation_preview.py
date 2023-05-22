@@ -10,7 +10,7 @@ from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.simulation_chrono.basic_simulation import SystemPreviewChrono
 from rostok.block_builder_chrono.block_builder_chrono_api import ChronoBlockCreatorInterface as creator
 from simple_designs import get_three_link_one_finger_with_no_control, get_two_link_one_finger
-from rostok.library.rule_sets.ruleset_locomotion import get_bip
+from rostok.library.rule_sets.ruleset_locomotion import get_bip, get_bip_single
 from rostok.graph_grammar.graph_utils import plot_graph, plot_graph_ids
 mechs = [
     get_terminal_graph_three_finger, get_terminal_graph_no_joints, get_terminal_graph_two_finger
@@ -18,7 +18,7 @@ mechs = [
 mechs = [get_two_link_one_finger
          #, get_three_link_one_finger_with_no_control
          ]
-mechs = [get_bip]
+mechs = [get_bip_single]
 def rotation_x(alpha):
     quat_X_ang_alpha = chrono.Q_from_AngX(np.deg2rad(alpha))
     return [quat_X_ang_alpha.e0, quat_X_ang_alpha.e1, quat_X_ang_alpha.e2, quat_X_ang_alpha.e3]
@@ -37,4 +37,4 @@ for get_graph in mechs:
     # sim.add_object(creator.init_block_from_blueprint(obj))
     plot_graph(graph)
     sim.add_design(graph, FrameTransform([0, 2, 0], rotation_x(180)))
-    sim.simulate(1000000, True)
+    sim.simulate(10000000000, True)
