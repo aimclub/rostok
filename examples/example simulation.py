@@ -34,7 +34,7 @@ for get_graph in mechs:
     for _ in range(len(get_joint_vector_from_graph(graph))):
         controll_parameters.append(np.random.normal(0,1,1)[0])
 
-    controll_parameters = {"initial_value": [0, 0], "sin_parameters" : [[0.0001, 0.1, 0.1], [0.0001, 0.1, 0.2]]}
+    controll_parameters = {"initial_value": [0, 0,0,0,0,0,], "sin_parameters" : [[0.0001, 0.1, 0.1], [0.0001, 0.1, 0.2]]}
     #controll_parameters = {"initial_value": [0], "sin_parameters" : [[0.001, 0.1, 0.1]]}
     print(controll_parameters)
     sim = RobotSimulationChrono([])
