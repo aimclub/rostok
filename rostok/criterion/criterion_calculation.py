@@ -21,6 +21,8 @@ class ForceCriterion(Criterion):
         body_contacts.pop(0)
         force_modules = []
         for data in body_contacts:
+            if data is np.nan:
+                break
             if data.size > 0:
                 total_force = np.zeros(3)
                 for force in data:
@@ -77,6 +79,7 @@ class LateForceCriterion(Criterion):
         counter = 0
         for data in body_contacts_cut:
             total_force_module = 0
+            if data is np.nan: break
             for contact in data:
                 total_force_module += np.linalg.norm(contact[1])
                 if total_force_module > self.force_threshold:
@@ -95,7 +98,8 @@ class LateForceAmountCriterion(Criterion):
         counter = 0
         body_contacts_cut = body_contacts[step_cutoff: : ]
         for data in body_contacts_cut:
-            counter += data
+            if not data is np.nan:
+                counter += data
 
         return counter/(len(body_contacts_cut))
 
