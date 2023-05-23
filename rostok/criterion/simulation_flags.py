@@ -35,8 +35,12 @@ class FlagSlipout(FlagStopSimualtions):
         self.time_last_contact = None
         self.reference_time = ref_time
 
+    def reset_flag(self):
+        self.time_last_contact = None
+        super().reset_flag()
+
     def update_state(self, current_time, robot_data:Sensor, env_data:Sensor): 
-        contact = len(env_data.get_amount_contacts()) > 0
+        contact = env_data.get_amount_contacts()[0] > 0
         if contact:
             self.time_last_contact = current_time
             self.state = False
@@ -61,7 +65,7 @@ class FlagContactTimeOut(FlagStopSimualtions):
 
     def update_state(self, current_time, robot_data:Sensor, env_data:Sensor): 
         if not self.contact:
-            self.contact = len(env_data.get_amount_contacts()) > 0
+            self.contact = env_data.get_amount_contacts()[0] > 0
 
         if not (self.contact or self.state):
             if current_time > self.reference_time:
