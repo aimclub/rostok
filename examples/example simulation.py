@@ -9,7 +9,7 @@ from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
 from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.simulation_chrono.basic_simulation import RobotSimulationChrono
 from rostok.block_builder_chrono_alt.block_builder_chrono_api import ChronoBlockCreatorInterface as creator
-from simple_designs import get_three_link_one_finger_with_no_control, get_two_link_one_finger, get_one_link_one_finger_double_joint, get_one_link_one_finger
+from rostok.library.rule_sets.simple_designs import get_three_link_one_finger_with_no_control, get_two_link_one_finger, get_one_link_one_finger_double_joint, get_one_link_one_finger
 mechs = [get_terminal_graph_three_finger, get_terminal_graph_two_finger]
 from rostok.graph_grammar.graph_utils import plot_graph, plot_graph_ids
 from rostok.library.rule_sets.ruleset_locomotion import get_bip, get_bip_single, get_box, get_box_joints, get_box_one_joint

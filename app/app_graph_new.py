@@ -6,10 +6,11 @@ import hyperparameters as hp
 import mcts
 from mcts_run_setup import config_with_standard_graph
 
-from rostok.graph_generators.mcts_helper import (make_mcts_step, prepare_mcts_state_and_helper)
+from rostok.graph_generators.mcts_helper import (make_mcts_step,
+                                                 prepare_mcts_state_and_helper)
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.library.obj_grasp.objects import get_object_parametrized_sphere
-from rostok.library.rule_sets.ruleset_old_style_graph import create_rules
+from rostok.library.rule_sets.ruleset_new_style_graph import create_rules
 
 # create rule vocabulary and torque dictionary for control in graph.
 rule_vocabul, torque_dict = create_rules()
@@ -19,6 +20,7 @@ grasp_object_blueprint = get_object_parametrized_sphere(0.4, 0.7)
 
 # create reward counter using run setup function
 control_optimizer = config_with_standard_graph(grasp_object_blueprint, torque_dict)
+
 # Initialize MCTS
 base_iteration_limit = hp.BASE_ITERATION_LIMIT
 max_numbers_rules = hp.MAX_NUMBER_RULES

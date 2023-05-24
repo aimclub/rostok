@@ -1,69 +1,61 @@
 import random
-import pickle 
+import pickle
 
 import pychrono as chrono
 from example_vocabulary import (get_terminal_graph_three_finger)
 
-import rostok.virtual_experiment.simulation_step as step
+from rostok.block_builder_chrono.block_builder_chrono_api import \
+    ChronoBlockCreatorInterface as creator
+from rostok.criterion.criterion_calculation import (ForceCriterion, LateForceAmountCriterion,
+                                                    LateForceCriterion, ObjectCOGCriterion,
+                                                    SimulationReward, TimeCriterion)
+from rostok.criterion.simulation_flags import (FlagContactTimeOut, FlagFlyingApart, FlagSlipout)
+from rostok.simulation_chrono.simulation_scenario import ConstTorqueGrasp
+from rostok.trajectory_optimizer.control_optimizer import (CounterGraphOptimization,
+                                                           CounterWithOptimization,
+                                                           CounterWithOptimizationDirect)
 
-from rostok.criterion.criterion_calculation import criterion_calc
-from rostok.criterion.flags_simualtions import FlagMaxTime, FlagNotContact, FlagSlipout
+from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
 from example_vocabulary import (get_terminal_graph_no_joints, get_terminal_graph_three_finger,
                                 get_terminal_graph_two_finger)
 
-import rostok.virtual_experiment.simulation_step as step
+
 from rostok.block_builder_api.block_parameters import DefaultFrame, Material, FrameTransform
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
-from rostok.criterion.flags_simualtions import FlagMaxTime, FlagSlipout, FlagNotContact
-from rostok.trajectory_optimizer.control_optimizer import num_joints
-from rostok.trajectory_optimizer.trajectory_generator import \
-    create_torque_traj_from_x
-from rostok.trajectory_optimizer.control_optimizer import num_joints
-from rostok.trajectory_optimizer.trajectory_generator import \
-    create_torque_traj_from_x
 
+from rostok.library.obj_grasp.objects import get_object_parametrized_sphere
 # Constants
-MAX_TIME = 2
+MAX_TIME = 3
 TIME_STEP = 1e-3
 
 # Graph initialization
 graph = get_terminal_graph_three_finger()
+grasp_object_blueprint = get_object_parametrized_sphere(0.4, 0.7)
+
+# configurate the simulation manager
+simulation_manager = ConstTorqueGrasp(TIME_STEP, MAX_TIME)
+simulation_manager.grasp_object_callback = lambda: creator.create_environment_body(
+    grasp_object_blueprint)
+simulation_manager.add_flag(FlagContactTimeOut(1))
+simulation_manager.add_flag(FlagFlyingApart(10))
+simulation_manager.add_flag(FlagSlipout(0.8))
+#create criterion manager
+simulation_rewarder = SimulationReward()
+#create criterions and add them to manager
+simulation_rewarder.add_criterion(TimeCriterion(MAX_TIME), 1)
+simulation_rewarder.add_criterion(ForceCriterion(), 1)
+simulation_rewarder.add_criterion(ObjectCOGCriterion(), 1)
+simulation_rewarder.add_criterion(LateForceCriterion(0.5, 3), 1)
+simulation_rewarder.add_criterion(LateForceAmountCriterion(0.5), 1)
+
+control_optimizer = CounterWithOptimizationDirect(simulation_manager, simulation_rewarder, (6, 15), 5)
 
 # Create trajectory
-number_trq = num_joints(graph)
+number_trq = len(get_joint_vector_from_graph(graph))
 # const_torque_koef = [random.random() for _ in range(number_trq)]
 const_torque_koef = [0, 0, 0, 0, -1, 6]
-arr_trj = create_torque_traj_from_x(graph, const_torque_koef, MAX_TIME, TIME_STEP)
 
 
-mat = Material()
-mat.Friction = 0.65
-mat.DampingF = 0.65
+reward = control_optimizer.count_reward(graph)
 
-obj = EnvironmentBodyBlueprint(material=mat,
-                                        pos=FrameTransform([0, 1, 0],
-                                                            [0, -0.048, 0.706, 0.706]))
-
-# Configurate simulation
-config_sys = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
-flags = [FlagMaxTime(MAX_TIME), FlagNotContact(1), FlagSlipout(0.5, 0.5)]
-
-sim = step.SimulationStepOptimization(arr_trj, graph, obj)
-sim.set_flags_stop_simulation(flags)
-sim.change_config_system(config_sys)
-
-# Start simulation
-sim_output = sim.simulate_system(TIME_STEP, True)
-
-f = open('simout.bin', 'wb')
-pickle.dump(sim_output[-1], f)
-f.close()
-
-# Weight coefficients for reward function
-WEIGHTS = [5, 10, 2]
-
-
-# Calculate reward value
-reward = criterion_calc(sim_output, WEIGHTS)
 print(reward)
-

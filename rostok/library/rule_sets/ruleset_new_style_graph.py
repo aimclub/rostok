@@ -68,7 +68,6 @@ def create_rules():
     node_vocab.create_node(label="RNF")  # reversed  finger translated in negative direction in z
     # terminal block for the palm
     node_vocab.create_node(label="FT", is_terminal=True, block_blueprint=super_flat)
-
     node_vocab.create_node(label="RE", is_terminal=True, block_blueprint=reverse_transform)
     node_vocab.create_node(label="RT")
     node_vocab.create_node(label="RT1", is_terminal=True, block_blueprint=radial_transform[0])
@@ -111,12 +110,11 @@ def create_rules():
     rule_vocab.create_rule("Init", ["ROOT"], ["FT", "F", "RF", "PF", "NF", "RPF", "RNF"], 0, 0,
                            [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6)])
     # All possible rules for the finger F
-    create_all_rules("AddFinger", ["F"], [["RT1", "RT2", "RT3"], ["RE"], ["FG"]], 0, 0, [(0, 1),
-                                                                                         (1, 2)])
+    create_all_rules("AddFinger", ["F"], [["RT1", "RT2", "RT3"], ["FG"]], 0, 0, [(0, 1)])
     rule_vocab.create_rule("RemoveFinger", ["F"], [], 0, 0, [])
     # All possible rules for the finger RF
-    create_all_rules("AddFinger_R", ["RF"], [["RE"], ["RT1", "RT2", "RT3"], ["RE"], ["FG"]], 0, 0,
-                     [(0, 1), (1, 2), (2, 3)])
+    create_all_rules("AddFinger_R", ["RF"], [["RE"], ["RT1", "RT2", "RT3"], ["FG"]], 0, 0,
+                     [(0, 1), (1, 2)])
     rule_vocab.create_rule("RemoveFinger_R", ["RF"], [], 0, 0, [])
 
     # All rules adding a phalanx
@@ -139,41 +137,37 @@ def create_rules():
 
     # All possible rules for the finger PF
     create_all_rules("AddFinger_P", ["PF"],
-                     [["RT1", "RT2", "RT3"], ["TP1", "TP2", "TP3"], ["RE"], ["FG"]], 0, 0, [(0, 1),
-                                                                                            (1, 2),
-                                                                                            (2, 3)])
-    create_all_rules("AddFinger_PT", ["PF"], [["RN"], ["RT1", "RT2", "RT3"], ["RE"], ["FG"]], 0, 0,
-                     [(0, 1), (1, 2), (2, 3)])
+                     [["RT1", "RT2", "RT3"], ["TP1", "TP2", "TP3"],  ["FG"]], 0, 0, [(0, 1),
+                                                                                            (1, 2)])
+    create_all_rules("AddFinger_PT", ["PF"], [["RN"], ["RT1", "RT2", "RT3"], ["FG"]], 0, 0,
+                     [(0, 1), (1, 2)])
 
     rule_vocab.create_rule("RemoveFinger_P", ["PF"], [], 0, 0, [])
 
     # All possible rules for the finger NF
     create_all_rules("AddFinger_N", ["NF"],
-                     [["RT1", "RT2", "RT3"], ["TN1", "TN2", "TN3"], ["RE"], ["FG"]], 0, 0, [(0, 1),
-                                                                                            (1, 2),
-                                                                                            (2, 3)])
-    create_all_rules("AddFinger_NT", ["NF"], [["RP"], ["RT1", "RT2", "RT3"], ["RE"], ["FG"]], 0, 0,
-                     [(0, 1), (1, 2), (2, 3)])
+                     [["RT1", "RT2", "RT3"], ["TN1", "TN2", "TN3"], ["FG"]], 0, 0, [(0, 1),
+                                                                                            (1, 2)])
+    create_all_rules("AddFinger_NT", ["NF"], [["RP"], ["RT1", "RT2", "RT3"], ["FG"]], 0, 0,
+                     [(0, 1), (1, 2)])
     rule_vocab.create_rule("RemoveFinger_N", ["NF"], [], 0, 0, [])
 
     # All possible rules for the finger RPF
     create_all_rules("AddFinger_RP", ["RPF"],
-                     [["RE"], ["RT1", "RT2", "RT3"], ["TP1", "TP2", "TP3"], ["RE"], ["FG"]], 0, 0,
-                     [(0, 1), (1, 2), (2, 3), (3, 4)])
+                     [["RE"], ["RT1", "RT2", "RT3"], ["TP1", "TP2", "TP3"], ["FG"]], 0, 0,
+                     [(0, 1), (1, 2), (2, 3)])
     create_all_rules("AddFinger_RPT", ["RPF"],
-                     [["RE"], ["RN"], ["RT1", "RT2", "RT3"], ["RE"], ["FG"]], 0, 0, [(0, 1), (1, 2),
-                                                                                     (2, 3),
-                                                                                     (3, 4)])
+                     [["RE"], ["RN"], ["RT1", "RT2", "RT3"], ["FG"]], 0, 0, [(0, 1), (1, 2),
+                                                                                     (2, 3)])
     rule_vocab.create_rule("RemoveFinger_RP", ["RPF"], [], 0, 0, [])
 
     # All possible rules for the finger RNF
     create_all_rules("AddFinger_RN", ["RNF"],
-                     [["RE"], ["RT1", "RT2", "RT3"], ["TN1", "TN2", "TN3"], ["RE"], ["FG"]], 0, 0,
-                     [(0, 1), (1, 2), (2, 3), (3, 4)])
+                     [["RE"], ["RT1", "RT2", "RT3"], ["TN1", "TN2", "TN3"], ["FG"]], 0, 0,
+                     [(0, 1), (1, 2), (2, 3)])
     create_all_rules("AddFinger_RNT", ["RNF"],
-                     [["RE"], ["RP"], ["RT1", "RT2", "RT3"], ["RE"], ["FG"]], 0, 0, [(0, 1), (1, 2),
-                                                                                     (2, 3),
-                                                                                     (3, 4)])
+                     [["RE"], ["RP"], ["RT1", "RT2", "RT3"], ["FG"]], 0, 0, [(0, 1), (1, 2),
+                                                                                     (2, 3)])
     rule_vocab.create_rule("RemoveFinger_RN", ["RNF"], [], 0, 0, [])
 
     # The dict of torques for the joints

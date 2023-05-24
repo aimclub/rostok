@@ -82,8 +82,9 @@ class LateForceCriterion(Criterion):
             if data is np.nan: break
             for contact in data:
                 total_force_module += np.linalg.norm(contact[1])
-                if total_force_module > self.force_threshold:
-                    counter+=1
+
+            if total_force_module > self.force_threshold:
+                counter += 1
 
         return counter/ (len(body_contacts_cut))
 
@@ -94,7 +95,7 @@ class LateForceAmountCriterion(Criterion):
     def calculate_reward(self, simulation_output):
         env_data = simulation_output[1]
         body_contacts = env_data.get_data("n_contacts")[0]
-        step_cutoff = int(len(body_contacts) * self.cut_off) 
+        step_cutoff = int(len(body_contacts) * self.cut_off)
         counter = 0
         body_contacts_cut = body_contacts[step_cutoff: : ]
         for data in body_contacts_cut:

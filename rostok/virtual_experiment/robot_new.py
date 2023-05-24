@@ -147,7 +147,7 @@ class RobotChrono:
                 start_frame: initial position of the base body"""
         self.__built_graph = BuiltGraphChrono(robot_graph, system, start_frame, is_fixed)
         self.sensor = Sensor(self.__built_graph.body_map_ordered, self.__built_graph.joint_map_ordered)
-        self.controller = LinearSinControllerChrono(self.__built_graph.joint_map_ordered, control_parameters)
+        self.controller = ConstController(self.__built_graph.joint_map_ordered, control_parameters)
         self.data_storage = DataStorage()
     def get_graph(self):
         return self.__built_graph

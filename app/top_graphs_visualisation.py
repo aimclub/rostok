@@ -11,7 +11,7 @@ rule_vocabul, torque_dict = create_rules()
 
 grasp_object_blueprint = get_object_parametrized_sphere(0.4, 0.7)
 
-graph_report: OptimizedGraphReport = load_saveable(Path(r"results\Reports_23y_02m_26d_21H_48M\optimized_graph_report.pickle"))
+graph_report: OptimizedGraphReport = load_saveable(Path(r"results\Reports_23y_05m_24d_13H_17M\optimized_graph_report.pickle"))
 
 control_optimizer = config_with_standard_graph(grasp_object_blueprint, torque_dict)
 simulation_rewarder = control_optimizer.rewarder

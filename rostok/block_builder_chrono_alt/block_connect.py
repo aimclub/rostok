@@ -45,7 +45,7 @@ def make_fix_joint(prev_block: BuildingBody, next_block: BuildingBody, system: c
     system.Update()
 
 # the function places and connects a sequence of blocks. The sequence should start from the root block
-def place_and_connect(sequence: list[BLOCK_CLASS_TYPES], system: chrono.ChSystem):
+def place_and_connect(sequence, system: chrono.ChSystem):
     # all connections occurs between bodies
     previous_body_block = sequence[0]
     if not previous_body_block.is_build:
