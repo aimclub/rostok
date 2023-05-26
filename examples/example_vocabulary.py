@@ -2,14 +2,14 @@ from cmath import sqrt
 
 import numpy as np
 
-from rostok.block_builder_api.block_blueprints import TransformBlueprint, PrimitiveBodyBlueprint, \
-EnvironmentBodyBlueprint, RevolveJointBlueprint
+from rostok.block_builder_api.block_blueprints import (PrimitiveBodyBlueprint,
+                                                       RevolveJointBlueprint, TransformBlueprint)
+from rostok.block_builder_api.block_parameters import JointInputType
 from rostok.block_builder_api.easy_body_shapes import Box
-from rostok.block_builder_chrono.blocks_utils import FrameTransform
+from rostok.block_builder_chrono_alt.blocks_utils import FrameTransform
 from rostok.graph_grammar.node import ROOT, GraphGrammar
 from rostok.graph_grammar.node_vocabulary import NodeVocabulary
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
-from rostok.block_builder_api.block_parameters import JointInputType
 
 # Bodies
 link1 = PrimitiveBodyBlueprint(Box(0.1, 0.6, 0.4))
@@ -38,7 +38,6 @@ transform_mzx_plus = TransformBlueprint(MOVE_ZX_PLUS)
 transform_mzx_minus = TransformBlueprint(MOVE_ZX_MINUS)
 transform_mx_plus = TransformBlueprint(MOVE_X_PLUS)
 transform_mz_plus_x_minus = TransformBlueprint(MOVE_Z_PLUS_X_MINUS)
-
 
 # Joints
 revolve1 = RevolveJointBlueprint(JointInputType.TORQUE)
@@ -114,7 +113,7 @@ rule_action_non_terminal_no_joints = np.asarray(["FlatCreate", "Mount", "FingerU
 rule_action_terminal_no_joints = np.asarray(
     ["TerminalFlat1", "TerminalTransformL", "TerminalEndLimb"])
 rule_action_terminal_no_joints = np.asarray(
-    ["TerminalFlat1", "TerminalTransformL","TerminalJoint", "TerminalL2", "TerminalEndLimb"])
+    ["TerminalFlat1", "TerminalTransformL", "TerminalJoint", "TerminalL2", "TerminalEndLimb"])
 
 rule_action_no_joints = np.r_[rule_action_non_terminal_no_joints, rule_action_terminal_no_joints]
 
@@ -145,12 +144,3 @@ def get_nonterminal_graph_two_finger():
     for i in list(rule_action_non_terminal_two_finger):
         G.apply_rule(rule_vocab.get_rule(i))
     return G
-
-
-J_NODES = [node_vocab.get_node("J"), node_vocab.get_node("J1")]
-B_NODES = list(map(node_vocab.get_node, ["L", "L1", "L2", "F1", "F2", "U1"]))
-T_EXAMPLE = list(map(node_vocab.get_node, ["T1", "T2"]))
-RM_MOUNTS = list(map(node_vocab.get_node, ["T1", "T3"]))
-LM_MOUNTS = list(map(node_vocab.get_node, ["T2", "T4"]))
-PALM_LIST = list(map(node_vocab.get_node, ["F1", "F2"]))
-NODE_FEATURES = [B_NODES, J_NODES, LM_MOUNTS, RM_MOUNTS]
