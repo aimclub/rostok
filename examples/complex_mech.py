@@ -1,14 +1,9 @@
-from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject
 from rostok.graph_grammar.node import GraphGrammar, Node
-from rostok.block_builder_api import block_parameters, block_blueprints
+from rostok.block_builder_api import block_blueprints
 from rostok.simulation_chrono import basic_simulation
 from rostok.block_builder_api.block_blueprints import easy_body_shapes
-from cmath import sqrt
-import numpy as np
-from rostok.block_builder_api.block_parameters import DefaultFrame, FrameTransform, JointInputType, Material
+from rostok.block_builder_api.block_parameters import FrameTransform, JointInputType, Material
 from rostok.block_builder_api.block_parameters import JointInputType
-import networkx as nx
-import pychrono as chrono
 
 robot_material = Material()
 WHEEL_WIDTH = 0.07
@@ -128,68 +123,54 @@ for num, ids in enumerate(mount_ids):
     mech_graph.add_node(id_joint, Node=motor_joint_wheel)
     mech_graph.add_edges_from([(ids, id_transform), (id_transform, id_joint), (id_joint, id_wheel)])
 
-# id_offset = 100
-# mech_graph.add_node(id_offset + 2, Node=transform_right_side)
-# mech_graph.add_node(id_offset + 3, Node=transform_front)
-# mech_graph.add_node(id_offset + 4, Node=stiffness_joint)
-# mech_graph.add_node(id_offset + 5, Node=knee)
-# mech_graph.add_node(id_offset + 6, Node=transform_knee_front)
-# mech_graph.add_node(id_offset + 7, Node=transform_knee_back)
-# mech_graph.add_node(id_offset + 8, Node=long_link_front)
-# mech_graph.add_node(id_offset + 9, Node=long_link)
-# #
-# mech_graph.add_node(id_offset + 10, Node=stiffness_knee_joint)
-# mech_graph.add_node(id_offset + 11, Node=knee)
-# mech_graph.add_node(id_offset + 12, Node=transform_knee_front)
-# mech_graph.add_node(id_offset + 13, Node=transform_knee_back)
-# mech_graph.add_node(id_offset + 14, Node=long_link)
-# mech_graph.add_node(id_offset + 15, Node=long_link)
+id_offset = 100
+mech_graph.add_node(id_offset + 2, Node=transform_right_side)
+mech_graph.add_node(id_offset + 3, Node=transform_front)
+mech_graph.add_node(id_offset + 4, Node=stiffness_joint)
+mech_graph.add_node(id_offset + 5, Node=knee)
+mech_graph.add_node(id_offset + 6, Node=transform_knee_front)
+mech_graph.add_node(id_offset + 7, Node=transform_knee_back)
+mech_graph.add_node(id_offset + 8, Node=long_link_front)
+mech_graph.add_node(id_offset + 9, Node=long_link)
+#
+mech_graph.add_node(id_offset + 10, Node=stiffness_knee_joint)
+mech_graph.add_node(id_offset + 11, Node=knee)
+mech_graph.add_node(id_offset + 12, Node=transform_knee_front)
+mech_graph.add_node(id_offset + 13, Node=transform_knee_back)
+mech_graph.add_node(id_offset + 14, Node=long_link)
+mech_graph.add_node(id_offset + 15, Node=long_link)
 
-# #
-# upper_section_suspension_right = [
-#     (x[0] + id_offset, x[1] + id_offset) for x in upper_section_suspension
-# ]
-# upper_section_suspension_right[0] = (1, upper_section_suspension_right[0][1])
-# mech_graph.add_edges_from(upper_section_suspension_right)
+#
+upper_section_suspension_right = [
+    (x[0] + id_offset, x[1] + id_offset) for x in upper_section_suspension
+]
+upper_section_suspension_right[0] = (1, upper_section_suspension_right[0][1])
+mech_graph.add_edges_from(upper_section_suspension_right)
 
-# #
-# knee_section_right = [(x[0] + id_offset, x[1] + id_offset) for x in knee_section]
-# mech_graph.add_edges_from(knee_section_right)
-# #
-# bottom_section_suspension_right = [
-#     (x[0] + id_offset, x[1] + id_offset) for x in bottom_section_suspension
-# ]
-# mech_graph.add_edges_from(bottom_section_suspension_right)
+#
+knee_section_right = [(x[0] + id_offset, x[1] + id_offset) for x in knee_section]
+mech_graph.add_edges_from(knee_section_right)
+#
+bottom_section_suspension_right = [
+    (x[0] + id_offset, x[1] + id_offset) for x in bottom_section_suspension
+]
+mech_graph.add_edges_from(bottom_section_suspension_right)
 
-# mount_ids = [x for x in mech_graph.nodes() if mech_graph.out_degree(x) == 0 and x > id_offset]
-# for num, ids in enumerate(mount_ids):
-#     id_transform = len(mech_graph) + 1
-#     id_joint = len(mech_graph) + 3
-#     id_wheel = len(mech_graph) + 2
-#     mech_graph.add_node(id_transform, Node=transform_rwt)
-#     mech_graph.add_node(id_wheel, Node=wheel)
-#     mech_graph.add_node(id_joint, Node=motor_joint_wheel)
-#     mech_graph.add_edges_from([(ids, id_transform), (id_transform, id_joint), (id_joint, id_wheel)])
+mount_ids = [x for x in mech_graph.nodes() if mech_graph.out_degree(x) == 0 and x > id_offset]
+for num, ids in enumerate(mount_ids):
+    id_transform = len(mech_graph) + 1
+    id_joint = len(mech_graph) + 3
+    id_wheel = len(mech_graph) + 2
+    mech_graph.add_node(id_transform, Node=transform_rwt)
+    mech_graph.add_node(id_wheel, Node=wheel)
+    mech_graph.add_node(id_joint, Node=motor_joint_wheel)
+    mech_graph.add_edges_from([(ids, id_transform), (id_transform, id_joint), (id_joint, id_wheel)])
 
 mech_graph.add_node(59, Node=transform_front)
 mech_graph.add_node(60, Node=accum)
 mech_graph.add_edges_from([(1, 59), (59, 60)])
 
 
-#mech_graph.add_edges_from([(14, 16), (16, 17)])
-
-# mech_graph.add_node(6, Node=transform_right_side)
-# mech_graph.add_node(7, Node=transform_front)
-# mech_graph.add_node(8, Node=stiffness_joint)
-# mech_graph.add_node(9, Node=long_link)
-# mech_graph.add_edges_from([(1, 6), (6, 7), (7, 8), (8, 9)])
-
 sim_preview = basic_simulation.SystemPreviewChrono()
-# sim_final = basic_simulation.RobotSimulationChrono([(ChronoEasyShapeObject(easy_body_shapes.Box(5, 0.2, 5), pos = FrameTransform([0, -2, 0], [1, 0, 0, 0])), False)])
-# sim_final.objects[0].body.SetBodyFixed(True)
-# sim_final.add_design(mech_graph, [], is_fix_base = False)
-# sim_final.chrono_system.Set_G_acc(chrono.ChVectorD(0, -9, 0))
-# sim_final.simulate(100000, 0.001, 25, True)
-
 sim_preview.add_design(mech_graph)
 sim_preview.simulate(10000)
