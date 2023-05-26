@@ -35,7 +35,7 @@ def make_fix_joint(prev_block: BuildingBody, next_block: BuildingBody, system: c
     next_body = next_block.body
 
     fix_joint = chrono.ChLinkMateFix()
-    fix_joint.Initialize(next_body, prev_body, prev_block.transformed_frame_out)
+    fix_joint.Initialize(next_body, prev_body, chrono.ChFrameD(prev_block.transformed_frame_out.GetAbsCoord()))
     system.AddLink(fix_joint)
     system.Update()
 
