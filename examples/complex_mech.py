@@ -4,6 +4,7 @@ from rostok.simulation_chrono import basic_simulation
 from rostok.block_builder_api.block_blueprints import easy_body_shapes
 from rostok.block_builder_api.block_parameters import FrameTransform, JointInputType, Material
 from rostok.block_builder_api.block_parameters import JointInputType
+from rostok.graph_grammar.graph_utils import plot_graph
 
 robot_material = Material()
 WHEEL_WIDTH = 0.07
@@ -170,7 +171,7 @@ mech_graph.add_node(59, Node=transform_front)
 mech_graph.add_node(60, Node=accum)
 mech_graph.add_edges_from([(1, 59), (59, 60)])
 
-
+plot_graph(mech_graph)
 sim_preview = basic_simulation.SystemPreviewChrono()
 sim_preview.add_design(mech_graph)
 sim_preview.simulate(10000)
