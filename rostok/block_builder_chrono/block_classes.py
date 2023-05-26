@@ -248,8 +248,7 @@ class ChronoRevolveJoint(BlockBridge):
         """
         system.Update()
         self.joint = self.input_type.motor()
-        self.joint.Initialize(in_block.body, out_block.body, True, in_block.transformed_frame_out,
-                              out_block.transformed_frame_input)
+        self.joint.Initialize(out_block.body, in_block.body, in_block.transformed_frame_out)
         system.AddLink(self.joint)
 
         if (self.stiffness != 0) or (self.damping != 0):
