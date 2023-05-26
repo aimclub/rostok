@@ -22,16 +22,16 @@ i_list = set()
 start = time.time()
 top_list =[]
 sorted_graph_list = sorted(graph_list, key = lambda x: x.reward)
-some_top = sorted_graph_list[-1:-100:-1]
+some_top = sorted_graph_list[-1:-6:-1]
 for graph in some_top:
     G = graph.graph
     reward = graph.reward
     control = graph.control
     data = {"initial_value": control}
-    simulation_output = simulation_manager.run_simulation(G, data, False)
-#    res = -simulation_rewarder.calculate_reward(simulation_output)
-    # print(reward)
-    # print(res)
-    # print()
+    simulation_output = simulation_manager.run_simulation(G, data, True)
+    res = -simulation_rewarder.calculate_reward(simulation_output)
+    print(reward)
+    print(res)
+    print()
 ex = time.time() - start
 print(f"time :{ex}")
