@@ -6,7 +6,7 @@ channels:
   - https://conda.anaconda.org/intel
   - https://conda.anaconda.org/conda-forge
 dependencies:
-  - python=3.10
+  - python=3.10.8
   - conda-forge::irrlicht=1.8.5
   - projectchrono::pychrono=8.*
   - numpy
