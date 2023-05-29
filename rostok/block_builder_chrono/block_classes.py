@@ -258,7 +258,8 @@ class ChronoRevolveJoint(BlockBridge):
 
         if (self.with_collision):
             eps = 0.002
-            cylinder = chrono.ChBodyEasyCylinder(self.radius - eps, self.length, self.density, True,
+            
+            cylinder = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, self.radius - eps, self.length, self.density, True,
                                                  True, self.material)
             turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROTATE_Y_TO_Z)
             reversed_turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROTATE_Z_TO_Y)
@@ -328,7 +329,7 @@ class PrimitiveBody(BuildingBody):
             pos_in_marker = chrono.ChVectorD(0, -shape.length_y * 0.5 - eps, 0)
             pos_out_marker = chrono.ChVectorD(0, shape.length_y * 0.5 + eps, 0)
         elif isinstance(shape, easy_body_shapes.Cylinder):
-            body = chrono.ChBodyEasyCylinder(shape.radius, shape.height_y, density, True, True,
+            body = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, shape.radius, shape.height_y, density, True, True,
                                              material)
             pos_in_marker = chrono.ChVectorD(0, -shape.height_y * 0.5 - eps, 0)
             pos_out_marker = chrono.ChVectorD(0, shape.height_y * 0.5 + eps, 0)
@@ -378,7 +379,7 @@ class ChronoEasyShapeObject():
             body = chrono.ChBodyEasyBox(shape.width_x, shape.length_y, shape.height_z, density,
                                         True, True, material)
         elif isinstance(shape, easy_body_shapes.Cylinder):
-            body = chrono.ChBodyEasyCylinder(shape.radius, shape.height_y, density, True, True,
+            body = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, shape.radius, shape.height_y, density, True, True,
                                              material)
         elif isinstance(shape, easy_body_shapes.Sphere):
             body = chrono.ChBodyEasySphere(shape.radius, density, True, True, material)
