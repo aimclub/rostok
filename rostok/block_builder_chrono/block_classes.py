@@ -247,12 +247,14 @@ class ChronoRevolveJoint(BlockBridge):
             out_block (BuildingBody): Master body to connect
         """
         system.Update()
-        self.joint = self.input_type.motor()
-        self.joint.Initialize(out_block.body, in_block.body, chrono.ChFrameD(in_block.transformed_frame_out.GetAbsCoord()))
-        system.AddLink(self.joint)
+
 
         if (self.stiffness != 0) or (self.damping != 0):
             self._add_spring_damper(in_block, out_block, system)
+        else:
+            self.joint = self.input_type.motor()
+            self.joint.Initialize(out_block.body, in_block.body, chrono.ChFrameD(in_block.transformed_frame_out.GetAbsCoord()))
+            system.AddLink(self.joint)
 
         if (self.with_collision):
             eps = 0.002
@@ -269,8 +271,7 @@ class ChronoRevolveJoint(BlockBridge):
             cylinder.AddMarker(marker)
             system.Update()
             fix_joint = chrono.ChLinkMateFix()
-            fix_joint.Initialize(in_block.body, cylinder, True, in_block.transformed_frame_out,
-                                 marker)
+            fix_joint.Initialize(cylinder, in_block.body, chrono.ChFrameD(in_block.transformed_frame_out.GetAbsCoord()))
             system.Add(fix_joint)
         else:
             # Add cylinder visual only
@@ -290,7 +291,7 @@ class ChronoRevolveJoint(BlockBridge):
                                       out_block.ref_frame_in.GetAbsCoord())
         self._torque_functor = SpringTorque(self.stiffness, self.damping, self.equilibrium_position)
         self._joint_spring.RegisterTorqueFunctor(self._torque_functor)
-        system.Add(self._joint_spring)
+        system.AddLink(self._joint_spring)
 
 
 class PrimitiveBody(BuildingBody):
