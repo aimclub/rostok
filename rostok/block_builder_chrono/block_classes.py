@@ -248,13 +248,11 @@ class ChronoRevolveJoint(BlockBridge):
         """
         system.Update()
 
-
+        self.joint = self.input_type.motor()
+        self.joint.Initialize(out_block.body, in_block.body, chrono.ChFrameD(in_block.transformed_frame_out.GetAbsCoord()))
+        system.AddLink(self.joint)
         if (self.stiffness != 0) or (self.damping != 0):
             self._add_spring_damper(in_block, out_block, system)
-        else:
-            self.joint = self.input_type.motor()
-            self.joint.Initialize(out_block.body, in_block.body, chrono.ChFrameD(in_block.transformed_frame_out.GetAbsCoord()))
-            system.AddLink(self.joint)
 
         if (self.with_collision):
             eps = 0.002
@@ -286,9 +284,8 @@ class ChronoRevolveJoint(BlockBridge):
     def _add_spring_damper(self, in_block: BuildingBody, out_block: BuildingBody,
                            system: chrono.ChSystem):
         self._joint_spring = chrono.ChLinkRSDA()
-        self._joint_spring.Initialize(in_block.body, out_block.body, False,
-                                      in_block.transformed_frame_out.GetAbsCoord(),
-                                      out_block.ref_frame_in.GetAbsCoord())
+        self._joint_spring.Initialize(out_block.body, in_block.body,
+                                      in_block.transformed_frame_out.GetAbsCoord())
         self._torque_functor = SpringTorque(self.stiffness, self.damping, self.equilibrium_position)
         self._joint_spring.RegisterTorqueFunctor(self._torque_functor)
         system.AddLink(self._joint_spring)

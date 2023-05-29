@@ -7,6 +7,7 @@ from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransf
 from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject
 from rostok.virtual_experiment.robot_new import BuiltGraphChrono, RobotChrono
 from rostok.virtual_experiment.sensors import DataStorage, Sensor
+from rostok.control_chrono.controller import ConstController
 
 
 class SystemPreviewChrono:
@@ -126,9 +127,9 @@ class RobotSimulationChrono():
         self.robot.data_storage.add_data_type("body_trajectories", self.robot.get_graph().body_map_ordered, step_number,self.robot.sensor.get_body_trajectory_point())
         self.robot.data_storage.add_data_type("joint_trajectories", self.robot.get_graph().joint_map_ordered, step_number, self.robot.sensor.get_joint_trajectory_point())
 
-    def add_design(self, graph, control_parameters, Frame: FrameTransform = DefaultFrame, is_fixed = True):
+    def add_design(self, graph, control_parameters, control_cls = ConstController, Frame: FrameTransform = DefaultFrame, is_fixed = True):
         """"""
-        self.robot = RobotChrono(graph, self.chrono_system, control_parameters, Frame, is_fixed)
+        self.robot = RobotChrono(graph, self.chrono_system, control_parameters,control_cls, Frame, is_fixed)
 
     def add_object(self, obj: ChronoEasyShapeObject, read_data: bool = False, is_fixed = False):
         if is_fixed:

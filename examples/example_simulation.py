@@ -8,15 +8,13 @@ from rostok.block_builder_api.block_parameters import Material, FrameTransform
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
 from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.simulation_chrono.basic_simulation import RobotSimulationChrono
-from rostok.block_builder_chrono_alt.block_builder_chrono_api import ChronoBlockCreatorInterface as creator
+from rostok.block_builder_chrono.block_builder_chrono_api import ChronoBlockCreatorInterface as creator
 from rostok.library.rule_sets.simple_designs import  get_two_link_one_finger, get_one_link_one_finger
 mechs = [get_terminal_graph_three_finger, get_terminal_graph_two_finger]
 from rostok.graph_grammar.graph_utils import plot_graph, plot_graph_ids
-from rostok.library.rule_sets.ruleset_locomotion import get_bip, get_bip_single, get_box, get_box_joints, get_box_one_joint
-
+from rostok.control_chrono.controller import ConstController, SinControllerChrono
 mechs = [get_one_link_one_finger]
 mechs = [get_two_link_one_finger]
-mechs = [get_bip]
 def rotation_x(alpha):
     quat_X_ang_alpha = chrono.Q_from_AngX(np.deg2rad(alpha))
     return [quat_X_ang_alpha.e0, quat_X_ang_alpha.e1, quat_X_ang_alpha.e2, quat_X_ang_alpha.e3]
@@ -35,10 +33,7 @@ for get_graph in mechs:
     for _ in range(len(get_joint_vector_from_graph(graph))):
         controll_parameters.append(np.random.normal(0,1,1)[0])
 
-    controll_parameters = {"initial_value": [0, 0, 0, 0, 0, 0 ,0 ,0, 0, 0], "sin_parameters" : [[0.000, 0.1, 0.1], [0.000, 0.1, 0.2],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1]]}
-    #controll_parameters = {"initial_value": [0, 0, 0, 0, 0, 0 ,0 ,0], "sin_parameters" : [[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1],[0.000, 0.1, 0.1]]}
-
-    #controll_parameters = {"initial_value": [0], "sin_parameters" : [[0.001, 0.1, 0.1]]}
+    controll_parameters = {"initial_value": [0, 0], "sin_parameters" : [[0.001, 0.1, 0.1], [0.002,0.2,0.2]]}
     print(controll_parameters)
     sim = RobotSimulationChrono([])
     # Create object to grasp
@@ -50,7 +45,7 @@ for get_graph in mechs:
                                    pos=FrameTransform([0, 0, 0], [1, 0, 0, 0]))
     sim.add_object(creator.init_block_from_blueprint(obj))
     sim.objects[0].body.SetBodyFixed(True)
-    sim.add_design(graph, controll_parameters, FrameTransform([0, 2.5, 0], rotation_x(180)), False)
+    sim.add_design(graph, controll_parameters, control_cls = SinControllerChrono,Frame = FrameTransform([0, 2.5, 0], rotation_x(180)), is_fixed = True)
     i=0
     # for idx, body in sim.robot.get_graph().body_map_ordered.items():
     #     if i == 2:

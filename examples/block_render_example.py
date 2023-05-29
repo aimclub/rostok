@@ -7,7 +7,7 @@ from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint,
                                                        ChronoTransform,
                                                        PrimitiveBody)
-from rostok.block_builder_chrono_alt.block_connect import place_and_connect
+from rostok.block_builder_chrono.block_connect import place_and_connect
 
 # Create Chrono system instance
 mysystem = chrono.ChSystemNSC()
