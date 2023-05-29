@@ -103,7 +103,7 @@ class RobotSimulationChrono():
         self.chrono_system.SetSolverMaxIterations(100)
         self.chrono_system.SetSolverForceTolerance(1e-6)
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
-        self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
+        self.chrono_system.Set_G_acc(chrono.ChVectorD(0, -1, 0))
         # the simulating mechanism is to be added with function add_design, the value in constructor is None
         self.env_data = DataStorage()
         self.robot: Optional[RobotChrono] = None

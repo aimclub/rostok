@@ -30,7 +30,7 @@ def create_rules():
 
     turn_90_transform = TransformBlueprint(FrameTransform([0, 0, 0], rotation_y(90)))
     turn_m90_transform = TransformBlueprint(FrameTransform([0, 0, 0], rotation_y(-90)))
-    revolve = RevolveJointBlueprint(JointInputType.TORQUE)
+    revolve = RevolveJointBlueprint(JointInputType.TORQUE, stiffness=100, damping=0.2)
     # Nodes
     node_vocab = NodeVocabulary()
     node_vocab.add_node(ROOT)

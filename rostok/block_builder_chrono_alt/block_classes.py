@@ -272,8 +272,7 @@ class ChronoRevolveJoint(BlockBridge):
         If we have two not initialize joints engine crash
 
         Args:
-            in_block (BuildingBody): Slave body to connect
-            out_block (BuildingBody): Master body to connect
+            in_block (BuildingBody): Master body to connect
         """
         system.Update()
         self.joint = self.input_type.motor()
@@ -286,12 +285,11 @@ class ChronoRevolveJoint(BlockBridge):
     def _add_spring_damper(self, in_block: BuildingBody,
                            system: chrono.ChSystem):
         self._joint_spring = chrono.ChLinkRSDA()
-        self._joint_spring.Initialize(in_block.body, self.body, False,
-                                      in_block.transformed_frame_out.GetAbsCoord(),
-                                      self._ref_frame_in.GetAbsCoord())
+        self._joint_spring.Initialize(self.body, in_block.body,
+                                      in_block.transformed_frame_out.GetAbsCoord())
         self._torque_functor = SpringTorque(self.stiffness, self.damping, self.equilibrium_position)
         self._joint_spring.RegisterTorqueFunctor(self._torque_functor)
-        system.Add(self._joint_spring)
+        system.AddLink(self._joint_spring)
 
 
 class PrimitiveBody(BuildingBody):
