@@ -6,9 +6,9 @@ channels:
   - https://conda.anaconda.org/intel
   - https://conda.anaconda.org/conda-forge
 dependencies:
-  - python=3.9
+  - python=3.10.8
   - conda-forge::irrlicht=1.8.5
-  - conda-forge::pythonocc-core=7.4.1
+  - projectchrono::pychrono=8.*
   - numpy
   - pip
   - pip:
