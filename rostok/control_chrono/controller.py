@@ -94,6 +94,9 @@ class PIDFunction(chrono.ChFunction):
         else:
             return float(self.function(time))
 
+    def Get_y_dx(self, time):
+        print("Derivative called")
+        return super().Get_y_dx()
 class PIDController(RobotControllerChrono):
     def initialize_functions(self):
         i = 0

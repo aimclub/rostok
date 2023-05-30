@@ -43,7 +43,7 @@ for get_graph in mechs:
             self.function = interpolate.interp1d(self.times, self.values)
 
         def Get_y(self, time):
-            return self.function(time)
+            return float(self.function(time))
 
     def create_linear_trajectory(starting_value, final_value, step):
         pass
