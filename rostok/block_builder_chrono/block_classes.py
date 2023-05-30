@@ -9,8 +9,8 @@ import pychrono.core as chrono
 import rostok.block_builder_api.easy_body_shapes as easy_body_shapes
 from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform)
 from rostok.block_builder_chrono.block_types import (BlockBody, BlockBridge, BlockTransform)
-from rostok.block_builder_chrono.blocks_utils import (ContactReporter, SpringTorque,
-                                                      frame_transform_to_chcoordsys, rotation_z_q)
+from rostok.block_builder_chrono.blocks_utils import (SpringTorque,
+                                                        frame_transform_to_chcoordsys, rotation_z_q)
 from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
     DefaultChronoMaterial, struct_material2object_material)
