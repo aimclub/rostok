@@ -53,13 +53,12 @@ def make_collide(body_list: list[BlockBody],
 
 class SpringTorque(chrono.TorqueFunctor):
 
-    def __init__(self, spring_coef, damping_coef, rest_angle):
+    def __init__(self, spring_coef, damping_coef):
         super(SpringTorque, self).__init__()
         self.spring_coef = spring_coef
         self.damping_coef = damping_coef
-        self.rest_angle = rest_angle
 
-    def evaluate(self, time, angle, vel, link):
+    def evaluate(self, time, rest_angle, angle, vel, link):
         """Calculation of torque, that is created by spring
         
 
@@ -76,7 +75,7 @@ class SpringTorque(chrono.TorqueFunctor):
         torque = 0
         if self.spring_coef > 10**-3:
             torque = -self.spring_coef * \
-                (angle - self.rest_angle) - self.damping_coef * vel
+                (angle - rest_angle) - self.damping_coef * vel
         else:
             torque = -self.damping_coef * vel
         return torque

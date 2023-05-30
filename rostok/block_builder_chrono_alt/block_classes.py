@@ -214,7 +214,7 @@ class ChronoRevolveJoint(BlockBridge):
         self.material = material
         # cylinder without collision
         eps = self.radius * 0.02
-        self.body = chrono.ChBodyEasyCylinder(self.radius-eps, self.length, self.density, True,
+        self.body = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, self.radius-eps, self.length, self.density, True,
                                                  False, self.material)
         input_marker = chrono.ChMarker()
         out_marker = chrono.ChMarker()
@@ -287,7 +287,9 @@ class ChronoRevolveJoint(BlockBridge):
         self._joint_spring = chrono.ChLinkRSDA()
         self._joint_spring.Initialize(self.body, in_block.body,
                                       in_block.transformed_frame_out.GetAbsCoord())
-        self._torque_functor = SpringTorque(self.stiffness, self.damping, self.equilibrium_position)
+
+        self._torque_functor = SpringTorque(self.stiffness, self.damping)
+        self._joint_spring.SetRestAngle(self.equilibrium_position)
         self._joint_spring.RegisterTorqueFunctor(self._torque_functor)
         system.AddLink(self._joint_spring)
 
@@ -325,7 +327,7 @@ class PrimitiveBody(BuildingBody):
             pos_in_marker = chrono.ChVectorD(0, -shape.length_y * 0.5 - eps, 0)
             pos_out_marker = chrono.ChVectorD(0, shape.length_y * 0.5 + eps, 0)
         elif isinstance(shape, easy_body_shapes.Cylinder):
-            body = chrono.ChBodyEasyCylinder(shape.radius, shape.height_y, density, True, True,
+            body = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, shape.radius, shape.height_y, density, True, True,
                                              material)
             pos_in_marker = chrono.ChVectorD(0, -shape.height_y * 0.5 - eps, 0)
             pos_out_marker = chrono.ChVectorD(0, shape.height_y * 0.5 + eps, 0)
@@ -375,7 +377,7 @@ class ChronoEasyShapeObject():
             body = chrono.ChBodyEasyBox(shape.width_x, shape.length_y, shape.height_z, density,
                                         True, True, material)
         elif isinstance(shape, easy_body_shapes.Cylinder):
-            body = chrono.ChBodyEasyCylinder(shape.radius, shape.height_y, density, True, True,
+            body = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, shape.radius, shape.height_y, density, True, True,
                                              material)
         elif isinstance(shape, easy_body_shapes.Sphere):
             body = chrono.ChBodyEasySphere(shape.radius, density, True, True, material)

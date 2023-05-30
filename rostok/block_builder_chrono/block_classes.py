@@ -255,7 +255,7 @@ class ChronoRevolveJoint(BlockBridge):
         if (self.stiffness != 0) or (self.damping != 0):
             self._add_spring_damper(in_block, out_block, system)
 
-        if (self.with_collision):
+        if self.with_collision:
             eps = 0.002
             cylinder = chrono.ChBodyEasyCylinder(self.radius - eps, self.length, self.density, True,
                                                  True, self.material)
