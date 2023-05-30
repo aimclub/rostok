@@ -286,7 +286,8 @@ class ChronoRevolveJoint(BlockBridge):
         self._joint_spring = chrono.ChLinkRSDA()
         self._joint_spring.Initialize(out_block.body, in_block.body,
                                       in_block.transformed_frame_out.GetAbsCoord())
-        self._torque_functor = SpringTorque(self.stiffness, self.damping, self.equilibrium_position)
+        self._torque_functor = SpringTorque(self.stiffness, self.damping)
+        self._joint_spring.SetRestAngle(self.equilibrium_position)
         self._joint_spring.RegisterTorqueFunctor(self._torque_functor)
         system.AddLink(self._joint_spring)
 
