@@ -232,7 +232,7 @@ class RobotSimulationChrono():
             ds.add_data("joint_trajectories", robot.sensor.get_joint_trajectory_point(), step_n)
 
         #controller gets current states of the robot and environment and updates control functions
-        robot.controller.update_functions(current_time, robot.sensor, self.get_current_data())
+        robot.controller.update_functions(current_time + step_length, robot.sensor, self.get_current_data())
 
     def simulate(
         self,

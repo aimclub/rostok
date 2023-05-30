@@ -3,7 +3,7 @@ import numpy as np
 import pychrono as chrono
 from example_vocabulary import (get_terminal_graph_three_finger, get_terminal_graph_two_finger, get_terminal_graph_no_joints)
 from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
-
+from scipy import interpolate
 from rostok.block_builder_api.block_parameters import Material, FrameTransform
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
 from rostok.block_builder_api.easy_body_shapes import Box
@@ -32,8 +32,23 @@ for get_graph in mechs:
 
     for _ in range(len(get_joint_vector_from_graph(graph))):
         controll_parameters.append(np.random.normal(0,1,1)[0])
+    
+    class trajectory(chrono.ChFunction):
+        def __init__(self, times, values):
+            self.values = values
+            self.times = times
+            self.function = interpolate.interp1d([0],[0])
 
-    controll_parameters = {"initial_value": [0, 0], "sin_parameters" : [[0.001, 0.1, 0.1], [0.002,0.2,0.2]]}
+        def set_interpolation(self):
+            self.function = interpolate.interp1d(self.times, self.values)
+
+        def Get_y(self, time):
+            return self.function(time)
+
+    def create_linear_trajectory(starting_value, final_value, step):
+        pass
+    
+    controll_parameters = {"PID_parameters": [[1, 1, 1,chrono.ChFunction_Sine(0.2,1,1) ,0]]}
     print(controll_parameters)
     sim = RobotSimulationChrono([])
     # Create object to grasp

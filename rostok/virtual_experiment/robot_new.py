@@ -5,7 +5,7 @@ import pychrono.core as chrono
 from pychrono.core import ChQuaternionD, ChVectorD
 
 from rostok.block_builder_api.block_parameters import (DefaultFrame,
-                                                       FrameTransform)
+                                                       FrameTransform, JointInputType)
 from rostok.block_builder_chrono.block_builder_chrono_api import \
     ChronoBlockCreatorInterface as creator
 from rostok.block_builder_chrono.block_classes import (BLOCK_CLASS_TYPES,
@@ -16,7 +16,6 @@ from rostok.control_chrono.controller import ConstController
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.virtual_experiment.sensors import Sensor, DataStorage
-
 
 class BuiltGraphChrono:
     """The object of this class is a graph representation in Chrono engine.
@@ -48,6 +47,7 @@ class BuiltGraphChrono:
         self.__graph: GraphGrammar = deepcopy(graph)
         self.body_map_ordered: Dict[int, PrimitiveBody] = {}
         self.joint_map_ordered: Dict[int, ChronoRevolveJoint] = {}
+        self.free_joint_map_ordered: Dict[int, ChronoRevolveJoint] = {}
         self.joint_link_map: Dict[int, Tuple[int, int]] = {}
         self.build_into_system(system, initial_position)
         if is_base_fixed:
@@ -96,7 +96,10 @@ class BuiltGraphChrono:
                     blueprint = self.__graph.nodes[idx]["Node"].block_blueprint
                     created_blocks = creator.init_block_from_blueprint(blueprint)
                     if NodeFeatures.is_joint(self.__graph.nodes[idx].get("Node", None)):
-                        self.joint_map_ordered[idx] = created_blocks
+                        if self.__graph.nodes[idx].get("Node", None).block_blueprint.type_of_input == JointInputType.UNCONTROL:
+                            self.free_joint_map_ordered[idx] = created_blocks
+                        else:
+                            self.joint_map_ordered[idx] = created_blocks
                     elif NodeFeatures.is_body(self.__graph.nodes[idx].get("Node", None)):
                         self.body_map_ordered[idx] = created_blocks
 

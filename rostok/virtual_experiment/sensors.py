@@ -116,6 +116,20 @@ class Sensor:
             output[idx] = round(angle, 3)
 
         return output
+    
+    def get_active_joint_trajectory_point(self):
+        output = {}
+        for idx, joint in self.joint_map_ordered.items():
+            angle = joint.joint.GetMotorRot()
+            output[idx] = round(angle, 3)
+        return output
+
+    def get_active_joint_speed(self):
+        output = {}
+        for idx, joint in self.joint_map_ordered.items():
+            angle_dt = joint.joint.GetMotorRot_dt()
+            output[idx] = round(angle_dt, 3)
+        return output
 
     def get_forces(self):
         output = {}
