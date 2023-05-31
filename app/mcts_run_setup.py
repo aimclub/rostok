@@ -27,7 +27,7 @@ def config_with_standard(grasp_object_blueprint):
     #create criterion manager
     simulation_rewarder = SimulationReward()
     #create criterions and add them to manager
-    simulation_rewarder.add_criterion(TimeCriterion(hp.TIME_STEP_SIMULATION),
+    simulation_rewarder.add_criterion(TimeCriterion(hp.TIME_SIMULATION),
                                       hp.TIME_CRITERION_WEIGHT)
     simulation_rewarder.add_criterion(ForceCriterion(), hp.FORCE_CRITERION_WEIGHT)
     simulation_rewarder.add_criterion(ObjectCOGCriterion(), hp.OBJECT_COG_CRITERION_WEIGHT)

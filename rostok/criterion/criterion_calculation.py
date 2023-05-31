@@ -1,7 +1,8 @@
 from abc import ABC
 from typing import Dict, List, Optional, Tuple, Union
-import pychrono.core as chrono
+
 import numpy as np
+import pychrono.core as chrono
 from scipy.spatial import distance
 
 
@@ -14,10 +15,9 @@ class Criterion(ABC):
 
 class ForceCriterion(Criterion):
 
-    def calculate_reward(self, simulation_output)-> float:
+    def calculate_reward(self, simulation_output) -> float:
         env_data = simulation_output[1]
-        # NDArray[List[Tuple(coord, force)]]
-        body_contacts:np.ndarray[np.ndarray] = env_data.get_data("forces")[0]
+        body_contacts: List[np.ndarray] = env_data.get_data("forces")[0]
         body_contacts.pop(0)
         force_modules = []
         for data in body_contacts:
@@ -26,9 +26,12 @@ class ForceCriterion(Criterion):
             if data.size > 0:
                 total_force = np.zeros(3)
                 for force in data:
-                    total_force+=force[1]
+                    total_force += force[1]
 
-                force_modules.append(np.linalg.norm(total_force))
+                force_module = np.linalg.norm(total_force)
+                # Cut the steps with huge forces
+                if force_module<100:
+                    force_modules.append(force_module)
 
         if len(force_modules) > 0:
             return 1 / (1 + np.mean(np.array(force_modules)))
@@ -37,6 +40,7 @@ class ForceCriterion(Criterion):
 
 
 class TimeCriterion(Criterion):
+
     def __init__(self, time):
         self.max_simulation_time = time
 
@@ -53,7 +57,7 @@ class ObjectCOGCriterion(Criterion):
         dist_list = []
         env_data = simulation_output[1]
         body_COG = env_data.get_data("COG")[0]  # List[Tuple[step_n, List[x,y,z]]]
-        body_outer_force_center = env_data.get_data("force_center")[0]  
+        body_outer_force_center = env_data.get_data("force_center")[0]
         dist_list = []
         for cog, force in zip(body_COG, body_outer_force_center):
             if not force is np.nan:
@@ -66,7 +70,9 @@ class ObjectCOGCriterion(Criterion):
 
         return cog_crit
 
+
 class LateForceCriterion(Criterion):
+
     def __init__(self, cut_off, force_threshold):
         self.cut_off = cut_off
         self.force_threshold = force_threshold
@@ -75,20 +81,23 @@ class LateForceCriterion(Criterion):
         env_data = simulation_output[1]
         body_contacts = env_data.get_data("forces")[0]
         step_cutoff = int(len(body_contacts) * self.cut_off)
-        body_contacts_cut = body_contacts[step_cutoff: : ]
+        body_contacts_cut = body_contacts[step_cutoff::]
         counter = 0
         for data in body_contacts_cut:
             total_force_module = 0
-            if data is np.nan: break
+            if data is np.nan:
+                break
             for contact in data:
                 total_force_module += np.linalg.norm(contact[1])
 
             if total_force_module > self.force_threshold:
                 counter += 1
 
-        return counter/ (len(body_contacts_cut))
+        return counter / (len(body_contacts_cut))
+
 
 class LateForceAmountCriterion(Criterion):
+
     def __init__(self, cut_off):
         self.cut_off = cut_off
 
@@ -97,12 +106,12 @@ class LateForceAmountCriterion(Criterion):
         body_contacts = env_data.get_data("n_contacts")[0]
         step_cutoff = int(len(body_contacts) * self.cut_off)
         counter = 0
-        body_contacts_cut = body_contacts[step_cutoff: : ]
+        body_contacts_cut = body_contacts[step_cutoff::]
         for data in body_contacts_cut:
             if not data is np.nan:
                 counter += data
 
-        return counter/(len(body_contacts_cut))
+        return counter / (len(body_contacts_cut))
 
 
 class SimulationReward:
@@ -120,6 +129,6 @@ class SimulationReward:
         for criterion in self.criteria:
             partial_rewards.append(criterion.calculate_reward(simulation_output))
 
-        print([round(x,3) for x in  partial_rewards])
+        print([round(x, 3) for x in partial_rewards])
         total_reward = -sum([a * b for a, b in zip(partial_rewards, self.weights)])
-        return round(total_reward,3)
+        return round(total_reward, 3)
