@@ -2,7 +2,7 @@ import sys
 from copy import deepcopy
 from pathlib import Path
 from statistics import mean
-
+import pickle
 import matplotlib.pyplot as plt
 
 from rostok.graph_generators.graph_environment import \

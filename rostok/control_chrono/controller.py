@@ -80,21 +80,25 @@ class LinearSinControllerChrono(RobotControllerChrono):
 
 import numpy as np
 class PIDController(RobotControllerChrono):
-    def __init__(self):
-        super().__init__()
-        self.total_errors = list(np.zeros(len(self.joint_map_ordered)))
+    def __init__(self, joint_map_ordered, parameters: Dict[str, Any]):
         self.references = []
+        self.total_errors = list(np.zeros(len(joint_map_ordered)))
+        self.torque_array = []
+        super().__init__(joint_map_ordered, parameters)
+        
+
     def initialize_functions(self):
         i = 0
         for idx, joint in self.joint_map_ordered.items():
             if self.chrono_joint_setters[joint.input_type] == 'Uncontrol':
                 pass
             else:
-                self.references[i] = self.parameters["PID_parameters"][i][3]
-                starting_error = 0 - self.references[i].Get_y(0)
-                starting_dt_error = 0 - self.references[i].Get_y_dx(0)
+                self.references.append(self.parameters["PID_parameters"][i][3])
+                starting_error = self.references[i].Get_y(0)
+                starting_dt_error = self.references[i].Get_y_dx(0)
                 self.total_errors[i] = starting_error
                 initial_value = self.parameters["PID_parameters"][i][0] * starting_error + self.parameters["PID_parameters"][i][1]*starting_dt_error+self.parameters["PID_parameters"][i][2]*self.total_errors[i]
+                self.torque_array.append([round(initial_value,3)])
                 chr_function = chrono.ChFunction_Const(initial_value)
                 joint_setter = getattr(joint.joint, self.chrono_joint_setters[joint.input_type])
                 joint_setter(chr_function)
@@ -102,8 +106,16 @@ class PIDController(RobotControllerChrono):
                 i += 1
 
     def update_functions(self, time, robot_data:Sensor, environment_data):
-        for i, func in enumerate(self.functions):
-            current_error = 
+        i = 0
+        for idx, joint in self.joint_map_ordered.items():
+            current_error = self.references[i].Get_y(time) - robot_data.get_active_joint_trajectory_point()[idx]
+            current_dt_error =self.references[i].Get_y_dx(time) - robot_data.get_active_joint_speed()[idx]
+            self.total_errors[i] += current_error
+            current_value = self.parameters["PID_parameters"][i][0] * current_error + self.parameters["PID_parameters"][i][1]*current_dt_error + self.parameters["PID_parameters"][i][2]*self.total_errors[i]
+            self.functions[i].Set_yconst(current_value)
+            self.torque_array[i].append(round(current_value,3))
+            i += 1
+
 # class TorqueTrajectoryControllerChrono(RobotControllerChrono):
 #     def __init__(self, joint_map_ordered, parameters: Dict[int, Any], trajectories):
 #         super().__init__(joint_map_ordered, parameters, trajectories)

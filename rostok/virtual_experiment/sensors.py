@@ -1,12 +1,12 @@
 from typing import Dict, List, Optional, Tuple, Any
-
+import matplotlib.pyplot as plt
 import numpy as np
 import pychrono.core as chrono
 from typing_extensions import TypeAlias
-
+from pathlib import Path
 CoordinatesContact: TypeAlias = chrono.ChVectorD
 ForceVector: TypeAlias = chrono.ChVectorD
-
+from rostok.utils.pickle_save import Saveable
 
 class ContactReporter(chrono.ReportContactCallback):
 
@@ -117,6 +117,20 @@ class Sensor:
 
         return output
 
+    def get_active_joint_trajectory_point(self):
+        output = {}
+        for idx, joint in self.joint_map_ordered.items():
+            angle = joint.joint.GetMotorRot()
+            output[idx] = round(angle, 3)
+        return output
+
+    def get_active_joint_speed(self):
+        output = {}
+        for idx, joint in self.joint_map_ordered.items():
+            angle_dt = joint.joint.GetMotorRot_dt()
+            output[idx] = round(angle_dt, 3)
+        return output
+
     def get_forces(self):
         output = {}
         contacts = self.contact_reporter.get_contacts()
@@ -164,18 +178,20 @@ class Sensor:
 
         return output
 
-class DataStorage():
+class DataStorage(Saveable):
     """Class aggregates data from all steps of the simulation."""
 
-    def __init__(self):
+    def __init__(self, path=Path("./results")):
+        super().__init__(path, 'Robot_data')
         self.main_storage = {}
+        self.time_steps = None
 
     def add_data_type(self, key: str, object_map, step_number, starting_values = None):
         empty_dict:Dict[int, np.NDArray] = {}
         for idx in object_map:
             empty_dict[idx] = [np.nan]*(step_number+1)
             if starting_values:
-                empty_dict[idx][0] = np.array(starting_values[idx])
+                empty_dict[idx][0] = starting_values[idx]
 
         self.main_storage[key] = empty_dict
 
@@ -183,7 +199,7 @@ class DataStorage():
         if data_list:
             for idx, data in data_list.items():
                 if not data is None:
-                    self.main_storage[key][idx][step_n+1] = np.array(data)
+                    self.main_storage[key][idx][step_n+1] = data
                 else:
                     self.main_storage[key][idx][step_n+1] = np.nan
 
