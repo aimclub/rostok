@@ -2,7 +2,7 @@ from typing import Dict, List, Optional, Tuple, Any
 
 import numpy as np
 import pychrono.core as chrono
-from typing_extensions import TypeAlias
+from typing import TypeAlias
 
 CoordinatesContact: TypeAlias = chrono.ChVectorD
 ForceVector: TypeAlias = chrono.ChVectorD
