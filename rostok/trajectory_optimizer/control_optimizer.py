@@ -98,6 +98,7 @@ class CounterWithOptimizationDirect(GraphRewardCounter):
     def count_reward(self, graph: GraphGrammar):
 
         def reward_with_parameters(parameters):
+            parameters = parameters.round(3)
             data = {"initial_value": parameters}
             sim_output = self.simulate_with_control_parameters(data, graph)
             reward = self.rewarder.calculate_reward(sim_output)
@@ -111,7 +112,7 @@ class CounterWithOptimizationDirect(GraphRewardCounter):
             multi_bound.append(self.bounds)
 
         result = direct(reward_with_parameters, multi_bound, maxiter=self.limit)
-        return (result.fun, result.x)
+        return (result.fun, result.x.round(3))
 
 class CounterGraphOptimization(GraphRewardCounter):
 
@@ -125,7 +126,7 @@ class CounterGraphOptimization(GraphRewardCounter):
         control_sequence = []
         for idx in joints:
             node = graph.get_node_by_id(idx)
-            control_sequence.append(self.torque_dict[node]*0.1)
+            control_sequence.append(self.torque_dict[node])
         return control_sequence
 
     def count_reward(self, graph: GraphGrammar):
