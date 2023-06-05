@@ -67,7 +67,7 @@ class CounterWithOptimization(GraphRewardCounter):
             data = {"initial_value": parameters}
             sim_output = self.simulate_with_control_parameters(data, graph)
             reward = self.rewarder.calculate_reward(sim_output)
-            return reward
+            return -reward
 
         n_joints = len(get_joint_vector_from_graph(graph))
         if n_joints == 0:
@@ -77,7 +77,7 @@ class CounterWithOptimization(GraphRewardCounter):
             multi_bound.append(self.bounds)
 
         result = dual_annealing(reward_with_parameters, multi_bound, maxiter=self.limit)
-        return (result.fun, result.x)
+        return (-result.fun, result.x)
 
 
 class CounterWithOptimizationDirect(GraphRewardCounter):

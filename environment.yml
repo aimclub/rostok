@@ -20,3 +20,4 @@ dependencies:
     - mcts==1.0.4
     - pytest
     - open3d
+    - StrEnum

@@ -215,11 +215,6 @@ class RobotSimulationChrono():
         self.data_storage.sensor.contact_reporter.reset_contact_dict()
         self.data_storage.sensor.update_current_contact_info(self.chrono_system)
         self.data_storage.update_storage(step_n)
-        # if self.env_with_data:
-        #     self.env_data.add_data("n_contacts", self.env_sensor.get_amount_contacts(), step_n)
-        #     self.env_data.add_data("forces", self.env_sensor.get_forces(), step_n)
-        #     self.env_data.add_data("COG", self.env_sensor.get_COG(), step_n)
-        #     self.env_data.add_data("force_center", self.env_sensor.get_outer_force_center(), step_n)
 
     def simulate_step(self, step_length: float, current_time: float, step_n: int):
         """Simulate one step and update sensors and data stores
@@ -238,11 +233,6 @@ class RobotSimulationChrono():
         robot.sensor.contact_reporter.reset_contact_dict()
         robot.sensor.update_current_contact_info(self.chrono_system)
         robot.data_storage.update_storage(step_n)
-        # if self.robot_with_data:
-        #     ds.add_data("n_contacts", robot.sensor.get_amount_contacts(), step_n)
-        #     ds.add_data("forces", robot.sensor.get_forces(), step_n)
-        #     ds.add_data("body_trajectories", robot.sensor.get_body_trajectory_point(), step_n)
-        #     ds.add_data("joint_trajectories", robot.sensor.get_joint_trajectory_point(), step_n)
 
         #controller gets current states of the robot and environment and updates control functions
         robot.controller.update_functions(current_time, robot.sensor, self.data_storage.sensor)
