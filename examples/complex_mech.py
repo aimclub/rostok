@@ -3,7 +3,6 @@ from rostok.block_builder_api import block_blueprints
 from rostok.simulation_chrono import basic_simulation
 from rostok.block_builder_api.block_blueprints import easy_body_shapes
 from rostok.block_builder_api.block_parameters import FrameTransform, JointInputType, Material
-from rostok.block_builder_api.block_parameters import JointInputType
 from rostok.graph_grammar.graph_utils import plot_graph
 
 robot_material = Material()

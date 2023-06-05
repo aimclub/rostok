@@ -1,5 +1,7 @@
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
+import numpy as np
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 
@@ -81,6 +83,33 @@ class SystemPreviewChrono:
             vis.GetDevice().closeDevice()
 
 
+@dataclass
+class SimulationResult:
+    time: float = 0
+    n_steps = 0
+    robot_final_ds: Optional[DataStorage] = None
+    environment_final_ds:Optional[DataStorage] = None
+
+    def reduce_nan(self):
+        if self.robot_final_ds:
+            storage = self.robot_final_ds.main_storage
+            for key in storage:
+                key_storage = storage[key]
+                for key_2 in key_storage:
+                    value = key_storage[key_2]
+                    new_value = [x for x in value if np.logical_not(np.isnan(x).all())]
+                    key_storage[key_2] = new_value
+
+        if self.environment_final_ds:
+            storage = self.environment_final_ds.main_storage
+            for key in storage:
+                key_storage = storage[key]
+                for key_2 in key_storage:
+                    value = key_storage[key_2]
+                    new_value = [x for x in value if np.logical_not(np.isnan(x).all())]
+                    key_storage[key_2] = new_value
+
+
 class RobotSimulationChrono():
     """The simulation of a robot within an environment.
     
@@ -114,6 +143,7 @@ class RobotSimulationChrono():
         # the simulating mechanism is to be added with function add_design, the value in constructor is None
         self.env_with_data = with_data_storage
         self.robot_with_data = True
+        self.result = SimulationResult()
         if self.env_with_data:
             self.env_data = DataStorage()
         self.robot: Optional[RobotChrono] = None
@@ -131,6 +161,7 @@ class RobotSimulationChrono():
                 max_number_of_steps (int): maximum number of steps in the simulation"""
         self.env_sensor: Sensor = Sensor(self.active_objects_ordered, {})
         if self.env_with_data:
+            self.result.environment_final_ds = self.env_data
             self.env_data.add_data_type("n_contacts", self.active_objects_ordered,
                                         max_number_of_steps)
             self.env_data.add_data_type("forces", self.active_objects_ordered, max_number_of_steps)
@@ -140,6 +171,7 @@ class RobotSimulationChrono():
                                         max_number_of_steps)
 
         if self.robot_with_data:
+            self.result.robot_final_ds = self.robot.data_storage
             self.robot.data_storage.add_data_type("n_contacts",
                                                   self.robot.get_graph().body_map_ordered,
                                                   max_number_of_steps)
@@ -286,11 +318,10 @@ class RobotSimulationChrono():
         if visualize:
             vis.GetDevice().closeDevice()
 
-        if self.env_with_data and self.robot_with_data:
-            return self.chrono_system.GetChTime(), self.env_data, self.robot.data_storage
-        elif self.env_with_data:
-            return self.chrono_system.GetChTime(), self.env_data
-        elif self.robot_with_data:
-            return self.chrono_system.GetChTime(), self.robot.data_storage
-        else:
-            return self.chrono_system.GetChTime()
+        self.result.time = self.chrono_system.GetChTime()
+        self.n_steps = number_of_steps
+        self.result.reduce_nan()
+        return self.result
+
+
+

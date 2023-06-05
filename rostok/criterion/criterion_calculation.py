@@ -4,25 +4,23 @@ from typing import Dict, List, Optional, Tuple, Union
 import numpy as np
 import pychrono.core as chrono
 from scipy.spatial import distance
+from rostok.simulation_chrono.basic_simulation import SimulationResult
 
 
 #Interface for criterions
 class Criterion(ABC):
 
-    def calculate_reward(self, simulation_output):
+    def calculate_reward(self, simulation_output:SimulationResult):
         pass
 
 
 class ForceCriterion(Criterion):
 
-    def calculate_reward(self, simulation_output) -> float:
-        env_data = simulation_output[1]
+    def calculate_reward(self, simulation_output:SimulationResult) -> float:
+        env_data = simulation_output.environment_final_ds
         body_contacts: List[np.ndarray] = env_data.get_data("forces")[0]
-        body_contacts.pop(0)
         force_modules = []
         for data in body_contacts:
-            if data is np.nan:
-                break
             if data.size > 0:
                 total_force = np.zeros(3)
                 for force in data:
@@ -44,18 +42,19 @@ class TimeCriterion(Criterion):
     def __init__(self, time):
         self.max_simulation_time = time
 
-    def calculate_reward(self, simulation_output):
-        if (simulation_output[0]) > 0:
-            return (simulation_output[0])**2 / (self.max_simulation_time)**2
+    def calculate_reward(self, simulation_output:SimulationResult):
+        time = simulation_output.time
+        if (time) > 0:
+            return (time)**2 / (self.max_simulation_time)**2
         else:
             return 0
 
 
 class ObjectCOGCriterion(Criterion):
 
-    def calculate_reward(self, simulation_output):
+    def calculate_reward(self, simulation_output:SimulationResult):
         dist_list = []
-        env_data = simulation_output[1]
+        env_data = simulation_output.environment_final_ds
         body_COG = env_data.get_data("COG")[0]  # List[Tuple[step_n, List[x,y,z]]]
         body_outer_force_center = env_data.get_data("force_center")[0]
         dist_list = []
@@ -77,23 +76,23 @@ class LateForceCriterion(Criterion):
         self.cut_off = cut_off
         self.force_threshold = force_threshold
 
-    def calculate_reward(self, simulation_output):
-        env_data = simulation_output[1]
+    def calculate_reward(self, simulation_output:SimulationResult):
+        env_data = simulation_output.environment_final_ds
         body_contacts = env_data.get_data("forces")[0]
-        step_cutoff = int(len(body_contacts) * self.cut_off)
+        step_cutoff = int(simulation_output.n_steps * self.cut_off)
         body_contacts_cut = body_contacts[step_cutoff::]
         counter = 0
         for data in body_contacts_cut:
             total_force_module = 0
-            if data is np.nan:
-                break
             for contact in data:
                 total_force_module += np.linalg.norm(contact[1])
 
             if total_force_module > self.force_threshold:
                 counter += 1
 
-        return counter / (len(body_contacts_cut))
+        if len(body_contacts_cut) > 0:
+            return counter / (len(body_contacts_cut))
+        else: return 0
 
 
 class LateForceAmountCriterion(Criterion):
@@ -102,16 +101,18 @@ class LateForceAmountCriterion(Criterion):
         self.cut_off = cut_off
 
     def calculate_reward(self, simulation_output):
-        env_data = simulation_output[1]
+        env_data = simulation_output.environment_final_ds
         body_contacts = env_data.get_data("n_contacts")[0]
-        step_cutoff = int(len(body_contacts) * self.cut_off)
+        step_cutoff = int(simulation_output.n_steps * self.cut_off)
         counter = 0
         body_contacts_cut = body_contacts[step_cutoff::]
         for data in body_contacts_cut:
             if not data is np.nan:
                 counter += data
 
-        return counter / (len(body_contacts_cut))
+        if len(body_contacts_cut) > 0:
+            return counter / (len(body_contacts_cut))
+        else: return 0
 
 
 class SimulationReward:
@@ -130,5 +131,5 @@ class SimulationReward:
             partial_rewards.append(criterion.calculate_reward(simulation_output))
 
         #print([round(x, 3) for x in partial_rewards])
-        total_reward = -sum([a * b for a, b in zip(partial_rewards, self.weights)])
+        total_reward = sum([a * b for a, b in zip(partial_rewards, self.weights)])
         return round(total_reward, 3)

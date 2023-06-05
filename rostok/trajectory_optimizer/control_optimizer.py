@@ -102,7 +102,7 @@ class CounterWithOptimizationDirect(GraphRewardCounter):
             data = {"initial_value": parameters}
             sim_output = self.simulate_with_control_parameters(data, graph)
             reward = self.rewarder.calculate_reward(sim_output)
-            return reward
+            return -reward
 
         n_joints = len(get_joint_vector_from_graph(graph))
         if n_joints == 0:
@@ -112,7 +112,7 @@ class CounterWithOptimizationDirect(GraphRewardCounter):
             multi_bound.append(self.bounds)
 
         result = direct(reward_with_parameters, multi_bound, maxiter=self.limit)
-        return (result.fun, result.x.round(3))
+        return (-result.fun, result.x.round(3))
 
 class CounterGraphOptimization(GraphRewardCounter):
 
