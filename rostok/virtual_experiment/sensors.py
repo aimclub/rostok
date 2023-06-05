@@ -86,6 +86,23 @@ class ContactReporter(chrono.ReportContactCallback):
         return self.__outer_contact_dict_this_step
 
 
+from strenum import StrEnum
+class SensorCalls(StrEnum):
+    """
+        BODY_TRAJECTORY: trajectories of all bodies from the body map,
+        JOINT_TRAJECTORY : trajectories of all joints, 
+        FORCE: all forces acting on the bodies from the body map,
+        AMOUNT_FORCE : amount of forces acting on the bodies from the body_map,
+        FORCE_CENTER: position of the center of the forces acting on a body from the body map
+    """
+    BODY_TRAJECTORY = "get_body_trajectory_point"
+    JOINT_TRAJECTORY = "get_joint_trajectory_point" 
+    FORCE = "get_forces"
+    AMOUNT_FORCE = "get_amount_contacts"
+    FORCE_CENTER = "get_outer_force_center"
+class SensorObjectClassification(StrEnum):
+    BODY = 'body_map_ordered'
+    JOINT = 'joint_map_ordered'
 class Sensor:
     """Control data obtained in the current step of the simulation"""
     def __init__(self, body_map_ordered, joint_map_ordered) -> None:
@@ -94,8 +111,11 @@ class Sensor:
         self.body_map_ordered:Dict[int, Any] = body_map_ordered
         self.joint_map_ordered:Dict[int, Any] = joint_map_ordered
 
+    def get_parameter_by_name(self, key:SensorCalls):
+        return getattr(self, key)()
+
     def update_current_contact_info(self, system: chrono.ChSystem):
-        system.GetContactContainer().ReportAllContacts(self.contact_reporter)
+        system.GetContactContainer().ReportAllContacts(self.contact_reporter) 
 
     def get_body_trajectory_point(self):
         output = {}
@@ -107,7 +127,7 @@ class Sensor:
             ]
         return output
 
-    def get_joint_trajectory_point(self)->List[Any]:
+    def get_joint_trajectory_point(self):
         output = {}
         for idx, joint in self.joint_map_ordered.items():
             master_body:chrono.ChBodyFrame = joint.joint.GetBody2()
@@ -167,14 +187,19 @@ class Sensor:
 class DataStorage():
     """Class aggregates data from all steps of the simulation."""
 
-    def __init__(self):
+    def __init__(self, sensor:Sensor):
+        self.sensor = sensor
+        self.data_dict = {}
         self.main_storage = {}
 
-    def add_data_type(self, key: str, object_map, step_number, starting_values = None):
+    def add_data_type(self, key: str, sensor_key:SensorCalls, object_map:SensorObjectClassification, step_number, starting_call = None):
         empty_dict:Dict[int, np.NDArray] = {}
-        for idx in object_map:
+        self.data_dict[key] = sensor_key
+        if starting_call:
+            starting_values =getattr(self.sensor, starting_call)()
+        for idx in getattr(self.sensor, object_map):
             empty_dict[idx] = [np.nan]*(step_number+1)
-            if starting_values:
+            if starting_call:
                 empty_dict[idx][0] = np.array(starting_values[idx])
 
         self.main_storage[key] = empty_dict
@@ -186,6 +211,10 @@ class DataStorage():
                     self.main_storage[key][idx][step_n+1] = np.array(data)
                 else:
                     self.main_storage[key][idx][step_n+1] = np.nan
+
+    def update_storage(self, step_n):
+        for key, sensor_key in self.data_dict.items():
+            self.add_data(key, self.sensor.get_parameter_by_name(sensor_key), step_n)
 
     def get_data(self, key):
         return self.main_storage[key]

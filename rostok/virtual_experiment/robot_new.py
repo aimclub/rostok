@@ -149,7 +149,7 @@ class RobotChrono:
         self.__built_graph = BuiltGraphChrono(robot_graph, system, start_frame, is_fixed)
         self.sensor = Sensor(self.__built_graph.body_map_ordered, self.__built_graph.joint_map_ordered)
         self.controller = control_cls(self.__built_graph.joint_map_ordered, control_parameters)
-        self.data_storage = DataStorage()
+        self.data_storage = DataStorage(self.sensor)
     def get_graph(self):
         return self.__built_graph
     def get_data(self):

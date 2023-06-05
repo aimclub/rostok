@@ -3,7 +3,7 @@ from typing import Dict, List, Optional, Tuple
 from rostok.criterion.simulation_flags import FlagStopSimualtions
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.simulation_chrono.basic_simulation import RobotSimulationChrono
-
+from rostok.virtual_experiment.sensors import SensorCalls, SensorObjectClassification
 
 class ParametrizedSimulation:
 
@@ -36,4 +36,10 @@ class ConstTorqueGrasp(ParametrizedSimulation):
         grasp_object = self.grasp_object_callback()
         simulation.add_object(grasp_object, True)
         n_steps = int(self.simulation_length / self.step_length)
+        env_data_dict = {"n_contacts": (SensorCalls.AMOUNT_FORCE, SensorObjectClassification.BODY, None),
+                        "forces": (SensorCalls.FORCE, SensorObjectClassification.BODY, None),
+                        "COG": (SensorCalls.BODY_TRAJECTORY, SensorObjectClassification.BODY, SensorCalls.BODY_TRAJECTORY),
+                        "force_center": (SensorCalls.FORCE_CENTER, SensorObjectClassification.BODY, None)
+        }
+        simulation.add_env_data_type_dict(env_data_dict)
         return simulation.simulate(n_steps, self.step_length, 10, self.flag_container, vis)
