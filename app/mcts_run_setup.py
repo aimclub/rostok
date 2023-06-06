@@ -67,6 +67,6 @@ def config_with_standard_graph(grasp_object_blueprint, torque_dict):
         hp.OBJECT_COG_CRITERION_WEIGHT)
 
     control_optimizer = CounterGraphOptimization(simulation_manager, simulation_rewarder,
-                                                 torque_dict)
+                                                torque_dict)
 
     return control_optimizer

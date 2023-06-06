@@ -39,8 +39,8 @@ def one_best_render(report, control_optimizer):
 def top_ten_best_render(report, control_optimizer, top_number):
     seen_graphs = deepcopy(report.seen_graphs.graph_list)
     key_sort = lambda x: -x.reward
-    seen_graphs.sort(key=key_sort) 
-    for num ,graph_and_res in enumerate(seen_graphs):
+    seen_graphs.sort(key=key_sort)
+    for num, graph_and_res in enumerate(seen_graphs):
         if top_number[0]-1 > num:
             continue
         if num >= top_number[1]:
