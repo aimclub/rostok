@@ -326,7 +326,6 @@ class PrimitiveBody(BuildingBody):
             pos_out_marker = chrono.ChVectorD(0, shape.length_y * 0.5 + eps, 0)
         elif isinstance(shape, easy_body_shapes.Cylinder):
             body = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, shape.radius, shape.height_y, density, True, True,
-            body = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, shape.radius, shape.height_y, density, True, True,
                                              material)
             pos_in_marker = chrono.ChVectorD(0, -shape.height_y * 0.5 - eps, 0)
             pos_out_marker = chrono.ChVectorD(0, shape.height_y * 0.5 + eps, 0)
@@ -376,7 +375,6 @@ class ChronoEasyShapeObject():
             body = chrono.ChBodyEasyBox(shape.width_x, shape.length_y, shape.height_z, density,
                                         True, True, material)
         elif isinstance(shape, easy_body_shapes.Cylinder):
-            body = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, shape.radius, shape.height_y, density, True, True,
             body = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, shape.radius, shape.height_y, density, True, True,
                                              material)
         elif isinstance(shape, easy_body_shapes.Sphere):
