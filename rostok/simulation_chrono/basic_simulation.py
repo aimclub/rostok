@@ -26,7 +26,7 @@ class SystemPreviewChrono:
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, -10, 0))
 
-    def add_design(self, graph, frame: FrameTransform = DefaultFrame):
+    def add_design(self, graph, frame: FrameTransform = DefaultFrame, is_fix_base = True):
         """Add a design into the system
 
             Args:
@@ -34,7 +34,7 @@ class SystemPreviewChrono:
                 frame (FrameTransform): initial position of the base body
         """
 
-        BuiltGraphChrono(graph, self.chrono_system, frame, True)
+        BuiltGraphChrono(graph, self.chrono_system, frame, is_fix_base)
 
     def add_object(self, obj: ChronoEasyShapeObject):
         """Add an object to the environment.
@@ -69,7 +69,7 @@ class SystemPreviewChrono:
 
             vis.AddCamera(chrono.ChVectorD(1.5, 3, -2))
             vis.AddTypicalLights()
-            vis.EnableCollisionShapeDrawing(True)
+            #vis.EnableCollisionShapeDrawing(True)
         self.chrono_system.Update()
         self.chrono_system.DoStepDynamics(1e-4)
         for _ in range(number_of_steps):
