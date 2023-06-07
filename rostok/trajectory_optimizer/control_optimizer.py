@@ -1,14 +1,8 @@
-from dataclasses import dataclass, field
-from typing import Callable
-
-import pychrono as chrono
 from scipy.optimize import direct, dual_annealing, shgo
 
 from rostok.criterion.criterion_calculation import SimulationReward
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.graph_grammar.node_block_typing import (
-    NodeFeatures, get_joint_vector_from_graph)
-
+from rostok.graph_grammar.node_block_typing import (NodeFeatures, get_joint_vector_from_graph)
 
 # @dataclass
 # class ConfigRewardFunction:
@@ -23,7 +17,7 @@ from rostok.graph_grammar.node_block_typing import (
 #         criterion_callback: calls after simulation (SimOut, Robot) -> float
 #         get_rgab_object: calls before simulation () -> ObjectToGrasp
 #         params_to_timesiries_array: calls before simulation to calculate trajectory
-#             (GraphGrammar, list[float]) -> list[list] in dfs form, See class 
+#             (GraphGrammar, list[float]) -> list[list] in dfs form, See class
 #             SimulationStepOptimization
 #     """
 #     bound: tuple[float, float] = (-1, 1)
@@ -113,6 +107,7 @@ class CounterWithOptimizationDirect(GraphRewardCounter):
 
         result = direct(reward_with_parameters, multi_bound, maxiter=self.limit)
         return (-result.fun, result.x.round(3))
+
 
 class CounterGraphOptimization(GraphRewardCounter):
 
