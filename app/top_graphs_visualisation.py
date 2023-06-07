@@ -2,7 +2,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from mcts_run_setup import config_with_standard_graph, config_with_standard
-
+from typing import Dict, List, Optional, Tuple, Any
 from rostok.graph_generators.mcts_helper import OptimizedGraphReport, MCTSSaveable
 from rostok.library.obj_grasp.objects import get_object_parametrized_sphere
 #from rostok.library.rule_sets.ruleset_old_style_graph import create_rules
@@ -19,12 +19,11 @@ def vis_top_n_mechs(report: MCTSSaveable, n: int, object:EnvironmentBodyBlueprin
     graph_list = graph_report.graph_list
 
     sorted_graph_list = sorted(graph_list, key = lambda x: x.reward)
-    some_top = sorted_graph_list[-1:-n:-1]
+    some_top = sorted_graph_list[-1:-(n+1):-1]
     for graph in some_top:
         G = graph.graph
         reward = graph.reward
         control = graph.control
-        _, _ = control_optimizer.count_reward(G)
         data = {"initial_value": control}
         simulation_output = simulation_manager.run_simulation(G, data, True)
         res = simulation_rewarder.calculate_reward(simulation_output)
@@ -32,35 +31,28 @@ def vis_top_n_mechs(report: MCTSSaveable, n: int, object:EnvironmentBodyBlueprin
         print(res)
         print()
 
-def save_svg_mean_reward(reporter, legend, name, filter = False):
-    path = "./article/result_observer/figure/" + name + ".svg"
+def save_svg_mean_reward(reporter:List[MCTSSaveable], legend, name, step_limit = 27,path = None, filter:bool = False):
+    if path is None:
+        path = "./results/figures/" + name + ".svg"
     arr_mean_rewards = []
 
     rewards = []
-    for state in reporter[0].seen_states.state_list:
-        i = state.step
-        if len(rewards) == i:
-            rewards.append([state.reward])
-        else:
-            rewards[i].append(state.reward)
-    if filter:
-        for step, value_step in enumerate(rewards):
-            rewards[step] = list(filter(lambda x: x != 0, value_step))
-    mean_rewards = [np.mean(on_step_rewards) for on_step_rewards in rewards]
-    arr_mean_rewards.append(mean_rewards[0:27])
-    for report in reporter[1:3]:
-        rewards = []
-        for state in report.seen_states.state_list:
+    for report in reporter:
+        for state in report. seen_states.state_list:
             i = state.step
             if len(rewards) == i:
                 rewards.append([state.reward])
             else:
                 rewards[i].append(state.reward)
-        if filter:
-            for step, value_step in enumerate(rewards):
-                rewards[step] = list(filter(lambda x: x != 0, value_step))
-        mean_rewards = [np.mean(on_step_rewards) for on_step_rewards in rewards]
-        arr_mean_rewards.append(mean_rewards)
+    if filter:
+        for step, value_step in enumerate(rewards):
+            rewards[step] = list(filter(lambda x: x != 0, value_step))
+    mean_rewards = [np.mean(on_step_rewards) for on_step_rewards in rewards]
+    arr_mean_rewards.append(mean_rewards[0:step_limit])
+    if len(legend) < len(reporter):
+        for _ in range (len(reporter)-len(legend)):
+            legend.append('unknown')
+
     plt.figure()
     plt.xlabel("Steps")
     plt.ylabel("Rewards")
@@ -73,6 +65,6 @@ def save_svg_mean_reward(reporter, legend, name, filter = False):
 if __name__ == "__main__":
     rule_vocabul = create_rules()
     grasp_object_blueprint = get_object_parametrized_sphere(0.2, 1)
-    report: OptimizedGraphReport = load_saveable(Path(r"results\Reports_23y_06m_02d_13H_14M\MCTS_data.pickle"))
-    vis_top_n_mechs(report, 2, grasp_object_blueprint)
-    save_svg_mean_reward([report], ["body"], 'body')
+    report: OptimizedGraphReport = load_saveable(Path(r"results\Reports_23y_06m_07d_17H_30M\MCTS_data.pickle"))
+    vis_top_n_mechs(report, 3, grasp_object_blueprint)
+    save_svg_mean_reward([report], ["little sphere"], name = 'sphere')

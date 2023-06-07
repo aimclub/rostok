@@ -15,7 +15,9 @@ def create_rules():
     length_link = [0.4, 0.6, 0.8]
     super_flat = PrimitiveBodyBlueprint(Box(3, 0.1, 3))
     link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.1, x, 0.3)), length_link))
-    radial_move_values = [0.9, 1.05, 1.2]
+    #radial_move_values = [0.9, 1.05, 1.2]
+    scale = .5
+    radial_move_values = [0.9*scale, 1.05*scale, 1.2*scale]
     RADIAL_MOVES = list(map(lambda x: FrameTransform([x, 0, 0], [1, 0, 0, 0]), radial_move_values))
     tan_move_values = [0.4, 0.6, 0.8]
     MOVES_POSITIVE = list(map(lambda x: FrameTransform([0, 0, x], [1, 0, 0, 0]), tan_move_values))

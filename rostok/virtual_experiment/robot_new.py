@@ -36,7 +36,8 @@ class BuiltGraphChrono:
                  graph: GraphGrammar,
                  system: chrono.ChSystem,
                  initial_position: FrameTransform = DefaultFrame,
-                 is_base_fixed=True):
+                 is_base_fixed=True,
+                 initial_angle = -30):
         """Build graph into system and fill vectors.
         
             Args:
@@ -49,6 +50,7 @@ class BuiltGraphChrono:
         self.body_map_ordered: Dict[int, PrimitiveBody] = {}
         self.joint_map_ordered: Dict[int, ChronoRevolveJoint] = {}
         self.joint_link_map: Dict[int, Tuple[int, int]] = {}
+        self.initial_angle = initial_angle
         self.build_into_system(system, initial_position)
         if is_base_fixed:
             self.fix_base()
@@ -86,22 +88,29 @@ class BuiltGraphChrono:
                 initial_position (FrameTransform): starting position of the base block"""
         # builds the root based paths in the sorted root based paths order
         paths = self.__graph.get_sorted_root_based_paths()
+        
         block_chains: List[List[BLOCK_CLASS_TYPES]] = []
         for path in paths:
             chain: List[BLOCK_CLASS_TYPES] = []
+            is_joint_first = True
             for idx in path:
                 # if the node hasn't been built yet
                 if self.__graph.nodes[idx].get("Blocks", None) is None:
                     # build all objects relevant to the node and add them into graph
                     blueprint = self.__graph.nodes[idx]["Node"].block_blueprint
+                    if NodeFeatures.is_joint(self.__graph.nodes[idx].get("Node", None)):
+                        if is_joint_first:
+                            is_joint_first = False
+                            blueprint.starting_angle = self.initial_angle
                     created_blocks = creator.init_block_from_blueprint(blueprint)
+                    self.__graph.nodes[idx]["Blocks"] = created_blocks
                     if NodeFeatures.is_joint(self.__graph.nodes[idx].get("Node", None)):
                         self.joint_map_ordered[idx] = created_blocks
                     elif NodeFeatures.is_body(self.__graph.nodes[idx].get("Node", None)):
                         self.body_map_ordered[idx] = created_blocks
-
+                    
                     chain.append(created_blocks)
-                    self.__graph.nodes[idx]["Blocks"] = created_blocks
+                    
                 else:
                     chain.append(self.__graph.nodes[idx].get("Blocks", None))
 

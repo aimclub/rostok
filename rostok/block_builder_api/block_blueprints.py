@@ -41,7 +41,6 @@ class RevolveJointBlueprint(JointBlueprintType):
     material: Material = Material()
     starting_angle: float = 0
     density = 1000.0
-    starting_angle = 0
     stiffness: float = 0.
     damping: float = 0.
     with_collision = True

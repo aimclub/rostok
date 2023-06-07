@@ -114,7 +114,7 @@ class LateForceAmountCriterion(Criterion):
             return counter / (len(body_contacts_cut))
         else: return 0
 
-
+class JointPenalty(Criterion)
 class SimulationReward:
 
     def __init__(self) -> None:
