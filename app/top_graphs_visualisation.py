@@ -26,7 +26,7 @@ for graph in some_top:
     reward = graph.reward
     control = graph.control
 
-    _, _ = control_optimizer.count_reward(G)
+    _, _ = control_optimizer.calculate_reward(G)
     #control = control.round(3)
     data = {"initial_value": control}
     simulation_output = simulation_manager.run_simulation(G, data, True)

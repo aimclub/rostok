@@ -134,7 +134,6 @@ class RobotChrono:
                  robot_graph: GraphGrammar,
                  system: chrono.ChSystem,
                  control_parameters,
-
                  control_cls=ConstController,
                  start_frame: FrameTransform = DefaultFrame,
                  is_fixed=True):
@@ -151,6 +150,7 @@ class RobotChrono:
         self.__built_graph = BuiltGraphChrono(robot_graph, system, start_frame, is_fixed)
         self.sensor = Sensor(self.__built_graph.body_map_ordered,
                              self.__built_graph.joint_map_ordered)
+        self.sensor.contact_reporter.reset_contact_dict()
         self.controller = control_cls(self.__built_graph.joint_map_ordered, control_parameters)
         self.data_storage = DataStorage(self.sensor)
 

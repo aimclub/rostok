@@ -163,13 +163,13 @@ class RobotSimulationChrono():
                 max_number_of_steps (int): maximum number of steps in the simulation"""
 
         env_sensor: Sensor = Sensor(self.active_objects_ordered, {})
+        env_sensor.contact_reporter.reset_contact_dict()
         self.data_storage: DataStorage = DataStorage(env_sensor)
         for key, value in self.env_data_dict.items():
-            self.data_storage.add_data_type(key, value[0], value[1], max_number_of_steps, value[2])
+            self.data_storage.add_data_type(key, value[0], value[1], max_number_of_steps)
 
         for key, value in self.robot_data_dict.items():
-            self.robot.data_storage.add_data_type(key, value[0], value[1], max_number_of_steps,
-                                                  value[2])
+            self.robot.data_storage.add_data_type(key, value[0], value[1], max_number_of_steps)
 
     def add_design(self,
                    graph: GraphGrammar,
