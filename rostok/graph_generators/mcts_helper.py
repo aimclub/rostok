@@ -339,7 +339,7 @@ class MCTSGraphEnvironment(GraphVocabularyEnvironment):
             return self.reward
 
         result_optimizer = self.helper.optimizer.count_reward(self.graph)
-        self.reward = -result_optimizer[0]
+        self.reward = result_optimizer[0]
         self.movments_trajectory = result_optimizer[1]
         self.helper.report.seen_graphs.add_graph(self.graph, self.reward, self.movments_trajectory)
         self.helper.add_state(self.state, self.reward, self.movments_trajectory)

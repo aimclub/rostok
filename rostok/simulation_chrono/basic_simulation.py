@@ -1,5 +1,7 @@
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
+import numpy as np
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 
@@ -24,7 +26,7 @@ class SystemPreviewChrono:
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, -10, 0))
 
-    def add_design(self, graph, frame: FrameTransform = DefaultFrame):
+    def add_design(self, graph, frame: FrameTransform = DefaultFrame, is_fix_base = True):
         """Add a design into the system
 
             Args:
@@ -32,7 +34,7 @@ class SystemPreviewChrono:
                 frame (FrameTransform): initial position of the base body
         """
 
-        BuiltGraphChrono(graph, self.chrono_system, frame, True)
+        BuiltGraphChrono(graph, self.chrono_system, frame, is_fix_base)
 
     def add_object(self, obj: ChronoEasyShapeObject):
         """Add an object to the environment.
@@ -64,9 +66,10 @@ class SystemPreviewChrono:
             vis.SetWindowSize(1024, 768)
             vis.SetWindowTitle('Grab demo')
             vis.Initialize()
+
             vis.AddCamera(chrono.ChVectorD(1.5, 3, -2))
             vis.AddTypicalLights()
-            vis.EnableCollisionShapeDrawing(True)
+            #vis.EnableCollisionShapeDrawing(True)
         self.chrono_system.Update()
         self.chrono_system.DoStepDynamics(1e-4)
         for _ in range(number_of_steps):
@@ -78,6 +81,33 @@ class SystemPreviewChrono:
                 vis.EndScene()
         if visualize:
             vis.GetDevice().closeDevice()
+
+
+@dataclass
+class SimulationResult:
+    time: float = 0
+    n_steps = 0
+    robot_final_ds: Optional[DataStorage] = None
+    environment_final_ds: Optional[DataStorage] = None
+
+    def reduce_nan(self):
+        if self.robot_final_ds:
+            storage = self.robot_final_ds.main_storage
+            for key in storage:
+                key_storage = storage[key]
+                for key_2 in key_storage:
+                    value = key_storage[key_2]
+                    new_value = [x for x in value if np.logical_not(np.isnan(x).all())]
+                    key_storage[key_2] = new_value
+
+        if self.environment_final_ds:
+            storage = self.environment_final_ds.main_storage
+            for key in storage:
+                key_storage = storage[key]
+                for key_2 in key_storage:
+                    value = key_storage[key_2]
+                    new_value = [x for x in value if np.logical_not(np.isnan(x).all())]
+                    key_storage[key_2] = new_value
 
 
 class RobotSimulationChrono():
@@ -94,9 +124,7 @@ class RobotSimulationChrono():
             robot (RobotChrono): the robot added to the simulation
         """
 
-    def __init__(self,
-                 object_list: List[Tuple[ChronoEasyShapeObject, bool]] = [],
-                 with_data_storage: bool = True):
+    def __init__(self, object_list: List[Tuple[ChronoEasyShapeObject, bool]] = []):
         """Create a simulation system with some environment objects
         
             The robot and additional environment objects should be added using class methods.
@@ -111,48 +139,37 @@ class RobotSimulationChrono():
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
         # the simulating mechanism is to be added with function add_design, the value in constructor is None
-        self.env_with_data = with_data_storage
-        self.robot_with_data = True
-        if self.env_with_data:
-            self.env_data = DataStorage()
+        self.env_data_dict = {}
+        self.robot_data_dict = {}
+        self.result = SimulationResult()
         self.robot: Optional[RobotChrono] = None
-        self.env_sensor: Optional[Sensor] = None
+        #self.env_sensor: Optional[Sensor] = None
         self.objects: List[ChronoEasyShapeObject] = []
         self.active_body_counter = 0
         self.active_objects_ordered: Dict[int, ChronoEasyShapeObject] = {}
         for obj in object_list:
             self.add_object(obj[0], obj[1])
 
+    def add_env_data_type_dict(self, data_dict):
+        self.env_data_dict = data_dict
+
+    def add_robot_data_type_dict(self, data_dict):
+        self.robot_data_dict = data_dict
+
     def initialize(self, max_number_of_steps) -> None:
         """Initialize Sensor for environment and data stores for robot and environment
 
             Args:
                 max_number_of_steps (int): maximum number of steps in the simulation"""
-        self.env_sensor: Sensor = Sensor(self.active_objects_ordered, {})
-        if self.env_with_data:
-            self.env_data.add_data_type("n_contacts", self.active_objects_ordered,
-                                        max_number_of_steps)
-            self.env_data.add_data_type("forces", self.active_objects_ordered, max_number_of_steps)
-            self.env_data.add_data_type("COG", self.active_objects_ordered, max_number_of_steps,
-                                        self.env_sensor.get_COG())
-            self.env_data.add_data_type("force_center", self.active_objects_ordered,
-                                        max_number_of_steps)
 
-        if self.robot_with_data:
-            self.robot.data_storage.add_data_type("n_contacts",
-                                                  self.robot.get_graph().body_map_ordered,
-                                                  max_number_of_steps)
-            self.robot.data_storage.add_data_type("forces",
-                                                  self.robot.get_graph().body_map_ordered,
-                                                  max_number_of_steps)
-            self.robot.data_storage.add_data_type("body_trajectories",
-                                                  self.robot.get_graph().body_map_ordered,
-                                                  max_number_of_steps,
-                                                  self.robot.sensor.get_body_trajectory_point())
-            self.robot.data_storage.add_data_type("joint_trajectories",
-                                                  self.robot.get_graph().joint_map_ordered,
-                                                  max_number_of_steps,
-                                                  self.robot.sensor.get_joint_trajectory_point())
+        env_sensor: Sensor = Sensor(self.active_objects_ordered, {})
+        self.data_storage: DataStorage = DataStorage(env_sensor)
+        for key, value in self.env_data_dict.items():
+            self.data_storage.add_data_type(key, value[0], value[1], max_number_of_steps, value[2])
+
+        for key, value in self.robot_data_dict.items():
+            self.robot.data_storage.add_data_type(key, value[0], value[1], max_number_of_steps,
+                                                  value[2])
 
     def add_design(self,
                    graph: GraphGrammar,
@@ -194,20 +211,9 @@ class RobotSimulationChrono():
         """Update the env_sensor and env_data.
             Args:
                 step_n (int): number of the current step"""
-        self.env_sensor.contact_reporter.reset_contact_dict()
-        self.env_sensor.update_current_contact_info(self.chrono_system)
-        if self.env_with_data:
-            self.env_data.add_data("n_contacts", self.env_sensor.get_amount_contacts(), step_n)
-            self.env_data.add_data("forces", self.env_sensor.get_forces(), step_n)
-            self.env_data.add_data("COG", self.env_sensor.get_COG(), step_n)
-            self.env_data.add_data("force_center", self.env_sensor.get_outer_force_center(), step_n)
-
-    def get_current_data(self):
-        """Return the env_data if env_with_data is true"""
-        if self.env_with_data:
-            return self.env_data
-        else:
-            return None
+        self.data_storage.sensor.contact_reporter.reset_contact_dict()
+        self.data_storage.sensor.update_current_contact_info(self.chrono_system)
+        self.data_storage.update_storage(step_n)
 
     def simulate_step(self, step_length: float, current_time: float, step_n: int):
         """Simulate one step and update sensors and data stores
@@ -225,14 +231,10 @@ class RobotSimulationChrono():
         ds = robot.data_storage
         robot.sensor.contact_reporter.reset_contact_dict()
         robot.sensor.update_current_contact_info(self.chrono_system)
-        if self.robot_with_data:
-            ds.add_data("n_contacts", robot.sensor.get_amount_contacts(), step_n)
-            ds.add_data("forces", robot.sensor.get_forces(), step_n)
-            ds.add_data("body_trajectories", robot.sensor.get_body_trajectory_point(), step_n)
-            ds.add_data("joint_trajectories", robot.sensor.get_joint_trajectory_point(), step_n)
+        robot.data_storage.update_storage(step_n)
 
         #controller gets current states of the robot and environment and updates control functions
-        robot.controller.update_functions(current_time, robot.sensor, self.get_current_data())
+        robot.controller.update_functions(current_time, robot.sensor, self.data_storage.sensor)
 
     def simulate(
         self,
@@ -274,7 +276,7 @@ class RobotSimulationChrono():
                     vis.EndScene()
             if flag_container:
                 for flag in flag_container:
-                    flag.update_state(current_time, self.robot.sensor, self.env_sensor)
+                    flag.update_state(current_time, self.robot.sensor, self.data_storage.sensor)
 
                 if flag_container:
                     stop_flag = sum([flag.state for flag in flag_container])
@@ -285,11 +287,9 @@ class RobotSimulationChrono():
         if visualize:
             vis.GetDevice().closeDevice()
 
-        if self.env_with_data and self.robot_with_data:
-            return self.chrono_system.GetChTime(), self.env_data, self.robot.data_storage
-        elif self.env_with_data:
-            return self.chrono_system.GetChTime(), self.env_data
-        elif self.robot_with_data:
-            return self.chrono_system.GetChTime(), self.robot.data_storage
-        else:
-            return self.chrono_system.GetChTime()
+        self.result.environment_final_ds = self.data_storage
+        self.result.robot_final_ds = self.robot.data_storage
+        self.result.time = self.chrono_system.GetChTime()
+        self.n_steps = number_of_steps
+        self.result.reduce_nan()
+        return self.result

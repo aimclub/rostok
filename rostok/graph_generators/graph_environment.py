@@ -216,7 +216,7 @@ class GraphVocabularyEnvironment(GraphEnvironment):
 
     def getReward(self):
         result_optimizer = self.optimizer.start_optimisation(self.graph)
-        self.reward = -result_optimizer[0]
+        self.reward = result_optimizer[0]
         self.movments_trajectory = result_optimizer[1]
         print(self.reward)
         return self.reward

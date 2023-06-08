@@ -1,14 +1,8 @@
-from dataclasses import dataclass, field
-from typing import Callable
-
-import pychrono as chrono
 from scipy.optimize import direct, dual_annealing, shgo
 
 from rostok.criterion.criterion_calculation import SimulationReward
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.graph_grammar.node_block_typing import (
-    NodeFeatures, get_joint_vector_from_graph)
-
+from rostok.graph_grammar.node_block_typing import (NodeFeatures, get_joint_vector_from_graph)
 
 # @dataclass
 # class ConfigRewardFunction:
@@ -23,7 +17,7 @@ from rostok.graph_grammar.node_block_typing import (
 #         criterion_callback: calls after simulation (SimOut, Robot) -> float
 #         get_rgab_object: calls before simulation () -> ObjectToGrasp
 #         params_to_timesiries_array: calls before simulation to calculate trajectory
-#             (GraphGrammar, list[float]) -> list[list] in dfs form, See class 
+#             (GraphGrammar, list[float]) -> list[list] in dfs form, See class
 #             SimulationStepOptimization
 #     """
 #     bound: tuple[float, float] = (-1, 1)
@@ -67,7 +61,7 @@ class CounterWithOptimization(GraphRewardCounter):
             data = {"initial_value": parameters}
             sim_output = self.simulate_with_control_parameters(data, graph)
             reward = self.rewarder.calculate_reward(sim_output)
-            return reward
+            return -reward
 
         n_joints = len(get_joint_vector_from_graph(graph))
         if n_joints == 0:
@@ -77,7 +71,7 @@ class CounterWithOptimization(GraphRewardCounter):
             multi_bound.append(self.bounds)
 
         result = dual_annealing(reward_with_parameters, multi_bound, maxiter=self.limit)
-        return (result.fun, result.x)
+        return (-result.fun, result.x)
 
 
 class CounterWithOptimizationDirect(GraphRewardCounter):
@@ -98,10 +92,11 @@ class CounterWithOptimizationDirect(GraphRewardCounter):
     def count_reward(self, graph: GraphGrammar):
 
         def reward_with_parameters(parameters):
+            parameters = parameters.round(3)
             data = {"initial_value": parameters}
             sim_output = self.simulate_with_control_parameters(data, graph)
             reward = self.rewarder.calculate_reward(sim_output)
-            return reward
+            return -reward
 
         n_joints = len(get_joint_vector_from_graph(graph))
         if n_joints == 0:
@@ -111,7 +106,8 @@ class CounterWithOptimizationDirect(GraphRewardCounter):
             multi_bound.append(self.bounds)
 
         result = direct(reward_with_parameters, multi_bound, maxiter=self.limit)
-        return (result.fun, result.x)
+        return (-result.fun, result.x.round(3))
+
 
 class CounterGraphOptimization(GraphRewardCounter):
 
@@ -125,7 +121,7 @@ class CounterGraphOptimization(GraphRewardCounter):
         control_sequence = []
         for idx in joints:
             node = graph.get_node_by_id(idx)
-            control_sequence.append(self.torque_dict[node]*0.1)
+            control_sequence.append(self.torque_dict[node])
         return control_sequence
 
     def count_reward(self, graph: GraphGrammar):
