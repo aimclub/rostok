@@ -4,8 +4,7 @@ from scipy.spatial.transform import Rotation
 
 from rostok.block_builder_api import easy_body_shapes
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
-from rostok.block_builder_chrono.block_classes import (DefaultChronoMaterial,
-                                                       FrameTransform)
+from rostok.block_builder_chrono.block_classes import (DefaultChronoMaterial, FrameTransform)
 
 
 # rotation around axis with angle argument in degrees
@@ -25,17 +24,7 @@ def rotation_y(alpha):
 
 
 # object functions return a blueprint of an object
-def get_object_easy_box():
-    matich = DefaultChronoMaterial()
-    matich.Friction = 0.65
-    matich.DampingF = 0.65
-    shape_box = easy_body_shapes.Box(0.2, 0.2, 0.5)
-    object_blueprint = EnvironmentBodyBlueprint(shape=shape_box,
-                                                material=matich,
-                                                pos=FrameTransform([0, 0.5, 0],
-                                                                   [0, -0.048, 0.706, 0.706]))
 
-    return object_blueprint
 
 
 def get_object_parametrized_box(x, y, z, h):
@@ -201,3 +190,29 @@ def get_obj_hard_mesh_piramida():
     mat.DampingF = 0.2
     obj = EnvironmentBodyBlueprint(shape=shape, material=mat, pos=FrameTransform([0, 1, 0], quat))
     return obj
+
+
+def get_obj_hard_get_obj_hard_large_ellipsoid():
+    shape = easy_body_shapes.Ellipsoid()
+    shape.radius_x = 0.5
+    shape.radius_y = 1
+    shape.radius_z = 0.6
+    mat = DefaultChronoMaterial()
+    mat.Friction = 0.2
+    mat.DampingF = 0.5
+    obj = EnvironmentBodyBlueprint(shape=shape,
+                                   material=mat,
+                                   pos=FrameTransform([0.0, 1, 0.2], [1, 0, 0, 0]))
+    return obj
+
+def get_object_easy_box():
+    matich = DefaultChronoMaterial()
+    matich.Friction = 0.2
+    matich.DampingF = 0.65
+    shape_box = easy_body_shapes.Box(0.4, 0.4, 0.7)
+    object_blueprint = EnvironmentBodyBlueprint(shape=shape_box,
+                                                material=matich,
+                                                pos=FrameTransform([0, 0.5, 0],
+                                                                   [0, -0.048, 0.706, 0.706]))
+
+    return object_blueprint

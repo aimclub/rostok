@@ -135,7 +135,7 @@ class RobotSimulationChrono():
         self.chrono_system = chrono.ChSystemNSC()
         self.chrono_system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
         self.chrono_system.SetSolverMaxIterations(100)
-        self.chrono_system.SetSolverForceTolerance(1e-6)
+        self.chrono_system.SetSolverForceTolerance(1e-4)
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
         # the simulating mechanism is to be added with function add_design, the value in constructor is None
@@ -262,7 +262,7 @@ class RobotSimulationChrono():
             vis.Initialize()
             vis.AddCamera(chrono.ChVectorD(1.5, 3, -4))
             vis.AddTypicalLights()
-            vis.EnableCollisionShapeDrawing(True)
+            #vis.EnableCollisionShapeDrawing(True)
 
         stop_flag = False
         for i in range(number_of_steps):

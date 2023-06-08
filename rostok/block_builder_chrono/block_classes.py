@@ -77,7 +77,7 @@ class BuildingBody(BlockBody):
 
         # set the parameters of body collision model
         self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
-        self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
+        self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.001)
         self.body.SetCollide(is_collide)
         # Normal Forces
         # set a color for the body, default is random

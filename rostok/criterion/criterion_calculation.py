@@ -131,5 +131,6 @@ class SimulationReward:
             partial_rewards.append(criterion.calculate_reward(simulation_output))
 
         #print([round(x, 3) for x in partial_rewards])
+        print([round(a * b, 3) for a, b in zip(partial_rewards, self.weights)])
         total_reward = sum([a * b for a, b in zip(partial_rewards, self.weights)])
         return round(total_reward, 3)

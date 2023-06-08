@@ -13,8 +13,8 @@ from rostok.block_builder_api.block_parameters import JointInputType
 def create_rules():
 
     length_link = [0.4, 0.6, 0.8]
-    super_flat = PrimitiveBodyBlueprint(Box(3, 0.1, 3))
-    link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.1, x, 0.1)), length_link))
+    super_flat = PrimitiveBodyBlueprint(Box(3, 0.2, 3))
+    link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.1, x, 0.5)), length_link))
     radial_move_values = [0.9, 1.05, 1.2]
     RADIAL_MOVES = list(map(lambda x: FrameTransform([x, 0, 0], [1, 0, 0, 0]), radial_move_values))
     tan_move_values = [0.4, 0.6, 0.8]
@@ -155,16 +155,16 @@ def create_rules():
     rule_vocab.create_rule("Terminal_Negative_Translate1", ["TN"], ["TN1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Negative_Translate2", ["TN"], ["TN2"], 0, 0, [])
     torque_dict = {
-        node_vocab.get_node("J1"): 6,
-        node_vocab.get_node("J2"): 7,
-        node_vocab.get_node("J3"): 8,
-        node_vocab.get_node("J4"): 9,
-        node_vocab.get_node("J5"): 10,
-        node_vocab.get_node("J6"): 11,
-        node_vocab.get_node("J7"): 12,
-        node_vocab.get_node("J8"): 13,
-        node_vocab.get_node("J9"): 14,
-        node_vocab.get_node("J10"): 15
+        node_vocab.get_node("J1"): -6,
+        node_vocab.get_node("J2"): -7,
+        node_vocab.get_node("J3"): -8,
+        node_vocab.get_node("J4"): -9,
+        node_vocab.get_node("J5"): -10,
+        node_vocab.get_node("J6"): -11,
+        node_vocab.get_node("J7"): -12,
+        node_vocab.get_node("J8"): -13,
+        node_vocab.get_node("J9"): -14,
+        node_vocab.get_node("J10"): -15
     }
     return rule_vocab, torque_dict
 

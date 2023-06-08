@@ -9,13 +9,13 @@ from mcts_run_setup import config_with_standard
 from rostok.graph_generators.mcts_helper import (make_mcts_step,
                                                  prepare_mcts_state_and_helper)
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.library.obj_grasp.objects import get_object_parametrized_sphere
+from rostok.library.obj_grasp.objects import get_object_parametrized_sphere, get_object_easy_box
 from rostok.library.rule_sets.ruleset_old_style import create_rules
 
 # create rule vocabulary
 rule_vocabul = create_rules()
 # create blueprint for object to grasp
-grasp_object_blueprint = get_object_parametrized_sphere(0.2, 1)
+grasp_object_blueprint = get_object_easy_box
 # create reward counter using run setup function
 control_optimizer = config_with_standard(grasp_object_blueprint)
 # Initialize MCTS

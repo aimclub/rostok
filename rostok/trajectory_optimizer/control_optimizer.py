@@ -131,6 +131,6 @@ class CounterGraphOptimization(GraphRewardCounter):
             return (0, [])
         control_sequence = self.build_control_from_graph(graph)
         data = {"initial_value": control_sequence}
-        simulation_output = self.simulation_control.run_simulation(graph, data)
+        simulation_output = self.simulation_control.run_simulation(graph, data, True)
         reward = self.rewarder.calculate_reward(simulation_output)
         return (reward, control_sequence)

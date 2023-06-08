@@ -12,15 +12,15 @@ from rostok.graph_grammar.node import ROOT, GraphGrammar
 from rostok.graph_grammar.node_vocabulary import NodeVocabulary
 
 # %% Bodies for extansions rules
-width = [0.5, 0.6, 0.65]
+width = [0.7, 0.8, 1]
 alpha = 45
 alpha_left = [0, 30, 60]
 alpha_right = [180, 150, 120]
-length_link = [0.3, 0.6, 0.8, 1]
+length_link = [0.4, 0.6, 0.8, 1]
 
 flat = list(map(lambda x: PrimitiveBodyBlueprint(Box(x, 0.05, 0.8)), width))
 
-link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.1, x, 0.3)), length_link))
+link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.1, x, 0.5)), length_link))
 
 u1 = PrimitiveBodyBlueprint(Box(0.1, 0.05, 0.3))
 u2 = PrimitiveBodyBlueprint(Box(0.2, 0.1, 0.3))
@@ -290,15 +290,15 @@ rule_vocab.create_rule("TerminalTransformLeftMinusAngle3", ["SMLMA"], ["TLMA3"],
 rule_vocab.create_rule("Remove_EM", ["EM"], [], 0, 0, [])
 
 torque_dict = {
-    node_vocab.get_node("J1"): 5,
-    node_vocab.get_node("J2"): 6,
-    node_vocab.get_node("J3"): 7,
-    node_vocab.get_node("J4"): 8,
-    node_vocab.get_node("J5"): 9,
-    node_vocab.get_node("J6"): 10,
-    node_vocab.get_node("J7"): 11,
-    node_vocab.get_node("J8"): 12,
-    node_vocab.get_node("J9"): 13,
-    node_vocab.get_node("J10"): 14,
+    node_vocab.get_node("J1"): -5,
+    node_vocab.get_node("J2"): -6,
+    node_vocab.get_node("J3"): -7,
+    node_vocab.get_node("J4"): -8,
+    node_vocab.get_node("J5"): -9,
+    node_vocab.get_node("J6"): -10,
+    node_vocab.get_node("J7"): -11,
+    node_vocab.get_node("J8"): -12,
+    node_vocab.get_node("J9"): -13,
+    node_vocab.get_node("J10"): -14,
 }
 

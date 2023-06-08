@@ -92,6 +92,10 @@ node_vocab.create_node(label="J3", is_terminal=True, block_blueprint=revolve1)
 node_vocab.create_node(label="J4", is_terminal=True, block_blueprint=revolve1)
 node_vocab.create_node(label="J5", is_terminal=True, block_blueprint=revolve1)
 node_vocab.create_node(label="J6", is_terminal=True, block_blueprint=revolve1)
+node_vocab.create_node(label="J7", is_terminal=True, block_blueprint=revolve1)
+node_vocab.create_node(label="J8", is_terminal=True, block_blueprint=revolve1)
+node_vocab.create_node(label="J9", is_terminal=True, block_blueprint=revolve1)
+node_vocab.create_node(label="J10", is_terminal=True, block_blueprint=revolve1)
 
 node_vocab.create_node(label="L1", is_terminal=True, block_blueprint=link[0])
 node_vocab.create_node(label="L2", is_terminal=True, block_blueprint=link[1])
@@ -227,6 +231,10 @@ rule_vocab.create_rule("TerminalJoint3", ["J"], ["J3"], 0, 0)
 rule_vocab.create_rule("TerminalJoint4", ["J"], ["J4"], 0, 0)
 rule_vocab.create_rule("TerminalJoint5", ["J"], ["J5"], 0, 0)
 rule_vocab.create_rule("TerminalJoint6", ["J"], ["J6"], 0, 0)
+rule_vocab.create_rule("TerminalJoint7", ["J"], ["J7"], 0, 0)
+rule_vocab.create_rule("TerminalJoint8", ["J"], ["J8"], 0, 0)
+rule_vocab.create_rule("TerminalJoint9", ["J"], ["J9"], 0, 0)
+rule_vocab.create_rule("TerminalJoint10", ["J"], ["J10"], 0, 0)
 
 #rule_vocab.create_rule("TerminalFlat1", ["F"], ["F1"], 0, 0)
 #rule_vocab.create_rule("TerminalFlat2", ["F"], ["F2"], 0, 0)
@@ -280,12 +288,16 @@ rule_vocab.create_rule("TerminalEndLimb1", ["EM"], ["U1"], 0, 0)
 rule_vocab.create_rule("TerminalEndLimb2", ["EM"], ["U2"], 0, 0)
 
 torque_dict = {
-    node_vocab.get_node("J1"): 15,
-    node_vocab.get_node("J2"): 10,
-    node_vocab.get_node("J3"): -10,
-    node_vocab.get_node("J4"): 7,
-    node_vocab.get_node("J5"): 5,
-    node_vocab.get_node("J6"): 3
+    node_vocab.get_node("J1"): -6,
+    node_vocab.get_node("J2"): -7,
+    node_vocab.get_node("J3"): -8,
+    node_vocab.get_node("J4"): -9,
+    node_vocab.get_node("J5"): -10,
+    node_vocab.get_node("J6"): -11,
+    node_vocab.get_node("J7"): -12,
+    node_vocab.get_node("J8"): -13,
+    node_vocab.get_node("J9"): -14,
+    node_vocab.get_node("J10"): -15
 }
 time_dicst = {
     node_vocab.get_node("J1"): 0.2,
