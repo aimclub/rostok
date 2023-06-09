@@ -4,3 +4,6 @@
 *.pyc
 /html/
 /rostok.egg-info/
+/results/
+/temp_*/
+test*.ipynb

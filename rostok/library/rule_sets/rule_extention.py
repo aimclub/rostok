@@ -1,15 +1,15 @@
 import numpy as np
 import pychrono as chrono
 
-from rostok.block_builder_chrono.block_classes import (ChronoEasyShape,
-                                                       ChronoRevolveJoint,
-                                                       ChronoTransform,
-                                                       UniversalBox)
+from rostok.block_builder_api.block_blueprints import (EnvironmentBodyBlueprint,
+                                                       PrimitiveBodyBlueprint,
+                                                       RevolveJointBlueprint, TransformBlueprint)
+from rostok.block_builder_api.block_parameters import JointInputType
+from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.block_builder_chrono.blocks_utils import FrameTransform
-from rostok.graph import node_vocabulary
-from rostok.graph.graph import ROOT
-from rostok.graph.node import BlockWrapper
 from rostok.graph_grammar import rule_vocabulary
+from rostok.graph_grammar.node import ROOT, GraphGrammar
+from rostok.graph_grammar.node_vocabulary import NodeVocabulary
 
 # %% Bodies for extansions rules
 width = [0.5, 0.6, 0.65]
@@ -18,89 +18,55 @@ alpha_left = [0, 30, 60]
 alpha_right = [180, 150, 120]
 length_link = [0.3, 0.6, 0.8, 1]
 
-flat = list(
-    map(lambda x: BlockWrapper(UniversalBox, x=x, y=0.05, z=0.8), width))
+flat = list(map(lambda x: PrimitiveBodyBlueprint(Box(x, 0.05, 0.8)), width))
 
-link = list(map(lambda x: BlockWrapper(UniversalBox, x=0.1, y=x, z=0.3), length_link))
+link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.1, x, 0.3)), length_link))
 
-u1 = BlockWrapper(UniversalBox, x=0.1, y=0.05, z=0.3)
-u2 = BlockWrapper(UniversalBox, x=0.2, y=0.1, z= 0.3)
-CHOOO = 0.5
-# %% Tranform for extansions rules 
-# z_shift = [-CHOOO, 0, CHOOO]
-# MOVE_TO_RIGHT_SIDE = []
-# for i in width:
-#     for j in z_shift:
-#         for alpha in alpha_right:
-#             quat_Y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))
-#             ROTATE_TO_ALPHA = FrameTransform([i, 0, j],[quat_Y_ang_alpha.e0,quat_Y_ang_alpha.e1,
-#                                         quat_Y_ang_alpha.e2,quat_Y_ang_alpha.e3])
-#             MOVE_TO_RIGHT_SIDE.append(ROTATE_TO_ALPHA)
+u1 = PrimitiveBodyBlueprint(Box(0.1, 0.05, 0.3))
+u2 = PrimitiveBodyBlueprint(Box(0.2, 0.1, 0.3))
 
-# transform_to_right_mount_list = list(map(lambda x: BlockWrapper(ChronoTransform, x), MOVE_TO_RIGHT_SIDE))
-            
+
 def rotation(alpha):
     quat_Y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))
-    return [quat_Y_ang_alpha.e0, quat_Y_ang_alpha.e1, quat_Y_ang_alpha.e2,quat_Y_ang_alpha.e3]
+    return [quat_Y_ang_alpha.e0, quat_Y_ang_alpha.e1, quat_Y_ang_alpha.e2, quat_Y_ang_alpha.e3]
 
 
-MOVE_TO_RIGHT_SIDE = map(lambda x: FrameTransform([x, 0, 0],[0,0,1,0]),
-                width)
-MOVE_TO_RIGHT_SIDE_PLUS = map(lambda x: FrameTransform([x, 0, +CHOOO],[0,0,1,0]),
-                width)
-MOVE_TO_RIGHT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([x, 0, +CHOOO], rotation(150)),
-                width)
-MOVE_TO_RIGHT_SIDE_MINUS = map(lambda x: FrameTransform([x, 0, -CHOOO],[0,0,1,0]),
-                width)
-MOVE_TO_RIGHT_SIDE_MINUS_ANGLE = map(lambda x: FrameTransform([x, 0, -CHOOO],rotation(210)),
-                width)
-MOVE_TO_LEFT_SIDE = map(lambda x:  FrameTransform([-x, 0, 0],[1,0,0,0]),
-                width)
-MOVE_TO_LEFT_SIDE_PLUS = map(lambda x: FrameTransform([-x, 0, +CHOOO],[1,0,0,0]),
-                width)
-MOVE_TO_LEFT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([-x, 0, +CHOOO],rotation(30)),
-                width)
-MOVE_TO_LEFT_SIDE_MINUS = map(lambda x: FrameTransform([-x, 0, -CHOOO],[1,0,0,0]),
-                width)
-MOVE_TO_LEFT_SIDE_MINUS_ANGLE = map(lambda x: FrameTransform([-x, 0, -CHOOO],rotation(-30)),
-                width)
+MOVES_R = 0.4
+MOVE_TO_RIGHT_SIDE = map(lambda x: FrameTransform([x, 0, 0], [0, 0, 1, 0]), width)
+MOVE_TO_RIGHT_SIDE_PLUS = map(lambda x: FrameTransform([x, 0, +MOVES_R], [0, 0, 1, 0]), width)
+MOVE_TO_RIGHT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([x, 0, +MOVES_R], rotation(150)),
+                                    width)
+MOVE_TO_RIGHT_SIDE_MINUS = map(lambda x: FrameTransform([x, 0, -MOVES_R], [0, 0, 1, 0]), width)
+MOVE_TO_RIGHT_SIDE_MINUS_ANGLE = map(lambda x: FrameTransform([x, 0, -MOVES_R], rotation(210)),
+                                     width)
+MOVE_TO_LEFT_SIDE = map(lambda x: FrameTransform([-x, 0, 0], [1, 0, 0, 0]), width)
+MOVE_TO_LEFT_SIDE_PLUS = map(lambda x: FrameTransform([-x, 0, +MOVES_R], [1, 0, 0, 0]), width)
+MOVE_TO_LEFT_SIDE_PLUS_ANGLE = map(lambda x: FrameTransform([-x, 0, +MOVES_R], rotation(30)), width)
+MOVE_TO_LEFT_SIDE_MINUS = map(lambda x: FrameTransform([-x, 0, -MOVES_R], [1, 0, 0, 0]), width)
+MOVE_TO_LEFT_SIDE_MINUS_ANGLE = map(lambda x: FrameTransform([-x, 0, -MOVES_R], rotation(-30)),
+                                    width)
 
-# quat_Y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))
-# ROTATE_TO_ALPHA = FrameTransform([0, 0, 0],[quat_Y_ang_alpha.e0,quat_Y_ang_alpha.e1,
-#                                         quat_Y_ang_alpha.e2,quat_Y_ang_alpha.e3])
-
-
-transform_to_right_mount = list(map(lambda x: BlockWrapper(ChronoTransform, x),
-                MOVE_TO_RIGHT_SIDE))
-transform_to_right_mount_plus = list(map(lambda x: BlockWrapper(ChronoTransform, x),
-                MOVE_TO_RIGHT_SIDE_PLUS))
-transform_to_right_mount_plus_angle = list(map(lambda x: BlockWrapper(ChronoTransform, x),
-                MOVE_TO_RIGHT_SIDE_PLUS_ANGLE))
-transform_to_right_mount_minus = list(map(lambda x: BlockWrapper(ChronoTransform, x),
-                MOVE_TO_RIGHT_SIDE_MINUS))
-transform_to_right_mount_minus_angle = list(map(lambda x: BlockWrapper(ChronoTransform, x),
-                MOVE_TO_RIGHT_SIDE_MINUS_ANGLE))
-transform_to_left_mount = list(map(lambda x: BlockWrapper(ChronoTransform, x),
-                MOVE_TO_LEFT_SIDE))
-transform_to_left_mount_plus = list(map(lambda x: BlockWrapper(ChronoTransform, x),
-                MOVE_TO_LEFT_SIDE_PLUS))
-transform_to_left_mount_plus_angle = list(map(lambda x: BlockWrapper(ChronoTransform, x),
-                MOVE_TO_LEFT_SIDE_PLUS_ANGLE))
-transform_to_left_mount_minus = list(map(lambda x: BlockWrapper(ChronoTransform, x),
-                MOVE_TO_LEFT_SIDE_MINUS))
-transform_to_left_mount_minus_angle = list(map(lambda x: BlockWrapper(ChronoTransform, x),
-                MOVE_TO_LEFT_SIDE_MINUS_ANGLE))
-# transform_to_alpha_rotate = BlockWrapper(ChronoTransform, ROTATE_TO_ALPHA)
-
-
-# %%
-type_of_input = ChronoRevolveJoint.InputType.TORQUE
+transform_to_right_mount = list(map(lambda x: TransformBlueprint(x), MOVE_TO_RIGHT_SIDE))
+transform_to_right_mount_plus = list(map(lambda x: TransformBlueprint(x), MOVE_TO_RIGHT_SIDE_PLUS))
+transform_to_right_mount_plus_angle = list(
+    map(lambda x: TransformBlueprint(x), MOVE_TO_RIGHT_SIDE_PLUS_ANGLE))
+transform_to_right_mount_minus = list(map(lambda x: TransformBlueprint(x),
+                                          MOVE_TO_RIGHT_SIDE_MINUS))
+transform_to_right_mount_minus_angle = list(
+    map(lambda x: TransformBlueprint(x), MOVE_TO_RIGHT_SIDE_MINUS_ANGLE))
+transform_to_left_mount = list(map(lambda x: TransformBlueprint(x), MOVE_TO_LEFT_SIDE))
+transform_to_left_mount_plus = list(map(lambda x: TransformBlueprint(x), MOVE_TO_LEFT_SIDE_PLUS))
+transform_to_left_mount_plus_angle = list(
+    map(lambda x: TransformBlueprint(x), MOVE_TO_LEFT_SIDE_PLUS_ANGLE))
+transform_to_left_mount_minus = list(map(lambda x: TransformBlueprint(x), MOVE_TO_LEFT_SIDE_MINUS))
+transform_to_left_mount_minus_angle = list(
+    map(lambda x: TransformBlueprint(x), MOVE_TO_LEFT_SIDE_MINUS_ANGLE))
 
 # Joints
-revolve1 = BlockWrapper(ChronoRevolveJoint, ChronoRevolveJoint.Axis.Z,  type_of_input)
+revolve1 = RevolveJointBlueprint(JointInputType.TORQUE)
 
 # Nodes
-node_vocab = node_vocabulary.NodeVocabulary()
+node_vocab = NodeVocabulary()
 node_vocab.add_node(ROOT)
 node_vocab.create_node("L")
 node_vocab.create_node("F")
@@ -120,47 +86,47 @@ node_vocab.create_node("SMLMA")
 
 
 #O = Node("O")
-node_vocab.create_node(label="J1", is_terminal=True, block_wrapper=revolve1)
-node_vocab.create_node(label="L1", is_terminal=True, block_wrapper=link[0])
-node_vocab.create_node(label="L2", is_terminal=True, block_wrapper=link[1])
-node_vocab.create_node(label="L3", is_terminal=True, block_wrapper=link[2])
-node_vocab.create_node(label="F1", is_terminal=True, block_wrapper=flat[0])
-node_vocab.create_node(label="F2", is_terminal=True, block_wrapper=flat[1])
-node_vocab.create_node(label="F3", is_terminal=True, block_wrapper=flat[2])
-node_vocab.create_node(label="U1", is_terminal=True, block_wrapper=u1)
-node_vocab.create_node(label="U2", is_terminal=True, block_wrapper=u2)
+node_vocab.create_node(label="J1", is_terminal=True, block_blueprint=revolve1)
+node_vocab.create_node(label="L1", is_terminal=True, block_blueprint=link[0])
+node_vocab.create_node(label="L2", is_terminal=True, block_blueprint=link[1])
+node_vocab.create_node(label="L3", is_terminal=True, block_blueprint=link[2])
+node_vocab.create_node(label="F1", is_terminal=True, block_blueprint=flat[0])
+node_vocab.create_node(label="F2", is_terminal=True, block_blueprint=flat[1])
+node_vocab.create_node(label="F3", is_terminal=True, block_blueprint=flat[2])
+node_vocab.create_node(label="U1", is_terminal=True, block_blueprint=u1)
+node_vocab.create_node(label="U2", is_terminal=True, block_blueprint=u2)
 
-node_vocab.create_node(label="TR1", is_terminal=True, block_wrapper=transform_to_right_mount[0])
-node_vocab.create_node(label="TR2", is_terminal=True, block_wrapper=transform_to_right_mount[1])
-node_vocab.create_node(label="TR3", is_terminal=True, block_wrapper=transform_to_right_mount[2])
-node_vocab.create_node(label="TRP1", is_terminal=True, block_wrapper=transform_to_right_mount_plus[0])
-node_vocab.create_node(label="TRP2", is_terminal=True, block_wrapper=transform_to_right_mount_plus[1])
-node_vocab.create_node(label="TRP3", is_terminal=True, block_wrapper=transform_to_right_mount_plus[2])
-node_vocab.create_node(label="TRPA1", is_terminal=True, block_wrapper=transform_to_right_mount_plus_angle[0])
-node_vocab.create_node(label="TRPA2", is_terminal=True, block_wrapper=transform_to_right_mount_plus_angle[1])
-node_vocab.create_node(label="TRPA3", is_terminal=True, block_wrapper=transform_to_right_mount_plus_angle[2])
-node_vocab.create_node(label="TRM1", is_terminal=True, block_wrapper=transform_to_right_mount_minus[0])
-node_vocab.create_node(label="TRM2", is_terminal=True, block_wrapper=transform_to_right_mount_minus[1])
-node_vocab.create_node(label="TRM3", is_terminal=True, block_wrapper=transform_to_right_mount_minus[2])
-node_vocab.create_node(label="TRMA1", is_terminal=True, block_wrapper=transform_to_right_mount_minus_angle[0])
-node_vocab.create_node(label="TRMA2", is_terminal=True, block_wrapper=transform_to_right_mount_minus_angle[1])
-node_vocab.create_node(label="TRMA3", is_terminal=True, block_wrapper=transform_to_right_mount_minus_angle[2])
+node_vocab.create_node(label="TR1", is_terminal=True, block_blueprint=transform_to_right_mount[0])
+node_vocab.create_node(label="TR2", is_terminal=True, block_blueprint=transform_to_right_mount[1])
+node_vocab.create_node(label="TR3", is_terminal=True, block_blueprint=transform_to_right_mount[2])
+node_vocab.create_node(label="TRP1", is_terminal=True, block_blueprint=transform_to_right_mount_plus[0])
+node_vocab.create_node(label="TRP2", is_terminal=True, block_blueprint=transform_to_right_mount_plus[1])
+node_vocab.create_node(label="TRP3", is_terminal=True, block_blueprint=transform_to_right_mount_plus[2])
+node_vocab.create_node(label="TRPA1", is_terminal=True, block_blueprint=transform_to_right_mount_plus_angle[0])
+node_vocab.create_node(label="TRPA2", is_terminal=True, block_blueprint=transform_to_right_mount_plus_angle[1])
+node_vocab.create_node(label="TRPA3", is_terminal=True, block_blueprint=transform_to_right_mount_plus_angle[2])
+node_vocab.create_node(label="TRM1", is_terminal=True, block_blueprint=transform_to_right_mount_minus[0])
+node_vocab.create_node(label="TRM2", is_terminal=True, block_blueprint=transform_to_right_mount_minus[1])
+node_vocab.create_node(label="TRM3", is_terminal=True, block_blueprint=transform_to_right_mount_minus[2])
+node_vocab.create_node(label="TRMA1", is_terminal=True, block_blueprint=transform_to_right_mount_minus_angle[0])
+node_vocab.create_node(label="TRMA2", is_terminal=True, block_blueprint=transform_to_right_mount_minus_angle[1])
+node_vocab.create_node(label="TRMA3", is_terminal=True, block_blueprint=transform_to_right_mount_minus_angle[2])
 
-node_vocab.create_node(label="TL1", is_terminal=True, block_wrapper=transform_to_left_mount[0])
-node_vocab.create_node(label="TL2", is_terminal=True, block_wrapper=transform_to_left_mount[1])
-node_vocab.create_node(label="TL3", is_terminal=True, block_wrapper=transform_to_left_mount[2])
-node_vocab.create_node(label="TLP1", is_terminal=True, block_wrapper=transform_to_left_mount_plus[0])
-node_vocab.create_node(label="TLP2", is_terminal=True, block_wrapper=transform_to_left_mount_plus[1])
-node_vocab.create_node(label="TLP3", is_terminal=True, block_wrapper=transform_to_left_mount_plus[2])
-node_vocab.create_node(label="TLPA1", is_terminal=True, block_wrapper=transform_to_left_mount_plus_angle[0])
-node_vocab.create_node(label="TLPA2", is_terminal=True, block_wrapper=transform_to_left_mount_plus_angle[1])
-node_vocab.create_node(label="TLPA3", is_terminal=True, block_wrapper=transform_to_left_mount_plus_angle[2])
-node_vocab.create_node(label="TLM1", is_terminal=True, block_wrapper=transform_to_left_mount_minus[0])
-node_vocab.create_node(label="TLM2", is_terminal=True, block_wrapper=transform_to_left_mount_minus[1])
-node_vocab.create_node(label="TLM3", is_terminal=True, block_wrapper=transform_to_left_mount_minus[2])
-node_vocab.create_node(label="TLMA1", is_terminal=True, block_wrapper=transform_to_left_mount_minus_angle[0])
-node_vocab.create_node(label="TLMA2", is_terminal=True, block_wrapper=transform_to_left_mount_minus_angle[1])
-node_vocab.create_node(label="TLMA3", is_terminal=True, block_wrapper=transform_to_left_mount_minus_angle[2])
+node_vocab.create_node(label="TL1", is_terminal=True, block_blueprint=transform_to_left_mount[0])
+node_vocab.create_node(label="TL2", is_terminal=True, block_blueprint=transform_to_left_mount[1])
+node_vocab.create_node(label="TL3", is_terminal=True, block_blueprint=transform_to_left_mount[2])
+node_vocab.create_node(label="TLP1", is_terminal=True, block_blueprint=transform_to_left_mount_plus[0])
+node_vocab.create_node(label="TLP2", is_terminal=True, block_blueprint=transform_to_left_mount_plus[1])
+node_vocab.create_node(label="TLP3", is_terminal=True, block_blueprint=transform_to_left_mount_plus[2])
+node_vocab.create_node(label="TLPA1", is_terminal=True, block_blueprint=transform_to_left_mount_plus_angle[0])
+node_vocab.create_node(label="TLPA2", is_terminal=True, block_blueprint=transform_to_left_mount_plus_angle[1])
+node_vocab.create_node(label="TLPA3", is_terminal=True, block_blueprint=transform_to_left_mount_plus_angle[2])
+node_vocab.create_node(label="TLM1", is_terminal=True, block_blueprint=transform_to_left_mount_minus[0])
+node_vocab.create_node(label="TLM2", is_terminal=True, block_blueprint=transform_to_left_mount_minus[1])
+node_vocab.create_node(label="TLM3", is_terminal=True, block_blueprint=transform_to_left_mount_minus[2])
+node_vocab.create_node(label="TLMA1", is_terminal=True, block_blueprint=transform_to_left_mount_minus_angle[0])
+node_vocab.create_node(label="TLMA2", is_terminal=True, block_blueprint=transform_to_left_mount_minus_angle[1])
+node_vocab.create_node(label="TLMA3", is_terminal=True, block_blueprint=transform_to_left_mount_minus_angle[2])
 
 # Defines rules
 rule_vocab = rule_vocabulary.RuleVocabulary(node_vocab)

@@ -1,17 +1,15 @@
 import random
 
-import pychrono as chrono
-from test_ruleset import (get_terminal_graph_no_joints, get_terminal_graph_three_finger,
+from test_ruleset import (get_terminal_graph_no_joints,
+                          get_terminal_graph_three_finger,
                           get_terminal_graph_two_finger)
 
-import rostok.virtual_experiment.simulation_step as step
-
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
-from rostok.criterion.flags_simualtions import FlagMaxTime
-from rostok.block_builder_api.block_parameters import Material, FrameTransform
-from rostok.trajectory_optimizer.control_optimizer import num_joints
-from rostok.trajectory_optimizer.trajectory_generator import \
-    create_torque_traj_from_x
+from rostok.block_builder_api.block_parameters import FrameTransform, Material
+from rostok.block_builder_chrono.block_builder_chrono_api import \
+    ChronoBlockCreatorInterface as creator
+from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
+from rostok.simulation_chrono.basic_simulation import RobotSimulationChrono
 
 
 def test_control_bind_and_create_sim():
@@ -24,25 +22,21 @@ def test_control_bind_and_create_sim():
     ]
 
     for get_graph in mechs:
-        G = get_graph()
-        number_trq = num_joints(G)
-
-        config_sys = {"Set_G_acc": chrono.ChVectorD(0, 0, 0)}
-        max_time = 1
-        flags = [FlagMaxTime(max_time)]
+        graph = get_graph()
+        n_joints = len(get_joint_vector_from_graph(graph))
+        const_torque_koef = [random.random() for _ in range(n_joints)]
+        controll_parameters = {"initial_value": const_torque_koef}
         times_step = 1e-3
-
-        const_torque_koef = [random.random() for _ in range(number_trq)]
-        arr_trj = create_torque_traj_from_x(G, const_torque_koef, 1, 0.1)
-
         mat = Material()
         mat.Friction = 0.65
         mat.DampingF = 0.65
+        obj_bp = EnvironmentBodyBlueprint(material=mat,
+                                          pos=FrameTransform([0, 1, 0], [0, -0.048, 0.706, 0.706]))
 
-        obj = EnvironmentBodyBlueprint(material=mat,
-                                       pos=FrameTransform([0, 1, 0], [0, -0.048, 0.706, 0.706]))
+        sim = RobotSimulationChrono([])
+        sim.add_design(graph, controll_parameters)
+        sim.add_object(creator().create_environment_body(obj_bp), True)
 
-        sim = step.SimulationStepOptimization(arr_trj, G, obj)
-        sim.set_flags_stop_simulation(flags)
-        sim.change_config_system(config_sys)
-        sim_output = sim.simulate_system(times_step)
+        sim_output = sim.simulate(10000, times_step, 10)
+
+
