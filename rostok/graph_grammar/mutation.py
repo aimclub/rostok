@@ -1,6 +1,6 @@
 from rostok.graph_grammar.node import GraphGrammar, Node
 from copy import deepcopy
-from random import random, choice
+from random import random, choice, choices
 from typing import Union
 from copy import deepcopy
 from itertools import chain
@@ -90,7 +90,7 @@ def available_for_add_joint_edges(graph: GraphGrammar):
 def add_node_between(edge: tuple[int, int], graph: GraphGrammar, node: Node):
     if not graph.has_edge(*edge):
         raise Exception(f"Graph not have edge: {edge}")
-    id_aded_node = graph._get_uniq_id()
+    id_aded_node = graph.get_uniq_id()
     graph.add_node(id_aded_node, Node=node)
     graph.remove_edge(*edge)
     graph.add_edge(id_aded_node, edge[1])
@@ -98,7 +98,7 @@ def add_node_between(edge: tuple[int, int], graph: GraphGrammar, node: Node):
 
 
 def add_node_after_leaf(psedo_edge: tuple[int], graph: GraphGrammar, node: Node):
-    id_aded_node = graph._get_uniq_id()
+    id_aded_node = graph.get_uniq_id()
     graph.add_node(id_aded_node, Node=node)
     graph.add_edge(psedo_edge[0], id_aded_node)
 
@@ -128,14 +128,7 @@ def available_for_add_bodies_edges(graph) -> list[Union[tuple[int, int], tuple[
 def get_random_node(nodes_list: list[Node],
                     type_distribution: tuple[float, float, float] = (1, 1, 1)):
     node_types = [NodeFeatures.is_body, NodeFeatures.is_joint, NodeFeatures.is_transform]
-    chance = random() * len(type_distribution)
-
-    curren_type = node_types[0]
-
-    for num, i_type in enumerate(node_types):
-        if chance < type_distribution[num] + num:
-            curren_type = i_type
-            break
+    curren_type = choices(node_types, type_distribution)[0]
     avalable_node = list(filter(curren_type, nodes_list))
     current_node = choice(avalable_node)
     return current_node
@@ -190,6 +183,18 @@ def add_mut(
     graph: GraphGrammar,
     nodes_list: list[Node],
     type_distribution: tuple[float, float, float] = (1, 1, 1)) -> GraphGrammar:
+    """Mutation to add nodes while maintaining properties DAG and rostok builder.
+    Added nodes do not spawn branches.
+
+    Args:
+        graph (GraphGrammar): Mutable graph, 
+        nodes_list (list[Node]): Nodes for add
+        type_distribution (tuple[float, float, float], optional): Relative weights (Body, Transform, Joint).
+        Defaults to (1, 1, 1).
+
+    Returns:
+        GraphGrammar: Mutated graph
+    """
     res_graph = deepcopy(graph)
     node = get_random_node(nodes_list, type_distribution)
     add_node_mutation(node, res_graph)
@@ -200,55 +205,18 @@ def del_mut(
     graph: GraphGrammar,
     nodes_list: list[Node],
     type_distribution: tuple[float, float, float] = (1, 1, 1)) -> GraphGrammar:
+    """Mutation to remove nodes while maintaining properties DAG and rostok builder
+
+    Args:
+        graph (GraphGrammar): Mutable graph
+        nodes_list (list[Node]): Nodes for delete
+        type_distribution (tuple[float, float, float], optional): Relative weights (Body, Transform, Joint). 
+        Defaults to (1, 1, 1).
+
+    Returns:
+        GraphGrammar: Mutated graph
+    """
     res_graph = deepcopy(graph)
     node = get_random_node(nodes_list, type_distribution)
     delete_node_mutation(node, res_graph)
     return res_graph
-
-
-# terminal_nodes = [i for i in list(node_vocab.node_dict.values()) if  i.is_terminal]
-
-# cfg = get_cfg_standart()
-# cfg.get_rgab_object_callback = get_obj_hard_ellipsoid
-# optic = ControlOptimizer(cfg)
-
-# graph = get_terminal_graph_three_finger()
-
-# F1_node = node_vocab.get_node("F1")
-# list_before = []
-# list_after = []
-
-# for i in range(10):
-#     for _ in range(2):
-#         graph = add_mut(graph, terminal_nodes)
-#         number_trq = num_joints(graph)
-#         const_torque_koef = [10*random() for _ in range(number_trq)]
-#         arr_trj = create_torque_traj_from_x(graph, const_torque_koef, 5, 0.1)
-#         obj = get_obj_hard_ellipsoid()
-#         sim = step.SimulationStepOptimization(arr_trj, graph, obj,
-#                                                 FrameTransform([0, 1.5, 0], [0, 1, 0, 0]))
-#         flags = [FlagMaxTime(0.2)]
-#         sim.set_flags_stop_simulation(flags)
-#         sim_output = sim.simulate_system(0.001, False)
-#     for _ in range(2):
-#         graph = del_mut(graph, terminal_nodes)
-#         number_trq = num_joints(graph)
-#         const_torque_koef = [10*random() for _ in range(number_trq)]
-#         arr_trj = create_torque_traj_from_x(graph, const_torque_koef, 5, 0.1)
-#         obj = get_obj_hard_ellipsoid()
-#         sim = step.SimulationStepOptimization(arr_trj, graph, obj,
-#                                                 FrameTransform([0, 1.5, 0], [0, 1, 0, 0]))
-#         flags = [FlagMaxTime(0.2)]
-#         sim.set_flags_stop_simulation(flags)
-#         sim_output = sim.simulate_system(0.001, False)
-
-# #plot_graph_ids(graph)
-# number_trq = num_joints(graph)
-# const_torque_koef = [10*random() for _ in range(number_trq)]
-# arr_trj = create_torque_traj_from_x(graph, const_torque_koef, 5, 0.1)
-# obj = get_obj_hard_ellipsoid()
-# sim = step.SimulationStepOptimization(arr_trj, graph, obj,
-#                                           FrameTransform([0, 1.5, 0], [0, 1, 0, 0]))
-# flags = [FlagMaxTime(5)]
-# sim.set_flags_stop_simulation(flags)
-# sim_output = sim.simulate_system(0.001, True)

@@ -103,7 +103,7 @@ def get_subtree_graph(graph: rostok_graph.GraphGrammar, id: int):
     return digraph_nx
 
 
-def remove_subtree_no_root(graph_1: rostok_graph.GraphGrammar, id_1: int):
+def remove_subtree_without_root(graph_1: rostok_graph.GraphGrammar, id_1: int):
     graph_1 = deepcopy(graph_1)
     subtree_to_remove = dfs_tree(graph_1, id_1)
     subtree_to_remove.remove_node(id_1)
@@ -132,11 +132,22 @@ def add_subtree_using_rule(graph_1: rostok_graph.GraphGrammar, id_1: int, subtre
 
 def subtree_crossover_select(graph_1: rostok_graph.GraphGrammar, graph_2: rostok_graph.GraphGrammar,
                              id_1: int, id_2: int):
+    """Replace subtree
+
+    Args:
+        graph_1 (rostok_graph.GraphGrammar): 
+        graph_2 (rostok_graph.GraphGrammar): 
+        id_1 (int): 
+        id_2 (int): 
+
+    Returns:
+        [GraphGrammar, GraphGrammar]: Changed graphs
+    """
     subtree_1 = get_subtree_graph(graph_1, id_1)
     subtree_2 = get_subtree_graph(graph_2, id_2)
 
-    graph_1 = remove_subtree_no_root(graph_1, id_1)
-    graph_2 = remove_subtree_no_root(graph_2, id_2)
+    graph_1 = remove_subtree_without_root(graph_1, id_1)
+    graph_2 = remove_subtree_without_root(graph_2, id_2)
 
     graph_1 = add_subtree_using_rule(graph_1, id_1, subtree_2)
     graph_2 = add_subtree_using_rule(graph_2, id_2, subtree_1)
@@ -160,27 +171,3 @@ def subtree_crossover(graph_1: rostok_graph.GraphGrammar,
     id_2 = random.choice(available_ids_2)
     graph_1, graph_2 = subtree_crossover_select(graph_1, graph_2, id_1, id_2)
     return graph_1, graph_2
-
-
-
-
-# G1_long = get_two_link_three_finger()
-# G2 = get_one_link_three_finger()  #get_complex_mech()
-# G3 = get_palm()
-# G4_complex = get_complex_mech()
-
-
-# # plot_graph_ids(G1_long)
-# # plot_graph(G1_long)
-
-# plot_graph(G3)
-# plot_graph(G1_long)
-
-# ids = available_node_ids_both_directions(G3, 1, G1_long, callback_body)
-# graaaapphh = get_subtree_graph(G1_long, 23)
-
-# kto1, kto2 = subtree_crossover(G3, G1_long)
-# plot_graph(kto1)
-# plot_graph(kto2)
-# plt.show()
-# print(ids)

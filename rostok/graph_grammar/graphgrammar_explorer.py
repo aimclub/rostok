@@ -4,6 +4,10 @@ from typing import Tuple
 from rostok.graph_grammar.node import GraphGrammar, Rule
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 
+from rostok.graph_grammar.make_random_graph import make_random_graph
+from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
+import random
+
 
 def create_graph_from_seq(seq: list[Rule]) -> GraphGrammar:
     """Applies the rules from the list in direct order 
@@ -105,3 +109,26 @@ def ruleset_explorer(limit_non_terminal: int,
                       current_number_non_terminal, seq_rule)
 
     return set_uniq_graphs, mutable_counter[0]
+
+
+def brute_force_category(rule_vocabul: RuleVocabulary,
+                         numbers_of_rules=[5, 6],
+                         category_size=10,
+                         desired_branch=1,
+                         max_tries=10000,
+                         is_terminal = True):
+
+    category = []
+    for _ in range(max_tries):
+        number_of_rules = random.choice(numbers_of_rules)
+        rand_graph = make_random_graph(number_of_rules, rule_vocabul, True)
+        number_of_branch = len(rand_graph.get_uniq_representation())
+
+        if (number_of_branch == desired_branch):
+            if is_terminal:
+                rule_vocabul.make_graph_terminal(rand_graph)
+            category.append(rand_graph)
+
+        if len(category) >= category_size:
+            break
+    return category

@@ -13,16 +13,19 @@ from rostok.graph_grammar.node import ROOT, GraphGrammar, Node
 
 
 class GraphGrammarFactory(DefaultOptNodeFactory):
-    
-    def __init__(self, available_node_types: Optional[Iterable[str]] = None, num_node_types: Optional[int] = None):
+
+    def __init__(self,
+                 available_node_types: Optional[Iterable[str]] = None,
+                 num_node_types: Optional[int] = None):
         super().__init__(available_node_types, num_node_types)
-    
+
     def get_node(self, **kwargs) -> OptNode:
         chosen_node_type = choice(self._available_nodes) \
             if self._available_nodes \
             else random.randint(0, self._num_node_types)
-        
-        return OptNode(content={"Node" : chosen_node_type, "name" : chosen_node_type.label})
+
+        return OptNode(content={"Node": chosen_node_type, "name": chosen_node_type.label})
+
 
 class GraphGrammarAdapter(BaseNetworkxAdapter):
 
@@ -55,7 +58,7 @@ class GraphGrammarAdapter(BaseNetworkxAdapter):
 
         graph.add_nodes_from(nx_adapt_graph.nodes(data=True))
         graph.add_edges_from(nx_adapt_graph.edges(data=True))
-        relabel = {golem_id: graph._get_uniq_id() for golem_id in list(graph.nodes)}
+        relabel = {golem_id: graph.get_uniq_id() for golem_id in list(graph.nodes)}
         graph = nx.relabel_nodes(graph, relabel, copy=False)
         return graph
 
