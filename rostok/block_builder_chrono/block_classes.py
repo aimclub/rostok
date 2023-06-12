@@ -9,9 +9,8 @@ import pychrono.core as chrono
 import rostok.block_builder_api.easy_body_shapes as easy_body_shapes
 from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform)
 from rostok.block_builder_chrono.block_types import (BlockBody, BlockBridge, BlockTransform)
-from rostok.block_builder_chrono.blocks_utils import (ContactReporter, SpringTorque,
-                                                      frame_transform_to_chcoordsys, rotation_z_q)
-from rostok.block_builder_chrono.chrono_system import get_chrono_system
+from rostok.block_builder_chrono.blocks_utils import (SpringTorque,
+                                                        frame_transform_to_chcoordsys, rotation_z_q)
 from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
     DefaultChronoMaterial, struct_material2object_material)
@@ -248,17 +247,15 @@ class ChronoRevolveJoint(BlockBridge):
             out_block (BuildingBody): Master body to connect
         """
         system.Update()
-        self.joint = self.input_type.motor()
-        self.joint.Initialize(in_block.body, out_block.body, True, in_block.transformed_frame_out,
-                              out_block.transformed_frame_input)
-        system.AddLink(self.joint)
 
+        self.joint = self.input_type.motor()
+        self.joint.Initialize(out_block.body, in_block.body, chrono.ChFrameD(in_block.transformed_frame_out.GetAbsCoord()))
+        system.AddLink(self.joint)
         if (self.stiffness != 0) or (self.damping != 0):
             self._add_spring_damper(in_block, out_block, system)
 
         if (self.with_collision):
             eps = 0.002
-            
             cylinder = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, self.radius - eps, self.length, self.density, True,
                                                  True, self.material)
             turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROTATE_Y_TO_Z)
@@ -272,8 +269,7 @@ class ChronoRevolveJoint(BlockBridge):
             cylinder.AddMarker(marker)
             system.Update()
             fix_joint = chrono.ChLinkMateFix()
-            fix_joint.Initialize(in_block.body, cylinder, True, in_block.transformed_frame_out,
-                                 marker)
+            fix_joint.Initialize(cylinder, in_block.body, chrono.ChFrameD(in_block.transformed_frame_out.GetAbsCoord()))
             system.Add(fix_joint)
         else:
             # Add cylinder visual only
@@ -288,12 +284,12 @@ class ChronoRevolveJoint(BlockBridge):
     def _add_spring_damper(self, in_block: BuildingBody, out_block: BuildingBody,
                            system: chrono.ChSystem):
         self._joint_spring = chrono.ChLinkRSDA()
-        self._joint_spring.Initialize(in_block.body, out_block.body, False,
-                                      in_block.transformed_frame_out.GetAbsCoord(),
-                                      out_block.ref_frame_in.GetAbsCoord())
-        self._torque_functor = SpringTorque(self.stiffness, self.damping, self.equilibrium_position)
+        self._joint_spring.Initialize(out_block.body, in_block.body,
+                                      in_block.transformed_frame_out.GetAbsCoord())
+        self._torque_functor = SpringTorque(self.stiffness, self.damping)
+        self._joint_spring.SetRestAngle(self.equilibrium_position)
         self._joint_spring.RegisterTorqueFunctor(self._torque_functor)
-        system.Add(self._joint_spring)
+        system.AddLink(self._joint_spring)
 
 
 class PrimitiveBody(BuildingBody):

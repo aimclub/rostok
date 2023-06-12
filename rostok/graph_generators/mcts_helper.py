@@ -11,7 +11,7 @@ from rostok.graph_grammar.graph_utils import (plot_graph_reward,
                                               save_graph_plot_reward)
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
-from rostok.trajectory_optimizer.control_optimizer import ControlOptimizer
+from rostok.trajectory_optimizer.control_optimizer import GraphRewardCalculator
 from rostok.utils.pickle_save import Saveable
 from rostok.utils.states import (MCTSOptimizedState, OptimizedGraph,
                                  OptimizedState, RobotState)
@@ -123,8 +123,8 @@ class MCTSSaveable(Saveable):
         self.seen_graphs: OptimizedGraphReport = OptimizedGraphReport(path)
         self.seen_states: OptimizedMCTSStateReport = OptimizedMCTSStateReport(path)
         self.main_state: RobotState = RobotState(rules=rule_vocabulary)
-        self.main_simulated_state = OptimizedState(self.main_state, 0, None)
-        self.best_simulated_state = OptimizedState(self.main_state, 0, None)
+        self.main_simulated_state = OptimizedState(self.main_state, 0, [])
+        self.best_simulated_state = OptimizedState(self.main_state, 0, [])
         self.non_terminal_rules_limit: int = 0
         self.search_parameter = 0
 
@@ -175,7 +175,9 @@ class MCTSSaveable(Saveable):
 
         plt.figure()
         plt.plot(mean_rewards)
-        plt.title(f'Iterations: {self.search_parameter}. Non-terminal rules: {self.non_terminal_rules_limit}')
+        plt.title(
+            f'Iterations: {self.search_parameter}. Non-terminal rules: {self.non_terminal_rules_limit}'
+        )
         plt.xlabel('Steps')
         plt.ylabel('Rewards')
         plt.savefig(Path(self.path, "step_means.png"))
@@ -196,10 +198,11 @@ class MCTSSaveable(Saveable):
             print('control:', *self.best_simulated_state.control)
             print('reward:', self.best_simulated_state.reward)
             print()
-            print('max number of non-terminal rules:', self.non_terminal_rules_limit, 
-            'search parameter:', self.search_parameter)
+            print('max number of non-terminal rules:', self.non_terminal_rules_limit,
+                  'search parameter:', self.search_parameter)
             print()
-            print("Number of unique mechanisms tested in current MCTS run: ", len(self.seen_graphs.graph_list))
+            print("Number of unique mechanisms tested in current MCTS run: ",
+                  len(self.seen_graphs.graph_list))
             print("Number of states ", len(self.seen_states.state_list))
             sys.stdout = original_stdout
 
@@ -238,7 +241,7 @@ class MCTSHelper():
 
     def __init__(self,
                  rule_vocabulary: RuleVocabulary,
-                 optimizer: ControlOptimizer,
+                 optimizer: GraphRewardCalculator,
                  path=Path("./results")) -> None:
         """Initialize empty instance of the MCTSHelper.
 
@@ -248,7 +251,7 @@ class MCTSHelper():
             path (Path): path to save the results of the MCTS run
         """
         self.actions: RuleVocabulary = rule_vocabulary
-        self.optimizer: ControlOptimizer = optimizer
+        self.optimizer: GraphRewardCalculator = optimizer
         self.step_counter: int = 0
         self.report: MCTSSaveable = MCTSSaveable(rule_vocabulary, path)
 
@@ -310,7 +313,7 @@ class MCTSGraphEnvironment(GraphVocabularyEnvironment):
                  initial_graph: GraphGrammar,
                  helper: MCTSHelper,
                  graph_vocabulary: RuleVocabulary,
-                 optimizer: ControlOptimizer,
+                 optimizer: GraphRewardCalculator,
                  max_numbers_rules_non_terminal: int = 20):
         """Create state from the graph
 
@@ -337,8 +340,8 @@ class MCTSGraphEnvironment(GraphVocabularyEnvironment):
             print('seen reward:', self.reward)
             return self.reward
 
-        result_optimizer = self.helper.optimizer.start_optimisation(self.graph)
-        self.reward = -result_optimizer[0]
+        result_optimizer = self.helper.optimizer.calculate_reward(self.graph)
+        self.reward = result_optimizer[0]
         self.movments_trajectory = result_optimizer[1]
         self.helper.report.seen_graphs.add_graph(self.graph, self.reward, self.movments_trajectory)
         self.helper.add_state(self.state, self.reward, self.movments_trajectory)
@@ -360,7 +363,7 @@ class MCTSGraphEnvironment(GraphVocabularyEnvironment):
 
 def prepare_mcts_state_and_helper(graph: GraphGrammar,
                                   rule_vocabulary: RuleVocabulary,
-                                  optimizer: ControlOptimizer,
+                                  optimizer: GraphRewardCalculator,
                                   num_of_rules: int,
                                   path: Path = Path("./results")):
     """Set the MCTSHelper and initial MCTSGraphEnvironment

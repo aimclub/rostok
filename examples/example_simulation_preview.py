@@ -1,21 +1,21 @@
-
-
+import numpy as np
 import pychrono as chrono
-from example_vocabulary import (get_terminal_graph_no_joints, get_terminal_graph_three_finger,
+from example_vocabulary import (get_terminal_graph_no_joints,
+                                get_terminal_graph_three_finger,
                                 get_terminal_graph_two_finger)
 
-import rostok.virtual_experiment.simulation_step as step
-from rostok.block_builder_api.block_parameters import DefaultFrame, Material, FrameTransform
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
-from rostok.criterion.flags_simualtions import FlagMaxTime, FlagSlipout, FlagNotContact
-from rostok.trajectory_optimizer.control_optimizer import num_joints
-from rostok.trajectory_optimizer.trajectory_generator import \
-    create_torque_traj_from_x
-import numpy as np
+from rostok.block_builder_api.block_parameters import (DefaultFrame,
+                                                       FrameTransform,
+                                                       Material)
 from rostok.block_builder_api.easy_body_shapes import Box
+from rostok.block_builder_chrono.block_builder_chrono_api import \
+    ChronoBlockCreatorInterface as creator
+from rostok.graph_grammar.graph_utils import plot_graph, plot_graph_ids
+from rostok.library.rule_sets.simple_designs import (
+    get_three_link_one_finger_with_no_control, get_two_link_one_finger)
 from rostok.simulation_chrono.basic_simulation import SystemPreviewChrono
-from rostok.block_builder_chrono.block_builder_chrono_api import ChronoBlockCreatorInterface as creator
-from simple_designs import get_three_link_one_finger_with_no_control, get_two_link_one_finger
+
 mechs = [
     get_terminal_graph_three_finger, get_terminal_graph_no_joints, get_terminal_graph_two_finger
 ]
@@ -35,8 +35,9 @@ for get_graph in mechs:
     mat.Friction = 0.65
     mat.DampingF = 0.65
 
-    obj = EnvironmentBodyBlueprint(shape = Box(3,0.2,3),material=mat,
-                                   pos=FrameTransform([0, -0.4, 0], [1,0,0,0]))
-    sim.add_object(creator.init_block_from_blueprint(obj))
+    # obj = EnvironmentBodyBlueprint(shape = Box(3,0.2,3),material=mat,
+    #                                pos=FrameTransform([0, -0.4, 0], [1,0,0,0]))
+    # sim.add_object(creator.init_block_from_blueprint(obj))
+    plot_graph(graph)
     sim.add_design(graph, FrameTransform([0, 2, 0], rotation_x(180)))
-    sim.simulate(10000, True)
+    sim.simulate(10000000000, True)
