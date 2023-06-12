@@ -1,12 +1,7 @@
 from rostok.graph_grammar.graphgrammar_explorer import brute_force_category
-from copy import deepcopy
 
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.graph_grammar.make_random_graph import make_random_graph
-from rostok.graph_grammar.graph_utils import plot_graph
-from rostok.adapters.golem_adapter import GraphGrammarAdapter
 from rostok.graph_grammar.mutation import add_mut, del_mut
-from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 from rostok.library.rule_sets import ruleset_old_style_graph
 import pickle
 

@@ -154,10 +154,21 @@ def subtree_crossover_select(graph_1: rostok_graph.GraphGrammar, graph_2: rostok
     return graph_1, graph_2
 
 
-def subtree_crossover(graph_1: rostok_graph.GraphGrammar,
-                      graph_2: rostok_graph.GraphGrammar,
-                      max_depth: int = 0,
-                      inplace: bool = False):
+def subtree_crossover(
+        graph_1: rostok_graph.GraphGrammar,
+        graph_2: rostok_graph.GraphGrammar,
+        max_depth: int = 0,  # pylint: disable=unused-argument 
+        inplace: bool = False):
+    """Swap random subtrees from graphs
+
+    Args:
+        graph_1 (rostok_graph.GraphGrammar): 
+        graph_2 (rostok_graph.GraphGrammar): 
+        max_depth (int, optional): Needed for compability with GOLEM. Defaults to 0.
+
+    Returns:
+        [GraphGrammar, GraphGrammar]: Changed graphs
+    """
     if not inplace:
         graph_1 = deepcopy(graph_1)
         graph_2 = deepcopy(graph_2)
