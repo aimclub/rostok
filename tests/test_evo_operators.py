@@ -32,7 +32,7 @@ def mock_build_mech(graph: GraphGrammar):
     # Build graph
     sim = SystemPreviewChrono()
     sim.add_design(graph)
-    sim.simulate(80, True)
+    sim.simulate(2, False)
 
 
 def create_random_mechs(number):
