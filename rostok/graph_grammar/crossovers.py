@@ -1,6 +1,7 @@
 from copy import deepcopy
 import random
-
+import itertools
+from tkinter.tix import Tree
 import rostok.graph_grammar.node as rostok_graph
 from rostok.graph_grammar.node import Node
 from networkx.algorithms.traversal.depth_first_search import dfs_tree
@@ -8,6 +9,7 @@ import networkx as nx
 from typing import Callable, List, Optional
 from functools import partial
 from rostok.graph_grammar.node_block_typing import NodeFeatures
+from collections.abc import Iterable
 
 CALLBACK_NEIGHBORS_TYPE = Callable[[List[Node], List[Node], Node], bool]
 """ If node is available for replacement, returns true
@@ -21,8 +23,9 @@ Args:
 def available_node_ids_based_on_neighbors(replacer_node: Node, graph: rostok_graph.GraphGrammar,
                                           check_neighbors: CALLBACK_NEIGHBORS_TYPE):
     node_ids = list(graph.nodes)
-    successors = [graph.successors(id_n) for id_n in node_ids]
-    predecessors = [graph.predecessors(id_n) for id_n in node_ids]
+    list_id_to_node = lambda x: [graph.get_node_by_id(i) for i in x]
+    successors = [list_id_to_node(graph.successors(id_n)) for id_n in node_ids]
+    predecessors = [list_id_to_node(graph.predecessors(id_n)) for id_n in node_ids]
     package = zip(node_ids, predecessors, successors)
     passed_ids = [
         node_ids_i for node_ids_i, predecessors_i, successors_i in package
@@ -35,8 +38,8 @@ def available_node_ids_both_directions(graph_1: rostok_graph.GraphGrammar, id_1:
                                        graph_2: rostok_graph.GraphGrammar,
                                        check_neighbors: CALLBACK_NEIGHBORS_TYPE):
     replacer = graph_1.get_node_by_id(id_1)
-    successors_1 = graph_1.successors(id_1)
-    predecessors_1 = graph_1.predecessors(id_1)
+    successors_1 = [graph_1.get_node_by_id(i) for i in graph_1.successors(id_1)]
+    predecessors_1 = [graph_1.get_node_by_id(i) for i in graph_1.predecessors(id_1)]
     check_neighbors_replacer = partial(check_neighbors, predecessors_1, successors_1)
     available_ids_2 = available_node_ids_based_on_neighbors(replacer, graph_2, check_neighbors)
 
@@ -46,47 +49,35 @@ def available_node_ids_both_directions(graph_1: rostok_graph.GraphGrammar, id_1:
     return available_ids_replacer_2
 
 
-def is_body(obj: Optional[Node]):
-    if obj is list:
-        return False
-    return NodeFeatures.is_body(obj)
-
-
-def is_joint(obj: Optional[Node]):
-    if obj is list:
-        return False
-    return NodeFeatures.is_joint(obj)
-
-
-def is_transform(obj: Optional[Node]):
-    if obj is list:
-        return False
-    return NodeFeatures.is_transform(obj)
-
-
-avalibale_node_type_p = [is_body, is_joint, is_transform]
-
-any_from = lambda x: any([i(x) for i in avalibale_node_type_p])
-
-
-def checker(predecessors: List[Node], successors: List[Node]):
-    if len(predecessors) == 0:
-        is_p = False
-    else:
-        is_p = any(map(any_from, predecessors))
-
-    if len(successors) == 0:
-        is_s = False
-    else:
-        is_s = any(map(any_from, successors))
-    return is_p and is_s
-
-
 def callback_body(predecessors: List[Node], successors: List[Node], replacer: Node) -> bool:
     if NodeFeatures.is_body(replacer):
         return True
-    else:
+    elif NodeFeatures.is_transform(replacer):
+        return callback_transform(predecessors)
+    elif NodeFeatures.is_joint(replacer):
+        return callback_joint(predecessors)
+    return False
+
+
+def callback_transform(predecessors: List[Node]) -> bool:
+    #is_empty_list = lambda x : isinstance(x, Iterable) and len(x) == 0
+    predecessors_avalible = [NodeFeatures.is_body, NodeFeatures.is_transform]
+    if len(predecessors) == 0:
         return False
+    predecessors_avalible_fun = lambda x: any([i(x) for i in predecessors_avalible])
+    is_predecessors = all(list(map(predecessors_avalible_fun, predecessors)))
+
+    return is_predecessors
+
+
+def callback_joint(predecessors: List[Node]) -> bool:
+    if len(predecessors) == 0:
+        return False
+    predecessors_avalible = [NodeFeatures.is_body, NodeFeatures.is_transform]
+    predecessors_avalible_fun = lambda x: any([i(x) for i in predecessors_avalible])
+    is_predecessors = all(map(predecessors_avalible_fun, predecessors))
+
+    return is_predecessors
 
 
 def get_subtree_graph(graph: rostok_graph.GraphGrammar, id: int):

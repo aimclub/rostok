@@ -32,7 +32,7 @@ def mock_build_mech(graph: GraphGrammar):
     # Build graph
     sim = SystemPreviewChrono()
     sim.add_design(graph)
-    sim.simulate(2, False)
+    sim.simulate(80, True)
 
 
 def create_random_mechs(number):
@@ -51,8 +51,9 @@ def test_build_crossovered_mechs():
     for graph_1, graph_2 in combination:
         graph_cross_1, graph_cross_2 = subtree_crossover(graph_1, graph_2)
         tets_mechs.extend([graph_cross_1, graph_cross_2])
-
-    for mech in tets_mechs:
+    
+    test_mechs_and_source = zip(tets_mechs, combination)
+    for mech, source_pair in test_mechs_and_source:
         mock_build_mech(mech)
 
 
