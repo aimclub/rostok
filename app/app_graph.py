@@ -15,12 +15,12 @@ from rostok.library.rule_sets.ruleset_old_style_graph import create_rules
 rule_vocabul, torque_dict = create_rules()
 
 # create blueprint for object to grasp
-grasp_object_blueprint = get_object_parametrized_sphere(0.4, 0.7)
+grasp_object_blueprint = get_object_parametrized_sphere(0.4, 1.0)
 
 # create reward counter using run setup function
 control_optimizer = config_with_standard_graph(grasp_object_blueprint, torque_dict)
 # Initialize MCTS
-base_iteration_limit = hp.BASE_ITERATION_LIMIT
+base_iteration_limit = hp.BASE_ITERATION_LIMIT_GRAPH
 max_numbers_rules = hp.MAX_NUMBER_RULES
 initial_graph = GraphGrammar()
 graph_env = prepare_mcts_state_and_helper(initial_graph, rule_vocabul, control_optimizer,
@@ -57,7 +57,7 @@ report.save_means()
 with open(Path(path, "mcts_result.txt"), "a") as file:
     original_stdout = sys.stdout
     sys.stdout = file
-    print()
+    print("app_graph_report")
     print("Object to grasp:", grasp_object_blueprint.shape)
     print("Object initial coordinats:", grasp_object_blueprint.pos)
     print("Time optimization:", ex)
