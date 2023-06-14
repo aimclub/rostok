@@ -26,7 +26,7 @@ class SystemPreviewChrono:
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, -10, 0))
 
-    def add_design(self, graph, frame: FrameTransform = DefaultFrame):
+    def add_design(self, graph, frame: FrameTransform = DefaultFrame, is_fix_base = True):
         """Add a design into the system
 
             Args:
@@ -34,7 +34,7 @@ class SystemPreviewChrono:
                 frame (FrameTransform): initial position of the base body
         """
 
-        BuiltGraphChrono(graph, self.chrono_system, frame, True)
+        BuiltGraphChrono(graph, self.chrono_system, frame, is_fix_base)
 
     def add_object(self, obj: ChronoEasyShapeObject):
         """Add an object to the environment.
@@ -66,10 +66,10 @@ class SystemPreviewChrono:
             vis.SetWindowSize(1024, 768)
             vis.SetWindowTitle('Grab demo')
             vis.Initialize()
-            
+
             vis.AddCamera(chrono.ChVectorD(1.5, 3, -2))
             vis.AddTypicalLights()
-            vis.EnableCollisionShapeDrawing(True)
+            #vis.EnableCollisionShapeDrawing(True)
         self.chrono_system.Update()
         self.chrono_system.DoStepDynamics(1e-4)
         for _ in range(number_of_steps):
@@ -88,7 +88,7 @@ class SimulationResult:
     time: float = 0
     n_steps = 0
     robot_final_ds: Optional[DataStorage] = None
-    environment_final_ds:Optional[DataStorage] = None
+    environment_final_ds: Optional[DataStorage] = None
 
     def reduce_nan(self):
         if self.robot_final_ds:
@@ -124,8 +124,7 @@ class RobotSimulationChrono():
             robot (RobotChrono): the robot added to the simulation
         """
 
-    def __init__(self,
-                 object_list: List[Tuple[ChronoEasyShapeObject, bool]] = []):
+    def __init__(self, object_list: List[Tuple[ChronoEasyShapeObject, bool]] = []):
         """Create a simulation system with some environment objects
         
             The robot and additional environment objects should be added using class methods.
@@ -164,13 +163,13 @@ class RobotSimulationChrono():
                 max_number_of_steps (int): maximum number of steps in the simulation"""
 
         env_sensor: Sensor = Sensor(self.active_objects_ordered, {})
-        self.data_storage: DataStorage= DataStorage(env_sensor)
+        env_sensor.contact_reporter.reset_contact_dict()
+        self.data_storage: DataStorage = DataStorage(env_sensor)
         for key, value in self.env_data_dict.items():
-            self.data_storage.add_data_type(key, value[0], value[1],max_number_of_steps, value[2])
+            self.data_storage.add_data_type(key, value[0], value[1], max_number_of_steps)
 
         for key, value in self.robot_data_dict.items():
-            self.robot.data_storage.add_data_type(key, value[0], value[1],max_number_of_steps, value[2])
-
+            self.robot.data_storage.add_data_type(key, value[0], value[1], max_number_of_steps)
 
     def add_design(self,
                    graph: GraphGrammar,

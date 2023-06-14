@@ -13,7 +13,7 @@ from rostok.criterion.simulation_flags import (FlagContactTimeOut, FlagFlyingApa
 from rostok.simulation_chrono.simulation_scenario import ConstTorqueGrasp
 from rostok.trajectory_optimizer.control_optimizer import (CounterGraphOptimization,
                                                            CounterWithOptimization,
-                                                           CounterWithOptimizationDirect)
+                                                           CalculatorWithOptimizationDirect)
 
 from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
 from example_vocabulary import (get_terminal_graph_no_joints, get_terminal_graph_three_finger,
@@ -48,7 +48,7 @@ simulation_rewarder.add_criterion(ObjectCOGCriterion(), 1)
 simulation_rewarder.add_criterion(LateForceCriterion(0.5, 3), 1)
 simulation_rewarder.add_criterion(LateForceAmountCriterion(0.5), 1)
 
-control_optimizer = CounterWithOptimizationDirect(simulation_manager, simulation_rewarder, (6, 15), 5)
+control_optimizer = CalculatorWithOptimizationDirect(simulation_manager, simulation_rewarder, (6, 15), 5)
 
 # Create trajectory
 number_trq = len(get_joint_vector_from_graph(graph))
@@ -56,6 +56,6 @@ number_trq = len(get_joint_vector_from_graph(graph))
 const_torque_koef = [0, 0, 0, 0, -1, 6]
 
 
-reward = control_optimizer.count_reward(graph)
+reward = control_optimizer.calculate_reward(graph)
 
 print(reward)

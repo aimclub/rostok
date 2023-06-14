@@ -7,12 +7,14 @@ import matplotlib.pyplot as plt
 
 from rostok.graph_generators.graph_environment import \
     GraphVocabularyEnvironment
-from rostok.graph_grammar.graph_utils import (plot_graph_reward, save_graph_plot_reward)
+from rostok.graph_grammar.graph_utils import (plot_graph_reward,
+                                              save_graph_plot_reward)
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
-from rostok.trajectory_optimizer.control_optimizer import GraphRewardCounter
+from rostok.trajectory_optimizer.control_optimizer import GraphRewardCalculator
 from rostok.utils.pickle_save import Saveable
-from rostok.utils.states import (MCTSOptimizedState, OptimizedGraph, OptimizedState, RobotState)
+from rostok.utils.states import (MCTSOptimizedState, OptimizedGraph,
+                                 OptimizedState, RobotState)
 
 
 def convert_control_to_list(control):
@@ -239,7 +241,7 @@ class MCTSHelper():
 
     def __init__(self,
                  rule_vocabulary: RuleVocabulary,
-                 optimizer: GraphRewardCounter,
+                 optimizer: GraphRewardCalculator,
                  path=Path("./results")) -> None:
         """Initialize empty instance of the MCTSHelper.
 
@@ -249,7 +251,7 @@ class MCTSHelper():
             path (Path): path to save the results of the MCTS run
         """
         self.actions: RuleVocabulary = rule_vocabulary
-        self.optimizer: GraphRewardCounter = optimizer
+        self.optimizer: GraphRewardCalculator = optimizer
         self.step_counter: int = 0
         self.report: MCTSSaveable = MCTSSaveable(rule_vocabulary, path)
 
@@ -311,7 +313,7 @@ class MCTSGraphEnvironment(GraphVocabularyEnvironment):
                  initial_graph: GraphGrammar,
                  helper: MCTSHelper,
                  graph_vocabulary: RuleVocabulary,
-                 optimizer: GraphRewardCounter,
+                 optimizer: GraphRewardCalculator,
                  max_numbers_rules_non_terminal: int = 20):
         """Create state from the graph
 
@@ -338,7 +340,7 @@ class MCTSGraphEnvironment(GraphVocabularyEnvironment):
             print('seen reward:', self.reward)
             return self.reward
 
-        result_optimizer = self.helper.optimizer.count_reward(self.graph)
+        result_optimizer = self.helper.optimizer.calculate_reward(self.graph)
         self.reward = result_optimizer[0]
         self.movments_trajectory = result_optimizer[1]
         self.helper.report.seen_graphs.add_graph(self.graph, self.reward, self.movments_trajectory)
@@ -361,7 +363,7 @@ class MCTSGraphEnvironment(GraphVocabularyEnvironment):
 
 def prepare_mcts_state_and_helper(graph: GraphGrammar,
                                   rule_vocabulary: RuleVocabulary,
-                                  optimizer: GraphRewardCounter,
+                                  optimizer: GraphRewardCalculator,
                                   num_of_rules: int,
                                   path: Path = Path("./results")):
     """Set the MCTSHelper and initial MCTSGraphEnvironment

@@ -4,18 +4,16 @@ from typing import Dict, List, Tuple
 import pychrono.core as chrono
 from pychrono.core import ChQuaternionD, ChVectorD
 
-from rostok.block_builder_api.block_parameters import (DefaultFrame,
-                                                       FrameTransform)
+from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform)
 from rostok.block_builder_chrono.block_builder_chrono_api import \
     ChronoBlockCreatorInterface as creator
-from rostok.block_builder_chrono.block_classes import (BLOCK_CLASS_TYPES,
-                                                       ChronoRevolveJoint,
+from rostok.block_builder_chrono.block_classes import (BLOCK_CLASS_TYPES, ChronoRevolveJoint,
                                                        PrimitiveBody)
 from rostok.block_builder_chrono.block_connect import place_and_connect
 from rostok.control_chrono.controller import ConstController
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_block_typing import NodeFeatures
-from rostok.virtual_experiment.sensors import Sensor, DataStorage
+from rostok.virtual_experiment.sensors import DataStorage, Sensor
 
 
 class BuiltGraphChrono:
@@ -145,8 +143,10 @@ class RobotChrono:
                  robot_graph: GraphGrammar,
                  system: chrono.ChSystem,
                  control_parameters,
-                 control_cls = ConstController,
-                 start_frame: FrameTransform = DefaultFrame, is_fixed = True):
+                 control_cls=ConstController,
+                 start_frame: FrameTransform = DefaultFrame,
+                 is_fixed=True):
+
         """Build mechanism into system and bind sensor to robot blocks.
         
             Args:
@@ -155,11 +155,17 @@ class RobotChrono:
                 control_parameters : list of parameters for controller
                 control_trajectories : list of trajectories for joints
                 start_frame: initial position of the base body"""
+
         self.__built_graph = BuiltGraphChrono(robot_graph, system, start_frame, is_fixed)
-        self.sensor = Sensor(self.__built_graph.body_map_ordered, self.__built_graph.joint_map_ordered)
+        self.sensor = Sensor(self.__built_graph.body_map_ordered,
+                             self.__built_graph.joint_map_ordered)
+        self.sensor.contact_reporter.reset_contact_dict()
         self.controller = control_cls(self.__built_graph.joint_map_ordered, control_parameters)
         self.data_storage = DataStorage(self.sensor)
+
     def get_graph(self):
         return self.__built_graph
+
+
     def get_data(self):
         return self.data_storage
