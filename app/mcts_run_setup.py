@@ -7,13 +7,11 @@ from rostok.criterion.criterion_calculation import (ForceCriterion,
                                                     LateForceCriterion,
                                                     ObjectCOGCriterion,
                                                     SimulationReward,
-                                                    TimeCriterion)
+                                                    TimeCriterion, JointPenalty)
 from rostok.criterion.simulation_flags import (FlagContactTimeOut,
                                                FlagFlyingApart, FlagSlipout)
 from rostok.simulation_chrono.simulation_scenario import ConstTorqueGrasp
-from rostok.trajectory_optimizer.control_optimizer import (
-    CounterGraphOptimization, CounterWithOptimization,
-    CounterWithOptimizationDirect)
+from rostok.trajectory_optimizer.control_optimizer import CounterWithOptimizationDirect, CounterGraphOptimization
 
 
 def config_with_standard(grasp_object_blueprint):
@@ -37,6 +35,7 @@ def config_with_standard(grasp_object_blueprint):
     simulation_rewarder.add_criterion(
         LateForceAmountCriterion(0.5),
         hp.OBJECT_COG_CRITERION_WEIGHT)
+    simulation_rewarder.add_criterion(JointPenalty(0.1), -1)
 
     control_optimizer = CounterWithOptimizationDirect(simulation_manager, simulation_rewarder,
                                                       hp.CONTROL_OPTIMIZATION_BOUNDS,

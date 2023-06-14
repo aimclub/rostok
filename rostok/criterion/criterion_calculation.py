@@ -4,19 +4,20 @@ from typing import Dict, List, Optional, Tuple, Union
 import numpy as np
 import pychrono.core as chrono
 from scipy.spatial import distance
+
 from rostok.simulation_chrono.basic_simulation import SimulationResult
 
 
 #Interface for criterions
 class Criterion(ABC):
 
-    def calculate_reward(self, simulation_output:SimulationResult):
+    def calculate_reward(self, simulation_output: SimulationResult):
         pass
 
 
 class ForceCriterion(Criterion):
 
-    def calculate_reward(self, simulation_output:SimulationResult) -> float:
+    def calculate_reward(self, simulation_output: SimulationResult) -> float:
         env_data = simulation_output.environment_final_ds
         body_contacts: List[np.ndarray] = env_data.get_data("forces")[0]
         force_modules = []
@@ -28,7 +29,7 @@ class ForceCriterion(Criterion):
 
                 force_module = np.linalg.norm(total_force)
                 # Cut the steps with huge forces
-                if force_module<100:
+                if force_module < 100:
                     force_modules.append(force_module)
 
         if len(force_modules) > 0:
@@ -42,7 +43,7 @@ class TimeCriterion(Criterion):
     def __init__(self, time):
         self.max_simulation_time = time
 
-    def calculate_reward(self, simulation_output:SimulationResult):
+    def calculate_reward(self, simulation_output: SimulationResult):
         time = simulation_output.time
         if (time) > 0:
             return (time)**2 / (self.max_simulation_time)**2
@@ -52,7 +53,7 @@ class TimeCriterion(Criterion):
 
 class ObjectCOGCriterion(Criterion):
 
-    def calculate_reward(self, simulation_output:SimulationResult):
+    def calculate_reward(self, simulation_output: SimulationResult):
         dist_list = []
         env_data = simulation_output.environment_final_ds
         body_COG = env_data.get_data("COG")[0]  # List[Tuple[step_n, List[x,y,z]]]
@@ -76,7 +77,7 @@ class LateForceCriterion(Criterion):
         self.cut_off = cut_off
         self.force_threshold = force_threshold
 
-    def calculate_reward(self, simulation_output:SimulationResult):
+    def calculate_reward(self, simulation_output: SimulationResult):
         env_data = simulation_output.environment_final_ds
         body_contacts = env_data.get_data("forces")[0]
         step_cutoff = int(simulation_output.n_steps * self.cut_off)
@@ -92,7 +93,8 @@ class LateForceCriterion(Criterion):
 
         if len(body_contacts_cut) > 0:
             return counter / (len(body_contacts_cut))
-        else: return 0
+        else:
+            return 0
 
 
 class LateForceAmountCriterion(Criterion):
@@ -112,11 +114,20 @@ class LateForceAmountCriterion(Criterion):
 
         if len(body_contacts_cut) > 0:
             return counter / (len(body_contacts_cut))
-        else: return 0
+        else:
+            return 0
 
-# class JointPenalty(Criterion)
-#     def calculate_reward(self, simulation_output: SimulationResult):
-#         env_data = 
+
+class JointPenalty(Criterion):
+
+    def __init__(self, joint_cost):
+        self.joint_cost = joint_cost
+
+    def calculate_reward(self, simulation_output: SimulationResult):
+        joint_number = len(simulation_output.robot_final_ds.sensor.joint_map_ordered.keys())
+        return joint_number * self.joint_cost
+
+
 class SimulationReward:
 
     def __init__(self) -> None:
