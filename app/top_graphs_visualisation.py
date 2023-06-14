@@ -32,7 +32,8 @@ def vis_top_n_mechs(report: MCTSSaveable, n: int, object:EnvironmentBodyBlueprin
         print(reward)
         print(res)
         print()
-#reporter:List[MCTSSaveable], legend,
+
+
 def save_svg_mean_reward(name:str, objecy_name:str,step_limit = 27, path = None, filter:bool = False):
     report_paths = []
     labels = []
@@ -115,8 +116,7 @@ def save_svg_mean_reward(name:str, objecy_name:str,step_limit = 27, path = None,
     plt.savefig(path, format="svg")
 
 if __name__ == "__main__":
-    rule_vocabul, _ = create_rules()
-    grasp_object_blueprint = get_object_parametrized_sphere(0.2, 1)
+    grasp_object_blueprint = get_object_parametrized_sphere(0.4, 1)
     report: OptimizedGraphReport = load_saveable(Path(r"results\Reports_23y_06m_14d_17H_21M\MCTS_data.pickle"))
     vis_top_n_mechs(report, 3, grasp_object_blueprint)
     #ave_svg_mean_reward( name = 'kek', objecy_name='sphere')
