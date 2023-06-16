@@ -111,12 +111,26 @@ def ruleset_explorer(limit_non_terminal: int,
     return set_uniq_graphs, mutable_counter[0]
 
 
-def brute_force_category(rule_vocabul: RuleVocabulary,
+def random_search_mechs_n_branch(rule_vocabul: RuleVocabulary,
                          numbers_of_rules=[5, 6],
                          category_size=10,
                          desired_branch=1,
                          max_tries=10000,
                          is_terminal = True):
+    """Randomly applies rules until it gets candidates 
+    with desired_branch or reaches max_tries 
+
+    Args:
+        rule_vocabul (RuleVocabulary):
+        numbers_of_rules (list, optional): Defaults to [5, 6].
+        category_size (int, optional): Defaults to 10.
+        desired_branch (int, optional): Defaults to 1.
+        max_tries (int, optional): Defaults to 10000.
+        is_terminal (bool, optional): Defaults to True.
+
+    Returns:
+        list[GraphGrammar]:
+    """
 
     category = []
     for _ in range(max_tries):

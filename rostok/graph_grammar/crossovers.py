@@ -1,15 +1,12 @@
 from copy import deepcopy
 import random
-import itertools
-from tkinter.tix import Tree
 import rostok.graph_grammar.node as rostok_graph
 from rostok.graph_grammar.node import Node
 from networkx.algorithms.traversal.depth_first_search import dfs_tree
 import networkx as nx
-from typing import Callable, List, Optional
+from typing import Callable, List
 from functools import partial
 from rostok.graph_grammar.node_block_typing import NodeFeatures
-from collections.abc import Iterable
 
 CALLBACK_NEIGHBORS_TYPE = Callable[[List[Node], List[Node], Node], bool]
 """ If node is available for replacement, returns true
@@ -22,6 +19,16 @@ Args:
 
 def available_node_ids_based_on_neighbors(replacer_node: Node, graph: rostok_graph.GraphGrammar,
                                           check_neighbors: CALLBACK_NEIGHBORS_TYPE):
+    """Returns a list of ids for which the check_neighbors condition is true.
+    check_neighbors iterate over all nodes and their neighbors
+    Args:
+        replacer_node (Node): _description_
+        graph (rostok_graph.GraphGrammar): _description_
+        check_neighbors (CALLBACK_NEIGHBORS_TYPE): _description_
+
+    Returns:
+        _type_: _description_
+    """
     node_ids = list(graph.nodes)
     list_id_to_node = lambda x: [graph.get_node_by_id(i) for i in x]
     successors = [list_id_to_node(graph.successors(id_n)) for id_n in node_ids]
@@ -37,6 +44,18 @@ def available_node_ids_based_on_neighbors(replacer_node: Node, graph: rostok_gra
 def available_node_ids_both_directions(graph_1: rostok_graph.GraphGrammar, id_1: int,
                                        graph_2: rostok_graph.GraphGrammar,
                                        check_neighbors: CALLBACK_NEIGHBORS_TYPE):
+    """Search for available replacement IDs. First, a check is performed for the node from graph_1 to graph_2. 
+    Then, for each candidate, a substitution check is performed in graph_1
+
+    Args:
+        graph_1 (rostok_graph.GraphGrammar): 
+        id_1 (int): 
+        graph_2 (rostok_graph.GraphGrammar): 
+        check_neighbors (CALLBACK_NEIGHBORS_TYPE): 
+
+    Returns:
+        _type_: _description_
+    """
     replacer = graph_1.get_node_by_id(id_1)
     successors_1 = [graph_1.get_node_by_id(i) for i in graph_1.successors(id_1)]
     predecessors_1 = [graph_1.get_node_by_id(i) for i in graph_1.predecessors(id_1)]
@@ -49,28 +68,28 @@ def available_node_ids_both_directions(graph_1: rostok_graph.GraphGrammar, id_1:
     return available_ids_replacer_2
 
 
-def callback_body(predecessors: List[Node], successors: List[Node], replacer: Node) -> bool:
+def check_neighbours(predecessors: List[Node], successors: List[Node], replacer: Node) -> bool:
     if NodeFeatures.is_body(replacer):
         return True
     elif NodeFeatures.is_transform(replacer):
-        return callback_transform(predecessors)
+        return check_neighbours_transform(predecessors)
     elif NodeFeatures.is_joint(replacer):
-        return callback_joint(predecessors)
+        return check_neighbours_joint(predecessors)
     return False
 
 
-def callback_transform(predecessors: List[Node]) -> bool:
+def check_neighbours_transform(predecessors: List[Node]) -> bool:
     #is_empty_list = lambda x : isinstance(x, Iterable) and len(x) == 0
     predecessors_avalible = [NodeFeatures.is_body, NodeFeatures.is_transform]
     if len(predecessors) == 0:
         return False
     predecessors_avalible_fun = lambda x: any([i(x) for i in predecessors_avalible])
-    is_predecessors = all(list(map(predecessors_avalible_fun, predecessors)))
+    is_predecessors = all(map(predecessors_avalible_fun, predecessors))
 
     return is_predecessors
 
 
-def callback_joint(predecessors: List[Node]) -> bool:
+def check_neighbours_joint(predecessors: List[Node]) -> bool:
     if len(predecessors) == 0:
         return False
     predecessors_avalible = [NodeFeatures.is_body, NodeFeatures.is_transform]
@@ -123,7 +142,7 @@ def add_subtree_using_rule(graph_1: rostok_graph.GraphGrammar, id_1: int, subtre
 
 def subtree_crossover_select(graph_1: rostok_graph.GraphGrammar, graph_2: rostok_graph.GraphGrammar,
                              id_1: int, id_2: int):
-    """Replace subtree
+    """ Swaps two subtrees selected by id
 
     Args:
         graph_1 (rostok_graph.GraphGrammar): 
@@ -165,7 +184,7 @@ def subtree_crossover(
         graph_2 = deepcopy(graph_2)
 
     id_1 = random.choice(list(graph_1.nodes()))
-    available_ids_2 = available_node_ids_both_directions(graph_1, id_1, graph_2, callback_body)
+    available_ids_2 = available_node_ids_both_directions(graph_1, id_1, graph_2, check_neighbours)
     # Bypass
     if len(available_ids_2) == 0:
         return graph_1, graph_2

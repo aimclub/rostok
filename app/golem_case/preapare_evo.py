@@ -1,4 +1,4 @@
-from rostok.graph_grammar.graphgrammar_explorer import brute_force_category
+from rostok.graph_grammar.graphgrammar_explorer import random_search_mechs_n_branch
 
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.mutation import add_mut, del_mut
@@ -11,17 +11,17 @@ terminal_nodes = rule_vocab.node_vocab.terminal_node_dict.values()
 
 def create_balance_population(rule_vocabul, max_tries=10000):
 
-    two_fingers = brute_force_category(rule_vocabul,
+    two_fingers = random_search_mechs_n_branch(rule_vocabul,
                                        category_size=8,
                                        numbers_of_rules=[6, 8],
                                        desired_branch=2,
                                        max_tries=max_tries)
-    three_fingers = brute_force_category(rule_vocabul,
+    three_fingers = random_search_mechs_n_branch(rule_vocabul,
                                          category_size=8,
                                          numbers_of_rules=[8, 10],
                                          desired_branch=3,
                                          max_tries=max_tries)
-    four_fingers = brute_force_category(rule_vocabul,
+    four_fingers = random_search_mechs_n_branch(rule_vocabul,
                                         category_size=8,
                                         numbers_of_rules=[10, 11],
                                         desired_branch=4,
