@@ -60,6 +60,7 @@ class SystemPreviewChrono:
                 visualize (bool): the flag for visualization
         """
         #TODO: try to replace the number_of_steps for the stop by a button.
+        vis = None
         if visualize:
             vis = chronoirr.ChVisualSystemIrrlicht()
             vis.AttachSystem(self.chrono_system)
