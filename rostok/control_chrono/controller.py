@@ -1,9 +1,13 @@
 from math import sin
 from typing import Any, Dict, List, Tuple
 from abc import abstractmethod
-import pychrono.core as chrono
+from dataclasses import dataclass
+from matplotlib.pyplot import cla
 
+import pychrono.core as chrono
+from typing import Callable, List
 from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, JointInputTypeChrono)
+
 from rostok.virtual_experiment.sensors import Sensor
 
 
@@ -79,10 +83,63 @@ class LinearSinControllerChrono(RobotControllerChrono):
             func.Set_yconst(current_const)
 
 
-# class TorqueTrajectoryControllerChrono(RobotControllerChrono):
-#     def __init__(self, joint_map_ordered, parameters: Dict[int, Any], trajectories):
-#         super().__init__(joint_map_ordered, parameters, trajectories)
+@dataclass
+class ForceTorque:
+    """Forces and torques are given in the xyz convention
+    """
+    force: tuple[float, float, float] = (0, 0, 0)
+    torque: tuple[float, float, float] = (0, 0, 0)
 
-#     def update_functions(self, time, robot_data: Sensor, environment_data):
-#         for i, trajectory in enumerate(self.trajectories):
-#             if time > trajectory[0][1]
+
+class ForceControllerTemplate():
+
+    def __init__(self) -> None:
+
+        self.x_force_chrono = chrono.ChFunction_Const(0)
+        self.y_force_chrono = chrono.ChFunction_Const(0)
+        self.z_force_chrono = chrono.ChFunction_Const(0)
+
+        self.x_torque_chrono = chrono.ChFunction_Const(0)
+        self.y_torque_chrono = chrono.ChFunction_Const(0)
+        self.z_torque_chrono = chrono.ChFunction_Const(0)
+
+        self.force_vector_chrono = [self.x_force_chrono, self.y_force_chrono, self.z_force_chrono]
+        self.torque_vector_chrono = [
+            self.x_torque_chrono, self.y_torque_chrono, self.z_torque_chrono
+        ]
+        self.force_maker_chrono = chrono.ChForce()
+        self.torque_maker_chrono = chrono.ChForce()
+        self.setup_makers()
+
+    @abstractmethod
+    def get_force_torque(self, time: float, data) -> ForceTorque:
+        pass
+
+    def update(self, time: float, data):
+        force_torque = self.get_force_torque(time, data)
+        for val, functor in zip(force_torque.force + force_torque.torque,
+                                self.force_vector_chrono + self.torque_vector_chrono):
+            functor.Set_yconst(val)
+
+    def setup_makers(self):
+        self.force_maker_chrono.SetMode(chrono.ChForce.FORCE)
+        self.force_maker_chrono.SetAlign(chrono.ChForce.WORLD_DIR)
+        self.torque_maker_chrono.SetMode(chrono.ChForce.TORQUE)
+        self.torque_maker_chrono.SetAlign(chrono.ChForce.WORLD_DIR)
+
+    def bind_body(self, body: chrono.ChBody):
+        _ = list(map(body.AddForce, self.force_maker_chrono))
+        _ = list(map(body.AddForce, self.torque_maker_chrono))
+
+
+CALLBACK_TYPE = Callable[[float, Any], ForceTorque]
+
+
+class ForceControllerOnCallback(ForceControllerTemplate):
+
+    def __init__(self, callback: CALLBACK_TYPE) -> None:
+        super().__init__()
+        self.callback = callback
+
+    def get_force_torque(self, time: float, data) -> ForceTorque:
+        return self.callback(time, data)
