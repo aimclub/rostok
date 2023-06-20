@@ -5,7 +5,8 @@ import numpy as np
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 
-from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform)
+from rostok.block_builder_api.block_parameters import (DefaultFrame,
+                                                       FrameTransform)
 from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject
 from rostok.control_chrono.controller import ConstController
 from rostok.graph_grammar.node import GraphGrammar
@@ -35,7 +36,15 @@ class SystemPreviewChrono:
 
         BuiltGraphChrono(graph, self.chrono_system, frame, is_fix_base)
 
-    def find_object_position(self, obj: ChronoEasyShapeObject):
+    def add_object(self, obj: ChronoEasyShapeObject):
+        """Add an object to the environment.
+
+            Args:
+                obj (ChronoEasyShapeObject): one of the simple chrono objects"""
+
+        self.chrono_system.AddBody(obj.body)
+
+    def calculate_covering_sphere(self, obj: ChronoEasyShapeObject):
         v1 = chrono.ChVectorD(0, 0, 0)
         v2 = chrono.ChVectorD(0, 0, 0)
         obj.body.GetTotalAABB(bbmin=v1, bbmax=v2)
@@ -54,15 +63,20 @@ class SystemPreviewChrono:
             cog_center = local_center
         return cog_center, radius
 
-    def add_object(self, obj: ChronoEasyShapeObject):
+    def add_object_with_covering_sphere(self,
+                                        obj: ChronoEasyShapeObject,
+                                        reference_point: chrono.ChVectorD = chrono.ChVectorD(
+                                            0, 0, 0),
+                                        direction: chrono.ChVectorD = chrono.ChVectorD(0, 1, 0)):
         """Add an object to the environment.
 
             Args:
                 obj (ChronoEasyShapeObject): one of the simple chrono objects"""
 
-        center, radius = self.find_object_position(obj)
+        center, radius = self.calculate_covering_sphere(obj)
         self.chrono_system.AddBody(obj.body)
-        desired_position = chrono.ChVectorD(0, 0.05 + radius, 0)
+        direction.Normalize()
+        desired_position = reference_point + direction * radius
         shift = desired_position - obj.body.GetCoord().TransformPointLocalToParent(center)
         current_cog_pos = obj.body.GetPos()
         obj.body.SetPos(current_cog_pos + shift)
@@ -195,25 +209,6 @@ class RobotSimulationChrono():
         for key, value in self.robot_data_dict.items():
             self.robot.data_storage.add_data_type(key, value[0], value[1], max_number_of_steps)
 
-    def find_object_position(self, obj: ChronoEasyShapeObject):
-        v1 = chrono.ChVectorD(0, 0, 0)
-        v2 = chrono.ChVectorD(0, 0, 0)
-        obj.body.GetTotalAABB(bbmin=v1, bbmax=v2)
-        local_center = (v1 + v2) * 0.5
-        radius = (((v2.x - v1.x)**2 + (v2.y - v1.y)**2 + (v2.z - v1.z)**2)**0.5) * 0.5
-
-        radius = ((v2 - v1).Length()) * 0.5
-        visual = chrono.ChSphereShape(radius)
-        visual.SetOpacity(0.3)
-        obj.body.AddVisualShape(visual, chrono.ChFrameD(local_center))
-        # obj.body.AddVisualShape(visual)
-        result = getattr(obj.body, "GetFrame_REF_to_COG", None)
-        if result:
-            cog_center = result().TransformPointLocalToParent(local_center)
-        else:
-            cog_center = local_center
-        return cog_center, radius
-
     def add_design(self,
                    graph: GraphGrammar,
                    control_parameters,
@@ -245,13 +240,51 @@ class RobotSimulationChrono():
         if is_fixed:
             obj.body.SetBodyFixed(True)
 
-        center, radius = self.find_object_position(obj)
         self.chrono_system.AddBody(obj.body)
-        desired_position = chrono.ChVectorD(0, 0.05 + radius, 0)
+        self.objects.append(obj)
+        if read_data:
+            self.active_objects_ordered[self.active_body_counter] = obj
+            self.active_body_counter += 1
+
+    def calculate_covering_sphere(self, obj: ChronoEasyShapeObject):
+        v1 = chrono.ChVectorD(0, 0, 0)
+        v2 = chrono.ChVectorD(0, 0, 0)
+        obj.body.GetTotalAABB(bbmin=v1, bbmax=v2)
+        local_center = (v1 + v2) * 0.5
+        radius = (((v2.x - v1.x)**2 + (v2.y - v1.y)**2 + (v2.z - v1.z)**2)**0.5) * 0.5
+
+        radius = ((v2 - v1).Length()) * 0.5
+        visual = chrono.ChSphereShape(radius)
+        visual.SetOpacity(0.3)
+        obj.body.AddVisualShape(visual, chrono.ChFrameD(local_center))
+        # obj.body.AddVisualShape(visual)
+        result = getattr(obj.body, "GetFrame_REF_to_COG", None)
+        if result:
+            cog_center = result().TransformPointLocalToParent(local_center)
+        else:
+            cog_center = local_center
+        return cog_center, radius
+
+    def add_object_with_covering_sphere(self,
+                                        obj: ChronoEasyShapeObject,
+                                        reference_point: chrono.ChVectorD = chrono.ChVectorD(0, 0, 0),
+                                        direction: chrono.ChVectorD = chrono.ChVectorD(0, 1, 0),
+                                        read_data: bool = False,
+                                        is_fixed=False):
+        """Add an object to the environment.
+
+            Args:
+                obj (ChronoEasyShapeObject): one of the simple chrono objects"""
+        if is_fixed:
+            obj.body.SetBodyFixed(True)
+
+        center, radius = self.calculate_covering_sphere(obj)
+        self.chrono_system.AddBody(obj.body)
+        direction.Normalize()
+        desired_position = reference_point + direction * radius
         shift = desired_position - obj.body.GetCoord().TransformPointLocalToParent(center)
         current_cog_pos = obj.body.GetPos()
         obj.body.SetPos(current_cog_pos + shift)
-        self.objects.append(obj)
         if read_data:
             self.active_objects_ordered[self.active_body_counter] = obj
             self.active_body_counter += 1
