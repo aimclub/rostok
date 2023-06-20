@@ -49,4 +49,6 @@ class ConstTorqueGrasp(ParametrizedSimulation):
             "force_center": (SensorCalls.FORCE_CENTER, SensorObjectClassification.BODY)
         }
         simulation.add_env_data_type_dict(env_data_dict)
+        robot_data_dict = {"n_contacts": (SensorCalls.AMOUNT_FORCE, SensorObjectClassification.BODY)}
+        simulation.add_robot_data_type_dict(robot_data_dict)
         return simulation.simulate(n_steps, self.step_length, 10, self.flag_container, vis)
