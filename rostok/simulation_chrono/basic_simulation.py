@@ -5,8 +5,7 @@ import numpy as np
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 
-from rostok.block_builder_api.block_parameters import (DefaultFrame,
-                                                       FrameTransform)
+from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform)
 from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject
 from rostok.control_chrono.controller import ConstController
 from rostok.graph_grammar.node import GraphGrammar
@@ -26,7 +25,7 @@ class SystemPreviewChrono:
         self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, -10, 0))
 
-    def add_design(self, graph, frame: FrameTransform = DefaultFrame, is_fix_base = True):
+    def add_design(self, graph, frame: FrameTransform = DefaultFrame, is_fix_base=True):
         """Add a design into the system
 
             Args:
@@ -37,13 +36,13 @@ class SystemPreviewChrono:
         BuiltGraphChrono(graph, self.chrono_system, frame, is_fix_base)
 
     def find_object_position(self, obj: ChronoEasyShapeObject):
-        v1 = chrono.ChVectorD(0,0,0)
-        v2 = chrono.ChVectorD(0,0,0)
+        v1 = chrono.ChVectorD(0, 0, 0)
+        v2 = chrono.ChVectorD(0, 0, 0)
         obj.body.GetTotalAABB(bbmin=v1, bbmax=v2)
-        local_center = (v1 + v2)*0.5
-        radius = (((v2.x -v1.x)**2 + (v2.y -v1.y)**2 + (v2.z -v1.z)**2)**0.5)*0.5
-        
-        radius = ((v2-v1).Length())*0.5
+        local_center = (v1 + v2) * 0.5
+        radius = (((v2.x - v1.x)**2 + (v2.y - v1.y)**2 + (v2.z - v1.z)**2)**0.5) * 0.5
+
+        radius = ((v2 - v1).Length()) * 0.5
         visual = chrono.ChSphereShape(radius)
         visual.SetOpacity(0.3)
         obj.body.AddVisualShape(visual, chrono.ChFrameD(local_center))
@@ -63,10 +62,10 @@ class SystemPreviewChrono:
 
         center, radius = self.find_object_position(obj)
         self.chrono_system.AddBody(obj.body)
-        desired_position = chrono.ChVectorD(0,0.05 + radius,0)
+        desired_position = chrono.ChVectorD(0, 0.05 + radius, 0)
         shift = desired_position - obj.body.GetCoord().TransformPointLocalToParent(center)
         current_cog_pos = obj.body.GetPos()
-        obj.body.SetPos(current_cog_pos+shift)
+        obj.body.SetPos(current_cog_pos + shift)
 
     def simulate_step(self, time_step: float):
         """Simulate one step"""
@@ -175,8 +174,6 @@ class RobotSimulationChrono():
         for obj in object_list:
             self.add_object(obj[0], obj[1])
 
-
-    
     def add_env_data_type_dict(self, data_dict):
         self.env_data_dict = data_dict
 
@@ -199,13 +196,13 @@ class RobotSimulationChrono():
             self.robot.data_storage.add_data_type(key, value[0], value[1], max_number_of_steps)
 
     def find_object_position(self, obj: ChronoEasyShapeObject):
-        v1 = chrono.ChVectorD(0,0,0)
-        v2 = chrono.ChVectorD(0,0,0)
+        v1 = chrono.ChVectorD(0, 0, 0)
+        v2 = chrono.ChVectorD(0, 0, 0)
         obj.body.GetTotalAABB(bbmin=v1, bbmax=v2)
-        local_center = (v1 + v2)*0.5
-        radius = (((v2.x -v1.x)**2 + (v2.y -v1.y)**2 + (v2.z -v1.z)**2)**0.5)*0.5
-        
-        radius = ((v2-v1).Length())*0.5
+        local_center = (v1 + v2) * 0.5
+        radius = (((v2.x - v1.x)**2 + (v2.y - v1.y)**2 + (v2.z - v1.z)**2)**0.5) * 0.5
+
+        radius = ((v2 - v1).Length()) * 0.5
         visual = chrono.ChSphereShape(radius)
         visual.SetOpacity(0.3)
         obj.body.AddVisualShape(visual, chrono.ChFrameD(local_center))
@@ -250,10 +247,10 @@ class RobotSimulationChrono():
 
         center, radius = self.find_object_position(obj)
         self.chrono_system.AddBody(obj.body)
-        desired_position = chrono.ChVectorD(0,0.05 + radius,0)
+        desired_position = chrono.ChVectorD(0, 0.05 + radius, 0)
         shift = desired_position - obj.body.GetCoord().TransformPointLocalToParent(center)
         current_cog_pos = obj.body.GetPos()
-        obj.body.SetPos(current_cog_pos+shift)
+        obj.body.SetPos(current_cog_pos + shift)
         self.objects.append(obj)
         if read_data:
             self.active_objects_ordered[self.active_body_counter] = obj

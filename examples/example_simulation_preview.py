@@ -1,30 +1,35 @@
 import numpy as np
 import pychrono as chrono
-from example_vocabulary import (get_terminal_graph_no_joints,
-                                get_terminal_graph_three_finger,
+from example_vocabulary import (get_terminal_graph_no_joints, get_terminal_graph_three_finger,
                                 get_terminal_graph_two_finger)
 
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
-from rostok.block_builder_api.block_parameters import (DefaultFrame,
-                                                       FrameTransform,
-                                                       Material)
+from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform, Material)
 from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.block_builder_chrono.block_builder_chrono_api import \
     ChronoBlockCreatorInterface as creator
 from rostok.graph_grammar.graph_utils import plot_graph, plot_graph_ids
-from rostok.library.rule_sets.simple_designs import get_two_link_one_finger, get_palm
+from rostok.library.obj_grasp.objects import (get_obj_hard_mesh_piramida, get_object_easy_box,
+                                              get_object_parametrized_box,
+                                              get_object_parametrized_sphere)
+from rostok.library.rule_sets.simple_designs import (get_palm, get_two_link_one_finger)
 from rostok.simulation_chrono.basic_simulation import SystemPreviewChrono
-from rostok.library.obj_grasp.objects import get_object_parametrized_sphere, get_obj_hard_mesh_piramida,get_object_easy_box, get_object_parametrized_box
+
 mechs = [
     get_terminal_graph_three_finger, get_terminal_graph_no_joints, get_terminal_graph_two_finger
 ]
-mechs = [get_two_link_one_finger
-         #, get_three_link_one_finger_with_no_control
-         ]
+mechs = [
+    get_two_link_one_finger
+    #, get_three_link_one_finger_with_no_control
+]
 mechs = [get_palm]
+
+
 def rotation_x(alpha):
     quat_X_ang_alpha = chrono.Q_from_AngX(np.deg2rad(alpha))
     return [quat_X_ang_alpha.e0, quat_X_ang_alpha.e1, quat_X_ang_alpha.e2, quat_X_ang_alpha.e3]
+
+
 for get_graph in mechs:
 
     graph = get_graph()

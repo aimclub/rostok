@@ -1,26 +1,29 @@
 from pathlib import Path
+from tkinter import *
+from tkinter import filedialog, ttk
+from typing import Any, Dict, List, Optional, Tuple
+
 import matplotlib.pyplot as plt
 import numpy as np
-from mcts_run_setup import config_with_standard_graph, config_with_standard
-from typing import Dict, List, Optional, Tuple, Any
-from rostok.graph_generators.mcts_helper import OptimizedGraphReport, MCTSSaveable
-from rostok.library.obj_grasp.objects import get_object_parametrized_sphere, get_obj_hard_mesh_piramida
+from mcts_run_setup import config_with_standard, config_with_standard_graph
+
+from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
+from rostok.graph_generators.mcts_helper import (MCTSSaveable, OptimizedGraphReport)
+from rostok.library.obj_grasp.objects import (get_obj_hard_mesh_piramida,
+                                              get_object_parametrized_sphere)
 #from rostok.library.rule_sets.ruleset_old_style import create_rules
 from rostok.utils.pickle_save import load_saveable
-from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
-from tkinter import *
-from tkinter import ttk
-from tkinter import filedialog
 
-def vis_top_n_mechs(report: MCTSSaveable, n: int, object:EnvironmentBodyBlueprint):
+
+def vis_top_n_mechs(report: MCTSSaveable, n: int, object: EnvironmentBodyBlueprint):
     graph_report = report.seen_graphs
     control_optimizer = config_with_standard(grasp_object_blueprint)
     simulation_rewarder = control_optimizer.rewarder
     simulation_manager = control_optimizer.simulation_control
     graph_list = graph_report.graph_list
 
-    sorted_graph_list = sorted(graph_list, key = lambda x: x.reward)
-    some_top = sorted_graph_list[-1:-(n+1):-1]
+    sorted_graph_list = sorted(graph_list, key=lambda x: x.reward)
+    some_top = sorted_graph_list[-1:-(n + 1):-1]
     for graph in some_top:
         G = graph.graph
         reward = graph.reward
@@ -33,7 +36,11 @@ def vis_top_n_mechs(report: MCTSSaveable, n: int, object:EnvironmentBodyBlueprin
         print()
 
 
-def save_svg_mean_reward(name:str, objecy_name:str,step_limit = 27, path = None, filter:bool = False):
+def save_svg_mean_reward(name: str,
+                         objecy_name: str,
+                         step_limit=27,
+                         path=None,
+                         filter: bool = False):
     report_paths = []
     labels = []
     root = Tk()
@@ -45,37 +52,38 @@ def save_svg_mean_reward(name:str, objecy_name:str,step_limit = 27, path = None,
     label_file.pack(anchor=NW, padx=8)
     entry_browse = ttk.Entry(width=30, font=12)
     entry_browse.pack(anchor=NW, padx=8)
-    entry_browse.place(x=8, y= 40)
+    entry_browse.place(x=8, y=40)
     label_label = ttk.Label(text="Enter plot label:")
     label_label.place(x=8, y=65)
 
     entry_label = ttk.Entry(font=12)
-    entry_label.place(x=8, y = 85)
+    entry_label.place(x=8, y=85)
 
     def func_browse():
         path = filedialog.askopenfilename()
         nonlocal entry_browse
-        entry_browse.delete(first=0, last = END)
+        entry_browse.delete(first=0, last=END)
         entry_browse.insert(0, path)
 
     def func_add():
         labels.append(entry_label.get())
         report_paths.append(Path(entry_browse.get()))
-        entry_browse.delete(first=0, last = END)
-        entry_label.delete(first=0, last = END)
+        entry_browse.delete(first=0, last=END)
+        entry_label.delete(first=0, last=END)
         # saved_label = ttk.Label(text=entry_browse.get()+"  "+ entry_label.get())
         # saved_label.pack()
 
     def func_finish():
         nonlocal root
         root.destroy()
-    btn_browse = ttk.Button(text="browse", command=func_browse) # создаем кнопку из пакета ttk
-    btn_browse.place(x= 300, y=40)
-    btn_add = ttk.Button(text="add report", command=func_add) # создаем кнопку из пакета ttk
-    btn_add.place(x= 300, y=85)
-    btn_finish = ttk.Button(text="finish", command=func_finish) # создаем кнопку из пакета ttk
 
-    btn_finish.place(x=150, y = 250)
+    btn_browse = ttk.Button(text="browse", command=func_browse)  # создаем кнопку из пакета ttk
+    btn_browse.place(x=300, y=40)
+    btn_add = ttk.Button(text="add report", command=func_add)  # создаем кнопку из пакета ttk
+    btn_add.place(x=300, y=85)
+    btn_finish = ttk.Button(text="finish", command=func_finish)  # создаем кнопку из пакета ttk
+
+    btn_finish.place(x=150, y=250)
     root.mainloop()
     reporter = []
     for report_path in report_paths:
@@ -90,7 +98,7 @@ def save_svg_mean_reward(name:str, objecy_name:str,step_limit = 27, path = None,
 
     for report in reporter:
         rewards = []
-        for state in report. seen_states.state_list:
+        for state in report.seen_states.state_list:
             i = state.step
             if len(rewards) == i:
                 rewards.append([state.reward])
@@ -103,7 +111,7 @@ def save_svg_mean_reward(name:str, objecy_name:str,step_limit = 27, path = None,
         arr_mean_rewards.append(mean_rewards[0:step_limit])
 
     if len(legend) < len(reporter):
-        for _ in range (len(reporter)-len(legend)):
+        for _ in range(len(reporter) - len(legend)):
             legend.append('unknown')
     plt.figure()
     plt.xlabel("Steps")
@@ -114,9 +122,11 @@ def save_svg_mean_reward(name:str, objecy_name:str,step_limit = 27, path = None,
     plt.legend(legend, loc="upper left")
     plt.savefig(path, format="svg")
 
+
 if __name__ == "__main__":
     grasp_object_blueprint = get_object_parametrized_sphere(0.4, 1)
     grasp_object_blueprint = get_obj_hard_mesh_piramida()
-    report: OptimizedGraphReport = load_saveable(Path(r"results\Reports_23y_06m_15d_03H_13M\MCTS_data.pickle"))
+    report: OptimizedGraphReport = load_saveable(
+        Path(r"results\Reports_23y_06m_15d_03H_13M\MCTS_data.pickle"))
     vis_top_n_mechs(report, 3, grasp_object_blueprint)
     # save_svg_mean_reward( name = 'kek', objecy_name='sphere')
