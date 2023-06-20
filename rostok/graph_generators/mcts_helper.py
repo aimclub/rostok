@@ -73,7 +73,6 @@ class OptimizedGraphReport(Saveable):
                 if optimized_graph.graph == new_graph:
                     reward = optimized_graph.reward
                     control = optimized_graph.control
-                    print('seen reward:', reward)
                     return True, reward, control
 
         return False, 0, []

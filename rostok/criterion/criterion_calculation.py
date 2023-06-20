@@ -1,9 +1,11 @@
 from abc import ABC
-from typing import Dict, List, Optional, Tuple, Union
 from bisect import bisect_left
+from typing import Dict, List, Optional, Tuple, Union
+
 import numpy as np
 import pychrono.core as chrono
 from scipy.spatial import distance
+
 from rostok.simulation_chrono.basic_simulation import SimulationResult
 
 

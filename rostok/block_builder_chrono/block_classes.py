@@ -7,10 +7,12 @@ import open3d
 import pychrono.core as chrono
 
 import rostok.block_builder_api.easy_body_shapes as easy_body_shapes
-from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform)
-from rostok.block_builder_chrono.block_types import (BlockBody, BlockBridge, BlockTransform)
-from rostok.block_builder_chrono.blocks_utils import (SpringTorque,
-                                                        frame_transform_to_chcoordsys, rotation_z_q)
+from rostok.block_builder_api.block_parameters import (DefaultFrame,
+                                                       FrameTransform)
+from rostok.block_builder_chrono.block_types import (BlockBody, BlockBridge,
+                                                     BlockTransform)
+from rostok.block_builder_chrono.blocks_utils import (
+    SpringTorque, frame_transform_to_chcoordsys, rotation_z_q)
 from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
     DefaultChronoMaterial, struct_material2object_material)
@@ -377,7 +379,6 @@ class ChronoEasyShapeObject():
         elif isinstance(shape, easy_body_shapes.Cylinder):
             body = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, shape.radius, shape.height_y, density, True, True,
                                              material)
-            # body.
         elif isinstance(shape, easy_body_shapes.Sphere):
             body = chrono.ChBodyEasySphere(shape.radius, density, True, True, material)
         elif isinstance(shape, easy_body_shapes.Ellipsoid):
