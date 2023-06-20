@@ -39,14 +39,21 @@ class SystemPreviewChrono:
     def find_object_position(self, obj: ChronoEasyShapeObject):
         v1 = chrono.ChVectorD(0,0,0)
         v2 = chrono.ChVectorD(0,0,0)
-        obj.body.GetTotalAABB(v1, v2)
+        obj.body.GetTotalAABB(bbmin=v1, bbmax=v2)
         local_center = (v1 + v2)*0.5
         radius = (((v2.x -v1.x)**2 + (v2.y -v1.y)**2 + (v2.z -v1.z)**2)**0.5)*0.5
         
         radius = ((v2-v1).Length())*0.5
-        # obj.body.AddVisualShape(chrono.ChSphereShape(radius), chrono.ChFrameD(local_center))
-        obj.body.AddVisualShape(chrono.ChSphereShape(radius))
-        return local_center, radius
+        visual = chrono.ChSphereShape(radius)
+        visual.SetOpacity(0.3)
+        obj.body.AddVisualShape(visual, chrono.ChFrameD(local_center))
+        # obj.body.AddVisualShape(visual)
+        result = getattr(obj.body, "GetFrame_REF_to_COG", None)
+        if result:
+            cog_center = result().TransformPointLocalToParent(local_center)
+        else:
+            cog_center = local_center
+        return cog_center, radius
 
     def add_object(self, obj: ChronoEasyShapeObject):
         """Add an object to the environment.
@@ -55,9 +62,11 @@ class SystemPreviewChrono:
                 obj (ChronoEasyShapeObject): one of the simple chrono objects"""
 
         center, radius = self.find_object_position(obj)
-        # obj.body.SetPos(chrono.ChVectorD(0-center.x, 0.05+radius-center.y, 0-center.z))
-        obj.body.SetPos(chrono.ChVectorD(0, 0.05+radius, 0))
         self.chrono_system.AddBody(obj.body)
+        desired_position = chrono.ChVectorD(0,0.05 + radius,0)
+        shift = desired_position - obj.body.GetCoord().TransformPointLocalToParent(center)
+        current_cog_pos = obj.body.GetPos()
+        obj.body.SetPos(current_cog_pos+shift)
 
     def simulate_step(self, time_step: float):
         """Simulate one step"""
@@ -166,14 +175,7 @@ class RobotSimulationChrono():
         for obj in object_list:
             self.add_object(obj[0], obj[1])
 
-    def find_object_position(self, obj: ChronoEasyShapeObject):
-        v1 = chrono.ChVectorD(0,0,0)
-        v2 = chrono.ChVectorD(0,0,0)
-        obj.body.GetTotalAABB(v1, v2)
-        local_center = (v1 + v2)*0.5
-        radius = (((v2.x -v1.x)**2 + (v2.y -v1.y)**2 + (v2.z -v1.z)**2)**0.5)/2
-        #obj.body.AddVisualShape(chrono.ChSphereShape(radius), chrono.ChFrameD(local_center))
-        return local_center, radius
+
     
     def add_env_data_type_dict(self, data_dict):
         self.env_data_dict = data_dict
@@ -195,6 +197,25 @@ class RobotSimulationChrono():
 
         for key, value in self.robot_data_dict.items():
             self.robot.data_storage.add_data_type(key, value[0], value[1], max_number_of_steps)
+
+    def find_object_position(self, obj: ChronoEasyShapeObject):
+        v1 = chrono.ChVectorD(0,0,0)
+        v2 = chrono.ChVectorD(0,0,0)
+        obj.body.GetTotalAABB(bbmin=v1, bbmax=v2)
+        local_center = (v1 + v2)*0.5
+        radius = (((v2.x -v1.x)**2 + (v2.y -v1.y)**2 + (v2.z -v1.z)**2)**0.5)*0.5
+        
+        radius = ((v2-v1).Length())*0.5
+        visual = chrono.ChSphereShape(radius)
+        visual.SetOpacity(0.3)
+        obj.body.AddVisualShape(visual, chrono.ChFrameD(local_center))
+        # obj.body.AddVisualShape(visual)
+        result = getattr(obj.body, "GetFrame_REF_to_COG", None)
+        if result:
+            cog_center = result().TransformPointLocalToParent(local_center)
+        else:
+            cog_center = local_center
+        return cog_center, radius
 
     def add_design(self,
                    graph: GraphGrammar,
@@ -228,8 +249,11 @@ class RobotSimulationChrono():
             obj.body.SetBodyFixed(True)
 
         center, radius = self.find_object_position(obj)
-        obj.body.SetPos(chrono.ChVectorD(0-center.x, 0.05+radius-center.y, 0-center.z))
         self.chrono_system.AddBody(obj.body)
+        desired_position = chrono.ChVectorD(0,0.05 + radius,0)
+        shift = desired_position - obj.body.GetCoord().TransformPointLocalToParent(center)
+        current_cog_pos = obj.body.GetPos()
+        obj.body.SetPos(current_cog_pos+shift)
         self.objects.append(obj)
         if read_data:
             self.active_objects_ordered[self.active_body_counter] = obj

@@ -22,7 +22,7 @@ grasp_object_blueprint = get_object_parametrized_sphere(0.4, 0.7)
 control_optimizer = config_with_standard_graph(grasp_object_blueprint, torque_dict)
 
 # Initialize MCTS
-base_iteration_limit = hp.BASE_ITERATION_LIMIT
+base_iteration_limit = hp.BASE_ITERATION_LIMIT_GRAPH
 max_numbers_rules = hp.MAX_NUMBER_RULES
 initial_graph = GraphGrammar()
 graph_env = prepare_mcts_state_and_helper(initial_graph, rule_vocabul, control_optimizer,
