@@ -35,6 +35,7 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
     def calculate_reward(self, graph: GraphGrammar):
 
         def reward_with_parameters(parameters):
+            parameters = parameters.round(3)
             data = {"initial_value": parameters}
             sim_output = self.simulate_with_control_parameters(data, graph)
             reward = self.rewarder.calculate_reward(sim_output)

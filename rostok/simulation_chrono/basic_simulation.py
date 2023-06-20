@@ -36,11 +36,27 @@ class SystemPreviewChrono:
 
         BuiltGraphChrono(graph, self.chrono_system, frame, is_fix_base)
 
+    def find_object_position(self, obj: ChronoEasyShapeObject):
+        v1 = chrono.ChVectorD(0,0,0)
+        v2 = chrono.ChVectorD(0,0,0)
+        obj.body.GetTotalAABB(v1, v2)
+        local_center = (v1 + v2)*0.5
+        radius = (((v2.x -v1.x)**2 + (v2.y -v1.y)**2 + (v2.z -v1.z)**2)**0.5)*0.5
+        
+        radius = ((v2-v1).Length())*0.5
+        # obj.body.AddVisualShape(chrono.ChSphereShape(radius), chrono.ChFrameD(local_center))
+        obj.body.AddVisualShape(chrono.ChSphereShape(radius))
+        return local_center, radius
+
     def add_object(self, obj: ChronoEasyShapeObject):
         """Add an object to the environment.
 
             Args:
                 obj (ChronoEasyShapeObject): one of the simple chrono objects"""
+
+        center, radius = self.find_object_position(obj)
+        # obj.body.SetPos(chrono.ChVectorD(0-center.x, 0.05+radius-center.y, 0-center.z))
+        obj.body.SetPos(chrono.ChVectorD(0, 0.05+radius, 0))
         self.chrono_system.AddBody(obj.body)
 
     def simulate_step(self, time_step: float):
@@ -150,6 +166,15 @@ class RobotSimulationChrono():
         for obj in object_list:
             self.add_object(obj[0], obj[1])
 
+    def find_object_position(self, obj: ChronoEasyShapeObject):
+        v1 = chrono.ChVectorD(0,0,0)
+        v2 = chrono.ChVectorD(0,0,0)
+        obj.body.GetTotalAABB(v1, v2)
+        local_center = (v1 + v2)*0.5
+        radius = (((v2.x -v1.x)**2 + (v2.y -v1.y)**2 + (v2.z -v1.z)**2)**0.5)/2
+        #obj.body.AddVisualShape(chrono.ChSphereShape(radius), chrono.ChFrameD(local_center))
+        return local_center, radius
+    
     def add_env_data_type_dict(self, data_dict):
         self.env_data_dict = data_dict
 
@@ -201,6 +226,9 @@ class RobotSimulationChrono():
                 is_fixed (bool): define if the object is fixed"""
         if is_fixed:
             obj.body.SetBodyFixed(True)
+
+        center, radius = self.find_object_position(obj)
+        obj.body.SetPos(chrono.ChVectorD(0-center.x, 0.05+radius-center.y, 0-center.z))
         self.chrono_system.AddBody(obj.body)
         self.objects.append(obj)
         if read_data:

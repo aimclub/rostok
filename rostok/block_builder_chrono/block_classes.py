@@ -377,6 +377,7 @@ class ChronoEasyShapeObject():
         elif isinstance(shape, easy_body_shapes.Cylinder):
             body = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, shape.radius, shape.height_y, density, True, True,
                                              material)
+            # body.
         elif isinstance(shape, easy_body_shapes.Sphere):
             body = chrono.ChBodyEasySphere(shape.radius, density, True, True, material)
         elif isinstance(shape, easy_body_shapes.Ellipsoid):

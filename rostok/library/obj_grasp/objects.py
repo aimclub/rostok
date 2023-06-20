@@ -148,7 +148,7 @@ def get_object_parametrized_tilt_ellipsoid(x, y, z, h, alpha):
 # special objects
 def get_object_hard_mesh():
     # Create object to grasp
-    shape = easy_body_shapes.FromMesh("examples\obj_grasp\Ocpocmaqs_scaled.obj")
+    shape = easy_body_shapes.FromMesh("rostok\library\obj_grasp\Ocpocmaqs_scaled.obj")
     mat = DefaultChronoMaterial()
     mat.Friction = 0.2
     mat.DampingF = 0.2
@@ -162,7 +162,7 @@ def get_object_hard_mesh():
 def get_obj_hard_mesh_bukvg():
     # Create object to grasp
     quat = Rotation.from_euler('xyz', [90, 0, 0], degrees=True).as_quat()
-    shape = easy_body_shapes.FromMesh("article\obj_grasp\G_BUKV_VERY2.obj")
+    shape = easy_body_shapes.FromMesh("rostok\library\obj_grasp\G_BUKV_VERY2.obj")
     mat = DefaultChronoMaterial()
     mat.Friction = 0.2
     mat.DampingF = 0.2
@@ -173,7 +173,7 @@ def get_obj_hard_mesh_bukvg():
 def get_obj_hard_mesh_mikki():
     # Create object to grasp
     quat = Rotation.from_euler('xyz', [90, 0, 0], degrees=True).as_quat()
-    shape = easy_body_shapes.FromMesh("article\obj_grasp\MIKKI.obj")
+    shape = easy_body_shapes.FromMesh("rostok\library\obj_grasp\MIKKI.obj")
     mat = DefaultChronoMaterial()
     mat.Friction = 0.2
     mat.DampingF = 0.2
@@ -184,7 +184,7 @@ def get_obj_hard_mesh_mikki():
 def get_obj_hard_mesh_zateynik():
     # Create object to grasp
     quat = Rotation.from_euler('xyz', [90, 0, 0], degrees=True).as_quat()
-    shape = easy_body_shapes.FromMesh("article\obj_grasp\ZATEYNIK.obj")
+    shape = easy_body_shapes.FromMesh("rostok\library\obj_grasp\ZATEYNIK.obj")
     mat = DefaultChronoMaterial()
     mat.Friction = 0.2
     mat.DampingF = 0.2
@@ -195,9 +195,9 @@ def get_obj_hard_mesh_zateynik():
 def get_obj_hard_mesh_piramida():
     # Create object to grasp
     quat = Rotation.from_euler('xyz', [90, 0, 0], degrees=True).as_quat()
-    shape = easy_body_shapes.FromMesh("article\obj_grasp\PIRAMIDA12.obj")
+    shape = easy_body_shapes.FromMesh("rostok\library\obj_grasp\PIRAMIDA12.obj")
     mat = DefaultChronoMaterial()
     mat.Friction = 0.2
     mat.DampingF = 0.2
-    obj = EnvironmentBodyBlueprint(shape=shape, material=mat, pos=FrameTransform([0, 1, 0], quat))
+    obj = EnvironmentBodyBlueprint(shape=shape, material=mat, pos=FrameTransform([0, 1, 0], [1, 0, 0, 0]))
     return obj
