@@ -1,9 +1,13 @@
 from math import sin
 from typing import Any, Dict, List, Tuple
 from abc import abstractmethod
-import pychrono.core as chrono
+from dataclasses import dataclass, field
+from matplotlib.pyplot import cla
 
+import pychrono.core as chrono
+from typing import Callable, List
 from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, JointInputTypeChrono)
+
 from rostok.virtual_experiment.sensors import Sensor
 
 
@@ -79,10 +83,111 @@ class LinearSinControllerChrono(RobotControllerChrono):
             func.Set_yconst(current_const)
 
 
-# class TorqueTrajectoryControllerChrono(RobotControllerChrono):
-#     def __init__(self, joint_map_ordered, parameters: Dict[int, Any], trajectories):
-#         super().__init__(joint_map_ordered, parameters, trajectories)
+@dataclass
+class ForceTorque:
+    """Forces and torques are given in the xyz convention
+    """
+    force: tuple[float, float, float] = (0, 0, 0)
+    torque: tuple[float, float, float] = (0, 0, 0)
 
-#     def update_functions(self, time, robot_data: Sensor, environment_data):
-#         for i, trajectory in enumerate(self.trajectories):
-#             if time > trajectory[0][1]
+
+class ForceControllerTemplate():
+    """Base class for creating force and moment actions. 
+    To use it, you need to implement the get_force_torque method, 
+    which determines the force and torque at time t. Vectors are 
+    specified in global coordinate system.
+    """
+
+    def __init__(self) -> None:
+
+        self.x_force_chrono = chrono.ChFunction_Const(0)
+        self.y_force_chrono = chrono.ChFunction_Const(0)
+        self.z_force_chrono = chrono.ChFunction_Const(0)
+
+        self.x_torque_chrono = chrono.ChFunction_Const(0)
+        self.y_torque_chrono = chrono.ChFunction_Const(0)
+        self.z_torque_chrono = chrono.ChFunction_Const(0)
+
+        self.force_vector_chrono = [self.x_force_chrono, self.y_force_chrono, self.z_force_chrono]
+        self.torque_vector_chrono = [
+            self.x_torque_chrono, self.y_torque_chrono, self.z_torque_chrono
+        ]
+        self.force_maker_chrono = chrono.ChForce()
+        self.torque_maker_chrono = chrono.ChForce()
+        self.is_binded = False
+        self.setup_makers()
+
+    @abstractmethod
+    def get_force_torque(self, time: float, data) -> ForceTorque:
+        pass
+
+    def update(self, time: float, data=None):
+        force_torque = self.get_force_torque(time, data)
+        for val, functor in zip(force_torque.force + force_torque.torque,
+                                self.force_vector_chrono + self.torque_vector_chrono):
+            functor.Set_yconst(val)
+
+    def setup_makers(self):
+        self.force_maker_chrono.SetMode(chrono.ChForce.FORCE)
+        self.force_maker_chrono.SetAlign(chrono.ChForce.WORLD_DIR)
+        self.torque_maker_chrono.SetMode(chrono.ChForce.TORQUE)
+        self.torque_maker_chrono.SetAlign(chrono.ChForce.WORLD_DIR)
+        
+        self.force_maker_chrono.SetF_x(self.x_force_chrono)
+        self.force_maker_chrono.SetF_y(self.y_force_chrono)
+        self.force_maker_chrono.SetF_z(self.z_force_chrono)
+
+        self.torque_maker_chrono.SetF_x(self.x_torque_chrono)
+        self.torque_maker_chrono.SetF_y(self.y_torque_chrono)
+        self.torque_maker_chrono.SetF_z(self.z_torque_chrono)
+
+    def bind_body(self, body: chrono.ChBody):
+        body.AddForce(self.force_maker_chrono)
+        body.AddForce(self.torque_maker_chrono)
+        self.is_binded = True
+
+
+CALLBACK_TYPE = Callable[[float, Any], ForceTorque]
+
+
+class ForceControllerOnCallback(ForceControllerTemplate):
+
+    def __init__(self, callback: CALLBACK_TYPE) -> None:
+        super().__init__()
+        self.callback = callback
+
+    def get_force_torque(self, time: float, data) -> ForceTorque:
+        return self.callback(time, data)
+
+
+class YaxisShaker(ForceControllerTemplate):
+
+    def __init__(self, amp: float = 5, amp_offset: float = 1, freq: float = 5, start_time: float = 0.0) -> None:
+        super().__init__()
+        self.amp = amp
+        self.amp_offset = amp_offset
+        self.freq = freq
+        self.start_time = start_time
+
+    def get_force_torque(self, time: float, data) -> ForceTorque:
+        impact = ForceTorque()
+        y_force = 0
+        if time >= self.start_time:
+            y_force = self.amp * sin(self.freq * (time - self.start_time)) + self.amp_offset
+        impact.force = (0, y_force, 0)
+        return impact
+
+
+@dataclass
+class ForceTorqueContainer:
+    controller_list: list[ForceControllerTemplate] = field(default_factory=list)
+
+    def update_all(self, time: float, data=None):
+        for i in self.controller_list:
+            i.update(time, data)
+
+    def add(self, controller: ForceControllerTemplate):
+        if controller.is_binded:
+            self.controller_list.append(controller)
+        else:
+            raise Exception("Force controller should bind to body, before use")
