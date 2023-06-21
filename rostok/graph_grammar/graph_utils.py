@@ -24,7 +24,7 @@ def plot_graph(graph: GraphGrammar):
 
 def plot_graph_ids(graph: GraphGrammar):
     plt.figure()
-    nx.draw_networkx(graph, font_size=8, pos=nx.spring_layout(graph, dim=2), node_size=200)
+    nx.draw_networkx(graph, font_size=8,pos=nx.nx_agraph.graphviz_layout(graph, prog="dot"), node_size=200)
     plt.show()
 
 
