@@ -173,7 +173,7 @@ class YaxisShaker(ForceControllerTemplate):
         impact = ForceTorque()
         y_force = 0
         if time >= self.start_time:
-            y_force = self.amp * sin(self.freq * (time + self.start_time)) + self.amp_offset
+            y_force = self.amp * sin(self.freq * (time - self.start_time)) + self.amp_offset
         impact.force = (0, y_force, 0)
         return impact
 
