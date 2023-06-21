@@ -1,4 +1,5 @@
 import random
+from rostok.control_chrono.controller import YaxisShaker
 
 from test_ruleset import (get_terminal_graph_no_joints,
                           get_terminal_graph_three_finger,
@@ -35,7 +36,8 @@ def test_control_bind_and_create_sim():
 
         sim = RobotSimulationChrono([])
         sim.add_design(graph, controll_parameters)
-        sim.add_object(creator().create_environment_body(obj_bp), True)
+        shake = YaxisShaker(2, 2)
+        sim.add_object(creator().create_environment_body(obj_bp), True, force_torque_controller=shake)
 
         sim_output = sim.simulate(10000, times_step, 10)
 

@@ -40,4 +40,4 @@ jobs:
         
     - name: Test with pytest
       run: |
-        pytest tests/test_simstep.py tests/test_graph.py
+        pytest tests/test_simstep.py tests/test_graph.py tests/test_evo_operators.py

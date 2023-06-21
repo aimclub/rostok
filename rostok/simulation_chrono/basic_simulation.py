@@ -5,10 +5,9 @@ import numpy as np
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 
-from rostok.block_builder_api.block_parameters import (DefaultFrame,
-                                                       FrameTransform)
+from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform)
 from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject
-from rostok.control_chrono.controller import ConstController
+from rostok.control_chrono.controller import ConstController, ForceControllerTemplate, ForceTorqueContainer, YaxisShaker
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.virtual_experiment.robot_new import BuiltGraphChrono, RobotChrono
 from rostok.virtual_experiment.sensors import DataStorage, Sensor
@@ -98,6 +97,7 @@ class SystemPreviewChrono:
                 visualize (bool): the flag for visualization
         """
         #TODO: try to replace the number_of_steps for the stop by a button.
+        vis = None
         if visualize:
             vis = chronoirr.ChVisualSystemIrrlicht()
             vis.AttachSystem(self.chrono_system)
@@ -186,6 +186,8 @@ class RobotSimulationChrono():
         self.objects: List[ChronoEasyShapeObject] = []
         self.active_body_counter = 0
         self.active_objects_ordered: Dict[int, ChronoEasyShapeObject] = {}
+        self.force_torque_container = ForceTorqueContainer()
+
         for obj in object_list:
             self.add_object(obj[0], obj[1])
 
@@ -231,7 +233,11 @@ class RobotSimulationChrono():
                                  is_fixed)
         self.robot_with_data = with_data
 
-    def add_object(self, obj: ChronoEasyShapeObject, read_data: bool = False, is_fixed=False):
+    def add_object(self,
+                   obj: ChronoEasyShapeObject,
+                   read_data: bool = False,
+                   is_fixed=False,
+                   force_torque_controller: Optional[ForceControllerTemplate] = None):
         """" Add an object to the environment
         
             Args:
@@ -243,6 +249,9 @@ class RobotSimulationChrono():
 
         self.chrono_system.AddBody(obj.body)
         self.objects.append(obj)
+        if force_torque_controller:
+            force_torque_controller.bind_body(obj.body)
+            self.force_torque_container.add(force_torque_controller)
         if read_data:
             self.active_objects_ordered[self.active_body_counter] = obj
             self.active_body_counter += 1
@@ -318,6 +327,7 @@ class RobotSimulationChrono():
 
         #controller gets current states of the robot and environment and updates control functions
         robot.controller.update_functions(current_time, robot.sensor, self.data_storage.sensor)
+        self.force_torque_container.update_all(current_time, self.data_storage.sensor)
 
     def simulate(
         self,
