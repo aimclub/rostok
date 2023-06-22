@@ -14,7 +14,7 @@ from rostok.library.obj_grasp.objects import (get_obj_hard_mesh_piramida, get_ob
                                               get_object_parametrized_sphere)
 from rostok.library.rule_sets.simple_designs import (get_palm, get_two_link_one_finger)
 from rostok.simulation_chrono.basic_simulation import SystemPreviewChrono
-
+from rostok.simulation_chrono.simulation_utils import set_covering_sphere_based_position
 mechs = [
     get_terminal_graph_three_finger, get_terminal_graph_no_joints, get_terminal_graph_two_finger
 ]
@@ -46,7 +46,9 @@ for get_graph in mechs:
     plot_graph(graph)
     sim.add_design(graph, FrameTransform([0, 0, 0], rotation_x(0)))
     obj_bp = get_obj_hard_mesh_piramida()
-    obj_bp = get_object_easy_box()
+    # obj_bp = get_object_easy_box()
     # obj_bp =get_object_parametrized_box(0.3, 0.2, 0.4,2)
-    sim.add_object(creator.create_environment_body(obj_bp))
+    grasp_object =creator.create_environment_body(obj_bp)
+    set_covering_sphere_based_position(grasp_object, reference_point=chrono.ChVectorD(0,0.05,0))
+    sim.add_object(grasp_object)
     sim.simulate(10000000000, True)

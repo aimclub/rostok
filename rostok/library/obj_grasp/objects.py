@@ -199,5 +199,5 @@ def get_obj_hard_mesh_piramida():
     mat = DefaultChronoMaterial()
     mat.Friction = 0.2
     mat.DampingF = 0.2
-    obj = EnvironmentBodyBlueprint(shape=shape, material=mat, pos=FrameTransform([0, 1, 0], quat))
+    obj = EnvironmentBodyBlueprint(shape=shape, material=mat, pos=FrameTransform([-2, 1, 5], quat))
     return obj
