@@ -18,12 +18,14 @@ def calculate_covering_sphere(obj: ChronoEasyShapeObject):
 
     return cog_center, radius
 
+
 def set_covering_sphere_based_position(obj: ChronoEasyShapeObject,
-                                reference_point: chrono.ChVectorD = chrono.ChVectorD(0, 0, 0),
-                                direction: chrono.ChVectorD = chrono.ChVectorD(0, 1, 0)):
-        center, radius = calculate_covering_sphere(obj)
-        direction.Normalize()
-        desired_position = reference_point + direction * radius
-        shift = desired_position - obj.body.GetCoord().TransformPointLocalToParent(center)
-        current_cog_pos = obj.body.GetPos()
-        obj.body.SetPos(current_cog_pos + shift)
+                                       reference_point: chrono.ChVectorD = chrono.ChVectorD(
+                                           0, 0, 0),
+                                       direction: chrono.ChVectorD = chrono.ChVectorD(0, 1, 0)):
+    center, radius = calculate_covering_sphere(obj)
+    direction.Normalize()
+    desired_position = reference_point + direction * radius
+    shift = desired_position - obj.body.GetCoord().TransformPointLocalToParent(center)
+    current_cog_pos = obj.body.GetPos()
+    obj.body.SetPos(current_cog_pos + shift)
