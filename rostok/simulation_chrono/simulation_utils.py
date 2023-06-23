@@ -11,12 +11,11 @@ def calculate_covering_sphere(obj: ChronoEasyShapeObject):
     visual = chrono.ChSphereShape(radius)
     visual.SetOpacity(0.3)
     obj.body.AddVisualShape(visual, chrono.ChFrameD(local_center))
-    #if issubclass
-    result = getattr(obj.body, "GetFrame_REF_to_COG", None)
-    if result:
-        cog_center = result().TransformPointLocalToParent(local_center)
+    if isinstance(obj.body, chrono.ChBodyAuxRef):
+        cog_center = obj.body.GetFrame_REF_to_COG().TransformPointLocalToParent(local_center)
     else:
         cog_center = local_center
+
     return cog_center, radius
 
 def set_covering_sphere_based_position(obj: ChronoEasyShapeObject,
