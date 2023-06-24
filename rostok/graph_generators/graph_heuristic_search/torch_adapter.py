@@ -51,7 +51,7 @@ class TorchAdapter:
         one_hot[self.label2id[label_node]] = 1
         return one_hot.tolist()
 
-    def gg2torch_data(self, graph: GraphGrammar):
+    def gg2torch_data(self, graph: GraphGrammar, y= None):
 
         node_label_list, edge_id_list = self.flating_graph(graph)
         
@@ -61,13 +61,17 @@ class TorchAdapter:
         edge_index = torch.t(torch.Tensor(edge_id_list, dtype=torch.int32))
         x = torch.Tensor(one_hot_list, dtype=torch.float32)
         
-        data = Data(x=x, edge_index=edge_index)
+        if y:
+            y = torch.Tensor(y, dtype=torch.float32)
+            data = Data(x=x, edge_index=edge_index, y = y)
+        else:
+            data = Data(x=x, edge_index=edge_index)
 
         return data
     
-    def list_gg2data_loader(self, graphs: list[GraphGrammar], batch_size):
+    def list_gg2data_loader(self, graphs: list[GraphGrammar], batch_size, targets = None):
         data_list: list[Data] = []
-        for graph in graphs:
-            data_list.append(self.gg2torch_data(graph))
+        for graph, y in zip(graphs, targets):
+            data_list.append(self.gg2torch_data(graph,y))
         
         return DataLoader(data_list, batch_size=batch_size)
