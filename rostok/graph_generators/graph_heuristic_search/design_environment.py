@@ -1,6 +1,9 @@
 from typing import Union
 from copy import deepcopy
-
+import json
+import pickle
+import os
+from datetime import datetime
 import numpy as np
 
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
@@ -8,70 +11,134 @@ from rostok.graph_grammar.node import GraphGrammar
 from rostok.trajectory_optimizer.control_optimizer import GraphRewardCalculator
 
 class DesignEnvironment:
-    def __init__(self, rule_vocabulary: RuleVocabulary, control_optimizer: GraphRewardCalculator,
-                max_no_terminal_rules: int, initial_state: GraphGrammar = GraphGrammar()):
+    def __init__(self, rule_vocabulary: RuleVocabulary, control_optimizer: GraphRewardCalculator, initial_graph: GraphGrammar = GraphGrammar()):
         
         self.rule_vocabulary = rule_vocabulary
         sorted_name_rule = sorted(self.rule_vocabulary.rule_dict.keys(), key=lambda x: hash(self.rule_vocabulary.rule_dict[x]))
         
-        self.id2rule: dict[int, str] = {t[0]: t[1] for t in list(enumerate(sorted_name_rule))}
-        self.rule2id: dict[str, int] = {t[1]: t[0] for t in self.id2rule.items()}
+        self.action2rule: dict[int, str] = {t[0]: t[1] for t in list(enumerate(sorted_name_rule))}
         
-        self.max_no_terminal_rules: int = max_no_terminal_rules
-        self.terminal_graphs: dict[list[str], tuple(float, list[list[float]])] = {}
-        self.initial_state = initial_state
+        self.actions = np.array(list(self.action2rule.keys()))
+        
+        self.terminal_states: dict[int, tuple(float, list[list[float]])] = {}
+        
+        self.initial_state = hash(initial_graph)
+        self.state2graph: dict[int, GraphGrammar] = {self.initial_state:deepcopy(initial_graph)}
+        
+        self.transition_function: dict[tuple[int,int], int] = {}
+        
         self.control_optimizer = control_optimizer
         
-    def next_state(self, state: GraphGrammar, action: Union[int,str]) -> GraphGrammar:
-        
-        if isinstance(action, int):
-            name_rule = self.id2rule[action]
-        elif isinstance(action,str):
-            name_rule = action
-        else:
-            ValueError(f"Wrong type action: {type(action)}. Action have to be int or str type")
-        
+    def next_state(self, state: int, action: int) -> int:
+
+        name_rule = self.action2rule[action]
         rule = self.rule_vocabulary.rule_dict[name_rule]
-        next_state_graph = deepcopy(state)
-        state.apply_rule(rule)
-        
-        return next_state_graph
+        graph = self.state2graph[state] 
+        new_graph = deepcopy(graph).apply_rule(rule)
+        next_state = hash(new_graph)
+        self.update_environment(graph, action, new_graph)
+        return next_state
     
     def get_action_size(self):
-        return len(self.id2rule)
+        return len(self.action2rule)
     
-    def get_available_actions(self, state: GraphGrammar) -> np.ndarray:
+    def get_available_actions(self, state: int) -> np.ndarray:
+        graph = self.state2graph[state]
+        available_rules = self.rule_vocabulary.get_list_of_applicable_rules(graph)
+        mask_available_actions = np.zeros_like(self.actions)
         
-        if state.counter_nonterminal_rules < self.max_no_terminal_rules:
-            available_actions = self.rule_vocabulary.get_list_of_applicable_rules(state)
-        else:
-            available_actions = self.rule_vocabulary.get_list_of_applicable_terminal_rules(state)
-            
-        mask_available_rules = np.zeros(len(self.id2rule))
+        rule_list = np.array(list(self.action2rule.values()))
+        mask = [rule in available_rules for rule in rule_list]
+        mask_available_actions[mask] = 1
+
+        return mask_available_actions
+
+    def get_nonterminal_actions(self):
+        nonterminal_rules = self.rule_vocabulary.nonterminal_rule_dict.keys()
+        mask_nonterminal_actions = np.zeros_like(self.actions)
+        rule_list = np.array(list(self.action2rule.values()))
+        mask = [rule in nonterminal_rules for rule in rule_list]
+        mask_nonterminal_actions[mask] = 1
         
-        for rule in available_actions:
-            id_rule = self.id2rule[rule]
-            mask_available_rules[id_rule] = 1
-            
-        return mask_available_rules
-    
-    def get_game_ended(self, graph: GraphGrammar) -> float:
+        return mask_nonterminal_actions
+
+    def get_terminal_actions(self):
+        terminal_rules = self.rule_vocabulary.terminal_rule_dict.keys()
+        mask_terminal_actions = np.zeros_like(self.actions)
+        rule_list = np.array(list(self.action2rule.values()))
+        mask = [rule in terminal_rules for rule in rule_list]
+        mask_terminal_actions[mask] = 1
         
-        terminal_nodes = [node[1]["Node"].is_terminal for node in graph.nodes.items()]
-        
-        if sum(terminal_nodes) == len(terminal_nodes):
-            flatten_graph = self.graph_to_state_represitation(graph)
-            if flatten_graph in set(self.terminal_graphs.keys()):
-                reward, movments_trajectory = self.terminal_graphs[flatten_graph]
+        return mask_terminal_actions
+
+    def get_reward(self, state: int) -> float:
+
+        if self.is_terminal_state(state):
+            if state in self.terminal_states:
+                reward, movments_trajectory = self.terminal_states[state]
             else:
-                result_optimizer = self.control_optimizer.calculate_reward(graph)
+                result_optimizer = self.control_optimizer.calculate_reward(self.state2graph[state])
                 reward = result_optimizer[0]
                 movments_trajectory = result_optimizer[1]
-                self.terminal_graphs[flatten_graph] = (reward, movments_trajectory)
+                self.terminal_states[state] = (reward, movments_trajectory)
 
             return reward
         else:
             return 0
-        
+    
+    def is_terminal_state(self, state: int):
+        terminal_nodes = [node[1]["Node"].is_terminal for node in self.state2graph[state].nodes.items()]
+        return sum(terminal_nodes) == len(terminal_nodes)
+    
     def graph_to_state_represitation(self, graph: GraphGrammar):
         return hash(graph)
+    
+    def update_environment(self, graph:GraphGrammar, action: int, next_graph: GraphGrammar):
+        state = hash(graph)
+        next_state = hash(next_graph)
+        if state not in self.state2graph:
+            self.state2graph[state] = deepcopy(graph)
+        if (state, action) not in self.transition_function:
+            self.transition_function[(state, action)] = next_state
+        reward = self.get_reward(next_state)
+        return reward
+    
+    def save_environment(self,
+                        prefix,
+                        path="rostok\graph_generators\graph_heuristic_search\dataset_design_space"):
+        current_date = datetime.now()
+        folder = f"{prefix}_{current_date.hour}h{current_date.minute}m_date_{current_date.day}d{current_date.month}m{current_date.year}y"
+        os_path = os.path.join(path,folder)
+        os.mkdir(os_path)
+        
+        file_names = ["actions.p", "terminal_states.p", "transition_function.p",
+                    "action2rule.p", "state2graph.p", "rule_vocabulary.p","control_optimizer.p"]
+        variables = [self.actions, self.terminal_states, self.transition_function,
+                    self.action2rule, self.state2graph, self.rule_vocabulary,
+                    self.control_optimizer]
+        for file, var in zip(file_names,variables):
+            with open(os.path.join(os_path,file), "rb") as f:
+                pickle.dump(var, f, protocol=pickle.HIGHEST_PROTOCOL)
+                
+    def load_environment(self, path_to_folder):
+        file_names = ["actions.p", "action2rule.p",
+                    "rule_vocabulary.p","control_optimizer.p"]
+        # "terminal_states.p", "transition_function.p" "state2graph.p"
+        variables = [self.actions, self.action2rule,
+                    self.rule_vocabulary, self.control_optimizer]
+        
+        for file, var in zip(file_names,variables):
+            with open(os.path.join(path_to_folder,file), "rb") as f:
+                var = pickle.load(f)
+        
+        with open(os.path.join(path_to_folder,"terminal_states.p"), "rb") as f:
+                t_s = pickle.load(f)
+        with open(os.path.join(path_to_folder,"transition_function.p"), "rb") as f:
+                p_sa = pickle.load(f)
+        with open(os.path.join(path_to_folder,"state2graph.p"), "rb") as f:
+                s2g = pickle.load(f)
+        
+        self.terminal_states.update(t_s)
+        self.transition_function.update(p_sa)
+        self.state2graph.update(s2g)
+        
