@@ -174,12 +174,12 @@ class RobotSimulationChrono():
             self.robot.data_storage.add_data_type(key, value[0], value[1], max_number_of_steps)
 
     def add_design(self,
-                   graph: GraphGrammar,
-                   control_parameters,
-                   control_cls=ConstController,
-                   Frame: FrameTransform = DefaultFrame,
-                   is_fixed=True,
-                   with_data=True):
+                graph: GraphGrammar,
+                control_parameters,
+                control_cls=ConstController,
+                Frame: FrameTransform = DefaultFrame,
+                is_fixed=True,
+                with_data=True):
         """Add a robot to simulation using graph and control parameters
 
             Args:
@@ -195,10 +195,10 @@ class RobotSimulationChrono():
         self.robot_with_data = with_data
 
     def add_object(self,
-                   obj: ChronoEasyShapeObject,
-                   read_data: bool = False,
-                   is_fixed=False,
-                   force_torque_controller: Optional[ForceControllerTemplate] = None):
+                obj: ChronoEasyShapeObject,
+                read_data: bool = False,
+                is_fixed=False,
+                force_torque_controller: Optional[ForceControllerTemplate] = None):
         """" Add an object to the environment
         
             Args:
