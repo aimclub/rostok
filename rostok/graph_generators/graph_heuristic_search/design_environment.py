@@ -40,6 +40,17 @@ class DesignEnvironment:
         self.update_environment(graph, action, new_graph)
         return next_state
     
+    def possible_next_state(self, state: int, mask_actions = None):
+        if not mask_actions:
+            mask_actions = self.get_available_actions(state)
+
+        avb_actions = self.actions[mask_actions==1]
+        possible_next_state = []
+        for a in avb_actions:
+            possible_next_state.append(self.next_state(state, a))
+        
+        return possible_next_state
+    
     def get_action_size(self):
         return len(self.action2rule)
     
@@ -147,4 +158,4 @@ class DesignEnvironment:
         self.terminal_states.update(t_s)
         self.transition_function.update(p_sa)
         self.state2graph.update(s2g)
-        
+    
