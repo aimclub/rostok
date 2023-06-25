@@ -55,12 +55,30 @@ control_optimizer = config_with_standard_graph(grasp_object_blueprint, torque_di
 
 # coverter = TorchAdapter(rule_vocab_2l_3f.node_vocab)
 
-design_env = DesignEnvironment(rule_vocabul, control_optimizer)
+# design_env = DesignEnvironment(rule_vocabul, control_optimizer)
 
-design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch_11h43m_date_25d6m2023y")
-design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch_2h54m_date_25d6m2023y")
-rnd_srch = RandomSearch(15)
-rnd_srch.search(design_env, 10000)
+# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__15h1m_23s_date_25d6m2023y")
+# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__15h0m_59s_date_25d6m2023y")
+# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__15h0m_21s_date_25d6m2023y")
+# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__14h55m_32s_date_25d6m2023y")
+# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__14h54m_43s_date_25d6m2023y")
+# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__14h54m_18s_date_25d6m2023y")
+# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__14h53m_3s_date_25d6m2023y")
+# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__14h52m_33s_date_25d6m2023y")
+# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__14h52m_20s_date_25d6m2023y")
+# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__14h51m_48s_date_25d6m2023y")
+# design_env.save_environment("sphere_oldstyle_graph_rndsrch")
+# print(len(design_env.state2graph),len(design_env.transition_function), len(design_env.terminal_states))
+# rnd_srch = RandomSearch(15)
+# rnd_srch.search(design_env, 10000)
+
+import matplotlib.pyplot as plt
+
+file = "./rostok/graph_generators/graph_heuristic_search/history_random_search/history_random_search_14h50m_29s_date_25d6m2023y"
+with open(file, "rb") as f:
+    best_reward = np.load(f)
+    time = np.load(f)
+    reward = np.load(f)
 
 # ghs = GraphHeuristicSearch()
 None

@@ -44,9 +44,11 @@ class RandomSearch:
             self.reward_history.append(reward)
             self.best_reward_history.append(self.best_reward)
             self.time_history.append(t_finish)
-            if (iter+1) % 50 == 0:
+            if (iter+1) % 300 == 0:
                 self.save_history()
                 design_environment.save_environment("rnd_srch")
+                
+
             print(
                 f"Iter: {iter}, Iteration time {t_finish}, Current reward: {reward}, Best reward: {self.best_reward}"
             )
@@ -59,7 +61,7 @@ class RandomSearch:
     def save_history(self,
                      path='./rostok/graph_generators/graph_heuristic_search/history_random_search'):
         current_date = datetime.now()
-        file = f"history_random_search_{current_date.hour}h{current_date.minute}m_date_{current_date.day}d{current_date.month}m{current_date.year}y"
+        file = f"history_random_search_{current_date.hour}h{current_date.minute}m_{current_date.second}s_date_{current_date.day}d{current_date.month}m{current_date.year}y"
         full_path = os.path.join(path, file)
         np_reward = np.array(self.reward_history)
         np_best_reward = np.array(self.best_reward_history)

@@ -38,14 +38,16 @@ class DesignEnvironment:
         self.control_optimizer = control_optimizer
 
     def next_state(self, state: int, action: int) -> int:
-
-        name_rule = self.action2rule[action]
-        rule = self.rule_vocabulary.rule_dict[name_rule]
-        graph = self.state2graph[state]
-        new_graph = deepcopy(graph)
-        new_graph.apply_rule(rule)
-        next_state = self.graph2state(new_graph)
-        self.update_environment(graph, action, new_graph)
+        if (state, action) in self.transition_function:
+            next_state = self.transition_function[(state, action)]
+        else:
+            name_rule = self.action2rule[action]
+            rule = self.rule_vocabulary.rule_dict[name_rule]
+            graph = self.state2graph[state]
+            new_graph = deepcopy(graph)
+            new_graph.apply_rule(rule)
+            next_state = self.graph2state(new_graph)
+            self.update_environment(graph, action, new_graph)
         return next_state
 
     def possible_next_state(self, state: int, mask_actions=None):
@@ -135,7 +137,7 @@ class DesignEnvironment:
             prefix,
             path="./rostok/graph_generators/graph_heuristic_search/dataset_design_space"):
         current_date = datetime.now()
-        folder = f"{prefix}_{current_date.hour}h{current_date.minute}m_date_{current_date.day}d{current_date.month}m{current_date.year}y"
+        folder = f"{prefix}__{current_date.hour}h{current_date.minute}m_{current_date.second}s_date_{current_date.day}d{current_date.month}m{current_date.year}y"
         os_path = os.path.join(path, folder)
         os.mkdir(os_path)
 
