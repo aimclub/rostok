@@ -7,7 +7,7 @@ import numpy as np
 import numpy.random as random
 
 from rostok.graph_generators.graph_heuristic_search.torch_adapter import TorchAdapter
-from design_environment import DesignEnvironment
+from rostok.graph_generators.graph_heuristic_search.design_environment import DesignEnvironment
 from rostok.graph_grammar.node import GraphGrammar
 
 
@@ -20,10 +20,7 @@ class GraphHeuristicSearch:
 
         self.hat_v = {}
 
-        self.dataset = []
-        self.candidate_design_P = {}
-
-        self.best_design = None
+        self.best_design = 0
         self.best_reward = 0
 
         self.max_nonterminal_actions = args["max_nonterminal_actions"]
@@ -161,15 +158,12 @@ class GraphHeuristicSearch:
         file = f"history_random_search_{current_date.hour}h{current_date.minute}m_date_{current_date.day}d{current_date.month}m{current_date.year}y"
         full_path = os.path.join(path, file)
 
-        self.history_best_reward = []
-        self.history_reward = []
-        self.history_loss = []
-        self.prediction_error = []
-
-        np_reward = np.array(self.reward_history)
+        np_reward = np.array(self.history_reward)
         np_best_reward = np.array(self.history_best_reward)
         np_time = np.array(self.time_history)
+        np_loss = np.array(self.history_loss)
         with open(full_path, "wb") as f:
             np.save(f, np_best_reward)
             np.save(f, np_time)
             np.save(f, np_reward)
+            np.save(f, np_loss)
