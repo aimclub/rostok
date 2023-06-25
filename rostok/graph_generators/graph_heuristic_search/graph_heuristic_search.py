@@ -29,20 +29,22 @@ class GraphHeuristicSearch:
         self.history_reward = []
         self.history_loss = []
         self.prediction_error = []
+        self.time_history = []
 
     def eps_greedy_choose_action(self, state: int, mask_actions, eps,
                                  design_environment: DesignEnvironment):
 
         if random.random_sample() <= eps:
-            action = random.choice(mask_actions)
+            action = random.choice(design_environment.actions[mask_actions==1])
         else:
             next_states = design_environment.possible_next_state(state, mask_actions)
             next_graphs = [design_environment.state2graph[s] for s in next_states]
             data_next_state = self.nnet_adapter.list_gg2data_loader(
-                next_graphs, self.args["batch_size"]).to(self.args["device"])
+                next_graphs, self.args["batch_size"])
             estiamation_v = self.nnet.predict(data_next_state)
             estiamation_v = estiamation_v.cpu().detach().numpy()
-            action = design_environment.actions[np.argmax(estiamation_v)]
+            possible_actions = design_environment.actions[mask_actions==1]
+            action = possible_actions[np.argmax(estiamation_v)]
         return action
 
     def eps_greedy_choose_designs(self, states: list[int], eps,
@@ -53,7 +55,7 @@ class GraphHeuristicSearch:
         else:
             next_graphs = [design_environment.state2graph[s] for s in states]
             data_states = self.nnet_adapter.list_gg2data_loader(
-                next_graphs, self.args["batch_size"]).to(self.args["device"])
+                next_graphs, len(next_graphs))
             estiamation_V = self.nnet.predict(data_states)
             design = states[np.argmax(estiamation_V.cpu().detach().numpy())]
 
@@ -104,7 +106,7 @@ class GraphHeuristicSearch:
 
     def evaluation_phase(self, design_candidates, eps, design_environment: DesignEnvironment):
 
-        design_for_estimation = self.eps_greedy_choose_designs(design_candidates.keys(), eps,
+        design_for_estimation = self.eps_greedy_choose_designs(list(design_candidates.keys()), eps,
                                                                design_environment)
         reward = design_environment.get_reward(design_for_estimation)
 
@@ -115,23 +117,23 @@ class GraphHeuristicSearch:
         self.history_best_reward.append(self.best_reward)
         self.history_reward.append(reward)
 
-        return design_candidates[design_for_estimation] + design_for_estimation, reward
+        return design_candidates[design_for_estimation] + [design_for_estimation], reward
 
     def learning_phase(self, size_batch, opt_iter, design_environment: DesignEnvironment):
-        dataset = np.array(list(self.hat_v.items()))
-        dataset = np.random.choice(dataset, size=size_batch)
-        states = dataset[:, 0]
-        y = dataset[:, 1]
+        dataset_states = np.array(list(self.hat_v.keys()))
+        dataset_states = np.random.choice(dataset_states, size=size_batch)
+        states = dataset_states
+        y = np.array([self.hat_v[s] for s in states])
         graphs = list([design_environment.state2graph[s] for s in states])
         data_graph = self.nnet_adapter.list_gg2data_loader(graphs, size_batch, y)
-
-        self.history_loss.append(self.nnet.history_loss[-1])
-        for __ in opt_iter:
+        for __ in range(opt_iter):
             self.nnet.update(data_graph)
+
+        self.history_loss.append(self.nnet.loss_history[-1])
 
     def search(self, num_iteration, design_environment: DesignEnvironment):
 
-        for epochs in num_iteration:
+        for epochs in range(num_iteration):
             t_start = time.time()
 
             eps = self.args["end_eps"] + (self.args["start_eps"] - self.args["end_eps"]) * np.exp(
@@ -143,17 +145,24 @@ class GraphHeuristicSearch:
             self.update_hat_v(est_designs, value)
             self.learning_phase(self.args["minibatch"], self.args["opt_iter"], design_environment)
             t_finish = time.time() - t_start
+            
+            if (epochs + 1) % 200:
+                self.save_history()
+                self.nnet.save_checkpoint()
+            if (epochs + 1) % 400:
+                design_environment.save_environment("ghs")
 
+            self.time_history.append(t_finish)
             print(f"Epochs: {epochs}, time epoch: {t_finish}")
             print(f"Current reward: {value}, Best reward: {self.best_reward}")
             print(
                 f"Size hat-V: {len(self.hat_v)}, Num seen designs {len(design_environment.state2graph)}"
             )
-            print(f"Loss: {self.nnet.history_loss[-1]}, eps: {eps}")
+            print(f"Loss: {self.nnet.loss_history[-1]}, eps: {eps}")
             print("===============")
 
     def save_history(self,
-                     path='./rostok/graph_generators/graph_heuristic_search/history_random_search'):
+                     path='./rostok/graph_generators/graph_heuristic_search/history_ghs'):
         current_date = datetime.now()
         file = f"history_random_search_{current_date.hour}h{current_date.minute}m_date_{current_date.day}d{current_date.month}m{current_date.year}y"
         full_path = os.path.join(path, file)
@@ -167,3 +176,4 @@ class GraphHeuristicSearch:
             np.save(f, np_time)
             np.save(f, np_reward)
             np.save(f, np_loss)
+            np.save(f, self.best_design)

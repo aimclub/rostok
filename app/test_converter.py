@@ -1,6 +1,12 @@
 import numpy as np
+import torch
+import torch_geometric as pyg
+import torch_geometric.utils as pyg_utils
 
 from rostok.graph_generators.graph_heuristic_search.torch_adapter import TorchAdapter
+from rostok.neural_network.wrapper import NNWraper 
+from rostok.neural_network.old_sagpool import SAGPoolToAlphaZero
+from rostok.neural_network.robogrammar_net import Net
 from rostok.graph_generators.graph_heuristic_search.design_environment import DesignEnvironment
 from rostok.graph_generators.graph_heuristic_search.random_search import RandomSearch
 from rostok.graph_generators.graph_heuristic_search.graph_heuristic_search import GraphHeuristicSearch
@@ -53,32 +59,39 @@ control_optimizer = config_with_standard_graph(grasp_object_blueprint, torque_di
 # palm, rule_vocab_p = get_palm()
 # mechs_2l_3f, rule_vocab_2l_3f = get_two_link_three_finger()
 
-# coverter = TorchAdapter(rule_vocab_2l_3f.node_vocab)
+
+args = {
+    "device":torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
+    "max_nonterminal_rules":15,
+    "max_nonterminal_actions":15,
+    "batch_size":64,
+    "start_eps":1,
+    "end_eps":0.01,
+    "eps_decay":0.3,
+    "num_designs":20,
+    "eps_design":0.3,
+    "minibatch":64,
+    "opt_iter":50,
+    "max_nodes": 20,
+    "nhid":512,
+    "pooling_ratio":0.6,
+    "dropout_ratio":0.5
+}
 
 # design_env = DesignEnvironment(rule_vocabul, control_optimizer)
-
-# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__15h1m_23s_date_25d6m2023y")
-# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__15h0m_59s_date_25d6m2023y")
-# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__15h0m_21s_date_25d6m2023y")
-# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__14h55m_32s_date_25d6m2023y")
-# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__14h54m_43s_date_25d6m2023y")
-# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__14h54m_18s_date_25d6m2023y")
-# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__14h53m_3s_date_25d6m2023y")
-# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__14h52m_33s_date_25d6m2023y")
-# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__14h52m_20s_date_25d6m2023y")
-# design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch__14h51m_48s_date_25d6m2023y")
 # design_env.save_environment("sphere_oldstyle_graph_rndsrch")
-# print(len(design_env.state2graph),len(design_env.transition_function), len(design_env.terminal_states))
+design_env = DesignEnvironment(rule_vocabul, control_optimizer)
+
+coverter = TorchAdapter(rule_vocabul.node_vocab)
+
+args["num_features"] = len(design_env.node2id)
+# nnet = SAGPoolToAlphaZero(args)
+nnet = Net(args)
+nn_wrapper = NNWraper(nnet, args)
+
+ghs = GraphHeuristicSearch(coverter, nn_wrapper, args)
 # rnd_srch = RandomSearch(15)
 # rnd_srch.search(design_env, 10000)
 
-import matplotlib.pyplot as plt
-
-file = "./rostok/graph_generators/graph_heuristic_search/history_random_search/history_random_search_14h50m_29s_date_25d6m2023y"
-with open(file, "rb") as f:
-    best_reward = np.load(f)
-    time = np.load(f)
-    reward = np.load(f)
-
-# ghs = GraphHeuristicSearch()
+ghs.search(10, design_env)
 None

@@ -84,6 +84,7 @@ class GraphGrammar(nx.DiGraph):
         super().__init__(**attr)
         self.__uniq_id_counter = -1
         self.add_node(self.get_uniq_id(), Node=ROOT)
+        self.counter_nonterminal_rules = 0
 
     def get_uniq_id(self):
         self.__uniq_id_counter += 1
@@ -204,6 +205,7 @@ class GraphGrammar(nx.DiGraph):
             self.remove_node(id_closest)
         else:
             self._replace_node(id_closest, rule)
+        self.counter_nonterminal_rules +=1
 
     def node_levels_bfs(self) -> list[list[int]]:
         """Divide nodes into levels.
@@ -385,3 +387,9 @@ class GraphGrammar(nx.DiGraph):
     def __hash__(self) -> int:
         self_dfs_paths_lbl = self.get_uniq_representation()
         return hash(str(self_dfs_paths_lbl))
+    
+    def __str__(self) -> str:
+        sorted_id_nodes = list(
+                nx.lexicographical_topological_sort(self,key=lambda x: self.get_node_by_id(x).label))
+        sorted_name_nodes = list(map(lambda x: self.get_node_by_id(x).label, sorted_id_nodes))
+        return ''.join(sorted_name_nodes)
