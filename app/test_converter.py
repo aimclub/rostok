@@ -3,12 +3,11 @@ import numpy as np
 from rostok.graph_generators.graph_heuristic_search.torch_adapter import TorchAdapter
 from rostok.graph_generators.graph_heuristic_search.design_environment import DesignEnvironment
 from rostok.graph_generators.graph_heuristic_search.random_search import RandomSearch
+from rostok.graph_generators.graph_heuristic_search.graph_heuristic_search import GraphHeuristicSearch
 from rostok.library.rule_sets.ruleset_old_style_graph import create_rules
-from rostok.graph_grammar.node import GraphGrammar
-import networkx as nx
+
 
 from mcts_run_setup import config_with_standard_graph
-from rostok.graph_grammar.node import GraphGrammar
 from rostok.library.obj_grasp.objects import get_object_parametrized_sphere
 from rostok.library.rule_sets.ruleset_new_style_graph import create_rules
 
@@ -57,7 +56,9 @@ control_optimizer = config_with_standard_graph(grasp_object_blueprint, torque_di
 # coverter = TorchAdapter(rule_vocab_2l_3f.node_vocab)
 
 design_env = DesignEnvironment(rule_vocabul, control_optimizer)
-rnd_srch = RandomSearch(20)
-rnd_srch.search(design_env, 10)
+rnd_srch = RandomSearch(15)
+rnd_srch.search(design_env, 10000)
 
+
+# ghs = GraphHeuristicSearch()
 None
