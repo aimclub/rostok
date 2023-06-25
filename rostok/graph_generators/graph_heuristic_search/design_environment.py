@@ -49,15 +49,15 @@ class DesignEnvironment:
         return next_state
 
     def possible_next_state(self, state: int, mask_actions=None):
-        if not mask_actions:
+        if mask_actions is None:
             mask_actions = self.get_available_actions(state)
 
         avb_actions = self.actions[mask_actions == 1]
-        possible_next_state = []
+        possible_next_s = []
         for a in avb_actions:
-            possible_next_state.append(self.next_state(state, a))
+            possible_next_s.append(self.next_state(state, a))
 
-        return possible_next_state
+        return possible_next_s
 
     def get_action_size(self):
         return len(self.action2rule)

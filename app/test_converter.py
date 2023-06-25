@@ -1,6 +1,9 @@
 import numpy as np
+import torch
 
 from rostok.graph_generators.graph_heuristic_search.torch_adapter import TorchAdapter
+from rostok.neural_network.wrapper import NNWraper 
+from rostok.neural_network.old_sagpool import SAGPoolToAlphaZero
 from rostok.graph_generators.graph_heuristic_search.design_environment import DesignEnvironment
 from rostok.graph_generators.graph_heuristic_search.random_search import RandomSearch
 from rostok.graph_generators.graph_heuristic_search.graph_heuristic_search import GraphHeuristicSearch
@@ -53,12 +56,38 @@ control_optimizer = config_with_standard_graph(grasp_object_blueprint, torque_di
 # palm, rule_vocab_p = get_palm()
 # mechs_2l_3f, rule_vocab_2l_3f = get_two_link_three_finger()
 
-# coverter = TorchAdapter(rule_vocab_2l_3f.node_vocab)
+
+args = {
+    "device":torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
+    "max_nonterminal_rules":15,
+    "max_nonterminal_actions":15,
+    "batch_size":64,
+    "start_eps":1,
+    "end_eps":0.01,
+    "eps_decay":0.3,
+    "num_designs":20,
+    "eps_design":0.3,
+    "minibatch":64,
+    "opt_iter":50,
+    
+    "nhid":512,
+    "pooling_ratio":0.6,
+    "dropout_ratio":0.5
+}
 
 design_env = DesignEnvironment(rule_vocabul, control_optimizer)
-rnd_srch = RandomSearch(15)
-rnd_srch.search(design_env, 10000)
+
+coverter = TorchAdapter(rule_vocabul.node_vocab)
+
+args["num_features"] = len(design_env.node2id)
+nnet = SAGPoolToAlphaZero(args)
+nn_wrapper = NNWraper(nnet, args)
+
+ghs = GraphHeuristicSearch(coverter, nn_wrapper, args)
+# rnd_srch = RandomSearch(15)
+# rnd_srch.search(design_env, 10000)
 
 
 # ghs = GraphHeuristicSearch()
+ghs.search(10, design_env)
 None
