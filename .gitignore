@@ -7,3 +7,4 @@
 /results/
 /temp_*/
 test*.ipynb
+rostok/graph_generators/graph_heuristic_search/

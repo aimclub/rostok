@@ -57,7 +57,10 @@ control_optimizer = config_with_standard_graph(grasp_object_blueprint, torque_di
 # coverter = TorchAdapter(rule_vocab_2l_3f.node_vocab)
 
 design_env = DesignEnvironment(rule_vocabul, control_optimizer)
-rnd_srch = RandomSearch(20)
-rnd_srch.search(design_env, 10)
+
+design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch_11h43m_date_25d6m2023y")
+design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/rnd_srch_2h54m_date_25d6m2023y")
+rnd_srch = RandomSearch(15)
+rnd_srch.search(design_env, 10000)
 
 None
