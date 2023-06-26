@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -40,6 +40,7 @@ class SystemPreviewChrono:
 
             Args:
                 obj (ChronoEasyShapeObject): one of the simple chrono objects"""
+
         self.chrono_system.AddBody(obj.body)
 
     def simulate_step(self, time_step: float):
@@ -86,6 +87,7 @@ class SystemPreviewChrono:
 @dataclass
 class SimulationResult:
     time: float = 0
+    time_vector: List[float] = field(default_factory=list)
     n_steps = 0
     robot_final_ds: Optional[DataStorage] = None
     environment_final_ds: Optional[DataStorage] = None
@@ -207,6 +209,7 @@ class RobotSimulationChrono():
                 is_fixed (bool): define if the object is fixed"""
         if is_fixed:
             obj.body.SetBodyFixed(True)
+
         self.chrono_system.AddBody(obj.body)
         self.objects.append(obj)
         if force_torque_controller:
@@ -275,9 +278,11 @@ class RobotSimulationChrono():
             vis.EnableCollisionShapeDrawing(True)
 
         stop_flag = False
+        self.result.time_vector = [0]
         for i in range(number_of_steps):
             current_time = self.chrono_system.GetChTime()
             self.simulate_step(step_length, current_time, i)
+            self.result.time_vector.append(self.chrono_system.GetChTime()) # TODO: timevector can be constructed from number_of_steps and time_step
             if vis:
                 vis.Run()
                 if i % frame_update == 0:
