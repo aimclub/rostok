@@ -29,6 +29,7 @@ class GraphHeuristicSearch:
         self.history_reward = []
         self.history_loss = []
         self.prediction_error = []
+        self.time_history = []
 
     def eps_greedy_choose_action(self, state: int, mask_actions, eps,
                                  design_environment: DesignEnvironment):
@@ -144,7 +145,14 @@ class GraphHeuristicSearch:
             self.update_hat_v(est_designs, value)
             self.learning_phase(self.args["minibatch"], self.args["opt_iter"], design_environment)
             t_finish = time.time() - t_start
+            
+            if (epochs + 1) % 200:
+                self.save_history()
+                self.nnet.save_checkpoint()
+            if (epochs + 1) % 400:
+                design_environment.save_environment("ghs")
 
+            self.time_history.append(t_finish)
             print(f"Epochs: {epochs}, time epoch: {t_finish}")
             print(f"Current reward: {value}, Best reward: {self.best_reward}")
             print(
@@ -154,7 +162,7 @@ class GraphHeuristicSearch:
             print("===============")
 
     def save_history(self,
-                     path='./rostok/graph_generators/graph_heuristic_search/history_random_search'):
+                     path='./rostok/graph_generators/graph_heuristic_search/history_ghs'):
         current_date = datetime.now()
         file = f"history_random_search_{current_date.hour}h{current_date.minute}m_date_{current_date.day}d{current_date.month}m{current_date.year}y"
         full_path = os.path.join(path, file)
@@ -168,3 +176,4 @@ class GraphHeuristicSearch:
             np.save(f, np_time)
             np.save(f, np_reward)
             np.save(f, np_loss)
+            np.save(f, self.best_design)
