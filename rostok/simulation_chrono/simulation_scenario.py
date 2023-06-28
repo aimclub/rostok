@@ -4,9 +4,10 @@ import pychrono as chrono
 
 from rostok.criterion.simulation_flags import FlagStopSimualtions
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.simulation_chrono.basic_simulation import RobotSimulationChrono
+from rostok.simulation_chrono.basic_simulation import RobotSimulationChrono, RobotSimulationWithForceTest
 from rostok.virtual_experiment.sensors import (SensorCalls, SensorObjectClassification)
 from rostok.simulation_chrono.simulation_utils import set_covering_sphere_based_position
+from rostok.control_chrono.controller import ConstController, SinControllerChrono, YaxisShaker
 
 
 class ParametrizedSimulation:
@@ -35,12 +36,14 @@ class ConstTorqueGrasp(ParametrizedSimulation):
 
     def run_simulation(self, graph: GraphGrammar, data, vis=False):
         self.reset_flags()
-        simulation = RobotSimulationChrono([])
+        #simulation = RobotSimulationChrono([])
+        simulation = RobotSimulationWithForceTest([])
         simulation.add_design(graph, data)
         grasp_object = self.grasp_object_callback()
+        shake = YaxisShaker(5, 1, 10, float("inf"))
         set_covering_sphere_based_position(grasp_object,
                                            reference_point=chrono.ChVectorD(0, 0.05, 0))
-        simulation.add_object(grasp_object, read_data=True)
+        simulation.add_object(grasp_object, read_data = True, force_torque_controller = shake)
         n_steps = int(self.simulation_length / self.step_length)
         env_data_dict = {
             "n_contacts": (SensorCalls.AMOUNT_FORCE, SensorObjectClassification.BODY),

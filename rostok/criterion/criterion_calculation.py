@@ -156,3 +156,11 @@ class SimulationReward:
 
         total_reward = sum([a * b for a, b in zip(partial_rewards, self.weights)])
         return round(total_reward, 3)
+    
+
+class SimulationRewardCascade(SimulationReward):
+    def __init__(self, verbosity = 0):
+        super().__init__(verbosity)
+
+    def calculate_reward(self, simulation_output):
+        

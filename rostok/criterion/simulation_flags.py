@@ -6,7 +6,7 @@ import pychrono.core as chrono
 from rostok.virtual_experiment.sensors import DataStorage, Sensor
 
 
-class FlagStopSimualtions(ABC):
+class FlagSimulation(ABC):
     def __init__(self):
         self.state = False
 
@@ -16,7 +16,11 @@ class FlagStopSimualtions(ABC):
     def update_state(self, current_time, robot_data, env_data):
         pass
 
-class FlagFlyingApart(FlagStopSimualtions):
+class FlagStopSimulation(FlagSimulation):
+    def __init__(self):
+        super().__init__()
+
+class FlagFlyingApart(FlagStopSimulation):
     def __init__(self, max_distance:float):
         super().__init__()
         self.max_distance = max_distance
@@ -30,7 +34,7 @@ class FlagFlyingApart(FlagStopSimualtions):
                 self.state = True
                 break
 
-class FlagSlipout(FlagStopSimualtions):
+class FlagSlipout(FlagStopSimulation):
     def __init__(self, ref_time):
         super().__init__()
         self.time_last_contact = None
@@ -54,7 +58,7 @@ class FlagSlipout(FlagStopSimualtions):
                 else:
                     self.state = False
 
-class FlagContactTimeOut(FlagStopSimualtions):
+class FlagContactTimeOut(FlagStopSimulation):
     def __init__(self, ref_time):
         super().__init__()
         self.reference_time = ref_time
@@ -71,3 +75,26 @@ class FlagContactTimeOut(FlagStopSimualtions):
         if not (self.contact or self.state):
             if current_time > self.reference_time:
                 self.state = True
+
+class FlagEventSimulation(FlagSimulation):
+    def __init__(self):
+        super().__init__()
+
+class FlagGraspEventSimulation(FlagEventSimulation):
+    def __init__(self):
+        super().__init__()
+        self.grasp_steps = 0
+
+    def reset_flag(self):
+        super().reset_flag()
+        self.grasp_steps = 0
+
+    def update_state(self, current_time, robot_data:Sensor, env_data:Sensor): 
+        obj_velocity = np.linalg.norm(np.array(env_data.get_velocity()))
+        if obj_velocity <= 0.01:
+            self.grasp_steps += 1
+        else:
+            self.grasp_steps = 0
+
+        if self.grasp_steps == 10:
+            self.state = True

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pychrono as chrono
@@ -11,7 +11,7 @@ from rostok.control_chrono.controller import ConstController, ForceControllerTem
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.virtual_experiment.robot_new import BuiltGraphChrono, RobotChrono
 from rostok.virtual_experiment.sensors import DataStorage, Sensor
-
+from rostok.criterion.simulation_flags import FlagStopSimulation, FlagGraspEventSimulation
 
 class SystemPreviewChrono:
     """A simulation of the motionless environment and design"""
@@ -83,7 +83,7 @@ class SystemPreviewChrono:
         if visualize:
             vis.GetDevice().closeDevice()
 
-from rostok.criterion.simulation_flags import FlagStopSimualtions
+
 @dataclass
 class SimulationResult:
     time: float = 0
@@ -91,7 +91,7 @@ class SimulationResult:
     n_steps = 0
     robot_final_ds: Optional[DataStorage] = None
     environment_final_ds: Optional[DataStorage] = None
-    flag_container: List[Tuple[FlagStopSimualtions, float]] = field(default_factory=list)
+    flag_container: List[Tuple[Union[FlagStopSimulation, FlagGraspEventSimulation], float]] = field(default_factory=list)
 
     def reduce_nan(self):
         if self.robot_final_ds:
@@ -300,6 +300,82 @@ class RobotSimulationChrono():
                 if flag_container:
                     stop_flag = sum([flag.state for flag in flag_container])
 
+            if stop_flag:
+                break
+
+        if visualize:
+            vis.GetDevice().closeDevice()
+
+        self.result.environment_final_ds = self.data_storage
+        self.result.robot_final_ds = self.robot.data_storage
+        self.result.time = self.chrono_system.GetChTime()
+        self.n_steps = number_of_steps
+        self.result.reduce_nan()
+        return self.result
+
+class RobotSimulationWithForceTest(RobotSimulationChrono):
+    def simulate(
+        self,
+        number_of_steps: int,
+        step_length: float,
+        frame_update: int,
+        flag_container=None,
+        visualize=False,
+    ):
+        """Execute a simulation.
+        
+            Args:
+                number_of_steps(int): total number of steps in the simulation
+                step_length (float): the time length of a step
+                frame_update (int): rate of visualization update
+                flag_container: container of flags that controls simulation
+                visualize (bool): determine if run the visualization """
+        self.initialize(number_of_steps)
+        vis = None
+        if visualize:
+            vis = chronoirr.ChVisualSystemIrrlicht()
+            vis.AttachSystem(self.chrono_system)
+            vis.SetWindowSize(1024, 768)
+            vis.SetWindowTitle('Grab demo')
+            vis.Initialize()
+            vis.AddCamera(chrono.ChVectorD(1.5, 3, -4))
+            vis.AddTypicalLights()
+            vis.EnableCollisionShapeDrawing(True)
+
+        stop_flag = False
+        grasp_flag = False
+        stop_flags = []
+        event_flags = []
+        if flag_container:
+            for flag in flag_container:
+                if isinstance(flag, FlagStopSimulation):
+                    stop_flags.append(flag)
+                if isinstance(flag, FlagGraspEventSimulation):
+                    event_flags.append(flag)
+
+        self.result.time_vector = [0]
+        for i in range(number_of_steps):
+            current_time = self.chrono_system.GetChTime()
+            self.simulate_step(step_length, current_time, i)
+            self.result.time_vector.append(self.chrono_system.GetChTime()) 
+            if vis:
+                vis.Run()
+                if i % frame_update == 0:
+                    vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
+                    vis.Render()
+                    vis.EndScene()
+            if flag_container:
+                for flag in flag_container:
+                    flag.update_state(current_time, self.robot.sensor, self.data_storage.sensor)
+
+                if len(stop_flags)>0: 
+                    stop_flag = all([flag.state for flag in stop_flags])
+
+                if len(event_flags)>0:
+                    grasp_flag = all([flag.state for flag in event_flags])
+
+            if grasp_flag:
+                self.force_torque_container[0].start_time = current_time
             if stop_flag:
                 break
 

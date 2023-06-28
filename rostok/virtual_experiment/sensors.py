@@ -112,6 +112,23 @@ class Sensor:
             ]
         return output
 
+    def get_velocity(self):
+        output = {}
+        for idx, body in self.body_map_ordered.items():
+            output[idx] = [
+                round(body.body.GetPos_dt().x, 3),
+                round(body.body.GetPos_dt().y, 3),
+                round(body.body.GetPos_dt().z, 3)
+            ]
+        return output
+    
+    def get_rotation_velocity(self):
+        output = {}
+        for idx, body in self.body_map_ordered.items():
+            mat = body.body.GetA_dt()
+            output[idx] = [[mat.Get_A_Xaxis.x, mat.Get_A_Yaxis.x, mat.Get_A_Zaxis.x], [mat.Get_A_Xaxis.y, mat.Get_A_Yaxis.y, mat.Get_A_Zaxis.y], [mat.Get_A_Xaxis.z, mat.Get_A_Yaxis.z, mat.Get_A_Zaxis.z]]
+        return output
+
     def get_joint_trajectory_point(self):
         output = {}
         for idx, joint in self.joint_map_ordered.items():
