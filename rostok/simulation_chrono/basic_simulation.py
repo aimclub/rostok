@@ -83,7 +83,7 @@ class SystemPreviewChrono:
         if visualize:
             vis.GetDevice().closeDevice()
 
-
+from rostok.criterion.simulation_flags import FlagStopSimualtions
 @dataclass
 class SimulationResult:
     time: float = 0
@@ -91,6 +91,7 @@ class SimulationResult:
     n_steps = 0
     robot_final_ds: Optional[DataStorage] = None
     environment_final_ds: Optional[DataStorage] = None
+    flag_container: List[Tuple[FlagStopSimualtions, float]] = field(default_factory=list)
 
     def reduce_nan(self):
         if self.robot_final_ds:
@@ -278,6 +279,9 @@ class RobotSimulationChrono():
             vis.EnableCollisionShapeDrawing(True)
 
         stop_flag = False
+        if flag_container:
+            for flag in flag_container:
+                self.result.flag_container.append((flag, 0))
         self.result.time_vector = [0]
         for i in range(number_of_steps):
             current_time = self.chrono_system.GetChTime()

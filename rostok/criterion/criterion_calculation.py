@@ -132,7 +132,7 @@ class InstantContactingLinkCriterion(Criterion):
         for body, contacts in body_contacts.items():
             if contacts[pos] > 0:
                 contacting_bodies += 1
-        
+
         return contacting_bodies / n_bodies
 
 class SimulationReward:
