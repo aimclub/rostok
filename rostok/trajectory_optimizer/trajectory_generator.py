@@ -1,5 +1,5 @@
 from rostok.block_builder_api.block_parameters import FrameTransform
-from rostok.graph_grammar.graph_utils import plot_graph_ids
+from rostok.graph_grammar.graph_utils import plot_graph_ids, plot_graph
 from rostok.graph_grammar.node import GraphGrammar, Node
 import networkx as nx
 import numpy as np
@@ -9,6 +9,7 @@ from rostok.graph_grammar.node_block_typing import NodeFeatures, get_joint_vecto
 from rostok.block_builder_api import block_blueprints, easy_body_shapes
 from rostok.library.rule_sets.simple_designs import get_two_link_three_finger
 from more_itertools import split_before
+
 
 def uniq_root_paths(graph: GraphGrammar) -> list[list[int]]:
     """
@@ -88,16 +89,34 @@ def path_control_generator(graph: GraphGrammar, coefficients: list[tuple]):
         start_multiplier = next(start_multiplier_iter)
         yield branch, *start_multiplier
 
+
 def path_node_iter(graph: GraphGrammar, coefficients: list[tuple]):
+    """Returns a generator that iterates over a pair branch 
+    (based on get_sorted_root_based_paths) and coefficient.
+    Iterate over branch with joints.
+    Args:
+        graph (GraphGrammar): _description_
+        coefficients (list[tuple]): _description_
+
+    Raises:
+        Exception: _description_
+
+    Yields:
+        _type_: _description_
+    """
     paths_id = uniq_root_paths(graph)
-    if len(paths_id) != len(coefficients):
+    is_joint_id = lambda id: NodeFeatures.is_joint(graph.get_node_by_id(id))
+    branch_has_joint = lambda branch: any(map(is_joint_id, branch))
+    paths_id_with_joints = list(filter(branch_has_joint, paths_id))
+    if len(paths_id_with_joints) != len(coefficients):
         raise Exception("Coefficient vector must have the same size joint_root_paths result")
     start_multiplier_iter = coefficients.__iter__()
-    get_nodes = lambda x : map(graph.get_node_by_id, x)
-    paths_node = list(map(get_nodes, paths_id))
+    get_nodes = lambda x: map(graph.get_node_by_id, x)
+    paths_node = list(map(get_nodes, paths_id_with_joints))
     for branch in paths_node:
         start_multiplier = next(start_multiplier_iter)
         yield branch, *start_multiplier
+
 
 def linear_control(graph: GraphGrammar, coefficients: list[tuple[float, float]]):
     """_summary_
@@ -137,7 +156,6 @@ def calculate_length_and_filter_joint(node_list: list[Node]):
     return length_and_joint
 
 
-
 def links_length_after_joint(node_list: list[Node]) -> list[float]:
     """Splits the node list into composite links, separating them at joint nodes.
     Filters out composite links that start with a joint node.
@@ -150,13 +168,14 @@ def links_length_after_joint(node_list: list[Node]) -> list[float]:
         list[float]: lengths
     """
 
-    composite_links = list(split_before(node_list,  NodeFeatures.is_joint))
+    composite_links = list(split_before(node_list, NodeFeatures.is_joint))
     is_first_joint = lambda x: NodeFeatures.is_joint(x[0])
     composite_links_with_joints = list(filter(is_first_joint, composite_links))
     node_length = lambda x: block_length(x.block_blueprint)
     calculate_length = lambda x: sum(map(node_length, x[1:]))
     links_length = list(map(calculate_length, composite_links_with_joints))
     return links_length
+
 
 def calculate_control_value_based_on_length(node_list: list[Node], start: float, multiplier: float):
     """Calls links_length_after_joint to get the lengths of composite links.
@@ -178,21 +197,10 @@ def calculate_control_value_based_on_length(node_list: list[Node], start: float,
         vec.append(value)
     return vec
 
+
 def tendon_like_control(graph: GraphGrammar, coefficients: list[tuple[float, float]]):
     gen = path_node_iter(graph, coefficients)
     unpucked = lambda x: calculate_control_value_based_on_length(*x)
     joint_constants = list(map(unpucked, gen))
     res = {"initial_value": list(chain(*joint_constants))}
     return res
-
-
-    
-
-graph = get_two_link_three_finger()
-benis = list(reversed(list(map(graph.get_node_by_id, graph.get_sorted_root_based_paths()[0]))))
-length_and_joint = calculate_length_and_filter_joint(benis)
-length_and_joint2 = links_length_after_joint(benis)
-koef = [(3,2),(2,2),(1,1)]
-stoparik = tendon_like_control(graph, koef)
-
-pass
