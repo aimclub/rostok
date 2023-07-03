@@ -8,7 +8,7 @@ from rostok.criterion.simulation_flags import (FlagContactTimeOut, FlagFlyingApa
 from rostok.simulation_chrono.simulation_scenario import ConstTorqueGrasp
 from rostok.trajectory_optimizer.control_optimizer import (CalculatorWithGraphOptimization,
                                                            CalculatorWithOptimizationDirect,
-                                                           ConstTorqueOptimizationBranchDirect)
+                                                           LinearControlOptimizationDirect, TendonLikeControlOptimization)
 
 from rostok.block_builder_api.block_parameters import Material, FrameTransform
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
@@ -32,8 +32,8 @@ def config_with_standard(grasp_object_blueprint):
     simulation_rewarder.add_criterion(LateForceCriterion(0.5, 3), 1)
     simulation_rewarder.add_criterion(LateForceAmountCriterion(0.5), 1)
 
-    control_optimizer = ConstTorqueOptimizationBranchDirect(simulation_manager, simulation_rewarder,
-                                                            (3, 15), 10)
+    control_optimizer = TendonLikeControlOptimization(simulation_manager, simulation_rewarder,
+                                                            (-15, -3), 10)
 
     return control_optimizer
 
@@ -41,8 +41,8 @@ def config_with_standard(grasp_object_blueprint):
 mat = Material()
 mat.Friction = 0.65
 mat.DampingF = 0.65
-obj = EnvironmentBodyBlueprint(shape=Box(3, 0.2, 3),
+obj = EnvironmentBodyBlueprint(shape=Box(0.7, 0.4, 0.6),
                                material=mat,
-                               pos=FrameTransform([0, 0, 0], [1, 0, 0, 0]))
+                               pos=FrameTransform([0.1, 0.5, 0.15], [1, 0, 0, 0]))
 optic_cfg = config_with_standard(obj)
 optic_cfg.calculate_reward(get_two_link_three_finger())

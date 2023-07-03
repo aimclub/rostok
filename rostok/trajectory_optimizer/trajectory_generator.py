@@ -11,6 +11,16 @@ from rostok.library.rule_sets.simple_designs import get_two_link_three_finger
 from more_itertools import split_before
 
 def uniq_root_paths(graph: GraphGrammar) -> list[list[int]]:
+    """
+    Returns a list of unique root-based paths in the graph.
+
+    Args:
+        graph (GraphGrammar): The graph to extract root paths from.
+
+    Returns:
+        list[list[int]]: A list of unique root-based paths, where each path is 
+        represented as a list of node IDs
+    """
     root_paths = graph.get_sorted_root_based_paths()
     non_uniq = set()
     uniq_paths = []
@@ -22,6 +32,17 @@ def uniq_root_paths(graph: GraphGrammar) -> list[list[int]]:
 
 
 def control_vector_linear(branch: list, start: float, multiplier: float):
+    """
+    Generates a linear control vector for a given branch.
+
+    Args:
+        branch (list): The branch to generate the control vector for.
+        start (float): The initial control value.
+        multiplier (float): The multiplier to be applied to the control value.
+
+    Returns:
+        list[float]: The linear control vector for the branch.
+    """
     vec = []
     for num, _ in enumerate(branch):
         value = start + multiplier * num
@@ -118,6 +139,17 @@ def calculate_length_and_filter_joint(node_list: list[Node]):
 
 
 def links_length_after_joint(node_list: list[Node]) -> list[float]:
+    """Splits the node list into composite links, separating them at joint nodes.
+    Filters out composite links that start with a joint node.
+    Calculates the length of each composite link and returns a list of their lengths.
+
+    Args:
+        node_list (list[Node]): 
+
+    Returns:
+        list[float]: lengths
+    """
+
     composite_links = list(split_before(node_list,  NodeFeatures.is_joint))
     is_first_joint = lambda x: NodeFeatures.is_joint(x[0])
     composite_links_with_joints = list(filter(is_first_joint, composite_links))
@@ -126,7 +158,19 @@ def links_length_after_joint(node_list: list[Node]) -> list[float]:
     links_length = list(map(calculate_length, composite_links_with_joints))
     return links_length
 
-def path_coef_tendon_like(node_list: list[Node], start: float, multiplier: float):
+def calculate_control_value_based_on_length(node_list: list[Node], start: float, multiplier: float):
+    """Calls links_length_after_joint to get the lengths of composite links.
+    Calculates control values based on the lengths of the composite link
+
+    Args:
+        node_list (list[Node]): bracnh(fingers)
+        start (float): const value
+        multiplier (float): multiplier for length
+
+    Returns:
+        list[float]: control values
+    """
+
     links_length = links_length_after_joint(node_list)
     vec = []
     for l in range(len(links_length)):
@@ -136,10 +180,19 @@ def path_coef_tendon_like(node_list: list[Node], start: float, multiplier: float
 
 def tendon_like_control(graph: GraphGrammar, coefficients: list[tuple[float, float]]):
     gen = path_node_iter(graph, coefficients)
-    unpucked = lambda x: path_coef_tendon_like(*x)
+    unpucked = lambda x: calculate_control_value_based_on_length(*x)
     joint_constants = list(map(unpucked, gen))
     res = {"initial_value": list(chain(*joint_constants))}
     return res
 
 
     
+
+graph = get_two_link_three_finger()
+benis = list(reversed(list(map(graph.get_node_by_id, graph.get_sorted_root_based_paths()[0]))))
+length_and_joint = calculate_length_and_filter_joint(benis)
+length_and_joint2 = links_length_after_joint(benis)
+koef = [(3,2),(2,2),(1,1)]
+stoparik = tendon_like_control(graph, koef)
+
+pass

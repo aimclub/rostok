@@ -6,7 +6,7 @@ from rostok.criterion.criterion_calculation import SimulationReward
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
 from enum import Enum
-from rostok.trajectory_optimizer.trajectory_generator import linear_control, joint_root_paths
+from rostok.trajectory_optimizer.trajectory_generator import linear_control, joint_root_paths, tendon_like_control
 
 
 class GraphRewardCalculator:
@@ -104,6 +104,14 @@ class OptimizationParametr(str, Enum):
 
 
 class ConstTorqueOptimizationBranchTemplate(GraphRewardCalculator):
+    """A template class for constant torque optimization on branches of a graph.
+    For use you need implement run_optimization and generate_control_value_on_branch.
+    run_optimization for select optimizer.
+    generate_control_value_on_branch for generate control.
+
+    Args:
+        GraphRewardCalculator: _description_
+    """
 
     def __init__(self,
                  simulation_control,
@@ -123,6 +131,17 @@ class ConstTorqueOptimizationBranchTemplate(GraphRewardCalculator):
         return self.simulation_control.run_simulation(graph, data)
 
     def extend_parameters_by_const(self, parameters: list[float]) -> list[tuple[float, float]]:
+        """"Extends the control parameters list by adding the constant parameter
+
+        Args:
+            parameters (list[float]): 
+
+        Raises:
+            Exception: _description_
+
+        Returns:
+            list[tuple[float, float]]: 
+        """
         select_index_order = [0, 0]
         if self.select_optimisation_value == OptimizationParametr.START:
             select_index_order = [0, 1]
@@ -143,11 +162,9 @@ class ConstTorqueOptimizationBranchTemplate(GraphRewardCalculator):
 
         def reward_with_parameters(parameters):
             parameters_2d = self.extend_parameters_by_const(parameters)
-            data = linear_control(graph, parameters_2d)
-            #data = {"initial_value": parameters_2d}
+            data = self.generate_control_value_on_branch(graph, parameters_2d)
             sim_output = self.simulate_with_control_parameters(data, graph)
             reward = self.rewarder.calculate_reward(sim_output)
-            print(reward, parameters)
             return -reward
 
         n_branches = len(joint_root_paths(graph))
@@ -164,7 +181,29 @@ class ConstTorqueOptimizationBranchTemplate(GraphRewardCalculator):
     def run_optimization(self, callback, multi_bound):
         pass
 
-class ConstTorqueOptimizationBranchDirect(ConstTorqueOptimizationBranchTemplate):
+    @abstractmethod
+    def generate_control_value_on_branch(self, graph: GraphGrammar,
+                                         parameters_2d: list[tuple[float, float]]):
+        pass
+
+
+class LinearControlOptimizationDirect(ConstTorqueOptimizationBranchTemplate):
+
     def run_optimization(self, callback, multi_bound):
         result = direct(callback, multi_bound, maxiter=self.limit)
         return result
+
+    def generate_control_value_on_branch(self, graph: GraphGrammar,
+                                         parameters_2d: list[tuple[float, float]]):
+        return linear_control(graph, parameters_2d)
+
+
+class TendonLikeControlOptimization(ConstTorqueOptimizationBranchTemplate):
+
+    def run_optimization(self, callback, multi_bound):
+        result = direct(callback, multi_bound, maxiter=self.limit)
+        return result
+
+    def generate_control_value_on_branch(self, graph: GraphGrammar,
+                                         parameters_2d: list[tuple[float, float]]):
+        return tendon_like_control(graph, parameters_2d)
