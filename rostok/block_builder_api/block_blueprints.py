@@ -1,11 +1,15 @@
-from dataclasses import dataclass
 from abc import abstractmethod
+from dataclasses import dataclass
 from functools import singledispatchmethod
-from typing import Any, Generic, Optional, Union, Type
+from typing import Any, Generic, Optional, Type, Union
 
 from traitlets import Bool
+
 import rostok.block_builder_api.easy_body_shapes as easy_body_shapes
-from rostok.block_builder_api.block_parameters import DefaultFrame, FrameTransform, JointInputType, Material
+from rostok.block_builder_api.block_parameters import (DefaultFrame,
+                                                       FrameTransform,
+                                                       JointInputType,
+                                                       Material)
 
 
 @dataclass
@@ -42,7 +46,7 @@ class RevolveJointBlueprint(JointBlueprintType):
     length: float = 0.4
     material: Material = Material()
     starting_angle: float = 0.
-    density = 100.0
+    density = 1000.0
     stiffness: float = 0.
     damping: float = 0.
     with_collision: bool = True
@@ -51,7 +55,7 @@ class RevolveJointBlueprint(JointBlueprintType):
 @dataclass
 class PrimitiveBodyBlueprint(BodyBlueprintType):
     shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
-    density: float = 100.0
+    density: float = 1000.0
     material: Material = Material()
     is_collide: bool = True
     color: Optional[list[int]] = None
@@ -60,7 +64,7 @@ class PrimitiveBodyBlueprint(BodyBlueprintType):
 @dataclass
 class EnvironmentBodyBlueprint(BodyBlueprintType):
     shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
-    density: float = 100.0
+    density: float = 1000.0
     material: Material = Material()
     is_collide: bool = True
     color: Optional[list[int]] = None

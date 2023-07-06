@@ -1,9 +1,11 @@
 from abc import ABC
+from bisect import bisect_left
 from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pychrono.core as chrono
 from scipy.spatial import distance
+
 from rostok.simulation_chrono.basic_simulation import SimulationResult
 
 
@@ -100,7 +102,7 @@ class LateForceAmountCriterion(Criterion):
     def __init__(self, cut_off):
         self.cut_off = cut_off
 
-    def calculate_reward(self, simulation_output):
+    def calculate_reward(self, simulation_output:SimulationResult):
         env_data = simulation_output.environment_final_ds
         body_contacts = env_data.get_data("n_contacts")[0]
         step_cutoff = int(simulation_output.n_steps * self.cut_off)
@@ -114,12 +116,31 @@ class LateForceAmountCriterion(Criterion):
             return counter / (len(body_contacts_cut))
         else: return 0
 
+class InstantContactingLinkCriterion(Criterion):
+    def __init__(self, time):
+        self.reference_time = time
+
+    def calculate_reward(self, simulation_output: SimulationResult):
+        time_vector = simulation_output.time_vector
+        pos = bisect_left(time_vector, self.reference_time)
+        if pos == len(time_vector):
+            return 0
+        robot_data = simulation_output.robot_final_ds
+        body_contacts = robot_data.get_data("n_contacts")
+        n_bodies = len(body_contacts.keys())
+        contacting_bodies = 0
+        for body, contacts in body_contacts.items():
+            if contacts[pos] > 0:
+                contacting_bodies += 1
+        
+        return contacting_bodies / n_bodies
 
 class SimulationReward:
 
-    def __init__(self) -> None:
+    def __init__(self, verbosity = 0) -> None:
         self.criteria: List[Criterion] = []
         self.weights: List[float] = []
+        self.verbosity = verbosity
 
     def add_criterion(self, citerion: Criterion, weight: float):
         self.criteria.append(citerion)
@@ -130,6 +151,8 @@ class SimulationReward:
         for criterion in self.criteria:
             partial_rewards.append(criterion.calculate_reward(simulation_output))
 
-        #print([round(x, 3) for x in partial_rewards])
+        if self.verbosity > 0:
+            print([round(x, 3) for x in partial_rewards])
+
         total_reward = sum([a * b for a, b in zip(partial_rewards, self.weights)])
         return round(total_reward, 3)

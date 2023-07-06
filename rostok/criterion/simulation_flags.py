@@ -2,7 +2,8 @@ from abc import ABC
 
 import numpy as np
 import pychrono.core as chrono
-from rostok.virtual_experiment.sensors import Sensor, DataStorage
+
+from rostok.virtual_experiment.sensors import DataStorage, Sensor
 
 
 class FlagStopSimualtions(ABC):
