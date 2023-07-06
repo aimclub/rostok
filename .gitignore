@@ -7,3 +7,7 @@
 /results/
 /temp_*/
 test*.ipynb
+/rostok/graph_generators/graph_heuristic_search/dataset_design_space
+/rostok/graph_generators/graph_heuristic_search/history_ghs
+/rostok/graph_generators/graph_heuristic_search/history_random_search
+/checkpoint/
