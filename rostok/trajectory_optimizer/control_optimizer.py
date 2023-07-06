@@ -1,4 +1,5 @@
 from abc import abstractmethod
+import numpy as np
 
 from scipy.optimize import direct, dual_annealing, shgo
 
@@ -16,6 +17,10 @@ class GraphRewardCalculator:
 
     @abstractmethod
     def calculate_reward(self, graph: GraphGrammar):
+        pass
+    
+    @abstractmethod
+    def print_log(self):
         pass
 
 
@@ -202,6 +207,125 @@ class TendonLikeControlOptimization(ConstTorqueOptimizationBranchTemplate):
 
     def run_optimization(self, callback, multi_bound):
         result = direct(callback, multi_bound, maxiter=self.limit)
+        return result
+
+    def generate_control_value_on_branch(self, graph: GraphGrammar,
+                                         parameters_2d: list[tuple[float, float]]):
+        return tendon_like_control(graph, parameters_2d)
+    
+
+# ==================================
+# Prototype Class MultiObject Search
+# ==================================
+
+
+# Prototype 1 - Idea 1 - list[BlueprintObject] - One Control to Grasp Them All
+class ConstTorqueMultiOptimizationBranchTemplate(GraphRewardCalculator):
+    """A template class for constant torque optimization on branches of a graph.
+    For use you need implement run_optimization and generate_control_value_on_branch.
+    run_optimization for select optimizer.
+    generate_control_value_on_branch for generate control.
+
+    Args:
+        GraphRewardCalculator: _description_
+    """
+
+    def __init__(self,
+                 simulation_control,
+                 rewarder: SimulationReward,
+                 optimization_bounds=(0, 15),
+                 optimization_limit=10,
+                 select_optimisation_value=OptimizationParametr.START,
+                 const_parameter=-0.5,
+                 object_weights = [1,1,1]):
+        self.simulation_control = simulation_control
+        self.rewarder: SimulationReward = rewarder
+        self.bounds = optimization_bounds
+        self.limit = optimization_limit
+        self.select_optimisation_value = select_optimisation_value
+        self.const_parameter = const_parameter
+        self.object_weights = object_weights
+
+    def simulate_with_control_parameters(self, data, graph, id_object = 0):
+        return self.simulation_control.run_simulation(graph, data, id_object=id_object)
+
+    def extend_parameters_by_const(self, parameters: list[float]) -> list[tuple[float, float]]:
+        """"Extends the control parameters list by adding the constant parameter
+
+        Args:
+            parameters (list[float]): 
+
+        Raises:
+            Exception: _description_
+
+        Returns:
+            list[tuple[float, float]]: 
+        """
+        select_index_order = [0, 0]
+        if self.select_optimisation_value == OptimizationParametr.START:
+            select_index_order = [0, 1]
+        elif self.select_optimisation_value == OptimizationParametr.MULTIPLIER:
+            select_index_order = [1, 0]
+        else:
+            raise Exception("Wrong select_optimisation_value")
+
+        parameters_2d = []
+        for param in parameters:
+            buf = [0, 0]
+            buf[select_index_order[0]] = param
+            buf[select_index_order[1]] = self.const_parameter
+            parameters_2d.append(tuple(buf))
+        return parameters_2d
+
+    def calculate_reward(self, graph: GraphGrammar):
+
+        def reward_with_parameters(parameters, id_object):
+            parameters_2d = self.extend_parameters_by_const(parameters)
+            data = self.generate_control_value_on_branch(graph, parameters_2d)
+            sim_output = self.simulate_with_control_parameters(data, graph, id_object)
+            
+
+            reward = self.rewarder.calculate_reward(sim_output)
+            print(id_object)
+            return -reward
+
+        n_branches = len(joint_root_paths(graph))
+        if n_branches == 0:
+            return (0, [])
+        multi_bound = []
+        for _ in range(n_branches):
+            multi_bound.append(self.bounds)
+
+        results = []
+        for id in range(len(self.object_weights)):
+            results.append(self.run_optimization(reward_with_parameters, multi_bound, (id,)))
+        return results #(-result.fun, result.x)
+
+    @abstractmethod
+    def run_optimization(self, callback, multi_bound, args):
+        pass
+
+    @abstractmethod
+    def generate_control_value_on_branch(self, graph: GraphGrammar,
+                                         parameters_2d: list[tuple[float, float]]):
+        pass
+
+
+class LinearControlMultiOptimizationDirect(ConstTorqueMultiOptimizationBranchTemplate):
+
+    def run_optimization(self, callback, multi_bound,args):
+        result = direct(callback, multi_bound, maxiter=self.limit, args=args)
+        return result
+
+    def generate_control_value_on_branch(self, graph: GraphGrammar,
+                                         parameters_2d: list[tuple[float, float]]):
+        return linear_control(graph, parameters_2d)
+
+
+class TendonLikeControlMultiOptimization(ConstTorqueMultiOptimizationBranchTemplate):
+
+    def run_optimization(self, callback, multi_bound,args):
+        result = direct(callback, multi_bound, maxiter=self.limit, args=args)
         return result
 
     def generate_control_value_on_branch(self, graph: GraphGrammar,
