@@ -7,7 +7,7 @@ import pychrono.core as chrono
 from scipy.spatial import distance
 
 from rostok.simulation_chrono.basic_simulation import SimulationResult
-from rostok.criterion.simulation_flags import SimulationSingleEvent, EventContactTimeOut,EventGrasp
+from rostok.criterion.simulation_flags import SimulationSingleEvent, EventContactTimeOut,EventGrasp, EventSlipOut
 
 
 #Interface for criterions
@@ -97,23 +97,51 @@ class InstantForceCriterion(Criterion):
 
 class InstantContactingLinkCriterion(Criterion):
 
-    def __init__(self, time):
-        self.reference_time = time
+    def __init__(self, grasp_event:EventGrasp):
+        self.grasp_event = grasp_event
 
     def calculate_reward(self, simulation_output: SimulationResult):
-        time_vector = simulation_output.time_vector
-        pos = bisect_left(time_vector, self.reference_time)
-        if pos == len(time_vector):
-            return 0
-        robot_data = simulation_output.robot_final_ds
-        body_contacts = robot_data.get_data("n_contacts")
-        n_bodies = len(body_contacts.keys())
-        contacting_bodies = 0
-        for body, contacts in body_contacts.items():
-            if contacts[pos] > 0:
-                contacting_bodies += 1
+        if self.grasp_event.state:
+            robot_data = simulation_output.robot_final_ds
+            robot_contacts = robot_data.get_data("n_contacts")
+            n_bodies = len(robot_contacts.keys())
+            contacting_bodies = 0
+            for body, contacts in robot_contacts.items():
+                if contacts[self.grasp_event.step_n] > 0:
+                    contacting_bodies += 1
 
-        return contacting_bodies / n_bodies
+            return contacting_bodies / n_bodies
+        else:
+            return 0
+
+class GraspTimeCriterion(Criterion):
+    def __init__(self, grasp_event:EventGrasp, total_steps:int):
+        self.grasp_event = grasp_event
+        self.total_steps = total_steps
+
+    def calculate_reward(self, simulation_output: SimulationResult):
+        if self.grasp_event.state:
+            return (self.total_steps -  self.grasp_event.step_n)/self.total_steps
+        else:
+            return 0
+
+class FinalPositionCriterion(Criterion):
+    def __init__(self, reference_distance:float, grasp_event:EventGrasp, slipout_event:EventSlipOut):
+        self.reference_distance = reference_distance
+        self.grasp_event = grasp_event
+        self.slipout_event = slipout_event
+
+    def calculate_reward(self, simulation_output: SimulationResult):
+        if self.grasp_event.state and not self.slipout_event:
+            env_data = simulation_output.environment_final_ds
+            grasp_pos = env_data.get_data("COG")[0][self.grasp_event.step_n]
+            final_pos = env_data.get_data("COG")[0][-1]
+            dist = distance.euclidean(grasp_pos, final_pos)
+            if dist < self.reference_distance:
+                
+
+        else: 
+            return 0
 
 
 

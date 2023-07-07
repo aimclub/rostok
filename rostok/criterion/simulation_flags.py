@@ -105,7 +105,7 @@ class EventGrasp(SimulationSingleEvent):
         self.contact = False
         self.activation_code = activation_code
 
-    def reset_flag(self):
+    def reset(self):
         super().reset()
         self.grasp_steps = 0
 
@@ -123,6 +123,7 @@ class EventGrasp(SimulationSingleEvent):
             if self.grasp_steps == 10:
                 self.state = True
                 return EventCommands.ACTIVATE
+
 
 """
 class FlagSimulation(ABC):
