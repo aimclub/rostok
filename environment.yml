@@ -1,4 +1,4 @@
-name: rostok2
+name: rostok
 channels:
   - intel
   - conda-forge
