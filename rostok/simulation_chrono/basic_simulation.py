@@ -11,7 +11,7 @@ from rostok.control_chrono.controller import ConstController, ForceControllerTem
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.virtual_experiment.robot_new import BuiltGraphChrono, RobotChrono
 from rostok.virtual_experiment.sensors import DataStorage, Sensor
-from rostok.criterion.simulation_flags import FlagStopSimulation, FlagGraspEventSimulation
+from rostok.criterion.simulation_flags import SimulationSingleEvent, EventCommands
 
 class SystemPreviewChrono:
     """A simulation of the motionless environment and design"""
@@ -91,7 +91,7 @@ class SimulationResult:
     n_steps = 0
     robot_final_ds: Optional[DataStorage] = None
     environment_final_ds: Optional[DataStorage] = None
-    flag_container: List[Tuple[Union[FlagStopSimulation, FlagGraspEventSimulation], float]] = field(default_factory=list)
+    event_container: List[SimulationSingleEvent] = field(default_factory=list)
 
     def reduce_nan(self):
         if self.robot_final_ds:
@@ -227,6 +227,9 @@ class RobotSimulationChrono():
         self.data_storage.sensor.contact_reporter.reset_contact_dict()
         self.data_storage.sensor.update_current_contact_info(self.chrono_system)
         self.data_storage.update_storage(step_n)
+    def activate(self, code:int, current_time, step_n):
+        if code == 0:
+            self.force_torque_container[0].start_time = current_time
 
     def simulate_step(self, step_length: float, current_time: float, step_n: int):
         """Simulate one step and update sensors and data stores
@@ -255,7 +258,7 @@ class RobotSimulationChrono():
         number_of_steps: int,
         step_length: float,
         frame_update: int,
-        flag_container=None,
+        event_container: List[SimulationSingleEvent]=None,
         visualize=False,
     ):
         """Execute a simulation.
@@ -279,9 +282,9 @@ class RobotSimulationChrono():
             vis.EnableCollisionShapeDrawing(True)
 
         stop_flag = False
-        if flag_container:
-            for flag in flag_container:
-                self.result.flag_container.append((flag, 0))
+        if event_container:
+            for flag in event_container:
+                self.result.event_container.append((flag, 0))
         self.result.time_vector = [0]
         for i in range(number_of_steps):
             current_time = self.chrono_system.GetChTime()
@@ -293,12 +296,12 @@ class RobotSimulationChrono():
                     vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
                     vis.Render()
                     vis.EndScene()
-            if flag_container:
-                for flag in flag_container:
+            if event_container:
+                for flag in event_container:
                     flag.update_state(current_time, self.robot.sensor, self.data_storage.sensor)
 
-                if flag_container:
-                    stop_flag = sum([flag.state for flag in flag_container])
+                if event_container:
+                    stop_flag = sum([flag.state for flag in event_container])
 
             if stop_flag:
                 break
@@ -319,7 +322,7 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
         number_of_steps: int,
         step_length: float,
         frame_update: int,
-        flag_container=None,
+        event_container=None,
         visualize=False,
     ):
         """Execute a simulation.
@@ -343,16 +346,6 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
             vis.EnableCollisionShapeDrawing(True)
 
         stop_flag = False
-        grasp_flag = False
-        stop_flags = []
-        event_flags = []
-        if flag_container:
-            for flag in flag_container:
-                if isinstance(flag, FlagStopSimulation):
-                    stop_flags.append(flag)
-                if isinstance(flag, FlagGraspEventSimulation):
-                    event_flags.append(flag)
-
         self.result.time_vector = [0]
         for i in range(number_of_steps):
             current_time = self.chrono_system.GetChTime()
@@ -364,18 +357,16 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
                     vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
                     vis.Render()
                     vis.EndScene()
-            if flag_container:
-                for flag in flag_container:
-                    flag.update_state(current_time, self.robot.sensor, self.data_storage.sensor)
 
-                if len(stop_flags)>0: 
-                    stop_flag = all([flag.state for flag in stop_flags])
-
-                if len(event_flags)>0:
-                    grasp_flag = all([flag.state for flag in event_flags])
-
-            if grasp_flag:
-                self.force_torque_container[0].start_time = current_time
+            if event_container:
+                for event in event_container:
+                    event_command = event.event_check(current_time, i, self.robot.sensor, self.data_storage.sensor)
+                    if event_command == EventCommands.STOP:
+                        stop_flag = True
+                        break
+                    elif event_command == EventCommands.ACTIVATE:
+                        self.activate(event.activation_code, current_time, i)
+                    
             if stop_flag:
                 break
 
