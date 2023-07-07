@@ -1,4 +1,4 @@
-name: rostok
+name: rostok2
 channels:
   - intel
   - conda-forge
@@ -21,3 +21,4 @@ dependencies:
     - pytest
     - open3d
     - thegolem==0.3.1
+    - more-itertools

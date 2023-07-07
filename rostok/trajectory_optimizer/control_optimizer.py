@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 from scipy.optimize import direct, dual_annealing, shgo
 
@@ -99,9 +99,13 @@ class CalculatorWithGraphOptimization(GraphRewardCalculator):
         return (reward, control_sequence)
 
 
-class OptimizationParametr(str, Enum):
-    START = "START"
-    MULTIPLIER = "MULTIPLIER"
+class OptimizationParametr(Enum):
+    """Enum for select optimization value.
+    Start means constant part of linear function, multiplier 
+    means slope of line.
+    """
+    START = 1
+    MULTIPLIER = 2
 
 
 class ConstTorqueOptimizationBranchTemplate(GraphRewardCalculator):
@@ -143,14 +147,14 @@ class ConstTorqueOptimizationBranchTemplate(GraphRewardCalculator):
         Returns:
             list[tuple[float, float]]: 
         """
-        select_index_order = [0, 0]
-        if self.select_optimisation_value == OptimizationParametr.START:
-            select_index_order = [0, 1]
-        elif self.select_optimisation_value == OptimizationParametr.MULTIPLIER:
-            select_index_order = [1, 0]
-        else:
-            raise Exception("Wrong select_optimisation_value")
 
+        select_index_order = {
+            OptimizationParametr.START: [0, 1],
+            OptimizationParametr.MULTIPLIER: [1, 0]
+        }.get(self.select_optimisation_value)
+
+        if select_index_order is None:
+            raise Exception("Wrong select_optimisation_value")
         parameters_2d = []
         for param in parameters:
             buf = [0, 0]
@@ -188,22 +192,27 @@ class ConstTorqueOptimizationBranchTemplate(GraphRewardCalculator):
         pass
 
 
-class LinearControlOptimizationDirect(ConstTorqueOptimizationBranchTemplate):
+class ConstControlOptimizationDirect(ConstTorqueOptimizationBranchTemplate, ABC):
+    """A template class for constant torque optimization on branches of a graph
+    with direct optimization.  
+
+    Args:
+        ConstTorqueOptimizationBranchTemplate (_type_): _description_
+    """
 
     def run_optimization(self, callback, multi_bound):
         result = direct(callback, multi_bound, maxiter=self.limit)
         return result
+
+
+class LinearControlOptimizationDirect(ConstControlOptimizationDirect):
 
     def generate_control_value_on_branch(self, graph: GraphGrammar,
                                          parameters_2d: list[tuple[float, float]]):
         return linear_control(graph, parameters_2d)
 
 
-class TendonLikeControlOptimization(ConstTorqueOptimizationBranchTemplate):
-
-    def run_optimization(self, callback, multi_bound):
-        result = direct(callback, multi_bound, maxiter=self.limit)
-        return result
+class TendonLikeControlOptimization(ConstControlOptimizationDirect):
 
     def generate_control_value_on_branch(self, graph: GraphGrammar,
                                          parameters_2d: list[tuple[float, float]]):
