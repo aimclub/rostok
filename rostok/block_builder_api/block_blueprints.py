@@ -64,7 +64,7 @@ class PrimitiveBodyBlueprint(BodyBlueprintType):
 @dataclass
 class EnvironmentBodyBlueprint(BodyBlueprintType):
     shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
-    density: float = 1000.0
+    density: float = 100.0
     material: Material = Material()
     is_collide: bool = True
     color: Optional[list[int]] = None

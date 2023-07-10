@@ -124,9 +124,9 @@ def save_svg_mean_reward(name: str,
 
 
 if __name__ == "__main__":
-    grasp_object_blueprint = get_object_parametrized_sphere(0.4, 1)
-    grasp_object_blueprint = get_obj_hard_mesh_piramida()
+    #grasp_object_blueprint = get_object_parametrized_sphere(0.4, 1)
+    grasp_object_blueprint = get_object_parametrized_sphere(0.5, 1)
     report: OptimizedGraphReport = load_saveable(
-        Path(r"results\Reports_23y_06m_15d_03H_13M\MCTS_data.pickle"))
+        Path(r"results\Reports_23y_07m_10d_15H_58M\MCTS_data.pickle"))
     vis_top_n_mechs(report, 3, grasp_object_blueprint)
     # save_svg_mean_reward( name = 'kek', objecy_name='sphere')

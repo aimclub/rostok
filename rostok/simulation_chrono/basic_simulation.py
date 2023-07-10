@@ -12,7 +12,7 @@ from rostok.graph_grammar.node import GraphGrammar
 from rostok.virtual_experiment.robot_new import BuiltGraphChrono, RobotChrono
 from rostok.virtual_experiment.sensors import DataStorage, Sensor
 from rostok.criterion.simulation_flags import SimulationSingleEvent, EventCommands
-
+import time
 class SystemPreviewChrono:
     """A simulation of the motionless environment and design"""
 
@@ -91,7 +91,25 @@ class SimulationResult:
     n_steps = 0
     robot_final_ds: Optional[DataStorage] = None
     environment_final_ds: Optional[DataStorage] = None
-    event_container: List[SimulationSingleEvent] = field(default_factory=list)
+
+    def reduce_ending(self, step_n):
+        if self.robot_final_ds:
+            storage = self.robot_final_ds.main_storage
+            for key in storage:
+                key_storage = storage[key]
+                for key_2 in key_storage:
+                    value = key_storage[key_2]
+                    new_value = value[:step_n+2:]
+                    key_storage[key_2] = new_value
+
+        if self.environment_final_ds:
+            storage = self.environment_final_ds.main_storage
+            for key in storage:
+                key_storage = storage[key]
+                for key_2 in key_storage:
+                    value = key_storage[key_2]
+                    new_value = value[:step_n+2:]
+                    key_storage[key_2] = new_value
 
     def reduce_nan(self):
         if self.robot_final_ds:
@@ -227,9 +245,10 @@ class RobotSimulationChrono():
         self.data_storage.sensor.contact_reporter.reset_contact_dict()
         self.data_storage.sensor.update_current_contact_info(self.chrono_system)
         self.data_storage.update_storage(step_n)
+
     def activate(self, code:int, current_time, step_n):
         if code == 0:
-            self.force_torque_container[0].start_time = current_time
+            self.force_torque_container.controller_list[0].start_time = current_time
 
     def simulate_step(self, step_length: float, current_time: float, step_n: int):
         """Simulate one step and update sensors and data stores
@@ -350,7 +369,7 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
         for i in range(number_of_steps):
             current_time = self.chrono_system.GetChTime()
             self.simulate_step(step_length, current_time, i)
-            self.result.time_vector.append(self.chrono_system.GetChTime()) 
+            self.result.time_vector.append(self.chrono_system.GetChTime())
             if vis:
                 vis.Run()
                 if i % frame_update == 0:
@@ -370,6 +389,8 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
             if stop_flag:
                 break
 
+            #time.sleep(0.001)
+
         if visualize:
             vis.GetDevice().closeDevice()
 
@@ -377,5 +398,5 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
         self.result.robot_final_ds = self.robot.data_storage
         self.result.time = self.chrono_system.GetChTime()
         self.n_steps = number_of_steps
-        self.result.reduce_nan()
+        self.result.reduce_ending(i)
         return self.result

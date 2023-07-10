@@ -18,11 +18,15 @@ class Criterion(ABC):
 
 class TimeCriterion(Criterion):
 
-    def __init__(self, time:float, event_timeout:EventContactTimeOut):
+    def __init__(self, time:float, event_timeout:EventContactTimeOut, event_grasp:EventGrasp):
         self.max_simulation_time = time
         self.event_timeout = event_timeout
+        self.event_grasp = event_grasp
 
     def calculate_reward(self, simulation_output: SimulationResult):
+        if self.event_grasp.state:
+            return 1
+
         if self.event_timeout.state:
             return 0
         else:
@@ -68,8 +72,10 @@ class InstantObjectCOGCriterion(Criterion):
     def calculate_reward(self, simulation_output: SimulationResult):
         if self.grasp_event.state:
             env_data = simulation_output.environment_final_ds
-            body_COG = env_data.get_data("COG")[0][self.grasp_event.step_n]
-            body_outer_force_center = env_data.get_data("force_center")[0][self.grasp_event.step_n]
+            body_COG = env_data.get_data("COG")[0][self.grasp_event.step_n+1]
+            body_outer_force_center = env_data.get_data("force_center")[0][self.grasp_event.step_n+1]
+            if body_outer_force_center is np.nan:
+                print(body_COG, body_outer_force_center)
             dist = distance.euclidean(body_COG, body_outer_force_center)
             return 1/(1+dist)
         else:
@@ -83,8 +89,8 @@ class InstantForceCriterion(Criterion):
     def calculate_reward(self, simulation_output: SimulationResult):
         if self.grasp_event.state:
             env_data = simulation_output.environment_final_ds
-            body_contacts: np.ndarray = env_data.get_data("forces")[0][self.grasp_event.step_n]
-            if body_contacts > 0:
+            body_contacts: np.ndarray = env_data.get_data("forces")[0][self.grasp_event.step_n+1]
+            if len(body_contacts) > 0:
                 forces = []
                 for force in body_contacts:
                     forces.append(np.linalg.norm(force))
@@ -132,40 +138,19 @@ class FinalPositionCriterion(Criterion):
         self.slipout_event = slipout_event
 
     def calculate_reward(self, simulation_output: SimulationResult):
-        if self.grasp_event.state and not self.slipout_event:
+        if self.grasp_event.state and not self.slipout_event.state:
             env_data = simulation_output.environment_final_ds
-            grasp_pos = env_data.get_data("COG")[0][self.grasp_event.step_n]
+            grasp_pos = env_data.get_data("COG")[0][self.grasp_event.step_n+1]
             final_pos = env_data.get_data("COG")[0][-1]
             dist = distance.euclidean(grasp_pos, final_pos)
-            if dist < self.reference_distance:
-                
+            if dist <= self.reference_distance:
+                return 1 - dist/self.reference_distance
+            else:
+                return 0
 
         else: 
             return 0
 
-
-
-
-
-
-class ObjectCOGCriterion(Criterion):
-
-    def calculate_reward(self, simulation_output: SimulationResult):
-        dist_list = []
-        env_data = simulation_output.environment_final_ds
-        body_COG = env_data.get_data("COG")[0]  # List[Tuple[step_n, List[x,y,z]]]
-        body_outer_force_center = env_data.get_data("force_center")[0]
-        dist_list = []
-        for cog, force in zip(body_COG, body_outer_force_center):
-            if not force is np.nan:
-                dist_list.append(distance.euclidean(cog, force))
-
-        if np.size(dist_list) > 0:
-            cog_crit = 1 / (1 + np.mean(dist_list))
-        else:
-            cog_crit = 0
-
-        return cog_crit
 
 
 class SimulationReward:
@@ -215,6 +200,25 @@ class SimulationReward:
             return counter / (len(body_contacts_cut))
         else:
             return 0
+
+class ObjectCOGCriterion(Criterion):
+
+    def calculate_reward(self, simulation_output: SimulationResult):
+        dist_list = []
+        env_data = simulation_output.environment_final_ds
+        body_COG = env_data.get_data("COG")[0]  # List[Tuple[step_n, List[x,y,z]]]
+        body_outer_force_center = env_data.get_data("force_center")[0]
+        dist_list = []
+        for cog, force in zip(body_COG, body_outer_force_center):
+            if not force is np.nan:
+                dist_list.append(distance.euclidean(cog, force))
+
+        if np.size(dist_list) > 0:
+            cog_crit = 1 / (1 + np.mean(dist_list))
+        else:
+            cog_crit = 0
+
+        return cog_crit
 
 
 class LateForceAmountCriterion(Criterion):
