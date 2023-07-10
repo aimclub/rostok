@@ -14,7 +14,7 @@ def create_rules():
 
     length_link = [0.4, 0.6, 0.8]
     super_flat = PrimitiveBodyBlueprint(Box(3, 0.1, 3))
-    link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.1, x, 0.1)), length_link))
+    link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.1, x, 0.3)), length_link))
     radial_move_values = [0.9, 1.05, 1.2]
     RADIAL_MOVES = list(map(lambda x: FrameTransform([x, 0, 0], [1, 0, 0, 0]), radial_move_values))
     tan_move_values = [0.4, 0.6, 0.8]
@@ -96,33 +96,24 @@ def create_rules():
 
     rule_vocab.create_rule("Phalanx", ["FG"], ["J", "L", "FG"], 0, 0, [(0, 1), (1, 2)])
     #rule_vocab.create_rule("Double_Joint_Phalanx", ["FG"], ["J","JT","J", "L", "FG"], 0, 0, [(0, 1), (1, 2), (2,3),(3,4)])
-    rule_vocab.create_rule("AddFinger", ["F"], ["RT", "RE", "FG"], 0, 0, [(0, 1), (1, 2)])
-    rule_vocab.create_rule("AddFinger_R", ["RF"], ["RE", "RT", "RE", "FG"], 0, 0, [(0, 1), (1, 2),
-                                                                                   (2, 3)])
-    rule_vocab.create_rule("AddFinger_P", ["PF"], ["RT", "TP", "RE", "FG"], 0, 0, [(0, 1), (1, 2),
-                                                                                   (2, 3)])
-    rule_vocab.create_rule("AddFinger_PT", ["PF"], ["RN", "RT", "RE", "FG"], 0, 0, [(0, 1), (1, 2),
-                                                                                    (2, 3)])
-    rule_vocab.create_rule("AddFinger_N", ["NF"], ["RT", "TN", "RE", "FG"], 0, 0, [(0, 1), (1, 2),
-                                                                                   (2, 3)])
-    rule_vocab.create_rule("AddFinger_NT", ["NF"], ["RP", "RT", "RE", "FG"], 0, 0, [(0, 1), (1, 2),
-                                                                                    (2, 3)])
-    rule_vocab.create_rule("AddFinger_RP", ["RPF"], ["RE", "RT", "TP", "RE", "FG"], 0, 0, [(0, 1),
+    rule_vocab.create_rule("AddFinger", ["F"], ["RT", "FG"], 0, 0, [(0, 1)])
+    rule_vocab.create_rule("AddFinger_R", ["RF"], ["RE", "RT", "FG"], 0, 0, [(0, 1), (1, 2)])
+    rule_vocab.create_rule("AddFinger_P", ["PF"], ["RT", "TP",  "FG"], 0, 0, [(0, 1), (1, 2)])
+    rule_vocab.create_rule("AddFinger_PT", ["PF"], ["RN", "RT", "FG"], 0, 0, [(0, 1), (1, 2)])
+    rule_vocab.create_rule("AddFinger_N", ["NF"], ["RT", "TN",  "FG"], 0, 0, [(0, 1), (1, 2)])
+    rule_vocab.create_rule("AddFinger_NT", ["NF"], ["RP", "RT", "FG"], 0, 0, [(0, 1), (1, 2)])
+    rule_vocab.create_rule("AddFinger_RP", ["RPF"], ["RE", "RT", "TP", "FG"], 0, 0, [(0, 1),
                                                                                            (1, 2),
-                                                                                           (2, 3),
-                                                                                           (3, 4)])
-    rule_vocab.create_rule("AddFinger_RPT", ["RPF"], ["RE", "RN", "RT", "RE", "FG"], 0, 0, [(0, 1),
+                                                                                           (2, 3)])
+    rule_vocab.create_rule("AddFinger_RPT", ["RPF"], ["RE", "RN", "RT", "FG"], 0, 0, [(0, 1),
                                                                                             (1, 2),
-                                                                                            (2, 3),
-                                                                                            (3, 4)])
-    rule_vocab.create_rule("AddFinger_RN", ["RNF"], ["RE", "RT", "TN", "RE", "FG"], 0, 0, [(0, 1),
+                                                                                            (2, 3)])
+    rule_vocab.create_rule("AddFinger_RN", ["RNF"], ["RE", "RT", "TN", "FG"], 0, 0, [(0, 1),
                                                                                            (1, 2),
-                                                                                           (2, 3),
-                                                                                           (3, 4)])
-    rule_vocab.create_rule("AddFinger_RNT", ["RNF"], ["RE", "RP", "RT", "RE", "FG"], 0, 0, [(0, 1),
+                                                                                           (2, 3)])
+    rule_vocab.create_rule("AddFinger_RNT", ["RNF"], ["RE", "RP", "RT", "FG"], 0, 0, [(0, 1),
                                                                                             (1, 2),
-                                                                                            (2, 3),
-                                                                                            (3, 4)])
+                                                                                            (2, 3)])
 
     rule_vocab.create_rule("RemoveFinger", ["F"], [], 0, 0, [])
     rule_vocab.create_rule("RemoveFinger_R", ["RF"], [], 0, 0, [])

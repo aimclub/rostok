@@ -3,7 +3,8 @@ from cmath import sqrt
 import numpy as np
 
 from rostok.block_builder_api.block_blueprints import (PrimitiveBodyBlueprint,
-                                                       RevolveJointBlueprint, TransformBlueprint)
+                                                       RevolveJointBlueprint,
+                                                       TransformBlueprint)
 from rostok.block_builder_api.block_parameters import JointInputType
 from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.block_builder_chrono.blocks_utils import FrameTransform
@@ -15,8 +16,8 @@ from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 link1 = PrimitiveBodyBlueprint(Box(0.1, 0.6, 0.4))
 link2 = PrimitiveBodyBlueprint(Box(0.1, 0.6, 0.4))
 
-flat1 = PrimitiveBodyBlueprint(Box(1, 0.2, 0.8))
-flat2 = PrimitiveBodyBlueprint(Box(0.7, 0.2, 0.8))
+flat1 = PrimitiveBodyBlueprint(Box(1, 0.1, 3))
+flat2 = PrimitiveBodyBlueprint(Box(0.7, 0.1, 3))
 
 u1 = PrimitiveBodyBlueprint(Box(0.1, 0.2, 0.4))
 
@@ -108,12 +109,9 @@ rule_action_terminal_two_finger = np.asarray([
 rule_action_two_finger = np.r_[rule_action_non_terminal_two_finger, rule_action_terminal_two_finger]
 
 rule_action_non_terminal_no_joints = np.asarray(["FlatCreate", "Mount"])
-rule_action_non_terminal_no_joints = np.asarray(["FlatCreate", "Mount", "FingerUpper"])
 
 rule_action_terminal_no_joints = np.asarray(
     ["TerminalFlat1", "TerminalTransformL", "TerminalEndLimb"])
-rule_action_terminal_no_joints = np.asarray(
-    ["TerminalFlat1", "TerminalTransformL", "TerminalJoint", "TerminalL2", "TerminalEndLimb"])
 
 rule_action_no_joints = np.r_[rule_action_non_terminal_no_joints, rule_action_terminal_no_joints]
 

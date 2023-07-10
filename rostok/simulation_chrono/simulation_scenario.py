@@ -1,9 +1,13 @@
 from typing import Dict, List, Optional, Tuple
 
+import pychrono as chrono
+
 from rostok.criterion.simulation_flags import FlagStopSimualtions
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.simulation_chrono.basic_simulation import RobotSimulationChrono
-from rostok.virtual_experiment.sensors import (SensorCalls, SensorObjectClassification)
+from rostok.virtual_experiment.sensors import (SensorCalls,
+                                               SensorObjectClassification)
+from rostok.simulation_chrono.simulation_utils import set_covering_sphere_based_position
 
 
 class ParametrizedSimulation:
