@@ -26,6 +26,7 @@ def config_with_standard_multiobject(grasp_object_blueprint: list[EnvironmentBod
     simulation_manager.grasp_object_callback = object_callback
     simulation_manager.add_flag(FlagContactTimeOut(1))
     simulation_manager.add_flag(FlagFlyingApart(10))
+    
     simulation_manager.add_flag(FlagSlipout(0.8))
     #create criterion manager
     simulation_rewarder = SimulationReward()
@@ -37,7 +38,7 @@ def config_with_standard_multiobject(grasp_object_blueprint: list[EnvironmentBod
     simulation_rewarder.add_criterion(LateForceAmountCriterion(0.5), 1)
 
     control_optimizer = TendonLikeControlMultiOptimization(simulation_manager, simulation_rewarder,
-                                                            (-15, -3), 10)
+                                                            (3, 15), 3, object_weights=[1/3,1/3,1/3])
 
     return control_optimizer
 
@@ -57,4 +58,5 @@ objs.append(EnvironmentBodyBlueprint(shape=Box(),
                                material=mat,
                                pos=FrameTransform([0.1, 0.5, 0.15], [1, 0, 0, 0])))
 optic_cfg = config_with_standard_multiobject(objs)
-optic_cfg.calculate_reward(get_two_link_three_finger()) 
+res = optic_cfg.calculate_reward(get_two_link_three_finger())
+None

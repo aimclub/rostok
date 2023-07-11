@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 import numpy as np
 
 from scipy.optimize import direct, dual_annealing, shgo
@@ -348,7 +348,7 @@ class TendonLikeControlMultiOptimization(ConstTorqueMultiOptimizationBranchTempl
 # ==================================
 
 
-# Prototype 1 - Idea 1 - list[BlueprintObject] - One Control to Grasp Them All
+# Prototype 1 - Idea 1 - list[BlueprintObject] - Many Control to Many Objects
 class ConstTorqueMultiOptimizationBranchTemplate(GraphRewardCalculator):
     """A template class for constant torque optimization on branches of a graph.
     For use you need implement run_optimization and generate_control_value_on_branch.
@@ -366,7 +366,7 @@ class ConstTorqueMultiOptimizationBranchTemplate(GraphRewardCalculator):
                  optimization_limit=10,
                  select_optimisation_value=OptimizationParametr.START,
                  const_parameter=-0.5,
-                 object_weights = [1,1,1]):
+                 object_weights = None):
         self.simulation_control = simulation_control
         self.rewarder: SimulationReward = rewarder
         self.bounds = optimization_bounds
@@ -374,6 +374,15 @@ class ConstTorqueMultiOptimizationBranchTemplate(GraphRewardCalculator):
         self.select_optimisation_value = select_optimisation_value
         self.const_parameter = const_parameter
         self.object_weights = object_weights
+        
+        if not self.object_weights:
+            id = 0
+            try:
+                while True:
+                    self.simulation_control.grasp_object_callback(id)
+                    id +=1
+            except IndexError:
+                self.object_weights = [1/(id + 1) for __ in range(id)]
 
     def simulate_with_control_parameters(self, data, graph, id_object = 0):
         return self.simulation_control.run_simulation(graph, data, id_object=id_object)
@@ -415,7 +424,6 @@ class ConstTorqueMultiOptimizationBranchTemplate(GraphRewardCalculator):
             
 
             reward = self.rewarder.calculate_reward(sim_output)
-            print(id_object)
             return -reward
 
         n_branches = len(joint_root_paths(graph))
@@ -428,7 +436,14 @@ class ConstTorqueMultiOptimizationBranchTemplate(GraphRewardCalculator):
         results = []
         for id in range(len(self.object_weights)):
             results.append(self.run_optimization(reward_with_parameters, multi_bound, (id,)))
-        return results #(-result.fun, result.x)
+
+        l_object_callback = self.simulation_control.grasp_object_callback
+        final_reward = 0
+        controllers = {}
+        for id, res, w in zip(range(len(results)), results, self.object_weights):
+            final_reward += res.fun*w
+            controllers[l_object_callback(id)] = res.x
+        return (-final_reward, controllers)
 
     @abstractmethod
     def run_optimization(self, callback, multi_bound, args):

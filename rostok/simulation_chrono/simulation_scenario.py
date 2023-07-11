@@ -1,3 +1,4 @@
+import types
 from typing import Dict, List, Optional, Tuple
 
 import pychrono as chrono
@@ -34,7 +35,7 @@ class ConstTorqueGrasp(ParametrizedSimulation):
         for flag in self.flag_container:
             flag.reset_flag()
 
-    def run_simulation(self, graph: GraphGrammar, data, vis=False):
+    def run_simulation(self, graph: GraphGrammar, data, vis=True):
         self.reset_flags()
         simulation = RobotSimulationChrono([])
         simulation.add_design(graph, data)
@@ -117,6 +118,9 @@ class ConstTorqueMultiGrasp(ParametrizedSimulation):
             flag.reset_flag()
 
     def run_simulation(self, graph: GraphGrammar, data, vis=True, id_object = 0):
+        
+        if isinstance(data, dict) and isinstance(list(data.keys())[0], types.FunctionType):
+            data = data[id_object]
         
         self.reset_flags()
         simulation = RobotSimulationChrono([])

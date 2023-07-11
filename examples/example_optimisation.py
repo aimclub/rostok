@@ -33,7 +33,7 @@ def config_with_standard(grasp_object_blueprint):
     simulation_rewarder.add_criterion(LateForceAmountCriterion(0.5), 1)
 
     control_optimizer = TendonLikeControlOptimization(simulation_manager, simulation_rewarder,
-                                                            (-15, -3), 10)
+                                                            (3, 15), 10)
 
     return control_optimizer
 
