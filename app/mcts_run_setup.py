@@ -22,11 +22,11 @@ def config_with_standard(grasp_object_blueprint):
     simulation_manager.add_event(event_flying_apart)
     event_slipout = EventSlipOut(hp.FLAG_TIME_SLIPOUT)
     simulation_manager.add_event(event_slipout)
-    event_grasp = EventGrasp(activation_code=0, verbosity=1)
+    event_grasp = EventGrasp(activation_code=0, verbosity=0)
     simulation_manager.add_event(event_grasp)
 
     #create criterion manager
-    simulation_rewarder = SimulationReward(1)
+    simulation_rewarder = SimulationReward(verbosity=0)
     #create criterions and add them to manager
     simulation_rewarder.add_criterion(TimeCriterion(hp.TIME_SIMULATION, event_timeout, event_grasp), hp.TIME_CRITERION_WEIGHT)
     simulation_rewarder.add_criterion(ForceCriterion(hp.TIME_SIMULATION, event_timeout), hp.FORCE_CRITERION_WEIGHT)

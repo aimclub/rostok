@@ -29,7 +29,7 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
         self.bounds = optimization_bounds
         self.limit = optimization_limit
 
-    def simulate_with_control_parameters(self, data, graph):
+    def simulate_with_control_parameters(self, data, graph,i):
         return self.simulation_control.run_simulation(graph, data)
 
     def calculate_reward(self, graph: GraphGrammar):
@@ -49,6 +49,7 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
             multi_bound.append(self.bounds)
 
         result = self.run_optimization(reward_with_parameters, multi_bound)
+        
         return (-result.fun, result.x)
 
     @abstractmethod

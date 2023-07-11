@@ -301,9 +301,6 @@ class RobotSimulationChrono():
             vis.EnableCollisionShapeDrawing(True)
 
         stop_flag = False
-        if event_container:
-            for flag in event_container:
-                self.result.event_container.append((flag, 0))
         self.result.time_vector = [0]
         for i in range(number_of_steps):
             current_time = self.chrono_system.GetChTime()
@@ -316,11 +313,11 @@ class RobotSimulationChrono():
                     vis.Render()
                     vis.EndScene()
             if event_container:
-                for flag in event_container:
-                    flag.update_state(current_time, self.robot.sensor, self.data_storage.sensor)
-
-                if event_container:
-                    stop_flag = sum([flag.state for flag in event_container])
+                for event in event_container:
+                    event_command = event.event_check(current_time, self.robot.sensor, self.data_storage.sensor)
+                    if event_command == EventCommands.STOP:
+                        stop_flag = True
+                        break
 
             if stop_flag:
                 break
