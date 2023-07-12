@@ -15,7 +15,38 @@ from rostok.library.obj_grasp.objects import (get_obj_hard_mesh_piramida,
 from rostok.utils.pickle_save import load_saveable
 
 
-def vis_top_n_mechs(report: MCTSSaveable, n: int, object: EnvironmentBodyBlueprint):
+def vis_top_n_mechs(n: int, object: EnvironmentBodyBlueprint):
+    root = Tk()
+    root.geometry("400x300")
+    root.title("Report loader")
+    label = ttk.Label(text="Choose path to report!")
+    label.pack()
+    label_file = ttk.Label(text="Enter path to report:")
+    label_file.pack(anchor=NW, padx=8)
+    entry_browse = ttk.Entry(width=30, font=12)
+    entry_browse.pack(anchor=NW, padx=8)
+    entry_browse.place(x=8, y=40)
+    report_path = None
+
+    def func_browse():
+        path = filedialog.askopenfilename()
+        nonlocal entry_browse
+        entry_browse.delete(first=0, last=END)
+        entry_browse.insert(0, path)
+
+    def func_add():
+        nonlocal report_path
+        report_path = Path(entry_browse.get())
+        nonlocal root
+        root.destroy()
+
+    btn_browse = ttk.Button(text="browse", command=func_browse)  # создаем кнопку из пакета ttk
+    btn_browse.place(x=300, y=40)
+    btn_add = ttk.Button(text="add report", command=func_add)  # создаем кнопку из пакета ttk
+    btn_add.place(x=300, y=85)
+
+    root.mainloop()
+    report = load_saveable(report_path)
     graph_report = report.seen_graphs
     control_optimizer = config_with_standard(grasp_object_blueprint)
     simulation_rewarder = control_optimizer.rewarder
@@ -86,6 +117,7 @@ def save_svg_mean_reward(name: str,
     btn_finish.place(x=150, y=250)
     root.mainloop()
     reporter = []
+
     for report_path in report_paths:
         report = load_saveable(Path(report_path))
         reporter.append(report)
@@ -126,7 +158,5 @@ def save_svg_mean_reward(name: str,
 if __name__ == "__main__":
     #grasp_object_blueprint = get_object_parametrized_sphere(0.4, 1)
     grasp_object_blueprint = get_object_parametrized_sphere(0.5, 1)
-    report: OptimizedGraphReport = load_saveable(
-        Path(r"results\Reports_23y_07m_10d_15H_58M\MCTS_data.pickle"))
-    vis_top_n_mechs(report, 3, grasp_object_blueprint)
+    vis_top_n_mechs(3, grasp_object_blueprint)
     # save_svg_mean_reward( name = 'kek', objecy_name='sphere')

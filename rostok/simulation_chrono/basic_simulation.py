@@ -86,6 +86,14 @@ class SystemPreviewChrono:
 
 @dataclass
 class SimulationResult:
+    """Data class to aggregate the output of the simulation.
+    
+        Attributes:
+            time (float): the total simulation time
+            time_vector (List[float]): the vector of time steps
+            n_steps (int): the maximum possible number of steps
+            robot_final_ds (Optional[DataStorage]): final data store of the robot
+            environment_final_ds (Optional[DataStorage]): final data store of the environment"""
     time: float = 0
     time_vector: List[float] = field(default_factory=list)
     n_steps = 0
@@ -246,10 +254,6 @@ class RobotSimulationChrono():
         self.data_storage.sensor.update_current_contact_info(self.chrono_system)
         self.data_storage.update_storage(step_n)
 
-    def activate(self, code:int, current_time, step_n):
-        if code == 0:
-            self.force_torque_container.controller_list[0].start_time = current_time
-
     def simulate_step(self, step_length: float, current_time: float, step_n: int):
         """Simulate one step and update sensors and data stores
         
@@ -333,6 +337,14 @@ class RobotSimulationChrono():
         return self.result
 
 class RobotSimulationWithForceTest(RobotSimulationChrono):
+    def __init__(self, delay = False, object_list: List[Tuple[ChronoEasyShapeObject, bool]] = []):
+        super().__init__(object_list)
+        self.delay_flag = delay
+
+    def activate(self, code:int, current_time, step_n):
+        if code == 0:
+            self.force_torque_container.controller_list[0].start_time = current_time
+
     def simulate(
         self,
         number_of_steps: int,
@@ -385,8 +397,10 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
                     
             if stop_flag:
                 break
-
-            #time.sleep(0.001)
+            
+            # just to slow down the simulation
+            if self.delay_flag:
+                time.sleep(0.0001)
 
         if visualize:
             vis.GetDevice().closeDevice()

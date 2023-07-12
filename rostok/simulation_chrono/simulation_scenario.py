@@ -37,13 +37,13 @@ class ConstTorqueGrasp(ParametrizedSimulation):
     def run_simulation(self, graph: GraphGrammar, data, vis=False):
         self.reset_events()
         #simulation = RobotSimulationChrono([])
-        simulation = RobotSimulationWithForceTest([])
+        simulation = RobotSimulationWithForceTest(False, [])
         simulation.add_design(graph, data)
         grasp_object = self.grasp_object_callback()
         shake = YaxisShaker(100, 1, 0.5, float("inf"))
         set_covering_sphere_based_position(grasp_object,
                                            reference_point=chrono.ChVectorD(0, 0.05, 0))
-        simulation.add_object(grasp_object, read_data = True, force_torque_controller = shake)
+        simulation.add_object(grasp_object, read_data=True, force_torque_controller=shake)
         n_steps = int(self.simulation_length / self.step_length)
         env_data_dict = {
             "n_contacts": (SensorCalls.AMOUNT_FORCE, SensorObjectClassification.BODY),
