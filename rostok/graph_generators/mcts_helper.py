@@ -4,6 +4,7 @@ from pathlib import Path
 from statistics import mean
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 from rostok.graph_generators.graph_environment import \
     GraphVocabularyEnvironment
@@ -260,6 +261,8 @@ class MCTSHelper():
             control = []
         elif isinstance(control, (float, int)):
             control = [control]
+        elif isinstance(control, (np.ndarray | np.matrix)):
+            control = control.tolist()
 
         return list(control)
 
