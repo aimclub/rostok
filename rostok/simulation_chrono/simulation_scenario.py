@@ -2,6 +2,7 @@ import types
 from typing import Dict, List, Optional, Tuple
 
 import pychrono as chrono
+import numpy as np
 
 from rostok.criterion.simulation_flags import FlagStopSimualtions
 from rostok.graph_grammar.node import GraphGrammar
@@ -13,9 +14,10 @@ from rostok.simulation_chrono.simulation_utils import set_covering_sphere_based_
 
 class ParametrizedSimulation:
 
-    def __init__(self, step_length, simulation_length):
+    def __init__(self, step_length, simulation_length, weight = 1):
         self.step_length = step_length
         self.simulation_length = simulation_length
+        self.weight = weight
 
     def run_simulation(self, graph: GraphGrammar, data):
         pass
@@ -23,8 +25,8 @@ class ParametrizedSimulation:
 
 class ConstTorqueGrasp(ParametrizedSimulation):
 
-    def __init__(self, step_length, simulation_length) -> None:
-        super().__init__(step_length, simulation_length)
+    def __init__(self, step_length, simulation_length, weight = 1) -> None:
+        super().__init__(step_length, simulation_length, weight)
         self.grasp_object_callback = None
         self.flag_container: List[FlagStopSimualtions] = []
 

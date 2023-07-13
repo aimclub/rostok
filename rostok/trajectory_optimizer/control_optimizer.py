@@ -7,6 +7,7 @@ from rostok.criterion.criterion_calculation import SimulationReward
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
 from enum import Enum
+from rostok.simulation_chrono.simulation_scenario import ParametrizedSimulation
 from rostok.trajectory_optimizer.trajectory_generator import linear_control, joint_root_paths, tendon_like_control
 
 
@@ -475,3 +476,87 @@ class TendonLikeControlMultiOptimization(ConstTorqueMultiOptimizationBranchTempl
     def generate_control_value_on_branch(self, graph: GraphGrammar,
                                          parameters_2d: list[tuple[float, float]]):
         return tendon_like_control(graph, parameters_2d)
+    
+
+
+
+#Prototype 3 - Misha&Kirill Idea - One Optimization to Many Simulation Scanario
+class CalculatorWithConstTorqueOptimizationList(GraphRewardCalculator):
+
+    def __init__(self,
+                 simulation_control,
+                 rewarder: SimulationReward,
+                 optimization_bounds=(0, 15),
+                 optimization_limit=10):
+        self.simulation_control = simulation_control
+        self.rewarder: SimulationReward = rewarder
+        self.bounds = optimization_bounds
+        self.limit = optimization_limit
+
+    def simulate_with_control_parameters(self, data, graph):
+        return self.simulation_control.run_simulation(graph, data)
+
+    def calculate_reward(self, graph: GraphGrammar):
+        multi_bound = self.bound_optim_vars(graph)
+
+        if not multi_bound:
+            return (0, [])
+        if isinstance(self.simulation_control, list):
+            reward = 0
+            optimal_vars = np.array([])
+            for sim_scene in self.simulation_control:
+                result = self.run_optimization(self._reward_with_parameters, multi_bound, args=(graph,sim_scene))
+
+                reward -= result.fun * sim_scene.weight
+                if optimal_vars.size == 0:
+                    optimal_vars = result.x
+                else:
+                    optimal_vars = np.vstack((optimal_vars,result.x))
+
+        else:
+            result = self.run_optimization(self._reward_with_parameters, multi_bound, args=(graph,self.simulation_control))
+            
+            reward = -result.fun
+            optimal_vars = result.x
+
+        return (reward, optimal_vars)
+
+    def bound_optim_vars(self, graph: GraphGrammar):
+        n_joints = len(get_joint_vector_from_graph(graph))
+        multi_bound = []
+        for _ in range(n_joints):
+            multi_bound.append(self.bounds)
+            
+        return multi_bound
+
+    @abstractmethod
+    def run_optimization(self, callback, multi_bound, args):
+        pass
+
+
+    def _reward_with_parameters(self, optim_vars, graph, simulator_scenario):
+        data = self._transform_vars2data(optim_vars)
+        sim_output = simulator_scenario.run_simulation(graph, data)
+        reward = self.rewarder.calculate_reward(sim_output)
+        return -reward
+
+    def optim_vars2data_control(self, optim_vars):
+        optim_vars = np.array(optim_vars)
+        if isinstance(self.simulation_control, list):
+            data_control = list(map(self._transform_vars2data, optim_vars))
+        else:
+            data_control = self._transform_vars2data(optim_vars)
+        return data_control
+
+    def _transform_vars2data(self, vars):
+
+        vars = vars.round(3)
+        data = {"initial_value": vars}
+
+        return data
+    
+class CalculatorWithOptimizationDirectList(CalculatorWithConstTorqueOptimizationList):
+
+    def run_optimization(self, callback, multi_bound,args):
+        result = direct(callback, multi_bound, maxiter=self.limit, args=args)
+        return result
