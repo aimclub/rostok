@@ -91,7 +91,7 @@ def config_with_standard_multiobject(grasp_object_blueprint):
     simulation_rewarder.add_criterion(LateForceCriterion(0.5, 3), 1)
     simulation_rewarder.add_criterion(LateForceAmountCriterion(0.5), 1)
 
-    control_optimizer = CalculatorWithOptimizationDirectList(simulation_managers, simulation_rewarder,
+    control_optimizer = CalculatorWithOptimizationDirect(simulation_managers, simulation_rewarder,
                                                             (3, 15), 1)
 
     return control_optimizer

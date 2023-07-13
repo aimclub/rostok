@@ -84,7 +84,7 @@ simulation_rewarder = control_optimizer.rewarder
 simulation_manager = control_optimizer.simulation_control[0]
 # visualisation in the end of the search
 best_graph, reward, best_control = mcts_helper.report.get_best_info()
-data = control_optimizer.optim_vars2data_control(best_control)
+data = control_optimizer.optim_parameters2data_control(best_control)
 simulation_output = simulation_manager.run_simulation(best_graph, data[0], True)
 res = -simulation_rewarder.calculate_reward(simulation_output)
 print("Best reward obtained in the MCTS search:", res)

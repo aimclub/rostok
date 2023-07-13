@@ -9,8 +9,7 @@ from rostok.criterion.simulation_flags import (FlagContactTimeOut, FlagFlyingApa
 from rostok.simulation_chrono.simulation_scenario import ConstTorqueMultiGrasp, ConstTorqueGrasp
 from rostok.trajectory_optimizer.control_optimizer import (CalculatorWithGraphOptimization,
                                                            CalculatorWithOptimizationDirect,
-                                                           LinearControlOptimizationDirect, TendonLikeControlOptimization, TendonLikeControlMultiOptimization, 
-                                                           CalculatorWithOptimizationDirectList)
+                                                           LinearControlOptimizationDirect, TendonLikeControlOptimization)
 
 from rostok.block_builder_api.block_parameters import Material, FrameTransform
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
@@ -60,13 +59,13 @@ def config_with_standard_multiobject(grasp_object_blueprint: list[EnvironmentBod
     #create criterion manager
     simulation_rewarder = SimulationReward()
     #create criterions and add them to manager
-    simulation_rewarder.add_criterion(TimeCriterion(3), 1)
+    simulation_rewarder.add_criterion(TimeCriterion(1), 1)
     simulation_rewarder.add_criterion(ForceCriterion(), 1)
     simulation_rewarder.add_criterion(ObjectCOGCriterion(), 1)
     simulation_rewarder.add_criterion(LateForceCriterion(0.5, 3), 1)
     simulation_rewarder.add_criterion(LateForceAmountCriterion(0.5), 1)
 
-    control_optimizer = CalculatorWithOptimizationDirectList(simulation_managers, simulation_rewarder,
+    control_optimizer = TendonLikeControlOptimization(simulation_managers, simulation_rewarder,
                                                             (3, 15), 1)
 
     return control_optimizer
@@ -87,4 +86,5 @@ objs.append(EnvironmentBodyBlueprint(shape=Box(),
                                pos=FrameTransform([0.1, 0.5, 0.15], [1, 0, 0, 0])))
 optic_cfg = config_with_standard_multiobject(objs)
 res = optic_cfg.calculate_reward(get_two_link_three_finger())
+data = optic_cfg.optim_parameters2data_control(res[1], get_two_link_three_finger())
 None
