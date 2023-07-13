@@ -74,15 +74,14 @@ class EventContactTimeOut(SimulationSingleEvent):
         """
         if self.contact:
             return EventCommands.CONTINUE
-        else:
-            self.contact = env_data.get_amount_contacts()[0] > 0
-            if self.contact:
-                return EventCommands.CONTINUE
-            else:
-                if current_time > self.reference_time:
-                    self.state = True
-                    self.step_n = step_n
-                    return EventCommands.STOP
+
+        self.contact = env_data.get_amount_contacts()[0] > 0
+        if self.contact and current_time > self.reference_time:
+            self.state = True
+            self.step_n = step_n
+            return EventCommands.STOP
+
+        return EventCommands.CONTINUE
 
 
 class EventFlyingApart(SimulationSingleEvent):
@@ -112,6 +111,8 @@ class EventFlyingApart(SimulationSingleEvent):
                 self.step_n = step_n
                 return EventCommands.STOP
 
+        return EventCommands.CONTINUE
+
 
 class EventSlipOut(SimulationSingleEvent):
     """The event that stops simulation if the body slips out from the grasp after the contact.
@@ -140,16 +141,14 @@ class EventSlipOut(SimulationSingleEvent):
         if contact:
             self.time_last_contact = current_time
             return EventCommands.CONTINUE
-        else:
-            if self.time_last_contact is None:
-                return EventCommands.CONTINUE
-            else:
-                if current_time - self.time_last_contact > self.reference_time:
+
+        if (not self.time_last_contact is None) :
+            if current_time - self.time_last_contact > self.reference_time:
                     self.step_n = step_n
                     self.state = True
                     return EventCommands.STOP
-                else:
-                    return EventCommands.CONTINUE
+
+        return EventCommands.CONTINUE
 
 
 class EventGrasp(SimulationSingleEvent):
@@ -187,14 +186,14 @@ class EventGrasp(SimulationSingleEvent):
         Returns:
             EventCommands: return a command for simulation
         """
-        if not self.state and current_time > self.grasp_limit_time:
-            return EventCommands.STOP
 
         if self.state:
             if current_time > self.force_test_time + self.grasp_time:
                 return EventCommands.STOP
             else:
                 return EventCommands.CONTINUE
+        elif current_time > self.grasp_limit_time:
+            return EventCommands.STOP
 
         if not self.contact:
             self.contact = env_data.get_amount_contacts()[0] > 0
@@ -213,3 +212,5 @@ class EventGrasp(SimulationSingleEvent):
                     print('Grasp event!', current_time)
 
                 return EventCommands.ACTIVATE
+
+        return EventCommands.CONTINUE

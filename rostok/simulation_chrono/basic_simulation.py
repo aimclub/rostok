@@ -13,6 +13,8 @@ from rostok.virtual_experiment.robot_new import BuiltGraphChrono, RobotChrono
 from rostok.virtual_experiment.sensors import DataStorage, Sensor
 from rostok.criterion.simulation_flags import SimulationSingleEvent, EventCommands
 import time
+
+
 class SystemPreviewChrono:
     """A simulation of the motionless environment and design"""
 
@@ -107,7 +109,7 @@ class SimulationResult:
                 key_storage = storage[key]
                 for key_2 in key_storage:
                     value = key_storage[key_2]
-                    new_value = value[:step_n+2:]
+                    new_value = value[:step_n + 2:]
                     key_storage[key_2] = new_value
 
         if self.environment_final_ds:
@@ -116,7 +118,7 @@ class SimulationResult:
                 key_storage = storage[key]
                 for key_2 in key_storage:
                     value = key_storage[key_2]
-                    new_value = value[:step_n+2:]
+                    new_value = value[:step_n + 2:]
                     key_storage[key_2] = new_value
 
     def reduce_nan(self):
@@ -281,7 +283,7 @@ class RobotSimulationChrono():
         number_of_steps: int,
         step_length: float,
         frame_update: int,
-        event_container: List[SimulationSingleEvent]=None,
+        event_container: List[SimulationSingleEvent] = None,
         visualize=False,
     ):
         """Execute a simulation.
@@ -309,7 +311,8 @@ class RobotSimulationChrono():
         for i in range(number_of_steps):
             current_time = self.chrono_system.GetChTime()
             self.simulate_step(step_length, current_time, i)
-            self.result.time_vector.append(self.chrono_system.GetChTime()) # TODO: timevector can be constructed from number_of_steps and time_step
+            self.result.time_vector.append(self.chrono_system.GetChTime(
+            ))  # TODO: timevector can be constructed from number_of_steps and time_step
             if vis:
                 vis.Run()
                 if i % frame_update == 0:
@@ -318,7 +321,8 @@ class RobotSimulationChrono():
                     vis.EndScene()
             if event_container:
                 for event in event_container:
-                    event_command = event.event_check(current_time, self.robot.sensor, self.data_storage.sensor)
+                    event_command = event.event_check(current_time, self.robot.sensor,
+                                                      self.data_storage.sensor)
                     if event_command == EventCommands.STOP:
                         stop_flag = True
                         break
@@ -336,14 +340,30 @@ class RobotSimulationChrono():
         self.result.reduce_nan()
         return self.result
 
+
 class RobotSimulationWithForceTest(RobotSimulationChrono):
-    def __init__(self, delay = False, object_list: List[Tuple[ChronoEasyShapeObject, bool]] = []):
+
+    def __init__(self, delay=False, object_list: List[Tuple[ChronoEasyShapeObject, bool]] = []):
         super().__init__(object_list)
         self.delay_flag = delay
 
-    def activate(self, code:int, current_time, step_n):
+    def activate(self, code: int, current_time, step_n):
         if code == 0:
             self.force_torque_container.controller_list[0].start_time = current_time
+
+    def handle_events(self, event_container, current_time, step_n):
+        if event_container == None:
+            return False
+
+        for event in event_container:
+            event_command = event.event_check(current_time, step_n, self.robot.sensor,
+                                              self.data_storage.sensor)
+            if event_command == EventCommands.STOP:
+                return True
+            elif event_command == EventCommands.ACTIVATE:
+                self.activate(event.activation_code, current_time, step_n)
+
+        return False
 
     def simulate(
         self,
@@ -385,19 +405,11 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
                     vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
                     vis.Render()
                     vis.EndScene()
+            stop_flag = self.handle_events(event_container, current_time, i)
 
-            if event_container:
-                for event in event_container:
-                    event_command = event.event_check(current_time, i, self.robot.sensor, self.data_storage.sensor)
-                    if event_command == EventCommands.STOP:
-                        stop_flag = True
-                        break
-                    elif event_command == EventCommands.ACTIVATE:
-                        self.activate(event.activation_code, current_time, i)
-                    
             if stop_flag:
                 break
-            
+
             # just to slow down the simulation
             if self.delay_flag:
                 time.sleep(0.0001)
