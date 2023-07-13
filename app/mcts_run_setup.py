@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import hyperparameters as hp
 
 from rostok.block_builder_chrono.block_builder_chrono_api import \
@@ -9,7 +11,7 @@ from rostok.criterion.simulation_flags import (FlagContactTimeOut,
                                                FlagFlyingApart, FlagSlipout)
 from rostok.simulation_chrono.simulation_scenario import ConstTorqueGrasp
 from rostok.trajectory_optimizer.control_optimizer import (
-    CalculatorWithGraphOptimization, CalculatorWithOptimizationDirect)
+    CalculatorWithGraphOptimization, CalculatorWithOptimizationDirect,CalculatorWithOptimizationDirectList)
 
 
 def config_with_standard(grasp_object_blueprint):
@@ -63,5 +65,33 @@ def config_with_standard_graph(grasp_object_blueprint, torque_dict):
 
     control_optimizer = CalculatorWithGraphOptimization(simulation_manager, simulation_rewarder,
                                                         torque_dict)
+
+    return control_optimizer
+
+def config_with_standard_multiobject(grasp_object_blueprint):
+    # configurate the simulation manager
+    simulation_manager = ConstTorqueGrasp(0.001, 3)
+
+    simulation_manager.add_flag(FlagContactTimeOut(1))
+    simulation_manager.add_flag(FlagFlyingApart(10))
+    
+    simulation_manager.add_flag(FlagSlipout(0.8))
+    simulation_managers = []
+    object_callback = [(lambda obj=obj: creator.create_environment_body(obj)) for obj in grasp_object_blueprint]
+    for k in range(len(grasp_object_blueprint)):
+        simulation_managers.append(deepcopy(simulation_manager))
+        simulation_managers[-1].grasp_object_callback = object_callback[k]
+
+    #create criterion manager
+    simulation_rewarder = SimulationReward()
+    #create criterions and add them to manager
+    simulation_rewarder.add_criterion(TimeCriterion(3), 1)
+    simulation_rewarder.add_criterion(ForceCriterion(), 1)
+    simulation_rewarder.add_criterion(ObjectCOGCriterion(), 1)
+    simulation_rewarder.add_criterion(LateForceCriterion(0.5, 3), 1)
+    simulation_rewarder.add_criterion(LateForceAmountCriterion(0.5), 1)
+
+    control_optimizer = CalculatorWithOptimizationDirectList(simulation_managers, simulation_rewarder,
+                                                            (3, 15), 1)
 
     return control_optimizer
