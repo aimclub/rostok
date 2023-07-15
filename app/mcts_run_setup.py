@@ -127,22 +127,16 @@ def config_with_standard_multiobject(grasp_object_blueprint, weights):
         simulation_managers[-1][0].grasp_object_callback = object_callback[k]
 
     event_contact = EventContact()
-    simulation_manager.add_event(event_contact)
     event_timeout = EventContactTimeOut(hp.FLAG_TIME_NO_CONTACT, event_contact)
-    simulation_manager.add_event(event_timeout)
     event_flying_apart = EventFlyingApart(hp.FLAG_FLYING_APART)
-    simulation_manager.add_event(event_flying_apart)
     event_slipout = EventSlipOut(hp.FLAG_TIME_SLIPOUT)
-    simulation_manager.add_event(event_slipout)
     event_grasp = EventGrasp(
         grasp_limit_time=hp.GRASP_TIME,
         contact_event=event_contact,
         verbosity=0,
     )
-    simulation_manager.add_event(event_grasp)
     event_stop_external_force = EventStopExternalForce(grasp_event=event_grasp,
                                                        force_test_time=hp.FORCE_TEST_TIME)
-    simulation_manager.add_event(event_stop_external_force)
     for manager in simulation_managers:
         manager[0].add_event(event_contact)
         manager[0].add_event(event_timeout)
@@ -170,7 +164,7 @@ def config_with_standard_multiobject(grasp_object_blueprint, weights):
         FinalPositionCriterion(hp.REFERENCE_DISTANCE, event_grasp, event_slipout),
         hp.FINAL_POSITION_CRITERION_WEIGHT)
 
-    control_optimizer = CalculatorWithOptimizationDirect(simulation_manager, simulation_rewarder,
+    control_optimizer = CalculatorWithOptimizationDirect(simulation_managers, simulation_rewarder,
                                                          hp.CONTROL_OPTIMIZATION_BOUNDS,
                                                          hp.CONTROL_OPTIMIZATION_ITERATION)
 
