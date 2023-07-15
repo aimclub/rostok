@@ -350,17 +350,18 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
     def activate(self, current_time):
         self.force_torque_container.controller_list[0].start_time = current_time
 
-    def handle_events(self, event_container, current_time, step_n):
-        if event_container == None:
+    def handle_single_events(self, event_container, current_time, step_n):
+        if event_container is None:
             return False
 
         for event in event_container:
-            event_command = event.event_check(current_time, step_n, self.robot.sensor,
-                                              self.data_storage.sensor)
-            if event_command == EventCommands.STOP:
-                return True
-            elif event_command == EventCommands.ACTIVATE:
-                self.activate(current_time)
+            if not event.state:
+                event_command = event.event_check(current_time, step_n, self.robot.sensor,
+                                                  self.data_storage.sensor)
+                if event_command == EventCommands.STOP:
+                    return True
+                elif event_command == EventCommands.ACTIVATE:
+                    self.activate(current_time)
 
         return False
 
@@ -404,7 +405,8 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
                     vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
                     vis.Render()
                     vis.EndScene()
-            stop_flag = self.handle_events(event_container, current_time, i)
+
+            stop_flag = self.handle_single_events(event_container, current_time, i)
 
             if stop_flag:
                 break

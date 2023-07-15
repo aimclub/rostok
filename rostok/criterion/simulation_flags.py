@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Dict, List, Optional, Tuple, Union
 from enum import Enum
 import numpy as np
 import pychrono.core as chrono
@@ -48,6 +49,18 @@ class SimulationSingleEvent(ABC):
         """
 
 
+class EventContact(SimulationSingleEvent):
+    """Event of contact between robot and object
+
+    """
+
+    def event_check(self, current_time: float, step_n: int, robot_data, env_data):
+        if env_data.get_amount_contacts()[0] > 0:
+            self.state = True
+            self.step_n = step_n
+            return EventCommands.CONTINUE
+
+
 class EventContactTimeOut(SimulationSingleEvent):
     """Event that occurs if the robot doesn't contact with body during the reference time from the start of the simulation.
 
@@ -57,14 +70,10 @@ class EventContactTimeOut(SimulationSingleEvent):
         contact (bool): the flag that determines if there was a contact with body
     """
 
-    def __init__(self, ref_time: float):
+    def __init__(self, ref_time: float, contact_event: EventContact):
         super().__init__()
         self.reference_time = ref_time
-        self.contact = False
-
-    def reset(self):
-        super().reset()
-        self.contact = False
+        self.contact_event: EventContact = contact_event
 
     def event_check(self, current_time: float, step_n: int, robot_data: Sensor, env_data: Sensor):
         """Return STOP if the time exceeds the reference time and there was no contact with body.
@@ -72,11 +81,10 @@ class EventContactTimeOut(SimulationSingleEvent):
         Returns:
             EventCommands: return a command for simulation
         """
-        if self.contact:
+        if self.contact_event.state:
             return EventCommands.CONTINUE
 
-        self.contact = env_data.get_amount_contacts()[0] > 0
-        if self.contact and current_time > self.reference_time:
+        if current_time > self.reference_time:
             self.state = True
             self.step_n = step_n
             return EventCommands.STOP
@@ -142,11 +150,11 @@ class EventSlipOut(SimulationSingleEvent):
             self.time_last_contact = current_time
             return EventCommands.CONTINUE
 
-        if (not self.time_last_contact is None) :
+        if (not self.time_last_contact is None):
             if current_time - self.time_last_contact > self.reference_time:
-                    self.step_n = step_n
-                    self.state = True
-                    return EventCommands.STOP
+                self.step_n = step_n
+                self.state = True
+                return EventCommands.STOP
 
         return EventCommands.CONTINUE
 
@@ -163,45 +171,45 @@ class EventGrasp(SimulationSingleEvent):
         force_test_time (float): the time period of the force test of the grasp
     """
 
-    def __init__(self, grasp_limit_time, force_test_time, verbosity=0):
+    def __init__(self, grasp_limit_time: float, contact_event: EventContact, verbosity: int = 0):
         super().__init__(verbosity)
-        self.grasp_steps = 0
-        self.grasp_time = None
-        self.contact = False
+        self.grasp_steps: int = 0
+        self.grasp_time: Optional[float] = None
         self.grasp_limit_time = grasp_limit_time
-        self.force_test_time = force_test_time
+        self.contact_event: EventContact = contact_event
 
     def reset(self):
         super().reset()
         self.grasp_steps = 0
-        self.contact = False
         self.grasp_time = None
+
+    def check_grasp_timeout(self, current_time):
+        if current_time > self.grasp_limit_time:
+            return True
+        else:
+            return False
+
+    def check_grasp_current_step(self, env_data: Sensor):
+        obj_velocity = np.linalg.norm(np.array(env_data.get_velocity()[0]))
+        if obj_velocity <= 0.01 and env_data.get_amount_contacts()[0] >= 2:
+            self.grasp_steps += 1
+        else:
+            self.grasp_steps = 0
 
     def event_check(self, current_time: float, step_n: int, robot_data: Sensor, env_data: Sensor):
         """Return ACTIVATE if the body was in contact with the robot and after that at some 
         point doesn't move for at least 10 steps. Return STOP if the grasp didn't occur during grasp_limit_time. 
-        STOP simulation in force_test_time after the grasp.
+        
 
         Returns:
             EventCommands: return a command for simulation
         """
 
-        if self.state:
-            if current_time > self.force_test_time + self.grasp_time:
-                return EventCommands.STOP
-            else:
-                return EventCommands.CONTINUE
-        elif current_time > self.grasp_limit_time:
+        if self.check_grasp_timeout(current_time):
             return EventCommands.STOP
 
-        if not self.contact:
-            self.contact = env_data.get_amount_contacts()[0] > 0
-        else:
-            obj_velocity = np.linalg.norm(np.array(env_data.get_velocity()[0]))
-            if obj_velocity <= 0.01 and env_data.get_amount_contacts()[0] >= 2:
-                self.grasp_steps += 1
-            else:
-                self.grasp_steps = 0
+        if self.contact_event.state:
+            self.check_grasp_current_step(env_data)
 
             if self.grasp_steps == 10:
                 self.state = True
@@ -211,5 +219,22 @@ class EventGrasp(SimulationSingleEvent):
                     print('Grasp event!', current_time)
 
                 return EventCommands.ACTIVATE
+
+        return EventCommands.CONTINUE
+
+
+class EventStopExternalForce(SimulationSingleEvent):
+
+    def __init__(self, grasp_event: EventGrasp, force_test_time: float):
+        self.grasp_event = grasp_event
+        self.force_test_time = force_test_time
+
+    def event_check(self, current_time: float, step_n: int, robot_data, env_data):
+        """STOP simulation in force_test_time after the grasp."""
+        if self.grasp_event.state:
+            if current_time > self.force_test_time + self.grasp_event.grasp_time:
+                self.state = True
+                self.step_n = step_n
+                return EventCommands.STOP
 
         return EventCommands.CONTINUE
