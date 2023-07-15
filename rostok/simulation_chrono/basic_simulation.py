@@ -347,9 +347,8 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
         super().__init__(object_list)
         self.delay_flag = delay
 
-    def activate(self, code: int, current_time, step_n):
-        if code == 0:
-            self.force_torque_container.controller_list[0].start_time = current_time
+    def activate(self, current_time):
+        self.force_torque_container.controller_list[0].start_time = current_time
 
     def handle_events(self, event_container, current_time, step_n):
         if event_container == None:
@@ -361,7 +360,7 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
             if event_command == EventCommands.STOP:
                 return True
             elif event_command == EventCommands.ACTIVATE:
-                self.activate(event.activation_code, current_time, step_n)
+                self.activate(current_time)
 
         return False
 

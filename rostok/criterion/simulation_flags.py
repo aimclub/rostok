@@ -163,12 +163,11 @@ class EventGrasp(SimulationSingleEvent):
         force_test_time (float): the time period of the force test of the grasp
     """
 
-    def __init__(self, activation_code, grasp_limit_time, force_test_time, verbosity=0):
+    def __init__(self, grasp_limit_time, force_test_time, verbosity=0):
         super().__init__(verbosity)
         self.grasp_steps = 0
         self.grasp_time = None
         self.contact = False
-        self.activation_code = activation_code
         self.grasp_limit_time = grasp_limit_time
         self.force_test_time = force_test_time
 

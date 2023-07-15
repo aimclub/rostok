@@ -25,8 +25,7 @@ def config_with_standard(grasp_object_blueprint):
     simulation_manager.add_event(event_flying_apart)
     event_slipout = EventSlipOut(hp.FLAG_TIME_SLIPOUT)
     simulation_manager.add_event(event_slipout)
-    event_grasp = EventGrasp(activation_code=0,
-                             grasp_limit_time=hp.GRASP_TIME,
+    event_grasp = EventGrasp(grasp_limit_time=hp.GRASP_TIME,
                              verbosity=0,
                              force_test_time=hp.FORCE_TEST_TIME)
     simulation_manager.add_event(event_grasp)
