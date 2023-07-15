@@ -11,7 +11,7 @@ from rostok.criterion.simulation_flags import (FlagContactTimeOut,
                                                FlagFlyingApart, FlagSlipout)
 from rostok.simulation_chrono.simulation_scenario import ConstTorqueGrasp
 from rostok.trajectory_optimizer.control_optimizer import (
-    CalculatorWithGraphOptimization, CalculatorWithOptimizationDirect,CalculatorWithOptimizationDirectList)
+    CalculatorWithGraphOptimization, CalculatorWithOptimizationDirect)
 
 
 def config_with_standard(grasp_object_blueprint):
@@ -68,7 +68,7 @@ def config_with_standard_graph(grasp_object_blueprint, torque_dict):
 
     return control_optimizer
 
-def config_with_standard_multiobject(grasp_object_blueprint):
+def config_with_standard_multiobject(grasp_object_blueprint,weights):
     # configurate the simulation manager
     simulation_manager = ConstTorqueGrasp(0.001, 3)
 
@@ -79,8 +79,8 @@ def config_with_standard_multiobject(grasp_object_blueprint):
     simulation_managers = []
     object_callback = [(lambda obj=obj: creator.create_environment_body(obj)) for obj in grasp_object_blueprint]
     for k in range(len(grasp_object_blueprint)):
-        simulation_managers.append(deepcopy(simulation_manager))
-        simulation_managers[-1].grasp_object_callback = object_callback[k]
+        simulation_managers.append((deepcopy(simulation_manager), weights[k]))
+        simulation_managers[-1][0].grasp_object_callback = object_callback[k]
 
     #create criterion manager
     simulation_rewarder = SimulationReward()

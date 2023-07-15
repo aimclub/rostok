@@ -49,9 +49,9 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
             reward = 0
             optim_parameters = np.array([])
             for sim_scene in self.simulation_control:
-                result = self.run_optimization(self._reward_with_parameters, multi_bound, args=(graph,sim_scene))
+                result = self.run_optimization(self._reward_with_parameters, multi_bound, args=(graph,sim_scene[0]))
 
-                reward -= result.fun * sim_scene.weight
+                reward -= result.fun * sim_scene[1]
                 if optim_parameters.size == 0:
                     optim_parameters = result.x
                 else:

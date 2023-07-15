@@ -6,7 +6,6 @@ from pathlib import Path
 import hyperparameters as hp
 import mcts
 from mcts_run_setup import config_with_standard_multiobject
-# from examples.example_optimisation_multiobject import config_with_standard_multiobject
 
 from rostok.graph_generators.mcts_helper import (make_mcts_step,
                                                  prepare_mcts_state_and_helper)
@@ -14,7 +13,7 @@ from rostok.graph_grammar.node import GraphGrammar
 from rostok.library.obj_grasp.objects import get_object_parametrized_sphere, get_obj_cyl_pos_parametrize, get_object_box_pos_parametrize
 from rostok.library.rule_sets.ruleset_new_style import create_rules
 
-
+weights = [1,1,1]
 # create rule vocabulary
 rule_vocabul = create_rules()
 # create blueprint for object to grasp
@@ -23,7 +22,7 @@ grasp_object_blueprint.append(get_object_parametrized_sphere(0.2, 1))
 grasp_object_blueprint.append(get_obj_cyl_pos_parametrize())
 grasp_object_blueprint.append(get_object_box_pos_parametrize())
 # create reward counter using run setup function
-control_optimizer = config_with_standard_multiobject(grasp_object_blueprint)
+control_optimizer = config_with_standard_multiobject(grasp_object_blueprint,weights)
 # Initialize MCTS
 base_iteration_limit = hp.BASE_ITERATION_LIMIT
 max_numbers_rules = hp.MAX_NUMBER_RULES
@@ -64,9 +63,10 @@ with open(Path(path, "mcts_result.txt"), "a") as file:
     original_stdout = sys.stdout
     sys.stdout = file
     print()
-    for k, obj in enumerate(grasp_object_blueprint):
+    for k, (obj, weight) in enumerate(zip(grasp_object_blueprint, weights)):
         print(f"Objects to grasp {k}:", obj.shape)
         print(f"Object initial coordinats {k}:", obj.pos)
+        print(f"Object weight {k}:", weight)
     print("Time optimization:", ex)
     print("MAX_NUMBER_RULES:", hp.MAX_NUMBER_RULES)
     print("BASE_ITERATION_LIMIT:", hp.BASE_ITERATION_LIMIT)
@@ -85,6 +85,6 @@ simulation_manager = control_optimizer.simulation_control[0]
 # visualisation in the end of the search
 best_graph, reward, best_control = mcts_helper.report.get_best_info()
 data = control_optimizer.optim_parameters2data_control(best_control)
-simulation_output = simulation_manager.run_simulation(best_graph, data[0], True)
+simulation_output = simulation_manager[0].run_simulation(best_graph, data[0], True)
 res = -simulation_rewarder.calculate_reward(simulation_output)
 print("Best reward obtained in the MCTS search:", res)
