@@ -116,8 +116,37 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
         for _ in range(n_joints):
             multi_bound.append(self.bounds)
 
-        result = self.run_optimization(reward_with_parameters, multi_bound)
-        return (-result.fun, result.x)
+        return multi_bound
+
+    def _reward_with_parameters(self, parameters, graph, simulator_scenario):
+        """Objective function to be optimized
+
+        Args:
+            parameters (np.ndarray): Array variables of objective function
+            graph (GraphGrammar): Graph of mechanism for which the optimization do
+            simulator_scenario (ParamtrizedAimulation): Simulation scenario in which data is collected for calcule the objective function
+
+        Returns:
+            float: Value of objective function
+        """
+        data = self._transform_parameters2data(parameters)
+        sim_output = simulator_scenario.run_simulation(graph, data)
+        reward = self.rewarder.calculate_reward(sim_output)
+        return -reward
+
+    def _transform_parameters2data(self, parameters, *args):
+        """Method define transofrm algorigm parameters to data control
+
+        Args:
+            parameters (list): Parameter list for optimizing
+
+        Returns:
+            dict: Dictionary of data control
+        """
+        parameters = parameters.round(3)
+        data = {"initial_value": parameters}
+
+        return data
 
     @abstractmethod
     def run_optimization(self, callback, multi_bound, args):
