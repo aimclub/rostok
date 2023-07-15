@@ -1,4 +1,5 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod, ABC
+import numpy as np
 
 from scipy.optimize import direct, dual_annealing, shgo
 
@@ -6,6 +7,7 @@ from rostok.criterion.criterion_calculation import SimulationReward
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
 from enum import Enum
+from rostok.simulation_chrono.simulation_scenario import ParametrizedSimulation
 from rostok.trajectory_optimizer.trajectory_generator import linear_control, joint_root_paths, tendon_like_control
 
 
@@ -18,6 +20,10 @@ class GraphRewardCalculator:
     def calculate_reward(self, graph: GraphGrammar):
         pass
 
+    @abstractmethod
+    def print_log(self):
+        pass
+
 
 class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
 
@@ -26,6 +32,14 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
                  rewarder: SimulationReward,
                  optimization_bounds=(0, 15),
                  optimization_limit=10):
+        """Base class optimizing constant torque for controlling the mechanism. In subclass, it have to override method: bound_parameter, _transform_parameter2data and run_optimization.
+
+        Args:
+            simulation_control (Union[list[tuple[ParametrizedSimulation, int]], ParametrizedSimulation]): Define simulation scenario for virtual experiment and weights for each.
+            rewarder (SimulationReward): Instance of the class on which the objective function will be calculated
+            optimization_bounds (tuple, optional): Args define the boundaries of the variables to be optimized. Defaults to (0, 15).
+            optimization_limit (int, optional): The maximum number of optimization iterations. Defaults to 10.
+        """
         self.simulation_control = simulation_control
         self.rewarder: SimulationReward = rewarder
         self.bounds = optimization_bounds
@@ -35,40 +49,121 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
         return self.simulation_control.run_simulation(graph, data)
 
     def calculate_reward(self, graph: GraphGrammar):
+        """Constant moment optimization method using scenario simulation and rewarder for calculating objective function.
 
-        def reward_with_parameters(parameters):
-            parameters = parameters.round(3)
-            data = {"initial_value": parameters}
-            sim_output = self.simulate_with_control_parameters(data, graph)
-            reward = self.rewarder.calculate_reward(sim_output)
-            return -reward
+        Args:
+            graph (GraphGrammar): A graph of the mechanism for which the control is to be found
 
-        n_joints = len(get_joint_vector_from_graph(graph))
-        if n_joints == 0:
+        Returns:
+            (float, np.ndarray): Return the reward and optimized variables of the best candidate
+        """
+        multi_bound = self.bound_parameters(graph)
+
+        if not multi_bound:
             return (0, [])
+        if isinstance(self.simulation_control, list):
+            reward = 0
+            optim_parameters = np.array([])
+            for sim_scene in self.simulation_control:
+                result = self.run_optimization(self._reward_with_parameters,
+                                               multi_bound,
+                                               args=(graph, sim_scene[0]))
+
+                reward -= result.fun * sim_scene[1]
+                if optim_parameters.size == 0:
+                    optim_parameters = result.x
+                else:
+                    optim_parameters = np.vstack((optim_parameters, result.x))
+
+        else:
+            result = self.run_optimization(self._reward_with_parameters,
+                                           multi_bound,
+                                           args=(graph, self.simulation_control))
+
+            reward = -result.fun
+            optim_parameters = result.x
+
+        return (reward, optim_parameters)
+
+    def optim_parameters2data_control(self, parameters, *args):
+        """Method convert optimizing variables to structure for class of control
+
+        Args:
+            parameters (list): List of parameters to be optimized. For several simulation scenarios this will be a 2d-list
+
+        Returns:
+            dict: Dictionary defining the parameters of the control class
+        """
+        parameters = np.array(parameters)
+        if isinstance(self.simulation_control, list):
+            list_args = [args for __ in range(len(parameters))]
+            data_control = list(map(self._transform_parameters2data, parameters, list_args))
+        else:
+            data_control = self._transform_parameters2data(parameters, args)
+        return data_control
+
+    def bound_parameters(self, graph: GraphGrammar):
+        """A method for determining the relationship between boundaries and mechanism 
+
+        Args:
+            graph (GraphGrammar): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        n_joints = len(get_joint_vector_from_graph(graph))
         multi_bound = []
         for _ in range(n_joints):
             multi_bound.append(self.bounds)
 
-        result = self.run_optimization(reward_with_parameters, multi_bound)
-        return (-result.fun, result.x)
+        return multi_bound
+
+    def _reward_with_parameters(self, parameters, graph, simulator_scenario):
+        """Objective function to be optimized
+
+        Args:
+            parameters (np.ndarray): Array variables of objective function
+            graph (GraphGrammar): Graph of mechanism for which the optimization do
+            simulator_scenario (ParamtrizedAimulation): Simulation scenario in which data is collected for calcule the objective function
+
+        Returns:
+            float: Value of objective function
+        """
+        data = self._transform_parameters2data(parameters)
+        sim_output = simulator_scenario.run_simulation(graph, data)
+        reward = self.rewarder.calculate_reward(sim_output)
+        return -reward
+
+    def _transform_parameters2data(self, parameters, *args):
+        """Method define transofrm algorigm parameters to data control
+
+        Args:
+            parameters (list): Parameter list for optimizing
+
+        Returns:
+            dict: Dictionary of data control
+        """
+        parameters = parameters.round(3)
+        data = {"initial_value": parameters}
+
+        return data
 
     @abstractmethod
-    def run_optimization(self, callback, multi_bound):
+    def run_optimization(self, callback, multi_bound, args):
         pass
 
 
 class CalculatorWithOptimizationDirect(CalculatorWithConstTorqueOptimization):
 
-    def run_optimization(self, callback, multi_bound):
-        result = direct(callback, multi_bound, maxiter=self.limit)
+    def run_optimization(self, callback, multi_bound, args):
+        result = direct(callback, multi_bound, maxiter=self.limit, args=args)
         return result
 
 
 class CalculatorWithOptimizationDualAnnealing(CalculatorWithConstTorqueOptimization):
 
-    def run_optimization(self, callback, multi_bound):
-        result = dual_annealing(callback, multi_bound, maxiter=self.limit)
+    def run_optimization(self, callback, multi_bound, args):
+        result = dual_annealing(callback, multi_bound, maxiter=self.limit, args=args)
         return result
 
 
@@ -108,7 +203,7 @@ class OptimizationParametr(Enum):
     MULTIPLIER = 2
 
 
-class ConstTorqueOptimizationBranchTemplate(GraphRewardCalculator):
+class ConstTorqueOptimizationBranchTemplate(CalculatorWithConstTorqueOptimization):
     """A template class for constant torque optimization on branches of a graph.
     For use you need implement run_optimization and generate_control_value_on_branch.
     run_optimization for select optimizer.
@@ -125,15 +220,9 @@ class ConstTorqueOptimizationBranchTemplate(GraphRewardCalculator):
                  optimization_limit=10,
                  select_optimisation_value=OptimizationParametr.START,
                  const_parameter=-0.5):
-        self.simulation_control = simulation_control
-        self.rewarder: SimulationReward = rewarder
-        self.bounds = optimization_bounds
-        self.limit = optimization_limit
+        super().__init__(simulation_control, rewarder, optimization_bounds, optimization_limit)
         self.select_optimisation_value = select_optimisation_value
         self.const_parameter = const_parameter
-
-    def simulate_with_control_parameters(self, data, graph):
-        return self.simulation_control.run_simulation(graph, data)
 
     def extend_parameters_by_const(self, parameters: list[float]) -> list[tuple[float, float]]:
         """"Extends the control parameters list by adding the constant parameter
@@ -163,15 +252,7 @@ class ConstTorqueOptimizationBranchTemplate(GraphRewardCalculator):
             parameters_2d.append(tuple(buf))
         return parameters_2d
 
-    def calculate_reward(self, graph: GraphGrammar):
-
-        def reward_with_parameters(parameters):
-            parameters_2d = self.extend_parameters_by_const(parameters)
-            data = self.generate_control_value_on_branch(graph, parameters_2d)
-            sim_output = self.simulate_with_control_parameters(data, graph)
-            reward = self.rewarder.calculate_reward(sim_output)
-            return -reward
-
+    def bound_parameters(self, graph: GraphGrammar):
         n_branches = len(joint_root_paths(graph))
         if n_branches == 0:
             return (0, [])
@@ -179,12 +260,23 @@ class ConstTorqueOptimizationBranchTemplate(GraphRewardCalculator):
         for _ in range(n_branches):
             multi_bound.append(self.bounds)
 
-        result = self.run_optimization(reward_with_parameters, multi_bound)
-        return (-result.fun, result.x)
+        return multi_bound
 
-    @abstractmethod
-    def run_optimization(self, callback, multi_bound):
-        pass
+    def _reward_with_parameters(self, parameters, graph, simulator_scenario):
+        data = self._transform_parameters2data(parameters, graph)
+        sim_output = simulator_scenario.run_simulation(graph, data)
+        reward = self.rewarder.calculate_reward(sim_output)
+        return -reward
+
+    def _transform_parameters2data(self, parameters, graph):
+        if isinstance(graph, tuple):
+            graph = graph[0]
+
+        parameters = list(parameters)
+        parameters_2d = self.extend_parameters_by_const(parameters)
+        data = self.generate_control_value_on_branch(graph, parameters_2d)
+
+        return data
 
     @abstractmethod
     def generate_control_value_on_branch(self, graph: GraphGrammar,
@@ -200,8 +292,8 @@ class ConstControlOptimizationDirect(ConstTorqueOptimizationBranchTemplate, ABC)
         ConstTorqueOptimizationBranchTemplate (_type_): _description_
     """
 
-    def run_optimization(self, callback, multi_bound):
-        result = direct(callback, multi_bound, maxiter=self.limit)
+    def run_optimization(self, callback, multi_bound, args):
+        result = direct(callback, multi_bound, maxiter=self.limit, args=args)
         return result
 
 
