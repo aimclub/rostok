@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append("./examples/")
 import time
 from pathlib import Path
@@ -7,13 +8,12 @@ import hyperparameters as hp
 import mcts
 from mcts_run_setup import config_with_standard_multiobject
 
-from rostok.graph_generators.mcts_helper import (make_mcts_step,
-                                                 prepare_mcts_state_and_helper)
+from rostok.graph_generators.mcts_helper import (make_mcts_step, prepare_mcts_state_and_helper)
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.library.obj_grasp.objects import get_object_parametrized_sphere, get_obj_cyl_pos_parametrize, get_object_box_pos_parametrize
 from rostok.library.rule_sets.ruleset_new_style import create_rules
 
-weights = [1,1,1]
+weights = [1, 1, 1]
 # create rule vocabulary
 rule_vocabul = create_rules()
 # create blueprint for object to grasp
@@ -22,7 +22,7 @@ grasp_object_blueprint.append(get_object_parametrized_sphere(0.2, 1))
 grasp_object_blueprint.append(get_obj_cyl_pos_parametrize())
 grasp_object_blueprint.append(get_object_box_pos_parametrize())
 # create reward counter using run setup function
-control_optimizer = config_with_standard_multiobject(grasp_object_blueprint,weights)
+control_optimizer = config_with_standard_multiobject(grasp_object_blueprint, weights)
 # Initialize MCTS
 base_iteration_limit = hp.BASE_ITERATION_LIMIT
 max_numbers_rules = hp.MAX_NUMBER_RULES

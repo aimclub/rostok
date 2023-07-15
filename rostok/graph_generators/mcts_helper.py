@@ -8,14 +8,12 @@ import numpy as np
 
 from rostok.graph_generators.graph_environment import \
     GraphVocabularyEnvironment
-from rostok.graph_grammar.graph_utils import (plot_graph_reward,
-                                              save_graph_plot_reward)
+from rostok.graph_grammar.graph_utils import (plot_graph_reward, save_graph_plot_reward)
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 from rostok.trajectory_optimizer.control_optimizer import GraphRewardCalculator
 from rostok.utils.pickle_save import Saveable
-from rostok.utils.states import (MCTSOptimizedState, OptimizedGraph,
-                                 OptimizedState, RobotState)
+from rostok.utils.states import (MCTSOptimizedState, OptimizedGraph, OptimizedState, RobotState)
 
 
 def convert_control_to_list(control):
