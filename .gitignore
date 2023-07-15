@@ -7,3 +7,4 @@
 /results/
 /temp_*/
 test*.ipynb
+/.vscode/tasks.json

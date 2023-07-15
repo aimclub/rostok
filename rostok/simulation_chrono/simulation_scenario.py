@@ -1,6 +1,8 @@
+import types
 from typing import Dict, List, Optional, Tuple
 
 import pychrono as chrono
+import numpy as np
 
 from rostok.criterion.simulation_flags import SimulationSingleEvent
 from rostok.graph_grammar.node import GraphGrammar
