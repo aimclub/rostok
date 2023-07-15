@@ -144,11 +144,11 @@ def config_with_standard_multiobject(grasp_object_blueprint, weights):
                                                        force_test_time=hp.FORCE_TEST_TIME)
     simulation_manager.add_event(event_stop_external_force)
     for manager in simulation_managers:
-        manager.add_event(event_contact)
-        manager.add_event(event_timeout)
-        manager.add_event(event_flying_apart)
-        manager.add_event(event_grasp)
-        manager.add_event(event_stop_external_force)
+        manager[0].add_event(event_contact)
+        manager[0].add_event(event_timeout)
+        manager[0].add_event(event_flying_apart)
+        manager[0].add_event(event_grasp)
+        manager[0].add_event(event_stop_external_force)
 
     #create criterion manager
     simulation_rewarder = SimulationReward(verbosity=0)
