@@ -26,7 +26,7 @@ control_optimizer = config_with_standard_graph(grasp_object_blueprint, torque_di
 best_graph, reward, best_control = report.get_best_info()
 
 simulation_rewarder = control_optimizer.rewarder
-simulation_manager = control_optimizer.simulation_control
+simulation_manager = control_optimizer.simulation_scenario
 
 plot_graph(best_graph)
 data = {"initial_value": best_control}

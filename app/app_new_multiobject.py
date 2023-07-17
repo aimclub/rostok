@@ -81,7 +81,7 @@ with open(Path(path, "mcts_result.txt"), "a") as file:
     sys.stdout = original_stdout
 
 simulation_rewarder = control_optimizer.rewarder
-simulation_manager = control_optimizer.simulation_control[0]
+simulation_manager = control_optimizer.simulation_scenario[0]
 # visualisation in the end of the search
 best_graph, reward, best_control = mcts_helper.report.get_best_info()
 data = control_optimizer.optim_parameters2data_control(best_control)
