@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pychrono as chrono
@@ -11,6 +11,8 @@ from rostok.control_chrono.controller import ConstController, ForceControllerTem
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.virtual_experiment.robot_new import BuiltGraphChrono, RobotChrono
 from rostok.virtual_experiment.sensors import DataStorage, Sensor
+from rostok.criterion.simulation_flags import SimulationSingleEvent, EventCommands
+import time
 
 
 class SystemPreviewChrono:
@@ -86,11 +88,38 @@ class SystemPreviewChrono:
 
 @dataclass
 class SimulationResult:
+    """Data class to aggregate the output of the simulation.
+    
+        Attributes:
+            time (float): the total simulation time
+            time_vector (List[float]): the vector of time steps
+            n_steps (int): the maximum possible number of steps
+            robot_final_ds (Optional[DataStorage]): final data store of the robot
+            environment_final_ds (Optional[DataStorage]): final data store of the environment"""
     time: float = 0
     time_vector: List[float] = field(default_factory=list)
     n_steps = 0
     robot_final_ds: Optional[DataStorage] = None
     environment_final_ds: Optional[DataStorage] = None
+
+    def reduce_ending(self, step_n):
+        if self.robot_final_ds:
+            storage = self.robot_final_ds.main_storage
+            for key in storage:
+                key_storage = storage[key]
+                for key_2 in key_storage:
+                    value = key_storage[key_2]
+                    new_value = value[:step_n + 2:]
+                    key_storage[key_2] = new_value
+
+        if self.environment_final_ds:
+            storage = self.environment_final_ds.main_storage
+            for key in storage:
+                key_storage = storage[key]
+                for key_2 in key_storage:
+                    value = key_storage[key_2]
+                    new_value = value[:step_n + 2:]
+                    key_storage[key_2] = new_value
 
     def reduce_nan(self):
         if self.robot_final_ds:
@@ -254,7 +283,7 @@ class RobotSimulationChrono():
         number_of_steps: int,
         step_length: float,
         frame_update: int,
-        flag_container=None,
+        event_container: List[SimulationSingleEvent] = None,
         visualize=False,
     ):
         """Execute a simulation.
@@ -282,19 +311,21 @@ class RobotSimulationChrono():
         for i in range(number_of_steps):
             current_time = self.chrono_system.GetChTime()
             self.simulate_step(step_length, current_time, i)
-            self.result.time_vector.append(self.chrono_system.GetChTime()) # TODO: timevector can be constructed from number_of_steps and time_step
+            self.result.time_vector.append(self.chrono_system.GetChTime(
+            ))  # TODO: timevector can be constructed from number_of_steps and time_step
             if vis:
                 vis.Run()
                 if i % frame_update == 0:
                     vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
                     vis.Render()
                     vis.EndScene()
-            if flag_container:
-                for flag in flag_container:
-                    flag.update_state(current_time, self.robot.sensor, self.data_storage.sensor)
-
-                if flag_container:
-                    stop_flag = sum([flag.state for flag in flag_container])
+            if event_container:
+                for event in event_container:
+                    event_command = event.event_check(current_time, self.robot.sensor,
+                                                      self.data_storage.sensor)
+                    if event_command == EventCommands.STOP:
+                        stop_flag = True
+                        break
 
             if stop_flag:
                 break
@@ -307,4 +338,89 @@ class RobotSimulationChrono():
         self.result.time = self.chrono_system.GetChTime()
         self.n_steps = number_of_steps
         self.result.reduce_nan()
+        return self.result
+
+
+class RobotSimulationWithForceTest(RobotSimulationChrono):
+
+    def __init__(self, delay=False, object_list: List[Tuple[ChronoEasyShapeObject, bool]] = []):
+        super().__init__(object_list)
+        self.delay_flag = delay
+
+    def activate(self, current_time):
+        self.force_torque_container.controller_list[0].start_time = current_time
+
+    def handle_single_events(self, event_container, current_time, step_n):
+        if event_container is None:
+            return False
+
+        for event in event_container:
+            if not event.state:
+                event_command = event.event_check(current_time, step_n, self.robot.sensor,
+                                                  self.data_storage.sensor)
+                if event_command == EventCommands.STOP:
+                    return True
+                elif event_command == EventCommands.ACTIVATE:
+                    self.activate(current_time)
+
+        return False
+
+    def simulate(
+        self,
+        number_of_steps: int,
+        step_length: float,
+        frame_update: int,
+        event_container=None,
+        visualize=False,
+    ):
+        """Execute a simulation.
+        
+            Args:
+                number_of_steps(int): total number of steps in the simulation
+                step_length (float): the time length of a step
+                frame_update (int): rate of visualization update
+                flag_container: container of flags that controls simulation
+                visualize (bool): determine if run the visualization """
+        self.initialize(number_of_steps)
+        vis = None
+        if visualize:
+            vis = chronoirr.ChVisualSystemIrrlicht()
+            vis.AttachSystem(self.chrono_system)
+            vis.SetWindowSize(1024, 768)
+            vis.SetWindowTitle('Grab demo')
+            vis.Initialize()
+            vis.AddCamera(chrono.ChVectorD(1.5, 3, -4))
+            vis.AddTypicalLights()
+            vis.EnableCollisionShapeDrawing(True)
+
+        stop_flag = False
+        self.result.time_vector = [0]
+        for i in range(number_of_steps):
+            current_time = self.chrono_system.GetChTime()
+            self.simulate_step(step_length, current_time, i)
+            self.result.time_vector.append(self.chrono_system.GetChTime())
+            if vis:
+                vis.Run()
+                if i % frame_update == 0:
+                    vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
+                    vis.Render()
+                    vis.EndScene()
+
+            stop_flag = self.handle_single_events(event_container, current_time, i)
+
+            if stop_flag:
+                break
+
+            # just to slow down the simulation
+            if self.delay_flag:
+                time.sleep(0.0001)
+
+        if visualize:
+            vis.GetDevice().closeDevice()
+
+        self.result.environment_final_ds = self.data_storage
+        self.result.robot_final_ds = self.robot.data_storage
+        self.result.time = self.chrono_system.GetChTime()
+        self.n_steps = number_of_steps
+        self.result.reduce_ending(i)
         return self.result

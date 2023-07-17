@@ -4,11 +4,12 @@ from typing import Dict, List, Optional, Tuple
 import pychrono as chrono
 import numpy as np
 
-from rostok.criterion.simulation_flags import FlagStopSimualtions
+from rostok.criterion.simulation_flags import SimulationSingleEvent
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.simulation_chrono.basic_simulation import RobotSimulationChrono
+from rostok.simulation_chrono.basic_simulation import RobotSimulationChrono, RobotSimulationWithForceTest
 from rostok.virtual_experiment.sensors import (SensorCalls, SensorObjectClassification)
 from rostok.simulation_chrono.simulation_utils import set_covering_sphere_based_position
+from rostok.control_chrono.controller import ConstController, SinControllerChrono, YaxisShaker
 
 
 class ParametrizedSimulation:
@@ -26,23 +27,25 @@ class ConstTorqueGrasp(ParametrizedSimulation):
     def __init__(self, step_length, simulation_length) -> None:
         super().__init__(step_length, simulation_length)
         self.grasp_object_callback = None
-        self.flag_container: List[FlagStopSimualtions] = []
+        self.event_container: List[SimulationSingleEvent] = []
 
-    def add_flag(self, flag):
-        self.flag_container.append(flag)
+    def add_event(self, event):
+        self.event_container.append(event)
 
-    def reset_flags(self):
-        for flag in self.flag_container:
-            flag.reset_flag()
+    def reset_events(self):
+        for event in self.event_container:
+            event.reset()
 
-    def run_simulation(self, graph: GraphGrammar, data, vis=True):
-        self.reset_flags()
-        simulation = RobotSimulationChrono([])
+    def run_simulation(self, graph: GraphGrammar, data, vis=False):
+        self.reset_events()
+        #simulation = RobotSimulationChrono([])
+        simulation = RobotSimulationWithForceTest(False, [])
         simulation.add_design(graph, data)
         grasp_object = self.grasp_object_callback()
+        shake = YaxisShaker(100, 1, 0.5, float("inf"))
         set_covering_sphere_based_position(grasp_object,
                                            reference_point=chrono.ChVectorD(0, 0.05, 0))
-        simulation.add_object(grasp_object, read_data=True)
+        simulation.add_object(grasp_object, read_data=True, force_torque_controller=shake)
         n_steps = int(self.simulation_length / self.step_length)
         env_data_dict = {
             "n_contacts": (SensorCalls.AMOUNT_FORCE, SensorObjectClassification.BODY),
@@ -56,4 +59,4 @@ class ConstTorqueGrasp(ParametrizedSimulation):
             "n_contacts": (SensorCalls.AMOUNT_FORCE, SensorObjectClassification.BODY)
         }
         simulation.add_robot_data_type_dict(robot_data_dict)
-        return simulation.simulate(n_steps, self.step_length, 10, self.flag_container, vis)
+        return simulation.simulate(n_steps, self.step_length, 10, self.event_container, vis)
