@@ -228,6 +228,7 @@ class EventGrasp(SimulationSingleEvent):
 class EventStopExternalForce(SimulationSingleEvent):
 
     def __init__(self, grasp_event: EventGrasp, force_test_time: float):
+        super().__init__()
         self.grasp_event = grasp_event
         self.force_test_time = force_test_time
 
