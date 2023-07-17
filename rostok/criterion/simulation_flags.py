@@ -60,6 +60,8 @@ class EventContact(SimulationSingleEvent):
             self.step_n = step_n
             return EventCommands.CONTINUE
 
+        return EventCommands.CONTINUE
+
 
 class EventContactTimeOut(SimulationSingleEvent):
     """Event that occurs if the robot doesn't contact with body during the reference time from the start of the simulation.
@@ -231,6 +233,9 @@ class EventStopExternalForce(SimulationSingleEvent):
 
     def event_check(self, current_time: float, step_n: int, robot_data, env_data):
         """STOP simulation in force_test_time after the grasp."""
+
+        # self.grasp_event.grasp_time is None until the grasp event have been occurred. 
+        # Therefore we use nested if operators.
         if self.grasp_event.state:
             if current_time > self.force_test_time + self.grasp_event.grasp_time:
                 self.state = True
