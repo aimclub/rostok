@@ -490,4 +490,10 @@ class CheckpointMCTSSaveable(Saveable):
         
         
     def update_checkpoint_n_logs(self):
+        pass
         
+    def save_checkpoint(self, folder = "checkpoint"):
+        filepath = os.path.join(folder)
+        
+        if not os.path.exists(folder):
+            print("Create ")
