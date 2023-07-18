@@ -255,7 +255,7 @@ class ConstTorqueOptimizationBranchTemplate(CalculatorWithConstTorqueOptimizatio
     def bound_parameters(self, graph: GraphGrammar):
         n_branches = len(joint_root_paths(graph))
         if n_branches == 0:
-            return (0, [])
+            return []
         multi_bound = []
         for _ in range(n_branches):
             multi_bound.append(self.bounds)
