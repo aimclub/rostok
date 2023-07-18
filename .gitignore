@@ -8,3 +8,4 @@
 /temp_*/
 test*.ipynb
 /.vscode/tasks.json
+/app/checkpoint/

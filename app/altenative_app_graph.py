@@ -16,7 +16,7 @@ rule_vocabul, torque_dict = create_rules()
 
 # create blueprint for object to grasp
 grasp_object_blueprint = get_object_parametrized_sphere(0.4, 0.7)
-grasp_object_blueprint = get_object_parametrized_tilt_ellipsoid(0.2, 0.3, 0.1, 0.4, 15)
+grasp_object_blueprint = get_object_parametrized_tilt_ellipsoid(0.5, 0.4, 0.7, 10)
 # create reward counter using run setup function
 control_optimizer = config_with_standard_graph(grasp_object_blueprint, torque_dict)
 # Initialize MCTS

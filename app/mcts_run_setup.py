@@ -44,7 +44,7 @@ def config_with_standard(grasp_object_blueprint):
     #create criterions and add them to manager
     simulation_rewarder.add_criterion(TimeCriterion(hp.GRASP_TIME, event_timeout, event_grasp),
                                       hp.TIME_CRITERION_WEIGHT)
-    simulation_rewarder.add_criterion(ForceCriterion(event_timeout), hp.FORCE_CRITERION_WEIGHT)
+    #simulation_rewarder.add_criterion(ForceCriterion(event_timeout), hp.FORCE_CRITERION_WEIGHT)
     simulation_rewarder.add_criterion(InstantContactingLinkCriterion(event_grasp),
                                       hp.INSTANT_CONTACTING_LINK_CRITERION_WEIGHT)
     simulation_rewarder.add_criterion(InstantForceCriterion(event_grasp),
@@ -82,7 +82,7 @@ def config_with_standard_tendon(grasp_object_blueprint):
     event_grasp = EventGrasp(
         grasp_limit_time=hp.GRASP_TIME,
         contact_event=event_contact,
-        verbosity=1,
+        verbosity=0,
     )
     simulation_manager.add_event(event_grasp)
     event_stop_external_force = EventStopExternalForce(grasp_event=event_grasp,
@@ -94,7 +94,7 @@ def config_with_standard_tendon(grasp_object_blueprint):
     #create criterions and add them to manager
     simulation_rewarder.add_criterion(TimeCriterion(hp.GRASP_TIME, event_timeout, event_grasp),
                                       hp.TIME_CRITERION_WEIGHT)
-    simulation_rewarder.add_criterion(ForceCriterion(event_timeout), hp.FORCE_CRITERION_WEIGHT)
+    #simulation_rewarder.add_criterion(ForceCriterion(event_timeout), hp.FORCE_CRITERION_WEIGHT)
     simulation_rewarder.add_criterion(InstantContactingLinkCriterion(event_grasp),
                                       hp.INSTANT_CONTACTING_LINK_CRITERION_WEIGHT)
     simulation_rewarder.add_criterion(InstantForceCriterion(event_grasp),
@@ -110,8 +110,8 @@ def config_with_standard_tendon(grasp_object_blueprint):
         hp.FINAL_POSITION_CRITERION_WEIGHT)
 
     control_optimizer = TendonLikeControlOptimization(simulation_manager, simulation_rewarder,
-                                                         hp.CONTROL_OPTIMIZATION_BOUNDS,
-                                                         hp.CONTROL_OPTIMIZATION_ITERATION)
+                                                         hp.CONTROL_OPTIMIZATION_BOUNDS_TENDON,
+                                                         hp.CONTROL_OPTIMIZATION_ITERATION_TENDON, const_parameter=hp.TENDON_CONST)
 
     return control_optimizer
 

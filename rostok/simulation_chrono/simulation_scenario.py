@@ -36,7 +36,7 @@ class ConstTorqueGrasp(ParametrizedSimulation):
         for event in self.event_container:
             event.reset()
 
-    def run_simulation(self, graph: GraphGrammar, data, vis=True):
+    def run_simulation(self, graph: GraphGrammar, data, vis=False):
         self.reset_events()
         #simulation = RobotSimulationChrono([])
         simulation = RobotSimulationWithForceTest(False, [])
