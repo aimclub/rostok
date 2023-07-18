@@ -1,5 +1,5 @@
 import sys
-import os 
+import os
 import time
 from copy import deepcopy
 from pathlib import Path
@@ -382,7 +382,7 @@ def prepare_mcts_state_and_helper(graph: GraphGrammar,
     return mcts_state
 
 
-def make_mcts_step(searcher, state: MCTSGraphEnvironment, counter):
+def make_mcts_step(searcher, state: MCTSGraphEnvironment, counter, checkpointer=None):
     """Start MCTS search for the state and return the new state corresponding to the action
 
     Args:
@@ -403,16 +403,20 @@ def make_mcts_step(searcher, state: MCTSGraphEnvironment, counter):
         main_reward = new_state.getReward()
         main_control = new_state.movments_trajectory
         state.helper.set_main_optimized_state(new_state.state, main_reward, main_control)
-    time_step = time.time() - start
-    
-    state.helper.report
+    iteration_time = time.time() - start
+
+    if checkpointer:
+        checkpointer.update_checkpoint_n_logs(iteration_time)
     return done, new_state
+
 
 #==================================
 # Prototyping
 #==================================
 
-class CheckpointMCTSSaveable(Saveable):
+
+class CheckpointMCTS():
+    ID_CHECKPOINT = 0
     """Class include all the information that should be saved as a result of MCTS search.
 
     Attributes:
@@ -422,78 +426,92 @@ class CheckpointMCTSSaveable(Saveable):
 
     """
 
-    def __init__(self, mcts_saveable: MCTSSaveable, path, checkpoint_iter = 1) -> None:
-        super().__init__(path, 'checkpoint_mcts_data')
+    def __init__(self,
+                 mcts_saveable: MCTSSaveable,
+                 folder_name,
+                 checkpoint_iter=1,
+                 rewrite=True) -> None:
+
+        self.path = "./"
+
+
         self.mcts_saveable = mcts_saveable
         self.iteration = 0
         self.checkpoint_iter = checkpoint_iter
+        self.last_iteration_time = 0
+        CheckpointMCTS.ID_CHECKPOINT = CheckpointMCTS.ID_CHECKPOINT + 1
+        self.postfix_id_folders = CheckpointMCTS.ID_CHECKPOINT
+        
+        self.prepare_folders_n_files(folder_name, rewrite)
 
-    def get_best_info(self):
-        """Get graph, reward and control for the best state."""
-        graph = self.best_simulated_state.state.make_graph()
-        return graph, self.best_simulated_state.reward, self.best_simulated_state.control
-
-    def get_main_info(self):
-        """Get graph, reward and control for the main state."""
-        graph = self.main_simulated_state.state.make_graph()
-        return graph, self.main_simulated_state.reward, self.main_simulated_state.control
-
-    def draw_best_graph(self):
-        """Draw best graph with plot title based on the reward."""
-        graph, reward, _ = self.get_best_info()
-        plot_graph_reward(graph, reward)
-
-    def save_log(self):
+    def logging(self):
         """Saves graphs and info for main and best states."""
         path_to_file = Path(self.path, "log-file.txt")
-        with open(path_to_file, 'w', encoding='utf-8') as file:
+        with open(path_to_file, 'a', encoding='utf-8') as file:
             original_stdout = sys.stdout
             sys.stdout = file
-            print(f'MCTS Iteration: {self.iteration}')
+            print(f'MCTS Iteration: {self.iteration}, Iteration time: {self.last_iteration_time}')
             print('main_result:')
-            print('rules:', *self.main_simulated_state.state.rule_list)
-            print('control:', *self.main_simulated_state.control)
-            print('reward:', self.main_simulated_state.reward)
+            print('rules:', *self.mcts_saveable.main_simulated_state.state.rule_list)
+            print('control:', *self.mcts_saveable.main_simulated_state.control)
+            print('reward:', self.mcts_saveable.main_simulated_state.reward)
             print()
             print('best_result:')
-            print('rules:', *self.best_simulated_state.state.rule_list)
-            print('control:', *self.best_simulated_state.control)
-            print('reward:', self.best_simulated_state.reward)
+            print('rules:', *self.mcts_saveable.best_simulated_state.state.rule_list)
+            print('control:', *self.mcts_saveable.best_simulated_state.control)
+            print('reward:', self.mcts_saveable.best_simulated_state.reward)
             print()
-            print('max number of non-terminal rules:', self.non_terminal_rules_limit,
-                  'search parameter:', self.search_parameter)
+            print('max number of non-terminal rules:', self.mcts_saveable.non_terminal_rules_limit,
+                  'search parameter:', self.mcts_saveable.search_parameter)
             print()
             print("Number of unique mechanisms tested in current MCTS run: ",
-                  len(self.seen_graphs.graph_list))
-            print("Number of states ", len(self.seen_states.state_list))
-            print(f'\n ---------------------------------- \n')
+                  len(self.mcts_saveable.seen_graphs.graph_list))
+            print("Number of states ", len(self.mcts_saveable.seen_states.state_list))
+            print(f"\n----------------------------------\n")
             sys.stdout = original_stdout
 
-        # path_to_best_graph = Path(self.path, "best_graph.png")
-        # best_graph, reward, _ = self.get_best_info()
-        # save_graph_plot_reward(best_graph, reward, path_to_best_graph)
-        # path_to_main_graph = Path(self.path, "main_graph.png")
-        # main_graph, reward, _ = self.get_main_info()
-        # save_graph_plot_reward(main_graph, reward, path_to_main_graph)
-
-    def save_lists(self):
+    def dump_results(self):
         """Saves lists of graphs and states."""
-        self.seen_graphs.set_path(self.path)
-        self.seen_graphs.save()
-        self.seen_states.set_path(self.path)
-        self.seen_states.save()
+        self.mcts_saveable.seen_graphs.set_path(self.path)
+        self.mcts_saveable.seen_graphs.save()
+        self.mcts_saveable.seen_states.set_path(self.path)
+        self.mcts_saveable.seen_states.save()
+        self.mcts_saveable.set_path(self.path)
+        self.mcts_saveable.save()
 
-    def save_all(self):
+    def save(self):
         """Save all information in the object but not object itself."""
-        self.save_visuals()
-        self.save_lists()
-        
-        
-    def update_checkpoint_n_logs(self):
-        pass
-        
-    def save_checkpoint(self, folder = "checkpoint"):
-        filepath = os.path.join(folder)
-        
-        if not os.path.exists(folder):
-            print("Create ")
+        self.logging()
+        self.dump_results()
+
+    def update_checkpoint_n_logs(self, iteration_time):
+        self.last_iteration_time = iteration_time
+        if self.iteration % (self.checkpoint_iter + 1) == 0:
+            self.prepare_folders_n_files(self.path.split("/")[-1], True, True)
+            self.save()
+
+        self.iteration += 1
+
+    def prepare_folders_n_files(self, folder_name, rewrite, loggging = False):
+        folder_path = os.path.join("./", "app/"
+                                 "checkpoint/", folder_name)
+
+        if not os.path.exists(folder_path):
+            print(f"Create checkpoint dictionary - {folder_path}")
+            os.mkdir(folder_path)
+        elif rewrite:
+            print(f"Rewriting data in dictionary  - {folder_path}")
+            path_to_file = Path(folder_path, "log-file.txt")
+            if os.path.exists(path_to_file) and not loggging:
+                open(path_to_file, "w").close()
+        else:
+            postfix_folder = 1
+            folder_path = folder_path + f"_{postfix_folder}"
+            while os.path.exists(folder_path):
+                folder_path = folder_path.replace(f"_{postfix_folder-1}",  f"_{postfix_folder}")
+                postfix_folder +=1
+            
+            print(f"Create checkpoint dictionary - {folder_path}")
+            os.mkdir(folder_path)
+
+        self.path = folder_path

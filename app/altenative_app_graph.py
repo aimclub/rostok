@@ -6,7 +6,7 @@ import hyperparameters as hp
 import mcts
 from mcts_run_setup import config_with_standard_graph
 
-from rostok.graph_generators.mcts_helper import (make_mcts_step, prepare_mcts_state_and_helper)
+from rostok.graph_generators.mcts_helper import (make_mcts_step, prepare_mcts_state_and_helper, CheckpointMCTS)
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.library.obj_grasp.objects import get_object_parametrized_sphere, get_object_parametrized_tilt_ellipsoid
 from rostok.library.rule_sets.ruleset_old_style_graph import create_rules
@@ -32,6 +32,8 @@ mcts_helper.report.search_parameter = base_iteration_limit
 # the constant that determines how we reduce the number of iterations in the MCTS search
 iteration_reduction_rate = hp.ITERATION_REDUCTION_TIME
 
+
+checkpointer = CheckpointMCTS(mcts_helper.report, "AppGraphSphere", rewrite=False)
 start = time.time()
 finish = False
 n_steps = 0
@@ -39,7 +41,7 @@ while not finish:
     iteration_limit = base_iteration_limit - int(graph_env.counter_action / max_numbers_rules *
                                                  (base_iteration_limit * iteration_reduction_rate))
     searcher = mcts.mcts(iterationLimit=iteration_limit)
-    finish, graph_env = make_mcts_step(searcher, graph_env, n_steps)
+    finish, graph_env = make_mcts_step(searcher, graph_env, n_steps, checkpointer)
     n_steps += 1
     print(f"number iteration: {n_steps}, counter actions: {graph_env.counter_action} " +
           f"reward: {mcts_helper.report.get_best_info()[1]}")
