@@ -50,7 +50,7 @@ def vis_top_n_mechs(n: int, object: EnvironmentBodyBlueprint):
     graph_report = report.seen_graphs
     control_optimizer = config_with_standard(grasp_object_blueprint)
     simulation_rewarder = control_optimizer.rewarder
-    simulation_manager = control_optimizer.simulation_control
+    simulation_manager = control_optimizer.simulation_scenario
     graph_list = graph_report.graph_list
 
     sorted_graph_list = sorted(graph_list, key=lambda x: x.reward)
