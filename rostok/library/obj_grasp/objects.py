@@ -130,7 +130,7 @@ def get_object_parametrized_ellipsoid(x, y, z, h):
     return obj
 
 
-def get_object_parametrized_tilt_ellipsoid(x, y, z, h, alpha):
+def get_object_parametrized_tilt_ellipsoid(x, y, z, alpha):
     shape = easy_body_shapes.Ellipsoid()
     shape.radius_x = x
     shape.radius_y = y
@@ -141,7 +141,7 @@ def get_object_parametrized_tilt_ellipsoid(x, y, z, h, alpha):
     mat.DampingF = 0.8
     obj = EnvironmentBodyBlueprint(shape=shape,
                                    material=mat,
-                                   pos=FrameTransform([0, h, 0], rotation_x(alpha)))
+                                   pos=FrameTransform([0, 1, 0], rotation_x(alpha)))
     return obj
 
 

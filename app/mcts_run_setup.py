@@ -42,7 +42,7 @@ def config_with_standard(grasp_object_blueprint):
     #create criterion manager
     simulation_rewarder = SimulationReward(verbosity=0)
     #create criterions and add them to manager
-    simulation_rewarder.add_criterion(TimeCriterion(hp.TIME_SIMULATION, event_timeout, event_grasp),
+    simulation_rewarder.add_criterion(TimeCriterion(hp.GRASP_TIME, event_timeout, event_grasp),
                                       hp.TIME_CRITERION_WEIGHT)
     simulation_rewarder.add_criterion(ForceCriterion(event_timeout), hp.FORCE_CRITERION_WEIGHT)
     simulation_rewarder.add_criterion(InstantContactingLinkCriterion(event_grasp),
@@ -51,7 +51,7 @@ def config_with_standard(grasp_object_blueprint):
                                       hp.INSTANT_FORCE_CRITERION_WEIGHT)
     simulation_rewarder.add_criterion(InstantObjectCOGCriterion(event_grasp),
                                       hp.OBJECT_COG_CRITERION_WEIGHT)
-    n_steps = int(hp.TIME_SIMULATION / hp.TIME_STEP_SIMULATION)
+    n_steps = int(hp.TIME_SIMULATION / hp.GRASP_TIME)
     print(n_steps)
     simulation_rewarder.add_criterion(GraspTimeCriterion(event_grasp, n_steps),
                                       hp.GRASP_TIME_CRITERION_WEIGHT)

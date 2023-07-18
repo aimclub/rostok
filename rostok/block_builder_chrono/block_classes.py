@@ -194,7 +194,7 @@ class ChronoRevolveJoint(BlockBridge):
     def __init__(self,
                  type_of_input: JointInputTypeChrono = JointInputTypeChrono.TORQUE,
                  radius=0.07,
-                 length=0.4,
+                 length=0.3,
                  material=DefaultChronoMaterial(),
                  density=100.0,
                  starting_angle=0,
