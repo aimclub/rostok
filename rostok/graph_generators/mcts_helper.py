@@ -1,4 +1,6 @@
 import sys
+import os 
+import time
 from copy import deepcopy
 from pathlib import Path
 from statistics import mean
@@ -329,7 +331,7 @@ class MCTSGraphEnvironment(GraphVocabularyEnvironment):
 
     def getReward(self):
         """Make optimization and calculate reward for the graph of the state.
-        
+
         It also adds the graph to the seen_graph of the helper.report object
         """
         report = self.helper.report.seen_graphs.check_graph(self.graph)
@@ -388,6 +390,7 @@ def make_mcts_step(searcher, state: MCTSGraphEnvironment, counter):
         state (MCTSGraphEnvironment): starting state for the search
         counter: counter of the steps
     """
+    start = time.time()
     state.helper.step_counter = counter
     action = searcher.search(initialState=state)
     rule_action = action.get_rule
@@ -400,5 +403,91 @@ def make_mcts_step(searcher, state: MCTSGraphEnvironment, counter):
         main_reward = new_state.getReward()
         main_control = new_state.movments_trajectory
         state.helper.set_main_optimized_state(new_state.state, main_reward, main_control)
-
+    time_step = time.time() - start
+    
+    state.helper.report
     return done, new_state
+
+#==================================
+# Prototyping
+#==================================
+
+class CheckpointMCTSSaveable(Saveable):
+    """Class include all the information that should be saved as a result of MCTS search.
+
+    Attributes:
+        seen_graphs (OptimizedGraphReport): graphs obtained in the search
+        seen_states (OptimizedMCTSStateReport): states obtained in the search
+        main_state (RobotState): the main state of the MCTS search
+
+    """
+
+    def __init__(self, mcts_saveable: MCTSSaveable, path, checkpoint_iter = 1) -> None:
+        super().__init__(path, 'checkpoint_mcts_data')
+        self.mcts_saveable = mcts_saveable
+        self.iteration = 0
+        self.checkpoint_iter = checkpoint_iter
+
+    def get_best_info(self):
+        """Get graph, reward and control for the best state."""
+        graph = self.best_simulated_state.state.make_graph()
+        return graph, self.best_simulated_state.reward, self.best_simulated_state.control
+
+    def get_main_info(self):
+        """Get graph, reward and control for the main state."""
+        graph = self.main_simulated_state.state.make_graph()
+        return graph, self.main_simulated_state.reward, self.main_simulated_state.control
+
+    def draw_best_graph(self):
+        """Draw best graph with plot title based on the reward."""
+        graph, reward, _ = self.get_best_info()
+        plot_graph_reward(graph, reward)
+
+    def save_log(self):
+        """Saves graphs and info for main and best states."""
+        path_to_file = Path(self.path, "log-file.txt")
+        with open(path_to_file, 'w', encoding='utf-8') as file:
+            original_stdout = sys.stdout
+            sys.stdout = file
+            print(f'MCTS Iteration: {self.iteration}')
+            print('main_result:')
+            print('rules:', *self.main_simulated_state.state.rule_list)
+            print('control:', *self.main_simulated_state.control)
+            print('reward:', self.main_simulated_state.reward)
+            print()
+            print('best_result:')
+            print('rules:', *self.best_simulated_state.state.rule_list)
+            print('control:', *self.best_simulated_state.control)
+            print('reward:', self.best_simulated_state.reward)
+            print()
+            print('max number of non-terminal rules:', self.non_terminal_rules_limit,
+                  'search parameter:', self.search_parameter)
+            print()
+            print("Number of unique mechanisms tested in current MCTS run: ",
+                  len(self.seen_graphs.graph_list))
+            print("Number of states ", len(self.seen_states.state_list))
+            print(f'\n ---------------------------------- \n')
+            sys.stdout = original_stdout
+
+        # path_to_best_graph = Path(self.path, "best_graph.png")
+        # best_graph, reward, _ = self.get_best_info()
+        # save_graph_plot_reward(best_graph, reward, path_to_best_graph)
+        # path_to_main_graph = Path(self.path, "main_graph.png")
+        # main_graph, reward, _ = self.get_main_info()
+        # save_graph_plot_reward(main_graph, reward, path_to_main_graph)
+
+    def save_lists(self):
+        """Saves lists of graphs and states."""
+        self.seen_graphs.set_path(self.path)
+        self.seen_graphs.save()
+        self.seen_states.set_path(self.path)
+        self.seen_states.save()
+
+    def save_all(self):
+        """Save all information in the object but not object itself."""
+        self.save_visuals()
+        self.save_lists()
+        
+        
+    def update_checkpoint_n_logs(self):
+        
