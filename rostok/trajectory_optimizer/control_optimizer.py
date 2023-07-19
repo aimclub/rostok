@@ -70,10 +70,11 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
                                                args=(graph, sim_scene[0]))
 
                 reward -= result.fun * sim_scene[1]
+                processed_parameters = self._postprocessing_parameters(result.x)
                 if optim_parameters.size == 0:
-                    optim_parameters = result.x
+                    optim_parameters = processed_parameters
                 else:
-                    optim_parameters = np.vstack((optim_parameters, result.x))
+                    optim_parameters = np.vstack((optim_parameters, processed_parameters))
 
         else:
             result = self.run_optimization(self._reward_with_parameters,
@@ -81,7 +82,7 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
                                            args=(graph, self.simulation_scenario))
 
             reward = -result.fun
-            optim_parameters = result.x
+            optim_parameters = self._postprocessing_parameters(result.x)
 
         return (reward, optim_parameters)
 
@@ -147,6 +148,10 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
         data = {"initial_value": parameters}
 
         return data
+    
+    def _postprocessing_parameters(self, parameters):
+        
+        return np.round(parameters, 3)
 
     @abstractmethod
     def run_optimization(self, callback, multi_bound, args):
