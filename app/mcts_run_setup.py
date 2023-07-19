@@ -62,7 +62,6 @@ def config_with_standard(grasp_object_blueprint):
     control_optimizer = CalculatorWithOptimizationDirect(simulation_manager, simulation_rewarder,
                                                          hp.CONTROL_OPTIMIZATION_BOUNDS,
                                                          hp.CONTROL_OPTIMIZATION_ITERATION)
-
     return control_optimizer
 
 
