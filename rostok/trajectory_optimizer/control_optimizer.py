@@ -113,6 +113,7 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
             _type_: _description_
         """
         n_joints = len(get_joint_vector_from_graph(graph))
+        print('n_joints:', n_joints)
         multi_bound = []
         for _ in range(n_joints):
             multi_bound.append(self.bounds)
@@ -259,6 +260,7 @@ class ConstTorqueOptimizationBranchTemplate(CalculatorWithConstTorqueOptimizatio
 
     def bound_parameters(self, graph: GraphGrammar):
         n_branches = len(joint_root_paths(graph))
+        print('n_branches:',n_branches)
         if n_branches == 0:
             return []
         multi_bound = []
