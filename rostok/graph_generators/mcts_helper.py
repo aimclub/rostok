@@ -434,14 +434,13 @@ class CheckpointMCTS():
 
         self.path = "./"
 
-
         self.mcts_saveable = mcts_saveable
         self.iteration = 0
         self.checkpoint_iter = checkpoint_iter
         self.last_iteration_time = 0
         CheckpointMCTS.ID_CHECKPOINT = CheckpointMCTS.ID_CHECKPOINT + 1
         self.postfix_id_folders = CheckpointMCTS.ID_CHECKPOINT
-        
+
         self.prepare_folders_n_files(folder_name, rewrite)
 
     def logging(self):
@@ -492,9 +491,16 @@ class CheckpointMCTS():
 
         self.iteration += 1
 
-    def prepare_folders_n_files(self, folder_name, rewrite, loggging = False):
+    def prepare_folders_n_files(self, folder_name, rewrite, loggging=False):
+        folder_path_to_checkpoint = os.path.join("./", "app/"
+                                                 "checkpoint/")
+
+        if not os.path.exists(folder_path_to_checkpoint):
+            print("Create folder for checkpoint")
+            os.mkdir(folder_path_to_checkpoint)
+
         folder_path = os.path.join("./", "app/"
-                                 "checkpoint/", folder_name)
+                                   "checkpoint/", folder_name)
 
         if not os.path.exists(folder_path):
             print(f"Create checkpoint dictionary - {folder_path}")
@@ -508,9 +514,9 @@ class CheckpointMCTS():
             postfix_folder = 1
             folder_path = folder_path + f"_{postfix_folder}"
             while os.path.exists(folder_path):
-                folder_path = folder_path.replace(f"_{postfix_folder-1}",  f"_{postfix_folder}")
-                postfix_folder +=1
-            
+                folder_path = folder_path.replace(f"_{postfix_folder-1}", f"_{postfix_folder}")
+                postfix_folder += 1
+
             print(f"Create checkpoint dictionary - {folder_path}")
             os.mkdir(folder_path)
 
