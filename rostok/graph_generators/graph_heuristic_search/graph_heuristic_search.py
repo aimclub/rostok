@@ -121,15 +121,16 @@ class GraphHeuristicSearch:
 
     def learning_phase(self, size_batch, opt_iter, design_environment: DesignEnvironment):
         dataset_states = np.array(list(self.hat_v.keys()))
-        dataset_states = np.random.choice(dataset_states, size=size_batch)
-        states = dataset_states
-        y = np.array([self.hat_v[s] for s in states])
-        graphs = list([design_environment.state2graph[s] for s in states])
-        data_graph = self.nnet_adapter.list_gg2data_loader(graphs, size_batch, y)
+        temp_loss = []
         for __ in range(opt_iter):
-            self.nnet.update(data_graph)
+            dataset_states = np.random.choice(dataset_states, size=size_batch)
+            states = dataset_states
+            y = np.array([self.hat_v[s] for s in states])[:,np.newaxis]
+            graphs = list([design_environment.state2graph[s] for s in states])
+            data_graph = self.nnet_adapter.list_gg2data_loader(graphs, size_batch, y)
+            temp_loss.append(self.nnet.update(data_graph))
 
-        self.history_loss.append(self.nnet.loss_history[-1])
+        self.history_loss.append(temp_loss)
 
     def search(self, num_iteration, design_environment: DesignEnvironment):
 
@@ -146,10 +147,10 @@ class GraphHeuristicSearch:
             self.learning_phase(self.args["minibatch"], self.args["opt_iter"], design_environment)
             t_finish = time.time() - t_start
             
-            if (epochs + 1) % 200:
+            if (epochs + 1) % 200==0:
                 self.save_history()
                 self.nnet.save_checkpoint()
-            if (epochs + 1) % 400:
+            if (epochs + 1) % 2950==0:
                 design_environment.save_environment("ghs")
 
             self.time_history.append(t_finish)

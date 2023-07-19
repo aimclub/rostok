@@ -66,21 +66,31 @@ args = {
     "max_nonterminal_actions":15,
     "batch_size":64,
     "start_eps":1,
-    "end_eps":0.01,
+    "end_eps":0.05,
     "eps_decay":0.3,
     "num_designs":20,
-    "eps_design":0.3,
+    "eps_design":0.2,
     "minibatch":64,
-    "opt_iter":50,
+    "opt_iter":25,
     "max_nodes": 20,
-    "nhid":512,
+    "nhid":4096,
     "pooling_ratio":0.6,
-    "dropout_ratio":0.5
+    "dropout_ratio":0.5,
+    "lr":5e-4
 }
 
-# design_env = DesignEnvironment(rule_vocabul, control_optimizer)
-# design_env.save_environment("sphere_oldstyle_graph_rndsrch")
+path_ghs = "./rostok/graph_generators/graph_heuristic_search/history_ghs/history_random_search_22h11m_date_26d6m2023y"
+with open(path_ghs, "rb") as f:
+    ghs_best_reward = np.load(f)
+    ghs_time = np.load(f)
+    ghs_reward = np.load(f)
+    ghs_loss = np.load(f)
+    ghs_best_design = int(np.load(f, allow_pickle=True))
+
+
 design_env = DesignEnvironment(rule_vocabul, control_optimizer)
+design_env.load_environment("./rostok/graph_generators/graph_heuristic_search/dataset_design_space/sphere_oldstyle_graph_rndsrch__15h57m_51s_date_25d6m2023y")
+# design_env = DesignEnvironment(rule_vocabul, control_optimizer)
 
 coverter = TorchAdapter(rule_vocabul.node_vocab)
 
@@ -89,9 +99,15 @@ args["num_features"] = len(design_env.node2id)
 nnet = Net(args)
 nn_wrapper = NNWraper(nnet, args)
 
-ghs = GraphHeuristicSearch(coverter, nn_wrapper, args)
+# ghs = GraphHeuristicSearch(coverter, nn_wrapper, args)
 # rnd_srch = RandomSearch(15)
 # rnd_srch.search(design_env, 10000)
 
-ghs.search(10, design_env)
+ghs.search(3000, design_env)
+
+
+result_optimizer = control_optimizer.calculate_reward(design_env.state2graph[ghs_best_design])
+reward = result_optimizer[0]
+movments_trajectory = result_optimizer[1]
+
 None

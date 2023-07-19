@@ -19,7 +19,7 @@ class NNWraper:
         self.args = args
         self.nnet = nnet.to(args["device"])
         
-        self.optimizer = optim.Adam(self.nnet.parameters())
+        self.optimizer = optim.Adam(self.nnet.parameters(), lr=args["lr"])
         self.mse = torch.nn.MSELoss()
         
         self.loss_history = []
