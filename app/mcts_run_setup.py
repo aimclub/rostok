@@ -13,7 +13,7 @@ from rostok.criterion.simulation_flags import (EventContact, EventContactTimeOut
                                                EventGrasp, EventSlipOut, EventStopExternalForce)
 from rostok.simulation_chrono.simulation_scenario import ConstTorqueGrasp
 from rostok.trajectory_optimizer.control_optimizer import (CalculatorWithGraphOptimization,
-                                                           CalculatorWithOptimizationDirect, TendonLikeControlOptimization)
+                                                           CalculatorWithOptimizationDirect, TendonLikeControlOptimization, LinearControlOptimizationDirect)
 
 
 def config_with_standard(grasp_object_blueprint):
@@ -89,7 +89,7 @@ def config_with_standard_tendon(grasp_object_blueprint):
     simulation_manager.add_event(event_stop_external_force)
 
     #create criterion manager
-    simulation_rewarder = SimulationReward(verbosity=1)
+    simulation_rewarder = SimulationReward(verbosity=0)
     #create criterions and add them to manager
     simulation_rewarder.add_criterion(TimeCriterion(hp.GRASP_TIME, event_timeout, event_grasp),
                                       hp.TIME_CRITERION_WEIGHT)
@@ -107,11 +107,13 @@ def config_with_standard_tendon(grasp_object_blueprint):
     simulation_rewarder.add_criterion(
         FinalPositionCriterion(hp.REFERENCE_DISTANCE, event_grasp, event_slipout),
         hp.FINAL_POSITION_CRITERION_WEIGHT)
-
+    
+    # control_optimizer = LinearControlOptimizationDirect(simulation_manager, simulation_rewarder,
+    #                                                      hp.CONTROL_OPTIMIZATION_BOUNDS_TENDON,
+    #                                                      hp.CONTROL_OPTIMIZATION_ITERATION_TENDON, const_parameter=hp.TENDON_CONST)
     control_optimizer = TendonLikeControlOptimization(simulation_manager, simulation_rewarder,
                                                          hp.CONTROL_OPTIMIZATION_BOUNDS_TENDON,
                                                          hp.CONTROL_OPTIMIZATION_ITERATION_TENDON, const_parameter=hp.TENDON_CONST)
-
     return control_optimizer
 
 def config_with_standard_graph(grasp_object_blueprint, torque_dict):

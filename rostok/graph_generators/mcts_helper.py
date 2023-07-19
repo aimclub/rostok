@@ -534,7 +534,6 @@ class CheckpointMCTS():
             print(f"Create checkpoint dictionary - {folder_path}")
             os.mkdir(folder_path)
 
-        self.path = folder_path
     
     @classmethod
     def restore_optimization(cls, folder_with_checkpoint, checkpoint_iter, grasp_object_blueprint):

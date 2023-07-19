@@ -193,7 +193,9 @@ def calculate_control_value_based_on_length(node_list: list[Node], start: float,
     links_length = links_length_after_joint(node_list)
     vec = []
     for l in range(len(links_length)):
-        value = start + multiplier * l
+
+    #for l in links_length:
+        value = round(start + multiplier * l, 3)
         vec.append(value)
     return vec
 

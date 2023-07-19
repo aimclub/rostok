@@ -48,10 +48,10 @@ class ConstTorqueGrasp(ParametrizedSimulation):
         for event in self.event_container:
             event.reset()
 
-    def run_simulation(self, graph: GraphGrammar, data, vis=False):
+    def run_simulation(self, graph: GraphGrammar, data, vis=False, delay = False):
         self.reset_events()
         #simulation = RobotSimulationChrono([])
-        simulation = RobotSimulationWithForceTest(False, [])
+        simulation = RobotSimulationWithForceTest(delay, [])
         simulation.add_design(graph, data)
         grasp_object = self.grasp_object_callback()
         shake = YaxisShaker(10, 1, 0.5, float("inf"))

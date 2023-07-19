@@ -40,7 +40,7 @@ while not finish:
     iteration_limit = base_iteration_limit - int(graph_env.counter_action / max_numbers_rules *
                                                  (base_iteration_limit * iteration_reduction_rate))
     searcher = mcts.mcts(iterationLimit=iteration_limit)
-    finish, graph_env = make_mcts_step(searcher, graph_env, n_steps)
+    finish, graph_env = make_mcts_step(searcher, graph_env, n_steps, checkpointer)
     n_steps += 1
     print(f"number iteration: {n_steps}, counter actions: {graph_env.counter_action} " +
           f"reward: {mcts_helper.report.get_best_info()[1]}")
@@ -83,5 +83,5 @@ best_graph, reward, best_control = mcts_helper.report.get_best_info()
 data = control_optimizer.optim_parameters2data_control(best_control, best_graph)
 #data = {"initial_value": best_control}
 simulation_output = simulation_manager.run_simulation(best_graph, data, True)
-res = -simulation_rewarder.calculate_reward(simulation_output)
+res = simulation_rewarder.calculate_reward(simulation_output)
 print("Best reward obtained in the MCTS search:", res)

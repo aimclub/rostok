@@ -83,10 +83,11 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
                                                args=(graph, sim_scene[0]))
 
                 reward -= result.fun * sim_scene[1]
+                processed_parameters = self._postprocessing_parameters(result.x)
                 if optim_parameters.size == 0:
-                    optim_parameters = result.x
+                    optim_parameters = processed_parameters
                 else:
-                    optim_parameters = np.vstack((optim_parameters, result.x))
+                    optim_parameters = np.vstack((optim_parameters, processed_parameters))
 
         else:
             result = self.run_optimization(self._reward_with_parameters,
@@ -94,7 +95,7 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
                                            args=(graph, self.simulation_scenario))
 
             reward = -result.fun
-            optim_parameters = result.x
+            optim_parameters = self._postprocessing_parameters(result.x)
 
         return (reward, optim_parameters)
 
@@ -125,6 +126,7 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
             _type_: _description_
         """
         n_joints = len(get_joint_vector_from_graph(graph))
+        print('n_joints:', n_joints)
         multi_bound = []
         for _ in range(n_joints):
             multi_bound.append(self.bounds)
@@ -160,6 +162,10 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
         data = {"initial_value": parameters}
 
         return data
+    
+    def _postprocessing_parameters(self, parameters):
+        
+        return np.round(parameters, 3)
 
     @abstractmethod
     def run_optimization(self, callback, multi_bound, args):
@@ -267,6 +273,7 @@ class ConstTorqueOptimizationBranchTemplate(CalculatorWithConstTorqueOptimizatio
 
     def bound_parameters(self, graph: GraphGrammar):
         n_branches = len(joint_root_paths(graph))
+        print('n_branches:',n_branches)
         if n_branches == 0:
             return []
         multi_bound = []
@@ -276,6 +283,7 @@ class ConstTorqueOptimizationBranchTemplate(CalculatorWithConstTorqueOptimizatio
         return multi_bound
 
     def _reward_with_parameters(self, parameters, graph, simulator_scenario):
+        parameters = parameters.round(3)
         data = self._transform_parameters2data(parameters, graph)
         sim_output = simulator_scenario.run_simulation(graph, data)
         reward = self.rewarder.calculate_reward(sim_output)
