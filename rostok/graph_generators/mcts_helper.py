@@ -1,5 +1,6 @@
 import sys
 import os
+import pickle
 import time
 from copy import deepcopy
 from pathlib import Path
@@ -14,7 +15,7 @@ from rostok.graph_grammar.graph_utils import (plot_graph_reward, save_graph_plot
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 from rostok.trajectory_optimizer.control_optimizer import GraphRewardCalculator
-from rostok.utils.pickle_save import Saveable
+from rostok.utils.pickle_save import Saveable, load_saveable
 from rostok.utils.states import (MCTSOptimizedState, OptimizedGraph, OptimizedState, RobotState)
 
 
@@ -406,7 +407,7 @@ def make_mcts_step(searcher, state: MCTSGraphEnvironment, counter, checkpointer=
     iteration_time = time.time() - start
 
     if checkpointer:
-        checkpointer.update_checkpoint_n_logs(iteration_time)
+        checkpointer.update_checkpoint_n_logs(iteration_time, new_state)
     return done, new_state
 
 
@@ -416,7 +417,6 @@ def make_mcts_step(searcher, state: MCTSGraphEnvironment, counter, checkpointer=
 
 
 class CheckpointMCTS():
-    ID_CHECKPOINT = 0
     """Class include all the information that should be saved as a result of MCTS search.
 
     Attributes:
@@ -438,8 +438,6 @@ class CheckpointMCTS():
         self.iteration = 0
         self.checkpoint_iter = checkpoint_iter
         self.last_iteration_time = 0
-        CheckpointMCTS.ID_CHECKPOINT = CheckpointMCTS.ID_CHECKPOINT + 1
-        self.postfix_id_folders = CheckpointMCTS.ID_CHECKPOINT
 
         self.prepare_folders_n_files(folder_name, rewrite)
 
@@ -469,25 +467,25 @@ class CheckpointMCTS():
             print(f"\n----------------------------------\n")
             sys.stdout = original_stdout
 
-    def dump_results(self):
-        """Saves lists of graphs and states."""
+    def dump_results(self, current_state):
         self.mcts_saveable.seen_graphs.set_path(self.path)
         self.mcts_saveable.seen_graphs.save()
         self.mcts_saveable.seen_states.set_path(self.path)
         self.mcts_saveable.seen_states.save()
         self.mcts_saveable.set_path(self.path)
         self.mcts_saveable.save()
+        pickle.dump(current_state, "state.pickle")
 
-    def save(self):
+    def save(self, current_state):
         """Save all information in the object but not object itself."""
         self.logging()
-        self.dump_results()
+        self.dump_results(current_state)
 
-    def update_checkpoint_n_logs(self, iteration_time):
+    def update_checkpoint_n_logs(self, iteration_time, current_state):
         self.last_iteration_time = iteration_time
         if self.iteration % (self.checkpoint_iter + 1) == 0:
             self.prepare_folders_n_files(self.path.split("/")[-1], True, True)
-            self.save()
+            self.save(current_state)
 
         self.iteration += 1
 
@@ -521,3 +519,24 @@ class CheckpointMCTS():
             os.mkdir(folder_path)
 
         self.path = folder_path
+    
+    @classmethod
+    def restore_optimization(cls, folder_with_checkpoint, checkpoint_iter):
+        path_to_checkpoint = os.path.join("./","app/","checkpoint/", folder_with_checkpoint)
+        
+        if os.path.exists(path_to_checkpoint):
+            path_mcts_history = os.path.join(path_to_checkpoint, "MCTS_data.pickle")
+            mcts_saveable = load_saveable(path_mcts_history)
+            
+            path_graph_report = os.path.join(path_to_checkpoint, "optimized_graph_report.pickle")
+            seen_graphs = load_saveable(path_graph_report)
+            
+            path_mcts_state = os.path.join(path_to_checkpoint, "optimized_MCTS_state_report.pickle")
+            seen_mcts_states = load_saveable(path_mcts_state)
+            
+            path_last_mcts_state = os.path.join(path_to_checkpoint, "state.pickle")
+            last_mcts_state = load_saveable(path_last_mcts_state)
+        else:
+            print("Couldn't find dirictory with previous checkpoint")
+            
+        return last_mcts_state, self.mcts_saveable, seen_graphs, seen_mcts_states
