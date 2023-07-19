@@ -5,10 +5,12 @@ import time
 from copy import deepcopy
 from pathlib import Path
 from statistics import mean
-
+    
 import matplotlib.pyplot as plt
 import numpy as np
 
+from rostok.block_builder_chrono.block_builder_chrono_api import \
+    ChronoBlockCreatorInterface as creator
 from rostok.graph_generators.graph_environment import \
     GraphVocabularyEnvironment
 from rostok.graph_grammar.graph_utils import (plot_graph_reward, save_graph_plot_reward)
@@ -473,12 +475,22 @@ class CheckpointMCTS():
         for instance_saveable in saveables:
             with open(Path(self.path, instance_saveable.file_name + '.pickle'), "wb+") as file:
                 pickle.dump(instance_saveable, file)
-        
-        object_callback = current_state.optimizer.simulation_scenario.grasp_object_callback
-        current_state.optimizer.simulation_scenario.grasp_object_callback = None
-        with open(os.path.join(self.path, "state.pickle"), "wb") as file:
-            pickle.dump(current_state, file)
-        current_state.optimizer.simulation_scenario.grasp_object_callback = object_callback
+
+        sim_scenario = current_state.optimizer.simulation_scenario
+        if isinstance(sim_scenario, list):
+            object_callback = []
+            for scene in sim_scenario:
+                object_callback.append(scene.grasp_object_callback)
+                scene.grasp_object_callback = None
+            with open(os.path.join(self.path, "state.pickle"), "wb") as file:
+                pickle.dump(current_state, file)
+            for scene, callback_obj in zip(sim_scenario, object_callback):
+                scene.grasp_object_callback = callback_obj
+        else:
+            object_callback = sim_scenario.grasp_object_callback
+            with open(os.path.join(self.path, "state.pickle"), "wb") as file:
+                pickle.dump(current_state, file)
+            sim_scenario.grasp_object_callback = object_callback
 
     def save(self, current_state):
         """Save all information in the object but not object itself."""
@@ -525,7 +537,12 @@ class CheckpointMCTS():
         self.path = folder_path
     
     @classmethod
-    def restore_optimization(cls, folder_with_checkpoint, checkpoint_iter):
+    def restore_optimization(cls, folder_with_checkpoint, checkpoint_iter, grasp_object_blueprint):
+        if isinstance(grasp_object_blueprint,list):
+            grasp_object_callback = [(lambda obj=obj: creator.create_environment_body(obj)) for obj in grasp_object_blueprint]
+        else:
+            grasp_object_callback = lambda: creator.create_environment_body(grasp_object_blueprint)
+        
         path_to_checkpoint = os.path.join("./","app/","checkpoint/", folder_with_checkpoint)
         
         if os.path.exists(path_to_checkpoint):
@@ -540,7 +557,9 @@ class CheckpointMCTS():
             
             path_last_mcts_state = os.path.join(path_to_checkpoint, "state.pickle")
             last_mcts_state = load_saveable(path_last_mcts_state)
+            
+            
         else:
             print("Couldn't find dirictory with previous checkpoint")
             
-        return last_mcts_state, self.mcts_saveable, seen_graphs, seen_mcts_states
+        return last_mcts_state, mcts_saveable, seen_graphs, seen_mcts_states
