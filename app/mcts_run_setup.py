@@ -16,12 +16,29 @@ from rostok.trajectory_optimizer.control_optimizer import (CalculatorWithGraphOp
 
 def config_with_standard(grasp_object_blueprint):
     # configurate the simulation manager
+    def object_callback():
+        return creator.create_environment_body(grasp_object_blueprint)
+    
     simulation_manager = ConstTorqueGrasp(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION)
-    simulation_manager.grasp_object_callback = lambda: creator.create_environment_body(
-        grasp_object_blueprint)
-    simulation_manager.add_flag(FlagContactTimeOut(hp.FLAG_TIME_NO_CONTACT))
-    simulation_manager.add_flag(FlagFlyingApart(hp.FLAG_FLYING_APART))
-    simulation_manager.add_flag(FlagSlipout(hp.FLAG_TIME_SLIPOUT))
+    simulation_manager.grasp_object_callback = object_callback
+    event_contact = EventContact()
+    simulation_manager.add_event(event_contact)
+    event_timeout = EventContactTimeOut(hp.FLAG_TIME_NO_CONTACT, event_contact)
+    simulation_manager.add_event(event_timeout)
+    event_flying_apart = EventFlyingApart(hp.FLAG_FLYING_APART)
+    simulation_manager.add_event(event_flying_apart)
+    event_slipout = EventSlipOut(hp.FLAG_TIME_SLIPOUT)
+    simulation_manager.add_event(event_slipout)
+    event_grasp = EventGrasp(
+        grasp_limit_time=hp.GRASP_TIME,
+        contact_event=event_contact,
+        verbosity=0,
+    )
+    simulation_manager.add_event(event_grasp)
+    event_stop_external_force = EventStopExternalForce(grasp_event=event_grasp,
+                                                       force_test_time=hp.FORCE_TEST_TIME)
+    simulation_manager.add_event(event_stop_external_force)
+
     #create criterion manager
     simulation_rewarder = SimulationReward(1)
     #create criterions and add them to manager

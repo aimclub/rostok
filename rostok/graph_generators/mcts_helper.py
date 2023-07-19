@@ -468,13 +468,17 @@ class CheckpointMCTS():
             sys.stdout = original_stdout
 
     def dump_results(self, current_state):
-        self.mcts_saveable.seen_graphs.set_path(self.path)
-        self.mcts_saveable.seen_graphs.save()
-        self.mcts_saveable.seen_states.set_path(self.path)
-        self.mcts_saveable.seen_states.save()
-        self.mcts_saveable.set_path(self.path)
-        self.mcts_saveable.save()
-        pickle.dump(current_state, "state.pickle")
+        saveables = [self.mcts_saveable.seen_graphs, self.mcts_saveable.seen_states, self.mcts_saveable]
+        
+        for instance_saveable in saveables:
+            with open(Path(self.path, instance_saveable.file_name + '.pickle'), "wb+") as file:
+                pickle.dump(instance_saveable, file)
+        
+        object_callback = current_state.optimizer.simulation_scenario.grasp_object_callback
+        current_state.optimizer.simulation_scenario.grasp_object_callback = None
+        with open(os.path.join(self.path, "state.pickle"), "wb") as file:
+            pickle.dump(current_state, file)
+        current_state.optimizer.simulation_scenario.grasp_object_callback = object_callback
 
     def save(self, current_state):
         """Save all information in the object but not object itself."""
