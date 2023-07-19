@@ -1,0 +1,126 @@
+MCTS Iteration: 0, Iteration time: 2.387392282485962
+main_result:
+rules: Init
+control:
+reward: 0
+
+best_result:
+rules: Init
+control:
+reward: 0
+
+max number of non-terminal rules: 20 search parameter: 3
+
+Number of unique mechanisms tested in current MCTS run:  3
+Number of states  3
+
+----------------------------------
+
+MCTS Iteration: 2, Iteration time: 2.043215036392212
+main_result:
+rules: Init AddFinger_RN Terminal_Negative_Translate2
+control:
+reward: 0
+
+best_result:
+rules: Init AddFinger_RN Terminal_Negative_Translate2
+control:
+reward: 0
+
+max number of non-terminal rules: 20 search parameter: 3
+
+Number of unique mechanisms tested in current MCTS run:  9
+Number of states  9
+
+----------------------------------
+
+MCTS Iteration: 4, Iteration time: 1.625321865081787
+main_result:
+rules: Init AddFinger_RN Terminal_Negative_Translate2 RemoveFinger_N AddFinger_R
+control:
+reward: 0
+
+best_result:
+rules: Init AddFinger_RN Terminal_Negative_Translate2 RemoveFinger_N AddFinger_R
+control:
+reward: 0
+
+max number of non-terminal rules: 20 search parameter: 3
+
+Number of unique mechanisms tested in current MCTS run:  15
+Number of states  15
+
+----------------------------------
+
+MCTS Iteration: 6, Iteration time: 1.576897144317627
+main_result:
+rules: Init AddFinger_RN Terminal_Negative_Translate2 RemoveFinger_N AddFinger_R RemoveFinger RemoveFinger_RP
+control:
+reward: 0
+
+best_result:
+rules: Init AddFinger_RN Terminal_Negative_Translate2 RemoveFinger_N AddFinger_R RemoveFinger RemoveFinger_RP
+control:
+reward: 0
+
+max number of non-terminal rules: 20 search parameter: 3
+
+Number of unique mechanisms tested in current MCTS run:  21
+Number of states  21
+
+----------------------------------
+
+MCTS Iteration: 8, Iteration time: 0.7679116725921631
+main_result:
+rules: Init AddFinger_RN Terminal_Negative_Translate2 RemoveFinger_N AddFinger_R RemoveFinger RemoveFinger_RP AddFinger_PT Remove_FG
+control:
+reward: 0
+
+best_result:
+rules: Init AddFinger_RN Terminal_Negative_Translate2 RemoveFinger_N AddFinger_R RemoveFinger RemoveFinger_RP AddFinger_PT Remove_FG
+control:
+reward: 0
+
+max number of non-terminal rules: 20 search parameter: 3
+
+Number of unique mechanisms tested in current MCTS run:  27
+Number of states  27
+
+----------------------------------
+
+MCTS Iteration: 10, Iteration time: 0.5185501575469971
+main_result:
+rules: Init AddFinger_RN Terminal_Negative_Translate2 RemoveFinger_N AddFinger_R RemoveFinger RemoveFinger_RP AddFinger_PT Remove_FG Remove_FG Terminal_Radial_Translate2
+control:
+reward: 0
+
+best_result:
+rules: Init AddFinger_RN Terminal_Negative_Translate2 RemoveFinger_N AddFinger_R RemoveFinger RemoveFinger_RP AddFinger_PT Remove_FG Remove_FG Terminal_Radial_Translate2
+control:
+reward: 0
+
+max number of non-terminal rules: 20 search parameter: 3
+
+Number of unique mechanisms tested in current MCTS run:  33
+Number of states  33
+
+----------------------------------
+
+MCTS Iteration: 12, Iteration time: 0.1713728904724121
+main_result:
+rules: Init AddFinger_RN Terminal_Negative_Translate2 RemoveFinger_N AddFinger_R RemoveFinger RemoveFinger_RP AddFinger_PT Remove_FG Remove_FG Terminal_Radial_Translate2 Remove_FG Terminal_Radial_Translate2
+control:
+reward: 0
+
+best_result:
+rules: Init AddFinger_RN Terminal_Negative_Translate2 RemoveFinger_N AddFinger_R RemoveFinger RemoveFinger_RP AddFinger_PT Remove_FG Remove_FG Terminal_Radial_Translate2 Remove_FG Terminal_Radial_Translate2
+control:
+reward: 0
+
+max number of non-terminal rules: 20 search parameter: 3
+
+Number of unique mechanisms tested in current MCTS run:  35
+Number of states  39
+
+----------------------------------
+
