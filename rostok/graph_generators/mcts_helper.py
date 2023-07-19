@@ -476,8 +476,11 @@ class CheckpointMCTS():
         self.mcts_saveable.seen_graphs.save()
         self.mcts_saveable.seen_states.set_path(self.path)
         self.mcts_saveable.seen_states.save()
+        temp = self.mcts_saveable.path
         self.mcts_saveable.set_path(self.path)
         self.mcts_saveable.save()
+        self.mcts_saveable.set_path(temp)
+
 
     def save(self):
         """Save all information in the object but not object itself."""

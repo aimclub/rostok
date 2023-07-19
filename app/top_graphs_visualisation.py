@@ -10,7 +10,7 @@ from mcts_run_setup import config_with_standard, config_with_standard_graph, con
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
 from rostok.graph_generators.mcts_helper import (MCTSSaveable, OptimizedGraphReport)
 from rostok.library.obj_grasp.objects import (get_obj_hard_mesh_piramida,
-                                              get_object_parametrized_sphere)
+                                              get_object_parametrized_sphere, get_object_parametrized_tilt_ellipsoid)
 #from rostok.library.rule_sets.ruleset_old_style import create_rules
 from rostok.utils.pickle_save import load_saveable
 
@@ -58,9 +58,11 @@ def vis_top_n_mechs(n: int, object: EnvironmentBodyBlueprint):
     for graph in some_top:
         G = graph.graph
         reward = graph.reward
+        print(graph.control)
         control = control_optimizer.optim_parameters2data_control(graph.control, G)
+        print(control)
         #data = {"initial_value": control}
-        simulation_output = simulation_manager.run_simulation(G, control, True)
+        simulation_output = simulation_manager.run_simulation(G, control, True, True)
         res = simulation_rewarder.calculate_reward(simulation_output)
         print(reward)
         print(res)
@@ -157,6 +159,6 @@ def save_svg_mean_reward(name: str,
 
 if __name__ == "__main__":
     #grasp_object_blueprint = get_object_parametrized_sphere(0.4, 1)
-    grasp_object_blueprint = get_object_parametrized_sphere(0.5, 1)
+    grasp_object_blueprint = get_object_parametrized_tilt_ellipsoid(1, 0.8, 1.4, 10)
     vis_top_n_mechs(3, grasp_object_blueprint)
     # save_svg_mean_reward( name = 'kek', objecy_name='sphere')
