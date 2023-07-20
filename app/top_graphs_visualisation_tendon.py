@@ -160,5 +160,5 @@ def save_svg_mean_reward(name: str,
 if __name__ == "__main__":
     #grasp_object_blueprint = get_object_parametrized_sphere(0.4, 1)
     grasp_object_blueprint = get_object_parametrized_tilt_ellipsoid(1, 0.8, 1.4, 10)
-    vis_top_n_mechs(5, grasp_object_blueprint)
+    vis_top_n_mechs(10, grasp_object_blueprint)
     # save_svg_mean_reward( name = 'kek', objecy_name='sphere')

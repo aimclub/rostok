@@ -51,6 +51,7 @@ def reoptimize_nth_graph(n: int, obj: EnvironmentBodyBlueprint):
     report = load_saveable(report_path)
     graph_report = report.seen_graphs
     control_optimizer = config_with_standard_tendon_multiobject(*obj)
+    control_optimizer.limit = 16
     simulation_rewarder = control_optimizer.rewarder
     simulation_managers = control_optimizer.simulation_scenario
     graph_list = graph_report.graph_list
@@ -77,7 +78,7 @@ if __name__ == "__main__":
     #grasp_object_blueprint = get_object_parametrized_sphere(0.4, 1)
     grasp_object_blueprints = [[
         get_object_parametrized_tilt_ellipsoid(1, 0.8, 1.4, 10),
-        get_object_parametrized_cylinder(0.7, 1, 10),
-        get_object_parametrized_sphere(0.7, 2)
+        get_object_parametrized_cylinder(0.6, 0.9, 10),
+        get_object_parametrized_sphere(0.6, 2)
     ], [1, 1, 1]]
     reoptimize_nth_graph(0, grasp_object_blueprints)

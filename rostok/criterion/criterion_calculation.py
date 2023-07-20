@@ -286,7 +286,7 @@ class SimulationReward:
         self.criteria.append(citerion)
         self.weights.append(weight)
 
-    def calculate_reward(self, simulation_output):
+    def calculate_reward(self, simulation_output, partial = False):
         """Calculate all rewards and return weighted sum of them.
 
         Args:
@@ -299,6 +299,8 @@ class SimulationReward:
         for criterion in self.criteria:
             partial_rewards.append(criterion.calculate_reward(simulation_output))
 
+        if partial:
+            return partial_rewards
         if self.verbosity > 0:
             print([round(x, 3) for x in partial_rewards])
 
