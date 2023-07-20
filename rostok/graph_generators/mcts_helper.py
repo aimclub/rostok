@@ -547,24 +547,15 @@ class CheckpointMCTS():
         path_to_checkpoint = os.path.join("./","app/","checkpoint/", folder_with_checkpoint)
         
         if os.path.exists(path_to_checkpoint):
-            path_mcts_history = os.path.join(path_to_checkpoint, "MCTS_data.pickle")
-            mcts_saveable = load_saveable(path_mcts_history)
-            
-            path_graph_report = os.path.join(path_to_checkpoint, "optimized_graph_report.pickle")
-            seen_graphs = load_saveable(path_graph_report)
-            
-            path_mcts_state = os.path.join(path_to_checkpoint, "optimized_MCTS_state_report.pickle")
-            seen_mcts_states = load_saveable(path_mcts_state)
-            
             path_last_mcts_state = os.path.join(path_to_checkpoint, "state.pickle")
             last_mcts_state = load_saveable(path_last_mcts_state)
             
             sim_scenario = last_mcts_state.optimizer.simulation_scenario
             sim_scenario.grasp_object_callback = grasp_object_callback
             
-            checkpointer = cls(mcts_saveable, folder_with_checkpoint, checkpoint_iter, rewrite = True)
+            checkpointer = cls(last_mcts_state.helper.report, folder_with_checkpoint, checkpoint_iter, rewrite = True)
         else:
             print("Couldn't find dirictory with previous checkpoint")
             return None
         
-        return checkpointer, last_mcts_state, mcts_saveable, seen_graphs, seen_mcts_states
+        return checkpointer, last_mcts_state
