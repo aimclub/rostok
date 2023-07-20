@@ -11,7 +11,7 @@ from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
 from rostok.graph_generators.mcts_helper import (MCTSSaveable, OptimizedGraphReport)
 from rostok.library.obj_grasp.objects import (get_obj_hard_mesh_piramida,
                                               get_object_parametrized_sphere,
-                                              get_object_parametrized_tilt_ellipsoid)
+                                              get_object_parametrized_tilt_ellipsoid, get_object_parametrized_cylinder)
 #from rostok.library.rule_sets.ruleset_old_style import create_rules
 from rostok.utils.pickle_save import load_saveable
 
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     #grasp_object_blueprint = get_object_parametrized_sphere(0.4, 1)
     grasp_object_blueprints = [[
         get_object_parametrized_tilt_ellipsoid(1, 0.8, 1.4, 10),
-        get_obj_hard_mesh_piramida(),
-        get_object_parametrized_sphere(0.5, 2)
+        get_object_parametrized_cylinder(0.7, 1),
+        get_object_parametrized_sphere(0.7, 2)
     ], [1, 1, 1]]
     reoptimize_nth_graph(0, grasp_object_blueprints)

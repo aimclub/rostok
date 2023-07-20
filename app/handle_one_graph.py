@@ -5,7 +5,7 @@ from datetime import datetime
 
 import hyperparameters as hp
 import mcts
-from mcts_run_setup import config_with_standard, config_with_standard_cable, config_with_standard_tendon
+from mcts_run_setup import config_with_standard, config_with_standard_cable, config_with_standard_tendon, config_with_standard_linear
 
 from rostok.graph_generators.mcts_helper import (make_mcts_step,
                                                  prepare_mcts_state_and_helper, CheckpointMCTS)
@@ -21,6 +21,7 @@ rule_vocabul = create_rules()
 grasp_object_blueprint = get_object_parametrized_tilt_ellipsoid(1, 0.8, 1.4, 10)
 # create reward counter using run setup function
 control_optimizer = config_with_standard_cable(grasp_object_blueprint)
+control_optimizer = config_with_standard_linear(grasp_object_blueprint)
 
 path = Path("./app/single_graph/"+"graph_" + datetime.now().strftime("%yy_%mm_%dd_%HH_%MM")+".txt")
 start = time.time()
@@ -43,11 +44,11 @@ with open(path, "w") as file:
     graph=get_three_link_one_finger()
     graph=get_three_same_link_one_finger()
     graph=get_four_same_link_one_finger()
-    control = [0]
+    control = [20]
     print('control:', control)
     data = control_optimizer.optim_parameters2data_control(control, graph)
     print(data)
-    simulation_output = simulation_manager.run_simulation(graph, data, False, False)
+    simulation_output = simulation_manager.run_simulation(graph, data, True, False)
     res = simulation_rewarder.calculate_reward(simulation_output)
     print('reward', res)
     sys.stdout = original_stdout

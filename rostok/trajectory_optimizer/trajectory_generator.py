@@ -131,7 +131,9 @@ def linear_control(graph: GraphGrammar, coefficients: list[tuple[float, float]])
         _type_: _description_
     """
     gen = path_control_generator(graph, coefficients)
-    unpucked = lambda x: control_vector_geom_prog(*x)
+    #unpucked = lambda x: control_vector_geom_prog(*x)
+    unpucked = lambda x: control_vector_linear(*x)
+    control_vector_linear
     joint_constants = list(map(unpucked, gen))
     res = {"initial_value": list(chain(*joint_constants))}
     return res

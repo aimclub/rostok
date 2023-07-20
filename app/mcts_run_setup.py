@@ -116,6 +116,54 @@ def config_with_standard_tendon(grasp_object_blueprint):
                                                          hp.CONTROL_OPTIMIZATION_ITERATION_TENDON, const_parameter=hp.TENDON_CONST)
     return control_optimizer
 
+def config_with_standard_linear(grasp_object_blueprint):
+    # configurate the simulation manager
+    simulation_manager = ConstTorqueGrasp(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION)
+    simulation_manager.grasp_object_callback = lambda: creator.create_environment_body(
+        grasp_object_blueprint)
+    event_contact = EventContact()
+    simulation_manager.add_event(event_contact)
+    event_timeout = EventContactTimeOut(hp.FLAG_TIME_NO_CONTACT, event_contact)
+    simulation_manager.add_event(event_timeout)
+    event_flying_apart = EventFlyingApart(hp.FLAG_FLYING_APART)
+    simulation_manager.add_event(event_flying_apart)
+    event_slipout = EventSlipOut(hp.FLAG_TIME_SLIPOUT)
+    simulation_manager.add_event(event_slipout)
+    event_grasp = EventGrasp(
+        grasp_limit_time=hp.GRASP_TIME,
+        contact_event=event_contact,
+        verbosity=0,
+    )
+    simulation_manager.add_event(event_grasp)
+    event_stop_external_force = EventStopExternalForce(grasp_event=event_grasp,
+                                                       force_test_time=hp.FORCE_TEST_TIME)
+    simulation_manager.add_event(event_stop_external_force)
+
+    #create criterion manager
+    simulation_rewarder = SimulationReward(verbosity=0)
+    #create criterions and add them to manager
+    simulation_rewarder.add_criterion(TimeCriterion(hp.GRASP_TIME, event_timeout, event_grasp),
+                                      hp.TIME_CRITERION_WEIGHT)
+    #simulation_rewarder.add_criterion(ForceCriterion(event_timeout), hp.FORCE_CRITERION_WEIGHT)
+    simulation_rewarder.add_criterion(InstantContactingLinkCriterion(event_grasp),
+                                      hp.INSTANT_CONTACTING_LINK_CRITERION_WEIGHT)
+    simulation_rewarder.add_criterion(InstantForceCriterion(event_grasp),
+                                      hp.INSTANT_FORCE_CRITERION_WEIGHT)
+    simulation_rewarder.add_criterion(InstantObjectCOGCriterion(event_grasp),
+                                      hp.OBJECT_COG_CRITERION_WEIGHT)
+    n_steps = int(hp.GRASP_TIME / hp.TIME_STEP_SIMULATION)
+    print(n_steps)
+    simulation_rewarder.add_criterion(GraspTimeCriterion(event_grasp, n_steps),
+                                      hp.GRASP_TIME_CRITERION_WEIGHT)
+    simulation_rewarder.add_criterion(
+        FinalPositionCriterion(hp.REFERENCE_DISTANCE, event_grasp, event_slipout),
+        hp.FINAL_POSITION_CRITERION_WEIGHT)
+    
+    control_optimizer = LinearControlOptimizationDirect(simulation_manager, simulation_rewarder,
+                                                         hp.CONTROL_OPTIMIZATION_BOUNDS_TENDON,
+                                                         hp.CONTROL_OPTIMIZATION_ITERATION_TENDON, const_parameter=hp.TENDON_CONST)
+    return control_optimizer
+
 def config_with_standard_graph(grasp_object_blueprint, torque_dict):
     # configurate the simulation manager
     simulation_manager = ConstTorqueGrasp(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION)
@@ -220,7 +268,6 @@ def config_with_standard_multiobject(grasp_object_blueprint, weights):
 
     return control_optimizer
 
-
 def config_with_standard_tendon_multiobject(grasp_object_blueprint, weights):
     # configurate the simulation manager
     simulation_manager = ConstTorqueGrasp(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION)
@@ -270,13 +317,11 @@ def config_with_standard_tendon_multiobject(grasp_object_blueprint, weights):
         FinalPositionCriterion(hp.REFERENCE_DISTANCE, event_grasp, event_slipout),
         hp.FINAL_POSITION_CRITERION_WEIGHT)
 
-    control_optimizer = TendonLikeControlOptimization(simulation_managers, simulation_rewarder,
+    control_optimizer = LinearControlOptimizationDirect(simulation_managers, simulation_rewarder,
                                                          hp.CONTROL_OPTIMIZATION_BOUNDS_TENDON,
                                                          1, const_parameter = hp.TENDON_CONST)
 
     return control_optimizer
-
-
 
 def config_with_standard_cable(grasp_object_blueprint):
     # configurate the simulation manager
