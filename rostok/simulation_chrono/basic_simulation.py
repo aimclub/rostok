@@ -421,8 +421,8 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
                 break
 
             # just to slow down the simulation
-            # if self.delay_flag:
-            #     time.sleep(0.0000001)
+            if self.delay_flag:
+                time.sleep(0.0000001)
 
         if visualize:
             vis.GetDevice().closeDevice()
