@@ -14,9 +14,10 @@ from rostok.library.rule_sets.ruleset_old_style_graph import create_rules
 
 grasp_object_blueprint = get_object_parametrized_tilt_ellipsoid(1, 0.8, 1.4, 10)
 
-checkpointer, graph_env, report, __, __ = CheckpointMCTS.restore_optimization(
-    "AppGraphEllipsoid_3", 1, grasp_object_blueprint)
+checkpointer, graph_env = CheckpointMCTS.restore_optimization(
+    "AppGraphEllipsoid_4", 1, grasp_object_blueprint)
 
+report = graph_env.helper.report
 base_iteration_limit = report.search_parameter
 max_numbers_rules = report.non_terminal_rules_limit
 iteration_reduction_rate = hp.ITERATION_REDUCTION_TIME
