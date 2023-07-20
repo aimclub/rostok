@@ -562,8 +562,9 @@ class CheckpointMCTS():
             sim_scenario = last_mcts_state.optimizer.simulation_scenario
             sim_scenario.grasp_object_callback = grasp_object_callback
             
+            checkpointer = cls(mcts_saveable, folder_with_checkpoint, checkpoint_iter, rewrite = True)
         else:
             print("Couldn't find dirictory with previous checkpoint")
+            return None
         
-        checkpointer = cls(mcts_saveable, folder_with_checkpoint, checkpoint_iter, rewrite = True)
         return checkpointer, last_mcts_state, mcts_saveable, seen_graphs, seen_mcts_states

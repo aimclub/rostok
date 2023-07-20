@@ -15,7 +15,7 @@ from rostok.library.rule_sets.ruleset_old_style_graph import create_rules
 grasp_object_blueprint = get_object_parametrized_tilt_ellipsoid(1, 0.8, 1.4, 10)
 
 checkpointer, graph_env, report, __, __ = CheckpointMCTS.restore_optimization(
-    "./app/checkpoint/AppGraphEllipsoid", 1, grasp_object_blueprint)
+    "AppGraphEllipsoid_3", 1, grasp_object_blueprint)
 
 base_iteration_limit = report.search_parameter
 max_numbers_rules = report.non_terminal_rules_limit
@@ -61,10 +61,10 @@ with open(Path(path, "mcts_result.txt"), "a") as file:
     print("FLAG_TIME_SLIPOUT:", hp.FLAG_TIME_SLIPOUT)
     sys.stdout = original_stdout
 
-simulation_rewarder = control_optimizer.rewarder
-simulation_manager = control_optimizer.simulation_scenario
+simulation_rewarder = graph_env.optimizer.rewarder
+simulation_manager = graph_env.optimizer.simulation_scenario
 # visualisation in the end of the search
-best_graph, reward, best_control = mcts_helper.report.get_best_info()
+best_graph, reward, best_control = graph_env.helper.report.get_best_info()
 data = {"initial_value": best_control}
 simulation_output = simulation_manager.run_simulation(best_graph, data, True)
 res = -simulation_rewarder.calculate_reward(simulation_output)
