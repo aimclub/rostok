@@ -1,20 +1,23 @@
 import sys
 import os
+import pickle
 import time
 from copy import deepcopy
 from pathlib import Path
 from statistics import mean
-
+    
 import matplotlib.pyplot as plt
 import numpy as np
 
+from rostok.block_builder_chrono.block_builder_chrono_api import \
+    ChronoBlockCreatorInterface as creator
 from rostok.graph_generators.graph_environment import \
     GraphVocabularyEnvironment
 from rostok.graph_grammar.graph_utils import (plot_graph_reward, save_graph_plot_reward)
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 from rostok.trajectory_optimizer.control_optimizer import GraphRewardCalculator
-from rostok.utils.pickle_save import Saveable
+from rostok.utils.pickle_save import Saveable, load_saveable
 from rostok.utils.states import (MCTSOptimizedState, OptimizedGraph, OptimizedState, RobotState)
 
 
@@ -406,7 +409,7 @@ def make_mcts_step(searcher, state: MCTSGraphEnvironment, counter, checkpointer=
     iteration_time = time.time() - start
 
     if checkpointer:
-        checkpointer.update_checkpoint_n_logs(iteration_time)
+        checkpointer.update_checkpoint_n_logs(iteration_time, new_state)
     return done, new_state
 
 
@@ -416,7 +419,6 @@ def make_mcts_step(searcher, state: MCTSGraphEnvironment, counter, checkpointer=
 
 
 class CheckpointMCTS():
-    ID_CHECKPOINT = 0
     """Class include all the information that should be saved as a result of MCTS search.
 
     Attributes:
@@ -434,14 +436,11 @@ class CheckpointMCTS():
 
         self.path = "./"
 
-
         self.mcts_saveable = mcts_saveable
         self.iteration = 0
         self.checkpoint_iter = checkpoint_iter
         self.last_iteration_time = 0
-        CheckpointMCTS.ID_CHECKPOINT = CheckpointMCTS.ID_CHECKPOINT + 1
-        self.postfix_id_folders = CheckpointMCTS.ID_CHECKPOINT
-        
+
         self.prepare_folders_n_files(folder_name, rewrite)
 
     def logging(self):
@@ -470,34 +469,53 @@ class CheckpointMCTS():
             print(f"\n----------------------------------\n")
             sys.stdout = original_stdout
 
-    def dump_results(self):
-        """Saves lists of graphs and states."""
-        self.mcts_saveable.seen_graphs.set_path(self.path)
-        self.mcts_saveable.seen_graphs.save()
-        self.mcts_saveable.seen_states.set_path(self.path)
-        self.mcts_saveable.seen_states.save()
-        temp = self.mcts_saveable.path
-        self.mcts_saveable.set_path(self.path)
-        self.mcts_saveable.save()
-        self.mcts_saveable.set_path(temp)
+    def dump_results(self, current_state):
+        saveables = [self.mcts_saveable.seen_graphs, self.mcts_saveable.seen_states, self.mcts_saveable]
+        
+        for instance_saveable in saveables:
+            with open(Path(self.path, instance_saveable.file_name + '.pickle'), "wb+") as file:
+                pickle.dump(instance_saveable, file)
 
+        sim_scenario = current_state.optimizer.simulation_scenario
+        if isinstance(sim_scenario, list):
+            object_callback = []
+            for scene in sim_scenario:
+                object_callback.append(scene.grasp_object_callback)
+                scene.grasp_object_callback = None
+            with open(os.path.join(self.path, "state.pickle"), "wb") as file:
+                pickle.dump(current_state, file)
+            for scene, callback_obj in zip(sim_scenario, object_callback):
+                scene.grasp_object_callback = callback_obj
+        else:
+            object_callback = sim_scenario.grasp_object_callback
+            sim_scenario.grasp_object_callback = None
+            with open(os.path.join(self.path, "state.pickle"), "wb") as file:
+                pickle.dump(current_state, file)
+            sim_scenario.grasp_object_callback = object_callback
 
-    def save(self):
+    def save(self, current_state):
         """Save all information in the object but not object itself."""
         self.logging()
-        self.dump_results()
+        self.dump_results(current_state)
 
-    def update_checkpoint_n_logs(self, iteration_time):
+    def update_checkpoint_n_logs(self, iteration_time, current_state):
         self.last_iteration_time = iteration_time
         if self.iteration % (self.checkpoint_iter + 1) == 0:
             self.prepare_folders_n_files(self.path.split("/")[-1], True, True)
-            self.save()
+            self.save(current_state)
 
         self.iteration += 1
 
-    def prepare_folders_n_files(self, folder_name, rewrite, loggging = False):
+    def prepare_folders_n_files(self, folder_name, rewrite, loggging=False):
+        folder_path_to_checkpoint = os.path.join("./", "app/"
+                                                 "checkpoint/")
+
+        if not os.path.exists(folder_path_to_checkpoint):
+            print("Create folder for checkpoint")
+            os.mkdir(folder_path_to_checkpoint)
+
         folder_path = os.path.join("./", "app/"
-                                 "checkpoint/", folder_name)
+                                   "checkpoint/", folder_name)
 
         if not os.path.exists(folder_path):
             print(f"Create checkpoint dictionary - {folder_path}")
@@ -511,10 +529,33 @@ class CheckpointMCTS():
             postfix_folder = 1
             folder_path = folder_path + f"_{postfix_folder}"
             while os.path.exists(folder_path):
-                folder_path = folder_path.replace(f"_{postfix_folder-1}",  f"_{postfix_folder}")
-                postfix_folder +=1
-            
+                folder_path = folder_path.replace(f"_{postfix_folder-1}", f"_{postfix_folder}")
+                postfix_folder += 1
+
             print(f"Create checkpoint dictionary - {folder_path}")
             os.mkdir(folder_path)
-
         self.path = folder_path
+
+    
+    @classmethod
+    def restore_optimization(cls, folder_with_checkpoint, checkpoint_iter, grasp_object_blueprint):
+        if isinstance(grasp_object_blueprint,list):
+            grasp_object_callback = [(lambda obj=obj: creator.create_environment_body(obj)) for obj in grasp_object_blueprint]
+        else:
+            grasp_object_callback = lambda: creator.create_environment_body(grasp_object_blueprint)
+        
+        path_to_checkpoint = os.path.join("./","app/","checkpoint/", folder_with_checkpoint)
+        
+        if os.path.exists(path_to_checkpoint):
+            path_last_mcts_state = os.path.join(path_to_checkpoint, "state.pickle")
+            last_mcts_state = load_saveable(path_last_mcts_state)
+            
+            sim_scenario = last_mcts_state.optimizer.simulation_scenario
+            sim_scenario.grasp_object_callback = grasp_object_callback
+            
+            checkpointer = cls(last_mcts_state.helper.report, folder_with_checkpoint, checkpoint_iter, rewrite = True)
+        else:
+            print("Couldn't find dirictory with previous checkpoint")
+            return None
+        
+        return checkpointer, last_mcts_state

@@ -1,5 +1,7 @@
 from abc import abstractmethod, ABC
 import numpy as np
+import re
+import types
 
 from scipy.optimize import direct, dual_annealing, shgo
 
@@ -23,6 +25,17 @@ class GraphRewardCalculator:
     @abstractmethod
     def print_log(self):
         pass
+    
+    def __repr__(self) -> str:
+        str_type = str(type(self))
+        str_class = re.findall('\'([^\']*)\'', str_type)[0]
+        self_attributes = dir(self)
+        self_fields = list(filter(lambda x: not (x.startswith("__") or x.endswith("__")), self_attributes))
+        self_fields = list(filter(lambda x: not isinstance(getattr(self, x), types.MethodType), self_fields))
+        str_self = f"{str_class}:\n"
+        for str_field in self_fields:
+            str_self = str_self + f"    {str_field} = {getattr(self, str_field)}, \n"
+        return str_self
 
 
 class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
