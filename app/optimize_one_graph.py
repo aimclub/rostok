@@ -47,12 +47,13 @@ with open(path, "w") as file:
         print(key, value)
     simulation_rewarder = control_optimizer.rewarder
     simulation_manager = control_optimizer.simulation_scenario
-    control_optimizer.limit = 10
+    control_optimizer.limit = 20
     # visualisation in the end of the search
     graph = get_three_link_one_finger()
     graph = get_three_same_link_one_finger()
     graph = get_two_link_three_finger()
-    graph = get_three_link_three_finger_scale_dist()
+    graph = get_three_link_three_finger_scale()
+    #graph = get_three_link_three_finger_scale_dist()
     #graph = get_three_link_three_finger()
     reward, control = control_optimizer.calculate_reward(graph)
     print('control:', control)
