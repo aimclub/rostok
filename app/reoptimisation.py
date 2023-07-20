@@ -10,7 +10,8 @@ from mcts_run_setup import config_with_standard, config_with_standard_graph, con
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
 from rostok.graph_generators.mcts_helper import (MCTSSaveable, OptimizedGraphReport)
 from rostok.library.obj_grasp.objects import (get_obj_hard_mesh_piramida,
-                                              get_object_parametrized_sphere, get_object_parametrized_tilt_ellipsoid)
+                                              get_object_parametrized_sphere,
+                                              get_object_parametrized_tilt_ellipsoid)
 #from rostok.library.rule_sets.ruleset_old_style import create_rules
 from rostok.utils.pickle_save import load_saveable
 
@@ -52,7 +53,7 @@ def reoptimize_nth_graph(n: int, obj: EnvironmentBodyBlueprint):
     simulation_rewarder = control_optimizer.rewarder
     simulation_managers = control_optimizer.simulation_scenario
     graph_list = graph_report.graph_list
-    
+
     sorted_graph_list = sorted(graph_list, key=lambda x: -x.reward)
     graph = sorted_graph_list[n]
     G = graph.graph
@@ -62,16 +63,21 @@ def reoptimize_nth_graph(n: int, obj: EnvironmentBodyBlueprint):
     control = control_optimizer.optim_parameters2data_control(optim_parameters, G)
     print(control)
     simulation_rewarder.verbosity = 1
-    i=0
+    i = 0
     for simulation_scenario in simulation_managers:
-        
+
         simulation_output = simulation_scenario[0].run_simulation(G, control[i], True, True)
         res = simulation_rewarder.calculate_reward(simulation_output)
         print(res)
         print()
-        i+=1
+        i += 1
+
 
 if __name__ == "__main__":
     #grasp_object_blueprint = get_object_parametrized_sphere(0.4, 1)
-    grasp_object_blueprints = [[get_object_parametrized_tilt_ellipsoid(1, 0.8, 1.4, 10),get_obj_hard_mesh_piramida(), get_object_parametrized_sphere(0.5,2)],[1,1,1]]
+    grasp_object_blueprints = [[
+        get_object_parametrized_tilt_ellipsoid(1, 0.8, 1.4, 10),
+        get_obj_hard_mesh_piramida(),
+        get_object_parametrized_sphere(0.5, 2)
+    ], [1, 1, 1]]
     reoptimize_nth_graph(0, grasp_object_blueprints)
