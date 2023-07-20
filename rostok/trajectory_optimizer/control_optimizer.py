@@ -10,7 +10,7 @@ from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
 from enum import Enum
 from rostok.simulation_chrono.simulation_scenario import ParametrizedSimulation
-from rostok.trajectory_optimizer.trajectory_generator import linear_control, joint_root_paths, tendon_like_control
+from rostok.trajectory_optimizer.trajectory_generator import cable_length_linear_control, linear_control, joint_root_paths, tendon_like_control
 
 
 class GraphRewardCalculator:
@@ -330,3 +330,10 @@ class TendonLikeControlOptimization(ConstControlOptimizationDirect):
     def generate_control_value_on_branch(self, graph: GraphGrammar,
                                          parameters_2d: list[tuple[float, float]]):
         return tendon_like_control(graph, parameters_2d)
+    
+
+class LinearCableControlOptimization(ConstControlOptimizationDirect):
+
+    def generate_control_value_on_branch(self, graph: GraphGrammar,
+                                         parameters_2d: list[tuple[float, float]]):
+        return cable_length_linear_control(graph, parameters_2d)
