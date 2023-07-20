@@ -1,10 +1,11 @@
-from mcts_run_setup import config_with_standard_graph
+from mcts_run_setup import config_with_standard_graph, config_with_standard
 import matplotlib.pyplot as plt
 from pathlib import Path
 from rostok.graph_generators.mcts_helper import OptimizedGraphReport
+from rostok.graph_grammar.node import GraphGrammar
 from rostok.utils.pickle_save import load_saveable
 from rostok.library.rule_sets.ruleset_old_style_graph import create_rules
-from rostok.library.obj_grasp.objects import get_object_parametrized_sphere
+from rostok.library.obj_grasp.objects import get_object_parametrized_sphere, get_object_parametrized_tilt_ellipsoid, get_object_parametrized_cylinder
 import networkx as nx
 def plot_graph(graph: GraphGrammar):
     plt.figure()
@@ -17,11 +18,11 @@ def plot_graph(graph: GraphGrammar):
 
 rule_vocabul, torque_dict = create_rules()
 
-grasp_object_blueprint = get_object_parametrized_sphere(0.4, 0.7)
+grasp_object_blueprint = get_object_parametrized_cylinder(0.5, 0.4, 0.2)
 
-report = load_saveable(Path("results\Reports_23y_02m_22d_04H_51M\MCTS_data_windows.pickle"))
+report = load_saveable(Path("results\Reports_23y_07m_20d_09H_05M\MCTS_data.pickle"))
 
-control_optimizer = config_with_standard_graph(grasp_object_blueprint, torque_dict)
+control_optimizer = config_with_standard(grasp_object_blueprint)
 
 best_graph, reward, best_control = report.get_best_info()
 

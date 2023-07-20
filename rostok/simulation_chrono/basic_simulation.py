@@ -391,20 +391,29 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
             vis.Initialize()
             vis.AddCamera(chrono.ChVectorD(1.5, 3, -4))
             vis.AddTypicalLights()
-            vis.EnableCollisionShapeDrawing(True)
+            # vis.EnableCollisionShapeDrawing(True)
 
         stop_flag = False
         self.result.time_vector = [0]
+        FPS = 30
+        frame_simulation = 0
         for i in range(number_of_steps):
             current_time = self.chrono_system.GetChTime()
             self.simulate_step(step_length, current_time, i)
             self.result.time_vector.append(self.chrono_system.GetChTime())
             if vis:
                 vis.Run()
-                if i % frame_update == 0:
+                if frame_simulation > 1/FPS/step_length:
+                    frame_simulation = 0
                     vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
                     vis.Render()
                     vis.EndScene()
+                else:
+                    frame_simulation +=1
+                # if i % frame_update == 0:
+                #     vis.BeginScene()
+                #     vis.Render()
+                #     vis.EndScene()
 
             stop_flag = self.handle_single_events(event_container, current_time, i)
 
@@ -412,8 +421,8 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
                 break
 
             # just to slow down the simulation
-            if self.delay_flag:
-                time.sleep(0.0001)
+            # if self.delay_flag:
+            #     time.sleep(0.0000001)
 
         if visualize:
             vis.GetDevice().closeDevice()
