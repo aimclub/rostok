@@ -48,7 +48,7 @@ def vis_top_n_mechs(n: int, object: EnvironmentBodyBlueprint):
     root.mainloop()
     report = load_saveable(report_path)
     graph_report = report.seen_graphs
-    control_optimizer = config_with_standard(grasp_object_blueprint)
+    control_optimizer = config_with_standard_tendon(grasp_object_blueprint)
     simulation_rewarder = control_optimizer.rewarder
     simulation_manager = control_optimizer.simulation_scenario
     graph_list = graph_report.graph_list
