@@ -264,7 +264,7 @@ def config_with_standard_multiobject(grasp_object_blueprint, weights):
 
     control_optimizer = CalculatorWithOptimizationDirect(simulation_managers, simulation_rewarder,
                                                          hp.CONTROL_OPTIMIZATION_BOUNDS,
-                                                         1)
+                                                         hp.CONTROL_OPTIMIZATION_ITERATION_TENDON)
 
     return control_optimizer
 
@@ -319,7 +319,7 @@ def config_with_standard_tendon_multiobject(grasp_object_blueprint, weights):
 
     control_optimizer = LinearControlOptimizationDirect(simulation_managers, simulation_rewarder,
                                                          hp.CONTROL_OPTIMIZATION_BOUNDS_TENDON,
-                                                         1, const_parameter = hp.TENDON_CONST)
+                                                         hp.CONTROL_OPTIMIZATION_ITERATION_TENDON, const_parameter = hp.TENDON_CONST)
 
     return control_optimizer
 

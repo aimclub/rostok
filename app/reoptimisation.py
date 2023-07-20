@@ -50,6 +50,7 @@ def reoptimize_nth_graph(n: int, obj: EnvironmentBodyBlueprint):
     report = load_saveable(report_path)
     graph_report = report.seen_graphs
     control_optimizer = config_with_standard_multiobject(*obj)
+    control_optimizer.limit = 16
     simulation_rewarder = control_optimizer.rewarder
     simulation_managers = control_optimizer.simulation_scenario
     graph_list = graph_report.graph_list
