@@ -62,7 +62,7 @@ def vis_top_n_mechs(n: int, object: EnvironmentBodyBlueprint):
         control = control_optimizer.optim_parameters2data_control(graph.control, G)
         print(control)
         #data = {"initial_value": control}
-        simulation_output = simulation_manager.run_simulation(G, control, True, True)
+        simulation_output = simulation_manager.run_simulation(G, control, True, False)
         res = simulation_rewarder.calculate_reward(simulation_output)
         print(reward)
         print(res)

@@ -50,7 +50,7 @@ def reoptimize_nth_graph(n: int, obj: EnvironmentBodyBlueprint):
     report = load_saveable(report_path)
     graph_report = report.seen_graphs
     control_optimizer = config_with_standard_multiobject(*obj)
-    control_optimizer.limit = 16
+    control_optimizer.limit = 10
     control_optimizer.bounds = (6,20)
     simulation_rewarder = control_optimizer.rewarder
     simulation_managers = control_optimizer.simulation_scenario
@@ -68,7 +68,7 @@ def reoptimize_nth_graph(n: int, obj: EnvironmentBodyBlueprint):
     i = 0
     for simulation_scenario in simulation_managers:
 
-        simulation_output = simulation_scenario[0].run_simulation(G, control[i], True, True)
+        simulation_output = simulation_scenario[0].run_simulation(G, control[i], True, False)
         res = simulation_rewarder.calculate_reward(simulation_output)
         print(res)
         print()
@@ -82,4 +82,4 @@ if __name__ == "__main__":
         get_object_parametrized_cylinder(0.6, 0.9, 10),
         get_object_parametrized_sphere(0.6, 2)
     ], [1, 1, 1]]
-    reoptimize_nth_graph(0, grasp_object_blueprints)
+    reoptimize_nth_graph(2, grasp_object_blueprints)
