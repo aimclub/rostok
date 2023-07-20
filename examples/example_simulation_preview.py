@@ -13,6 +13,7 @@ from rostok.library.rule_sets.simple_designs import (get_palm, get_two_link_one_
 from rostok.simulation_chrono.basic_simulation import SystemPreviewChrono
 from rostok.simulation_chrono.simulation_utils import \
     set_covering_sphere_based_position
+from rostok.trajectory_optimizer.trajectory_generator import cable_length_linear_control, tendon_like_control
 
 
 def rotation_x(alpha):
@@ -20,7 +21,8 @@ def rotation_x(alpha):
     return [quat_X_ang_alpha.e0, quat_X_ang_alpha.e1, quat_X_ang_alpha.e2, quat_X_ang_alpha.e3]
 
 
-graph = get_terminal_graph_three_finger()
+graph = get_terminal_graph_two_finger()
+tendon = cable_length_linear_control(graph, [(0, 1), (0, 1)])
 sim = SystemPreviewChrono()
 sim.add_design(graph, FrameTransform([0, 0, 0], rotation_x(0)))
 obj_bp = get_obj_hard_mesh_piramida()
