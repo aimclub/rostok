@@ -488,6 +488,7 @@ class CheckpointMCTS():
                 scene.grasp_object_callback = callback_obj
         else:
             object_callback = sim_scenario.grasp_object_callback
+            sim_scenario.grasp_object_callback = None
             with open(os.path.join(self.path, "state.pickle"), "wb") as file:
                 pickle.dump(current_state, file)
             sim_scenario.grasp_object_callback = object_callback
@@ -533,6 +534,7 @@ class CheckpointMCTS():
 
             print(f"Create checkpoint dictionary - {folder_path}")
             os.mkdir(folder_path)
+        self.path = folder_path
 
     
     @classmethod
@@ -557,8 +559,11 @@ class CheckpointMCTS():
             path_last_mcts_state = os.path.join(path_to_checkpoint, "state.pickle")
             last_mcts_state = load_saveable(path_last_mcts_state)
             
+            sim_scenario = last_mcts_state.optimizer.simulation_scenario
+            sim_scenario.grasp_object_callback = grasp_object_callback
             
         else:
             print("Couldn't find dirictory with previous checkpoint")
-            
-        return last_mcts_state, mcts_saveable, seen_graphs, seen_mcts_states
+        
+        checkpointer = cls(mcts_saveable, folder_with_checkpoint, checkpoint_iter, rewrite = True)
+        return checkpointer, last_mcts_state, mcts_saveable, seen_graphs, seen_mcts_states
