@@ -17,11 +17,12 @@ from rostok.library.rule_sets.simple_designs import get_three_link_one_finger, g
 # create rule vocabulary
 rule_vocabul = create_rules()
 # create blueprint for object to grasp
-#grasp_object_blueprint = get_object_parametrized_sphere(0.5, 1)
-grasp_object_blueprint = get_object_parametrized_tilt_ellipsoid(1, 0.8, 1.4, 10)
+grasp_object_blueprint = get_object_parametrized_sphere(0.005, 1)
+#grasp_object_blueprint = get_object_parametrized_tilt_ellipsoid(1, 0.8, 1.4, 10)
 # create reward counter using run setup function
 control_optimizer = config_with_standard_cable(grasp_object_blueprint)
 control_optimizer = config_with_standard_linear(grasp_object_blueprint)
+control_optimizer = config_with_standard(grasp_object_blueprint)
 
 path = Path("./app/single_graph/"+"graph_" + datetime.now().strftime("%yy_%mm_%dd_%HH_%MM")+".txt")
 start = time.time()
@@ -43,12 +44,12 @@ with open(path, "w") as file:
     # visualisation in the end of the search
     graph=get_three_link_one_finger()
     graph=get_three_same_link_one_finger()
-    graph=get_four_same_link_one_finger()
-    control = [20]
+    #graph=get_four_same_link_one_finger()
+    control = [14, 9, 4]
     print('control:', control)
     data = control_optimizer.optim_parameters2data_control(control, graph)
     print(data)
-    simulation_output = simulation_manager.run_simulation(graph, data, True, False)
+    simulation_output = simulation_manager.run_simulation(graph, data, True, True)
     res = simulation_rewarder.calculate_reward(simulation_output)
     print('reward', res)
     sys.stdout = original_stdout

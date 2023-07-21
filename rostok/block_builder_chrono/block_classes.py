@@ -84,9 +84,12 @@ class BuildingBody(BlockBody):
         # Normal Forces
         # set a color for the body, default is random
         if color is None:
-            rgb = [random.random(), random.random(), random.random()]
-            rgb[int(random.random() * 2)] *= 0.2
-            self.body.GetVisualShape(0).SetColor(chrono.ChColor(*rgb))
+            color = [0, 255, 0]
+            color = [x / 255 for x in color]
+            self.body.GetVisualShape(0).SetColor(chrono.ChColor(*color))
+            # rgb = [random.random(), random.random(), random.random()]
+            # rgb[int(random.random() * 2)] *= 0.2
+            # self.body.GetVisualShape(0).SetColor(chrono.ChColor(*rgb))
         else:
             color = [x / 256 for x in color]
             self.body.GetVisualShape(0).SetColor(chrono.ChColor(*color))
@@ -408,9 +411,12 @@ class ChronoEasyShapeObject():
         body.SetCollide(is_collide)
         self.body = body
         if color is None:
-            rgb = [random.random(), random.random(), random.random()]
-            rgb[int(random.random() * 2)] *= 0.2
-            self.body.GetVisualShape(0).SetColor(chrono.ChColor(*rgb))
+            color = [255, 215, 0]
+            color = [x / 255 for x in color]
+            self.body.GetVisualShape(0).SetColor(chrono.ChColor(*color))
+            # rgb = [random.random(), random.random(), random.random()]
+            # rgb[int(random.random() * 2)] *= 0.2
+            # self.body.GetVisualShape(0).SetColor(chrono.ChColor(*rgb))
         else:
             color = [x / 256 for x in color]
             self.body.GetVisualShape(0).SetColor(chrono.ChColor(*color))
