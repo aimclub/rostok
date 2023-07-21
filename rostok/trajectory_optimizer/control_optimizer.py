@@ -283,13 +283,13 @@ class ConstTorqueOptimizationBranchTemplate(CalculatorWithConstTorqueOptimizatio
         return multi_bound
 
     def _reward_with_parameters(self, parameters, graph, simulator_scenario):
-        parameters = parameters.round(3)
         data = self._transform_parameters2data(parameters, graph)
         sim_output = simulator_scenario.run_simulation(graph, data)
         reward = self.rewarder.calculate_reward(sim_output)
         return -reward
 
     def _transform_parameters2data(self, parameters, graph):
+        parameters = parameters.round(3)
         if isinstance(graph, tuple):
             graph = graph[0]
 

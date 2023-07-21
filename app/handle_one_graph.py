@@ -43,9 +43,9 @@ with open(path, "w") as file:
     simulation_manager = control_optimizer.simulation_scenario
     # visualisation in the end of the search
     graph=get_three_link_one_finger()
-    graph=get_three_same_link_one_finger()
-    #graph=get_four_same_link_one_finger()
-    control = [14, 9, 4]
+    # graph=get_three_same_link_one_finger()
+    # graph=get_four_same_link_one_finger()
+    control = [4, 14, 14]
     print('control:', control)
     data = control_optimizer.optim_parameters2data_control(control, graph)
     print(data)

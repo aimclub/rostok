@@ -11,7 +11,9 @@ from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
 from rostok.graph_generators.mcts_helper import (MCTSSaveable, OptimizedGraphReport)
 from rostok.library.obj_grasp.objects import (get_obj_hard_mesh_piramida,
                                               get_object_parametrized_sphere,
-                                              get_object_parametrized_tilt_ellipsoid, get_object_parametrized_cylinder)
+                                              get_object_parametrized_tilt_ellipsoid, 
+                                              get_object_parametrized_cylinder,
+                                              get_object_parametrized_box)
 #from rostok.library.rule_sets.ruleset_old_style import create_rules
 from rostok.utils.pickle_save import load_saveable
 
@@ -50,7 +52,7 @@ def reoptimize_nth_graph(n: int, obj: EnvironmentBodyBlueprint):
     report = load_saveable(report_path)
     graph_report = report.seen_graphs
     control_optimizer = config_with_standard_multiobject(*obj)
-    control_optimizer.limit = 10
+    control_optimizer.limit = 8
     control_optimizer.bounds = (6,20)
     simulation_rewarder = control_optimizer.rewarder
     simulation_managers = control_optimizer.simulation_scenario
@@ -78,7 +80,7 @@ def reoptimize_nth_graph(n: int, obj: EnvironmentBodyBlueprint):
 if __name__ == "__main__":
     #grasp_object_blueprint = get_object_parametrized_sphere(0.4, 1)
     grasp_object_blueprints = [[
-        get_object_parametrized_tilt_ellipsoid(1, 0.8, 1.4, 10),
+        get_object_parametrized_box(0.8, 1, 0.4, 10),
         get_object_parametrized_cylinder(0.6, 0.9, 10),
         get_object_parametrized_sphere(0.6, 2)
     ], [1, 1, 1]]

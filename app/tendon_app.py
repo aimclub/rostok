@@ -4,7 +4,7 @@ from pathlib import Path
 
 import hyperparameters as hp
 import mcts
-from mcts_run_setup import config_with_standard, config_with_standard_tendon
+from mcts_run_setup import config_with_standard, config_with_standard_tendon, config_with_standard_cable
 
 from rostok.graph_generators.mcts_helper import (make_mcts_step,
                                                  prepare_mcts_state_and_helper, CheckpointMCTS)
@@ -18,7 +18,7 @@ rule_vocabul = create_rules()
 #grasp_object_blueprint = get_object_parametrized_sphere(0.5, 1)
 grasp_object_blueprint = get_object_parametrized_tilt_ellipsoid(1, 0.8, 1.4, 10)
 # create reward counter using run setup function
-control_optimizer = config_with_standard_tendon(grasp_object_blueprint)
+control_optimizer = config_with_standard_cable(grasp_object_blueprint)
 # Initialize MCTS
 base_iteration_limit = hp.BASE_ITERATION_LIMIT_TENDON
 max_numbers_rules = hp.MAX_NUMBER_RULES

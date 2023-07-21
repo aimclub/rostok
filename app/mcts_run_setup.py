@@ -107,10 +107,7 @@ def config_with_standard_tendon(grasp_object_blueprint):
     simulation_rewarder.add_criterion(
         FinalPositionCriterion(hp.REFERENCE_DISTANCE, event_grasp, event_slipout),
         hp.FINAL_POSITION_CRITERION_WEIGHT)
-    
-    # control_optimizer = LinearControlOptimizationDirect(simulation_manager, simulation_rewarder,
-    #                                                      hp.CONTROL_OPTIMIZATION_BOUNDS_TENDON,
-    #                                                      hp.CONTROL_OPTIMIZATION_ITERATION_TENDON, const_parameter=hp.TENDON_CONST)
+
     control_optimizer = TendonLikeControlOptimization(simulation_manager, simulation_rewarder,
                                                          hp.CONTROL_OPTIMIZATION_BOUNDS_TENDON,
                                                          hp.CONTROL_OPTIMIZATION_ITERATION_TENDON, const_parameter=hp.TENDON_CONST)
@@ -161,7 +158,8 @@ def config_with_standard_linear(grasp_object_blueprint):
     
     control_optimizer = LinearControlOptimizationDirect(simulation_manager, simulation_rewarder,
                                                          hp.CONTROL_OPTIMIZATION_BOUNDS_TENDON,
-                                                         hp.CONTROL_OPTIMIZATION_ITERATION_TENDON, const_parameter=hp.TENDON_CONST)
+                                                         hp.CONTROL_OPTIMIZATION_ITERATION_TENDON,
+                                                        const_parameter=hp.TENDON_CONST)
     return control_optimizer
 
 def config_with_standard_graph(grasp_object_blueprint, torque_dict):
@@ -365,10 +363,7 @@ def config_with_standard_cable(grasp_object_blueprint):
     simulation_rewarder.add_criterion(
         FinalPositionCriterion(hp.REFERENCE_DISTANCE, event_grasp, event_slipout),
         hp.FINAL_POSITION_CRITERION_WEIGHT)
-    
-    # control_optimizer = LinearControlOptimizationDirect(simulation_manager, simulation_rewarder,
-    #                                                      hp.CONTROL_OPTIMIZATION_BOUNDS_TENDON,
-    #                                                      hp.CONTROL_OPTIMIZATION_ITERATION_TENDON, const_parameter=hp.TENDON_CONST)
+
     control_optimizer = LinearCableControlOptimization(simulation_manager, simulation_rewarder,
                                                          hp.CONTROL_OPTIMIZATION_BOUNDS_TENDON,
                                                          hp.CONTROL_OPTIMIZATION_ITERATION_TENDON, const_parameter=hp.TENDON_CONST)

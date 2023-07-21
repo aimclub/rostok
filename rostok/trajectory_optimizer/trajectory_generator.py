@@ -215,7 +215,7 @@ def calculate_control_value_virtual_cable(node_list: list[Node], start: float, m
 
     links_length = links_length_after_joint(node_list)
     links_length_accumulate = list(accumulate(links_length, operator.add))
-    vec = [start + multiplier * l for l in links_length_accumulate]
+    vec = [round(start + multiplier * l, 3) for l in links_length_accumulate]
     return vec
 
 def tendon_like_control(graph: GraphGrammar, coefficients: list[tuple[float, float]]):

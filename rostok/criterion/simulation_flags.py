@@ -237,7 +237,8 @@ class EventGrasp(SimulationSingleEvent):
                 self.step_n = step_n
                 self.grasp_time = current_time
                 if self.verbosity > 0:
-                    print('Grasp event!', current_time)
+                    #print('Grasp event!', current_time)
+                    input('press enter to continue')
 
                 return EventCommands.ACTIVATE
 
