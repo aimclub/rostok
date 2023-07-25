@@ -13,10 +13,10 @@ from rostok.block_builder_api.block_parameters import JointInputType
 def create_rules():
 
     length_link = [0.4, 0.6, 0.8]
-    super_flat = PrimitiveBodyBlueprint(Box(3, 0.1, 3))
-    link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.1, x, 0.3)), length_link))
+    super_flat = PrimitiveBodyBlueprint(Box(3, 0.1, 3), color=[255,0,0])
+    link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.1, x, 0.3), color= [0, 255, 0]), length_link))
     radial_move_values = [0.9, 1.05, 1.2]
-    radial_move_values = [0.65, 0.85, 1.05 ]
+    #radial_move_values = [0.65, 0.85, 1.05 ]
     RADIAL_MOVES = list(map(lambda x: FrameTransform([x, 0, 0], [1, 0, 0, 0]), radial_move_values))
     tan_move_values = [0.4, 0.6, 0.8]
     MOVES_POSITIVE = list(map(lambda x: FrameTransform([0, 0, x], [1, 0, 0, 0]), tan_move_values))

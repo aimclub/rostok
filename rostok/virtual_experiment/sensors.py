@@ -203,6 +203,7 @@ class SensorCalls(str, Enum):
     FORCE = Sensor.get_forces
     AMOUNT_FORCE = Sensor.get_amount_contacts
     FORCE_CENTER = Sensor.get_outer_force_center
+    BODY_VELOCITY = Sensor.get_velocity
 
 
 class SensorObjectClassification(str, Enum):
