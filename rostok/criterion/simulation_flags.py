@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
+import re
 from typing import Dict, List, Optional, Tuple, Union
 from enum import Enum
+import types
 import numpy as np
 import pychrono.core as chrono
 
@@ -47,6 +49,17 @@ class SimulationSingleEvent(ABC):
             robot_data (_type_): current state of the robot sensors
             env_data (_type_): current state of the environment sensors
         """
+        
+    def __repr__(self) -> str:
+        str_type = str(type(self))
+        str_class = re.findall('\'([^\']*)\'', str_type)[0]
+        self_attributes = dir(self)
+        self_fields = list(filter(lambda x: not (x.startswith("__") or x.endswith("__")), self_attributes))
+        self_fields = list(filter(lambda x: not isinstance(getattr(self, x), types.MethodType), self_fields))
+        str_self = f"{str_class}:\n"
+        for str_field in self_fields:
+            str_self = str_self + f"    {str_field} = {getattr(self, str_field)} \n"
+        return str_self
 
 
 class EventContact(SimulationSingleEvent):
@@ -61,6 +74,9 @@ class EventContact(SimulationSingleEvent):
             return EventCommands.CONTINUE
 
         return EventCommands.CONTINUE
+    
+    def __repr__(self) -> str:
+        return f"EventContact(verbosity = {self.verbosity})"
 
 
 class EventContactTimeOut(SimulationSingleEvent):
@@ -92,6 +108,9 @@ class EventContactTimeOut(SimulationSingleEvent):
             return EventCommands.STOP
 
         return EventCommands.CONTINUE
+    
+    def __str__(self) -> str:
+        return f"EventContactTimeOut(verbos)"
 
 
 class EventFlyingApart(SimulationSingleEvent):
@@ -218,7 +237,8 @@ class EventGrasp(SimulationSingleEvent):
                 self.step_n = step_n
                 self.grasp_time = current_time
                 if self.verbosity > 0:
-                    print('Grasp event!', current_time)
+                    #print('Grasp event!', current_time)
+                    input('press enter to continue')
 
                 return EventCommands.ACTIVATE
 

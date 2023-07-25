@@ -1,4 +1,5 @@
 import types
+import re
 from typing import Dict, List, Optional, Tuple
 
 import pychrono as chrono
@@ -20,6 +21,17 @@ class ParametrizedSimulation:
 
     def run_simulation(self, graph: GraphGrammar, data):
         pass
+    
+    def __repr__(self) -> str:
+        str_type = str(type(self))
+        str_class = re.findall('\'([^\']*)\'', str_type)[0]
+        self_attributes = dir(self)
+        self_fields = list(filter(lambda x: not (x.startswith("__") or x.endswith("__")), self_attributes))
+        self_fields = list(filter(lambda x: not isinstance(getattr(self, x), types.MethodType), self_fields))
+        str_self = f"{str_class}:\n"
+        for str_field in self_fields:
+            str_self = str_self + f"    {str_field} = {getattr(self, str_field)}, \n"
+        return str_self
 
 
 class ConstTorqueGrasp(ParametrizedSimulation):
@@ -36,13 +48,13 @@ class ConstTorqueGrasp(ParametrizedSimulation):
         for event in self.event_container:
             event.reset()
 
-    def run_simulation(self, graph: GraphGrammar, data, vis=False):
+    def run_simulation(self, graph: GraphGrammar, data, vis=False, delay = False):
         self.reset_events()
         #simulation = RobotSimulationChrono([])
-        simulation = RobotSimulationWithForceTest(False, [])
+        simulation = RobotSimulationWithForceTest(delay, [])
         simulation.add_design(graph, data)
         grasp_object = self.grasp_object_callback()
-        shake = YaxisShaker(100, 1, 0.5, float("inf"))
+        shake = YaxisShaker(30, 1, 0.5, float("inf"))
         set_covering_sphere_based_position(grasp_object,
                                            reference_point=chrono.ChVectorD(0, 0.05, 0))
         simulation.add_object(grasp_object, read_data=True, force_torque_controller=shake)

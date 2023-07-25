@@ -1,3 +1,4 @@
+import operator
 from rostok.block_builder_api.block_parameters import FrameTransform
 from rostok.graph_grammar.graph_utils import plot_graph_ids, plot_graph
 from rostok.graph_grammar.node import GraphGrammar, Node
@@ -26,7 +27,8 @@ def uniq_root_paths(graph: GraphGrammar) -> list[list[int]]:
     non_uniq = set()
     uniq_paths = []
     for path in root_paths:
-        new_path = list(set(path) - non_uniq)
+        #[x for x in path if x not in non_uniq]
+        new_path = list([x for x in path if x not in non_uniq])
         uniq_paths.append(new_path)
         non_uniq.update(path)
     return uniq_paths
@@ -46,7 +48,7 @@ def control_vector_linear(branch: list, start: float, multiplier: float):
     """
     vec = []
     for num, _ in enumerate(branch):
-        value = start + multiplier * num
+        value = round(start + multiplier * num, 3)
         vec.append(value)
     return vec
 
@@ -111,7 +113,7 @@ def path_node_iter(graph: GraphGrammar, coefficients: list[tuple]):
     if len(paths_id_with_joints) != len(coefficients):
         raise Exception("Coefficient vector must have the same size joint_root_paths result")
     start_multiplier_iter = coefficients.__iter__()
-    get_nodes = lambda x: map(graph.get_node_by_id, x)
+    get_nodes = lambda x: list(map(graph.get_node_by_id, x))
     paths_node = list(map(get_nodes, paths_id_with_joints))
     for branch in paths_node:
         start_multiplier = next(start_multiplier_iter)
@@ -129,7 +131,8 @@ def linear_control(graph: GraphGrammar, coefficients: list[tuple[float, float]])
         _type_: _description_
     """
     gen = path_control_generator(graph, coefficients)
-    unpucked = lambda x: control_vector_geom_prog(*x)
+    #unpucked = lambda x: control_vector_geom_prog(*x)
+    unpucked = lambda x: control_vector_linear(*x)
     joint_constants = list(map(unpucked, gen))
     res = {"initial_value": list(chain(*joint_constants))}
     return res
@@ -191,16 +194,60 @@ def calculate_control_value_based_on_length(node_list: list[Node], start: float,
     """
 
     links_length = links_length_after_joint(node_list)
-    vec = []
-    for l in range(len(links_length)):
-        value = start + multiplier * l
-        vec.append(value)
+    vec = [start + multiplier * l for l in links_length]
     return vec
 
 
+def calculate_control_value_virtual_cable(node_list: list[Node], start: float, multiplier: float):
+    """Calls links_length_after_joint to get the lengths of composite links.
+    Calculates control values based on the lengths of the composite link.
+    torque = start + length_value * multiplier 
+    where length_value -- sum of all link lengths before joint and one link after
+
+    Args:
+        node_list (list[Node]): bracnh(fingers)
+        start (float): const value
+        multiplier (float): multiplier for length
+
+    Returns:
+        list[float]: control values
+    """
+
+    links_length = links_length_after_joint(node_list)
+    links_length_accumulate = list(accumulate(links_length, operator.add))
+    vec = [round(start + multiplier * l, 3) for l in links_length_accumulate]
+    return vec
+
 def tendon_like_control(graph: GraphGrammar, coefficients: list[tuple[float, float]]):
+    """See the calculate_control_value_based_on_length function for understanding 
+    how control actions are generated for a branch (finger)
+
+    Args:
+        graph (GraphGrammar): _description_
+        coefficients (list[tuple[float, float]]): coefficients for linear function (a, b) a + bx 
+
+    Returns:
+        _type_: _description_
+    """
     gen = path_node_iter(graph, coefficients)
     unpucked = lambda x: calculate_control_value_based_on_length(*x)
+    joint_constants = list(map(unpucked, gen))
+    res = {"initial_value": list(chain(*joint_constants))}
+    return res
+
+def cable_length_linear_control(graph: GraphGrammar, coefficients: list[tuple[float, float]]):
+    """See the calculate_control_value_virtual_cable function for understanding 
+    how control actions are generated for a branch (finger)
+
+    Args:
+        graph (GraphGrammar): _description_
+        coefficients (list[tuple[float, float]]): coefficients for linear function (a, b) a + bx 
+
+    Returns:
+        _type_: _description_
+    """
+    gen = path_node_iter(graph, coefficients)
+    unpucked = lambda x: calculate_control_value_virtual_cable(*x)
     joint_constants = list(map(unpucked, gen))
     res = {"initial_value": list(chain(*joint_constants))}
     return res
