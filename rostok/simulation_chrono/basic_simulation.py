@@ -389,13 +389,13 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
             vis.SetWindowSize(1024, 768)
             vis.SetWindowTitle('Grab demo')
             vis.Initialize()
-            vis.AddCamera(chrono.ChVectorD(1.5, 3, -4))
+            vis.AddCamera(chrono.ChVectorD(0.15, 0.3, -0.4))
             vis.AddTypicalLights()
             # vis.EnableCollisionShapeDrawing(True)
 
         stop_flag = False
         self.result.time_vector = [0]
-        FPS = 30
+        FPS = 1000
         frame_simulation = 0
         for i in range(number_of_steps):
             current_time = self.chrono_system.GetChTime()

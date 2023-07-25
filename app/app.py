@@ -15,7 +15,7 @@ from rostok.library.rule_sets.ruleset_old_style import create_rules
 # create rule vocabulary
 rule_vocabul = create_rules()
 # create blueprint for object to grasp
-grasp_object_blueprint = get_object_parametrized_sphere(0.5, 1)
+grasp_object_blueprint = get_object_parametrized_sphere(0.05)
 # create reward counter using run setup function
 control_optimizer = config_with_standard(grasp_object_blueprint)
 # Initialize MCTS

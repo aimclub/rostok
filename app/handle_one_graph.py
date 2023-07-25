@@ -1,5 +1,7 @@
 import sys
 import time
+import matplotlib.pyplot as plt
+import numpy as np
 from pathlib import Path
 from datetime import datetime
 
@@ -10,13 +12,13 @@ from mcts_run_setup import config_with_standard, config_with_standard_cable, con
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.library.obj_grasp.objects import get_object_parametrized_sphere, get_object_ellipsoid
 from rostok.library.rule_sets.ruleset_old_style import create_rules
-from rostok.library.rule_sets.simple_designs import get_one_finger_one_link, get_three_link_one_finger, get_three_same_link_one_finger, get_four_same_link_one_finger
-
+from rostok.library.rule_sets.simple_designs import get_two_link_three_finger, get_one_finger_one_link, get_three_link_one_finger, get_three_same_link_one_finger, get_four_same_link_one_finger
+from rostok.simulation_chrono.basic_simulation import SimulationResult
 # create rule vocabulary
 rule_vocabul = create_rules()
 # create blueprint for object to grasp
-grasp_object_blueprint = get_object_parametrized_sphere(0.8)
-#grasp_object_blueprint = get_object_parametrized_tilt_ellipsoid(1, 0.8, 1.4, 10)
+grasp_object_blueprint = get_object_parametrized_sphere(0.06)
+grasp_object_blueprint = get_object_ellipsoid(0.1, 0.08, 0.14, 10)
 # create reward counter using run setup function
 control_optimizer = config_with_standard_cable(grasp_object_blueprint)
 control_optimizer = config_with_standard_linear(grasp_object_blueprint)
@@ -43,13 +45,24 @@ with open(path, "w") as file:
     graph=get_three_link_one_finger()
     # graph=get_three_same_link_one_finger()
     # graph=get_four_same_link_one_finger()
-    graph = get_one_finger_one_link()
-    control = [10]
+    # graph = get_one_finger_one_link()
+    graph=get_two_link_three_finger()
+    control = [0.00105, 0.00105, 0.00105, 0.00105, 0.00105, 0.00105]
     print('control:', control)
     data = control_optimizer.optim_parameters2data_control(control, graph)
     print(data)
-    simulation_output = simulation_manager.run_simulation(graph, data, True, False)
-    
+    vis = True
+    simulation_output: SimulationResult = simulation_manager.run_simulation(graph, data, vis, False)
+    if not vis:
+        fig = plt.figure(figsize=(12, 5))
+        time_vector = simulation_output.time_vector
+        velocity_data_idx = list(simulation_output.robot_final_ds.get_data("body_velocity").keys())
+        trajectories = simulation_output.robot_final_ds.get_data("COG")[velocity_data_idx[-1]]
+        velocity_data = simulation_output.robot_final_ds.get_data("body_velocity")[velocity_data_idx[-1]]
+        velocity_data = [np.linalg.norm(x) for x in velocity_data]
+        plt.plot(time_vector, velocity_data)
+        plt.show()
+
     res = simulation_rewarder.calculate_reward(simulation_output)
     print('reward', res)
     sys.stdout = original_stdout

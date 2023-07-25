@@ -17,4 +17,4 @@ class JointInputType(Enum):
 @dataclass
 class Material:
     Friction = 0.5
-    DampingF = 0.1
+    DampingF = 20

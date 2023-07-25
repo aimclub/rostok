@@ -98,7 +98,7 @@ def get_object_ellipsoid(x, y, z, alpha):
 
     mat = DefaultChronoMaterial()
     mat.Friction = 0.30
-    mat.DampingF = 0.8
+    mat.DampingF = 20
     obj = EnvironmentBodyBlueprint(shape=shape,
                                    material=mat,
                                    pos=FrameTransform([0, 0, 0], rotation_x(alpha)))
