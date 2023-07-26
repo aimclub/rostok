@@ -370,6 +370,11 @@ class ChronoEasyShapeObject():
                  is_collide: bool = True,
                  color: Optional[list[int]] = None,
                  pos: FrameTransform = DefaultFrame):
+        
+        fake_body = chrono.ChBody()
+        fake_body.SetCollide(True)
+        fake_body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
+        fake_body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
 
         # Create body
         material = struct_material2object_material(material)
