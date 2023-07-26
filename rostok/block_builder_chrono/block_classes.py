@@ -78,9 +78,10 @@ class BuildingBody(BlockBody):
         self.transformed_frame_out = transformed_out_marker
 
         # set the parameters of body collision model
+        self.body.SetCollide(is_collide)
         self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
         self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
-        self.body.SetCollide(is_collide)
+        
         # Normal Forces
         # set a color for the body, default is random
         if color is None:
@@ -402,10 +403,11 @@ class ChronoEasyShapeObject():
         else:
             raise Exception("Unknown shape for ChronoBodyEnv object")
 
+        body.SetCollide(is_collide)
         body.SetCoord(frame_transform_to_chcoordsys(pos))
         body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
         body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
-        body.SetCollide(is_collide)
+        
         self.body = body
         if color is None:
             rgb = [random.random(), random.random(), random.random()]
