@@ -212,7 +212,8 @@ class ChronoRevolveJoint(BlockBridge):
         self.length = length
         self.starting_angle = starting_angle
         self.density = density
-        material = struct_material2object_material(material)
+        material = chrono.ChMaterialSurfaceSMC()
+        #material = struct_material2object_material(material)
         self.material = material
         # Spring Damper params
         self._joint_spring: Optional[chrono.ChLinkRSDA] = None
@@ -319,8 +320,10 @@ class PrimitiveBody(BuildingBody):
         #offset
         eps = 0.001
         # Create body
-        material = struct_material2object_material(material)
-
+        #material = struct_material2object_material(material)
+        material = chrono.ChMaterialSurfaceSMC()
+        material.SetGn(10e5)
+        material.SetGt(10e5)
         if isinstance(shape, easy_body_shapes.Box):
             body = chrono.ChBodyEasyBox(shape.width_x, shape.length_y, shape.height_z, density,
                                         True, True, material)
@@ -372,7 +375,8 @@ class ChronoEasyShapeObject():
                  pos: FrameTransform = DefaultFrame):
 
         # Create body
-        material = struct_material2object_material(material)
+        #material = struct_material2object_material(material)
+        material = chrono.ChMaterialSurfaceSMC()
         if isinstance(shape, easy_body_shapes.Box):
             body = chrono.ChBodyEasyBox(shape.width_x, shape.length_y, shape.height_z, density,
                                         True, True, material)

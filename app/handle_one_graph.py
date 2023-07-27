@@ -46,14 +46,15 @@ with open(path, "w") as file:
     # graph=get_three_same_link_one_finger()
     #graph=get_four_same_link_one_finger()
     # graph = get_one_finger_one_link()
-    graph=get_two_link_three_finger()
+    #graph=get_two_link_three_finger()
     #control = [10.5, 4.166667, 10.5, 10.5, 10.5, 10.5]
-    control = [1.683, 1.05,  1.05,  1.05,  1.683, 1.05 ]
+    #control = [1.05 , 1.683, 1.683, 0.417, 1.05 , 0.417]
+    control = [1.683, 1.05,  0.3]
     print('control:', control)
     data = control_optimizer.optim_parameters2data_control(control, graph)
     print(data)
     vis = True
-    simulation_output: SimulationResult = simulation_manager.run_simulation(graph, data, vis, False)
+    simulation_output: SimulationResult = simulation_manager.run_simulation(graph, data, vis, True)
     if not vis:
         fig = plt.figure(figsize=(12, 5))
         time_vector = simulation_output.time_vector
