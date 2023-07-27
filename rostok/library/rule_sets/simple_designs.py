@@ -17,8 +17,7 @@ def get_palm():
 def get_one_finger_one_link():
     graph = GraphGrammar()
     rules = ["Init",
-        "AddFinger", "Terminal_Radial_Translate1", "Phalanx","Remove_FG",
-        "Terminal_Link3", 
+        "AddFinger", "Terminal_Radial_Translate1", "Phalanx","Remove_FG", "Terminal_Link3", 
         "RemoveFinger_N",
         "RemoveFinger_R", 
         "RemoveFinger_RN", 
