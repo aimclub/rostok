@@ -372,6 +372,9 @@ class ChronoEasyShapeObject():
                  color: Optional[list[int]] = None,
                  pos: FrameTransform = DefaultFrame):
         
+        # It's real magic. This code fix bug with set Envelope and Margin
+        # On python version Chrono we can't set envelop and margin localy for 
+        # each body independet by standart API. 
         fake_body = chrono.ChBody()
         fake_body.SetCollide(True)
         fake_body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
