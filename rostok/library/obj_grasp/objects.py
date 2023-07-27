@@ -98,10 +98,12 @@ def get_object_ellipsoid(x, y, z, alpha):
 
     mat = DefaultChronoMaterial()
     mat.Friction = 0.30
-    mat.DampingF = 20
+    mat.DampingF = 0.5
+    mat.Compliance = 0.0001
     obj = EnvironmentBodyBlueprint(shape=shape,
                                    material=mat,
-                                   pos=FrameTransform([0, 0, 0], rotation_x(alpha)))
+                                   pos=FrameTransform([0, 0, 0], rotation_x(alpha)),
+                                   color=[215, 255, 0])
     return obj
 
 # special objects
@@ -160,3 +162,4 @@ def get_obj_hard_mesh_piramida():
     mat.DampingF = 0.2
     obj = EnvironmentBodyBlueprint(shape=shape, material=mat, pos=FrameTransform([-2, 1, 5], quat))
     return obj
+

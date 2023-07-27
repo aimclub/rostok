@@ -18,7 +18,7 @@ from rostok.simulation_chrono.basic_simulation import SimulationResult
 rule_vocabul = create_rules()
 # create blueprint for object to grasp
 grasp_object_blueprint = get_object_parametrized_sphere(0.06)
-grasp_object_blueprint = get_object_ellipsoid(0.1, 0.08, 0.14, 10)
+grasp_object_blueprint = get_object_ellipsoid(10, 8, 14, 10)
 # create reward counter using run setup function
 control_optimizer = config_with_standard_cable(grasp_object_blueprint)
 control_optimizer = config_with_standard_linear(grasp_object_blueprint)
@@ -44,10 +44,11 @@ with open(path, "w") as file:
     # visualisation in the end of the search
     graph=get_three_link_one_finger()
     # graph=get_three_same_link_one_finger()
-    # graph=get_four_same_link_one_finger()
+    #graph=get_four_same_link_one_finger()
     # graph = get_one_finger_one_link()
     graph=get_two_link_three_finger()
-    control = [0.00105, 0.00105, 0.00105, 0.00105, 0.00105, 0.00105]
+    #control = [10.5, 4.166667, 10.5, 10.5, 10.5, 10.5]
+    control = [1.683, 1.05,  1.05,  1.05,  1.683, 1.05 ]
     print('control:', control)
     data = control_optimizer.optim_parameters2data_control(control, graph)
     print(data)

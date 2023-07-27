@@ -257,7 +257,7 @@ class ChronoRevolveJoint(BlockBridge):
             self._add_spring_damper(in_block, out_block, system)
 
         if (self.with_collision):
-            eps = 0.0002
+            eps = 0.2
             cylinder = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, self.radius - eps, self.length, self.density, True,
                                                  True, self.material)
             turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROTATE_Y_TO_Z)

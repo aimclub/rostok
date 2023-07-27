@@ -42,11 +42,11 @@ class TransformBlueprint(TransformBlueprintType):
 @dataclass
 class RevolveJointBlueprint(JointBlueprintType):
     type_of_input: JointInputType = JointInputType.TORQUE
-    radius: float = 0.007
-    length: float = 0.04
+    radius: float = 0.7
+    length: float = 3
     material: Material = Material()
+    density: float= 0.0004
     starting_angle: float = 0.
-    density = 400.0
     stiffness: float = 0.
     damping: float = 0.
     with_collision: bool = True
@@ -55,7 +55,7 @@ class RevolveJointBlueprint(JointBlueprintType):
 @dataclass
 class PrimitiveBodyBlueprint(BodyBlueprintType):
     shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
-    density: float = 400.0
+    density: float = 0.0004
     material: Material = Material()
     is_collide: bool = True
     color: Optional[list[int]] = None
@@ -64,7 +64,7 @@ class PrimitiveBodyBlueprint(BodyBlueprintType):
 @dataclass
 class EnvironmentBodyBlueprint(BodyBlueprintType):
     shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
-    density: float = 100.0
+    density: float = 0.0001
     material: Material = Material()
     is_collide: bool = True
     color: Optional[list[int]] = None

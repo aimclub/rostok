@@ -23,6 +23,7 @@ rule_vocabul = create_rules()
 # create blueprint for object to grasp
 grasp_object_blueprint = get_object_parametrized_sphere(0.5)
 grasp_object_blueprint = get_object_ellipsoid(0.1, 0.08, 0.14, 10)
+grasp_object_blueprint = get_object_ellipsoid(10, 8, 14, 10)
 # create reward counter using run setup function
 #control_optimizer = config_with_standard_tendon(grasp_object_blueprint)
 control_optimizer = config_with_standard(grasp_object_blueprint)
@@ -45,7 +46,7 @@ with open(path, "w") as file:
         print(key, value)
     simulation_rewarder = control_optimizer.rewarder
     simulation_manager = control_optimizer.simulation_scenario
-    control_optimizer.limit = 3
+    control_optimizer.limit = 5
     # visualisation in the end of the search
     graph = get_three_link_one_finger()
     graph = get_three_same_link_one_finger()
@@ -57,7 +58,7 @@ with open(path, "w") as file:
     print('control:', control)
     data = control_optimizer.optim_parameters2data_control(control, graph)
     print(data)
-    simulation_output = simulation_manager.run_simulation(graph, data, True, True)
+    simulation_output = simulation_manager.run_simulation(graph, data, True, False)
     res = simulation_rewarder.calculate_reward(simulation_output)
     print('reward', res)
     ex = time.time() - start

@@ -8,6 +8,7 @@ def convert_material_to_chrono(block_material: Material) -> DefaultChronoMateria
     ret = DefaultChronoMaterial()
     ret.DampingF = block_material.DampingF
     ret.Friction = block_material.Friction
+    ret.Compliance = block_material.Compliance
     return ret
 
 def convert_joint_input_type_to_chrono(joint_input_type: JointInputType) -> JointInputTypeChrono:

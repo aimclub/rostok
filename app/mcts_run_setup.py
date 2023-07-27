@@ -19,6 +19,7 @@ from rostok.trajectory_optimizer.control_optimizer import (CalculatorWithGraphOp
 def config_with_standard(grasp_object_blueprint):
     # configurate the simulation manager
     simulation_manager = TestGrasp(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION)
+    #simulation_manager = ConstTorqueGrasp(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION)
     simulation_manager.grasp_object_callback = lambda: creator.create_environment_body(
         grasp_object_blueprint)
     event_contact = EventContact()
