@@ -46,7 +46,7 @@ class RevolveJointBlueprint(JointBlueprintType):
     length: float = 0.4
     material: Material = Material()
     starting_angle: float = 0.
-    density = 1000.0
+    density: float = 1000.0
     stiffness: float = 0.
     damping: float = 0.
     with_collision: bool = True
@@ -64,7 +64,7 @@ class PrimitiveBodyBlueprint(BodyBlueprintType):
 @dataclass
 class EnvironmentBodyBlueprint(BodyBlueprintType):
     shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
-    density: float = 100.0
+    density: float = 1000.0
     material: Material = Material()
     is_collide: bool = True
     color: Optional[list[int]] = None

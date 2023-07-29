@@ -415,6 +415,7 @@ class ChronoEasyShapeObject():
         body.SetCoord(frame_transform_to_chcoordsys(pos))
         body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
         body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
+        #self.body.GetCollisionModel().BuildModel()
         
         self.body = body
         if color is None:

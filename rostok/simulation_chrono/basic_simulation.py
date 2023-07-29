@@ -164,10 +164,11 @@ class RobotSimulationChrono():
         # We assume that all simulations in one search are carried out with the same parameters that
         # can be set in the simulation constructor
         self.chrono_system = chrono.ChSystemNSC()
-        self.chrono_system.SetSolverType(chrono.ChSolver.Type_SPARSE_QR)
+        self.chrono_system.SetSolverType(chrono.ChSolver.Type_PSOR)
         self.chrono_system.SetSolverMaxIterations(100)
-        self.chrono_system.SetSolverForceTolerance(1e-6)
-        self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_RUNGEKUTTA45)
+        self.chrono_system.SetSolverTolerance(0.0005)
+        self.chrono_system.SetSolverForceTolerance(1e-5)
+        # self.chrono_system.SetTimestepperType(chrono.ChTimestepper.Type_RUNGEKUTTA45)
         self.chrono_system.Set_G_acc(chrono.ChVectorD(0, 0, 0))
         # the simulating mechanism is to be added with function add_design, the value in constructor is None
         self.env_data_dict = {}
@@ -302,7 +303,7 @@ class RobotSimulationChrono():
             vis.SetWindowSize(1024, 768)
             vis.SetWindowTitle('Grab demo')
             vis.Initialize()
-            vis.AddCamera(chrono.ChVectorD(1.5, 3, -4))
+            vis.AddCamera(chrono.ChVectorD(-0.51, -0.51, -0.51))
             vis.AddTypicalLights()
             vis.EnableCollisionShapeDrawing(True)
 

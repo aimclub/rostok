@@ -12,12 +12,12 @@ from rostok.block_builder_api.block_parameters import JointInputType
 
 def create_rules():
 
-    length_link = [0.4, 0.6, 0.8]
-    super_flat = PrimitiveBodyBlueprint(Box(3, 0.1, 3))
-    link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.1, x, 0.3)), length_link))
-    radial_move_values = [0.9, 1.05, 1.2]
+    length_link = [0.08, 0.1, 0.12]
+    super_flat = PrimitiveBodyBlueprint(Box(0.3, 0.02, 0.3))
+    link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.02, x, 0.02), density=1300*0.4), length_link))
+    radial_move_values = [0.09, 0.11, 0.12]
     RADIAL_MOVES = list(map(lambda x: FrameTransform([x, 0, 0], [1, 0, 0, 0]), radial_move_values))
-    tan_move_values = [0.4, 0.6, 0.8]
+    tan_move_values = [0.04, 0.06, 0.08]
     MOVES_POSITIVE = list(map(lambda x: FrameTransform([0, 0, x], [1, 0, 0, 0]), tan_move_values))
     MOVES_NEGATIVE = list(map(lambda x: FrameTransform([0, 0, -x], [1, 0, 0, 0]), tan_move_values))
 
@@ -42,7 +42,11 @@ def create_rules():
     turn_transform_N = TransformBlueprint(TURN_N)
     turn_90_transform = TransformBlueprint(FrameTransform([0, 0, 0], rotation_y(90)))
     #revolve = RevolveJointBlueprint(JointInputType.POSITION)
-    revolve = RevolveJointBlueprint(JointInputType.TORQUE)
+    revolve = RevolveJointBlueprint(JointInputType.TORQUE, 0.02, 0.04)
+    revolve1 = RevolveJointBlueprint(JointInputType.TORQUE, 0.02, 0.04, density = 100, stiffness=0.1, damping=0.001, starting_angle=-45)
+    revolve2 = RevolveJointBlueprint(JointInputType.TORQUE, 0.02, 0.04, density = 100, stiffness=0.1, damping=0.001)
+    revolve3 = RevolveJointBlueprint(JointInputType.TORQUE, 0.02, 0.04, density = 100, stiffness=0.1, damping=0.001)
+    
     #revolve_45 = RevolveJointBlueprint(JointInputType.TORQUE, starting_angle=45)
     #no_control = RevolveJointBlueprint(JointInputType.UNCONTROL)
     # Nodes
@@ -79,9 +83,9 @@ def create_rules():
     node_vocab.create_node(label="RN", is_terminal=True, block_blueprint=turn_transform_N)
 
     #node_vocab.create_node(label="JT", is_terminal=True, block_blueprint=turn_90_transform)
-    node_vocab.create_node(label="J1", is_terminal=True, block_blueprint=revolve)
-    node_vocab.create_node(label="J2", is_terminal=True, block_blueprint=revolve)
-    node_vocab.create_node(label="J3", is_terminal=True, block_blueprint=revolve)
+    node_vocab.create_node(label="J1", is_terminal=True, block_blueprint=revolve1)
+    node_vocab.create_node(label="J2", is_terminal=True, block_blueprint=revolve2)
+    node_vocab.create_node(label="J3", is_terminal=True, block_blueprint=revolve3)
     node_vocab.create_node(label="J4", is_terminal=True, block_blueprint=revolve)
     node_vocab.create_node(label="J5", is_terminal=True, block_blueprint=revolve)
     node_vocab.create_node(label="J6", is_terminal=True, block_blueprint=revolve)
