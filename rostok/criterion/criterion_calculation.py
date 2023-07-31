@@ -293,7 +293,8 @@ class SimulationReward:
         """
         partial_rewards = []
         for criterion in self.criteria:
-            partial_rewards.append(criterion.calculate_reward(simulation_output))
+            reward = criterion.calculate_reward(simulation_output)
+            partial_rewards.append(round(reward,3))
 
         if partial:
             return partial_rewards
