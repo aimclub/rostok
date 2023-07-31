@@ -1,4 +1,4 @@
-import types
+import json
 from typing import Dict, List, Optional, Tuple
 
 import pychrono as chrono
@@ -10,6 +10,7 @@ from rostok.simulation_chrono.basic_simulation import RobotSimulationChrono, Rob
 from rostok.virtual_experiment.sensors import (SensorCalls, SensorObjectClassification)
 from rostok.simulation_chrono.simulation_utils import set_covering_sphere_based_position
 from rostok.control_chrono.controller import ConstController, SinControllerChrono, YaxisShaker
+from rostok.utils.json_encoder import RostokJSONEncoder
 
 
 class ParametrizedSimulation:
@@ -20,6 +21,14 @@ class ParametrizedSimulation:
 
     def run_simulation(self, graph: GraphGrammar, data):
         pass
+
+    def __repr__(self) -> str:
+        json_data = json.dumps(self, cls=RostokJSONEncoder)
+        return json_data
+
+    def __str__(self) -> str:
+        json_data = json.dumps(self, indent=4, cls=RostokJSONEncoder)
+        return json_data
 
 
 class ConstTorqueGrasp(ParametrizedSimulation):
@@ -36,13 +45,13 @@ class ConstTorqueGrasp(ParametrizedSimulation):
         for event in self.event_container:
             event.reset()
 
-    def run_simulation(self, graph: GraphGrammar, data, vis=False):
+    def run_simulation(self, graph: GraphGrammar, data, vis=False, delay=False):
         self.reset_events()
         #simulation = RobotSimulationChrono([])
-        simulation = RobotSimulationWithForceTest(False, [])
+        simulation = RobotSimulationWithForceTest(delay, [])
         simulation.add_design(graph, data)
         grasp_object = self.grasp_object_callback()
-        shake = YaxisShaker(100, 1, 0.5, float("inf"))
+        shake = YaxisShaker(30, 1, 0.5, float("inf"))
         set_covering_sphere_based_position(grasp_object,
                                            reference_point=chrono.ChVectorD(0, 0.05, 0))
         simulation.add_object(grasp_object, read_data=True, force_torque_controller=shake)

@@ -1,8 +1,11 @@
 from abc import ABC, abstractmethod
+import json
 from typing import Dict, List, Optional, Tuple, Union
 from enum import Enum
+import types
 import numpy as np
 import pychrono.core as chrono
+from rostok.utils.json_encoder import RostokJSONEncoder
 
 from rostok.virtual_experiment.sensors import DataStorage, Sensor
 
@@ -23,13 +26,13 @@ class SimulationSingleEvent(ABC):
         Attributes:
             state (bool): event occurrence flag 
             step_n (int): the step of the event occurrence
-            verbosity (int): the parameter that controls the console output of the class methods
+            simulation_stop (int): flag for stopping the simulation when an event occurs
     """
 
-    def __init__(self, verbosity=0):
+    def __init__(self, simulation_stop=0):
         self.state = False
         self.step_n = None
-        self.verbosity = verbosity
+        self.simulation_stop = simulation_stop
 
     def reset(self):
         """Reset the values of the attributes for the new simulation."""
@@ -47,6 +50,14 @@ class SimulationSingleEvent(ABC):
             robot_data (_type_): current state of the robot sensors
             env_data (_type_): current state of the environment sensors
         """
+
+    def __repr__(self) -> str:
+        json_data = json.dumps(self, cls=RostokJSONEncoder)
+        return json_data
+
+    def __str__(self) -> str:
+        json_data = json.dumps(self, indent=4, cls=RostokJSONEncoder)
+        return json_data
 
 
 class EventContact(SimulationSingleEvent):
@@ -173,8 +184,8 @@ class EventGrasp(SimulationSingleEvent):
         force_test_time (float): the time period of the force test of the grasp
     """
 
-    def __init__(self, grasp_limit_time: float, contact_event: EventContact, verbosity: int = 0):
-        super().__init__(verbosity)
+    def __init__(self, grasp_limit_time: float, contact_event: EventContact, simulation_stop: int = 0):
+        super().__init__(simulation_stop)
         self.grasp_steps: int = 0
         self.grasp_time: Optional[float] = None
         self.grasp_limit_time = grasp_limit_time
@@ -217,8 +228,9 @@ class EventGrasp(SimulationSingleEvent):
                 self.state = True
                 self.step_n = step_n
                 self.grasp_time = current_time
-                if self.verbosity > 0:
-                    print('Grasp event!', current_time)
+                if self.simulation_stop > 0:
+                    #print('Grasp event!', current_time)
+                    input('press enter to continue')
 
                 return EventCommands.ACTIVATE
 
@@ -235,7 +247,7 @@ class EventStopExternalForce(SimulationSingleEvent):
     def event_check(self, current_time: float, step_n: int, robot_data, env_data):
         """STOP simulation in force_test_time after the grasp."""
 
-        # self.grasp_event.grasp_time is None until the grasp event have been occurred. 
+        # self.grasp_event.grasp_time is None until the grasp event have been occurred.
         # Therefore we use nested if operators.
         if self.grasp_event.state:
             if current_time > self.force_test_time + self.grasp_event.grasp_time:
