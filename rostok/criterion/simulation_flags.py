@@ -26,13 +26,13 @@ class SimulationSingleEvent(ABC):
         Attributes:
             state (bool): event occurrence flag 
             step_n (int): the step of the event occurrence
-            verbosity (int): the parameter that controls the console output of the class methods
+            simulation_stop (int): flag for stopping the simulation when an event occurs
     """
 
-    def __init__(self, verbosity=0):
+    def __init__(self, simulation_stop=0):
         self.state = False
         self.step_n = None
-        self.verbosity = verbosity
+        self.simulation_stop = simulation_stop
 
     def reset(self):
         """Reset the values of the attributes for the new simulation."""
@@ -103,9 +103,6 @@ class EventContactTimeOut(SimulationSingleEvent):
             return EventCommands.STOP
 
         return EventCommands.CONTINUE
-
-    def __str__(self) -> str:
-        return f"EventContactTimeOut(verbos)"
 
 
 class EventFlyingApart(SimulationSingleEvent):
@@ -187,8 +184,8 @@ class EventGrasp(SimulationSingleEvent):
         force_test_time (float): the time period of the force test of the grasp
     """
 
-    def __init__(self, grasp_limit_time: float, contact_event: EventContact, verbosity: int = 0):
-        super().__init__(verbosity)
+    def __init__(self, grasp_limit_time: float, contact_event: EventContact, simulation_stop: int = 0):
+        super().__init__(simulation_stop)
         self.grasp_steps: int = 0
         self.grasp_time: Optional[float] = None
         self.grasp_limit_time = grasp_limit_time
@@ -231,7 +228,7 @@ class EventGrasp(SimulationSingleEvent):
                 self.state = True
                 self.step_n = step_n
                 self.grasp_time = current_time
-                if self.verbosity > 0:
+                if self.simulation_stop > 0:
                     #print('Grasp event!', current_time)
                     input('press enter to continue')
 

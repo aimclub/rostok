@@ -37,12 +37,11 @@ def config_with_standard(grasp_object_blueprint):
     event_grasp = EventGrasp(
         grasp_limit_time=4,
         contact_event=event_contact,
-        verbosity=0,
+        simulation_stop=0,
     )
     simulation_manager.add_event(event_grasp)
     event_stop_external_force = EventStopExternalForce(grasp_event=event_grasp, force_test_time=3)
     simulation_manager.add_event(event_stop_external_force)
-    print(repr(event_stop_external_force))
     #create criterion manager
     simulation_rewarder = SimulationReward(verbosity=0)
     #create criterions and add them to manager
