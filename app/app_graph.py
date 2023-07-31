@@ -15,8 +15,7 @@ from rostok.library.rule_sets.ruleset_old_style_graph import create_rules
 rule_vocabul, torque_dict = create_rules()
 
 # create blueprint for object to grasp
-grasp_object_blueprint = get_object_parametrized_sphere(0.4, 0.7)
-grasp_object_blueprint = get_object_parametrized_tilt_ellipsoid(0.2, 0.3, 0.1, 0.4, 15)
+grasp_object_blueprint = get_object_parametrized_sphere(0.5)
 # create reward counter using run setup function
 control_optimizer = config_with_standard_graph(grasp_object_blueprint, torque_dict)
 # Initialize MCTS
@@ -61,23 +60,16 @@ with open(Path(path, "mcts_result.txt"), "a") as file:
     print("Object to grasp:", grasp_object_blueprint.shape)
     print("Object initial coordinats:", grasp_object_blueprint.pos)
     print("Time optimization:", ex)
-    print("MAX_NUMBER_RULES:", hp.MAX_NUMBER_RULES)
-    print("BASE_ITERATION_LIMIT:", hp.BASE_ITERATION_LIMIT)
-    print("ITERATION_REDUCTION_TIME:", hp.ITERATION_REDUCTION_TIME)
-    print("CRITERION_WEIGHTS:",
-          [hp.TIME_CRITERION_WEIGHT, hp.FORCE_CRITERION_WEIGHT, hp.OBJECT_COG_CRITERION_WEIGHT])
-    print("CONTROL_OPTIMIZATION_ITERATION:", hp.CONTROL_OPTIMIZATION_ITERATION)
-    print("TIME_STEP_SIMULATION:", hp.TIME_STEP_SIMULATION)
-    print("TIME_SIMULATION:", hp.TIME_SIMULATION)
-    print("FLAG_TIME_NO_CONTACT:", hp.FLAG_TIME_NO_CONTACT)
-    print("FLAG_TIME_SLIPOUT:", hp.FLAG_TIME_SLIPOUT)
+    dict = {item:getattr(hp, item) for item in dir(hp) if not item.startswith("__") and not item.endswith("__")}
+    for key, value in dict.items():
+        print(key, "=", value)
     sys.stdout = original_stdout
 
 simulation_rewarder = control_optimizer.rewarder
-simulation_manager = control_optimizer.simulation_control
+simulation_manager = control_optimizer.simulation_scenario
 # visualisation in the end of the search
 best_graph, reward, best_control = mcts_helper.report.get_best_info()
 data = {"initial_value": best_control}
 simulation_output = simulation_manager.run_simulation(best_graph, data, True)
-res = -simulation_rewarder.calculate_reward(simulation_output)
+res = simulation_rewarder.calculate_reward(simulation_output)
 print("Best reward obtained in the MCTS search:", res)
