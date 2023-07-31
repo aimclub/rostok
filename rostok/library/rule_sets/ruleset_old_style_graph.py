@@ -44,8 +44,8 @@ def create_rules():
     #revolve = RevolveJointBlueprint(JointInputType.POSITION)
     revolve = RevolveJointBlueprint(JointInputType.TORQUE, 0.02, 0.04)
     revolve1 = RevolveJointBlueprint(JointInputType.TORQUE, 0.02, 0.04, density = 100, stiffness=0.1, damping=0.001, starting_angle=-45)
-    revolve2 = RevolveJointBlueprint(JointInputType.TORQUE, 0.02, 0.04, density = 100, stiffness=0.1, damping=0.001)
-    revolve3 = RevolveJointBlueprint(JointInputType.TORQUE, 0.02, 0.04, density = 100, stiffness=0.1, damping=0.001)
+    revolve2 = RevolveJointBlueprint(JointInputType.TORQUE, 0.02, 0.04, density = 100, stiffness=0.06, damping=0.001)
+    revolve3 = RevolveJointBlueprint(JointInputType.TORQUE, 0.02, 0.04, density = 100, stiffness=0.04, damping=0.001)
     
     #revolve_45 = RevolveJointBlueprint(JointInputType.TORQUE, starting_angle=45)
     #no_control = RevolveJointBlueprint(JointInputType.UNCONTROL)
