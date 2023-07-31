@@ -1,6 +1,5 @@
 from abc import ABC
-import re
-import types
+import json
 from bisect import bisect_left
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -10,6 +9,7 @@ from scipy.spatial import distance
 
 from rostok.simulation_chrono.basic_simulation import SimulationResult
 from rostok.criterion.simulation_flags import SimulationSingleEvent, EventContactTimeOut, EventGrasp, EventSlipOut
+from rostok.utils.json_encoder import RostokJSONEncoder
 
 
 #Interface for criterions
@@ -22,18 +22,14 @@ class Criterion(ABC):
             simulation_output (SimulationResult): the result of the simulation  
         """
         pass
-    
+
     def __repr__(self) -> str:
-        str_type = str(type(self))
-        str_class = re.findall('\'([^\']*)\'', str_type)[0]
-        self_attributes = dir(self)
-        self_fields = list(filter(lambda x: not (x.startswith("__") or x.endswith("__")), self_attributes))
-        self_fields = list(filter(lambda x: not isinstance(getattr(self, x), types.MethodType), self_fields))
-        str_self = f"{str_class}("
-        for str_field in self_fields:
-            str_self = str_self + f"{str_field} = {getattr(self, str_field)}, "
-        str_self = str_self[:-2] + ")"
-        return str_self
+        json_data = json.dumps(self, cls=RostokJSONEncoder)
+        return json_data
+
+    def __str__(self) -> str:
+        json_data = json.dumps(self, indent=4, cls=RostokJSONEncoder)
+        return json_data
 
 
 class TimeCriterion(Criterion):
@@ -286,7 +282,7 @@ class SimulationReward:
         self.criteria.append(citerion)
         self.weights.append(weight)
 
-    def calculate_reward(self, simulation_output, partial = False):
+    def calculate_reward(self, simulation_output, partial=False):
         """Calculate all rewards and return weighted sum of them.
 
         Args:
@@ -306,14 +302,11 @@ class SimulationReward:
 
         total_reward = sum([a * b for a, b in zip(partial_rewards, self.weights)])
         return round(total_reward, 3)
-    
+
     def __repr__(self) -> str:
-        str_type = str(type(self))
-        str_class = re.findall('\'([^\']*)\'', str_type)[0]
-        self_attributes = dir(self)
-        self_fields = list(filter(lambda x: not (x.startswith("__") or x.endswith("__")), self_attributes))
-        self_fields = list(filter(lambda x: not isinstance(getattr(self, x), types.MethodType), self_fields))
-        str_self = f"{str_class}:\n"
-        for str_field in self_fields:
-            str_self = str_self + f"    {str_field} = {getattr(self, str_field)}, \n"
-        return str_self
+        json_data = json.dumps(self, cls=RostokJSONEncoder)
+        return json_data
+
+    def __str__(self) -> str:
+        json_data = json.dumps(self, indent=4, cls=RostokJSONEncoder)
+        return json_data

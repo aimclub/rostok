@@ -1,5 +1,4 @@
-import types
-import re
+import json
 from typing import Dict, List, Optional, Tuple
 
 import pychrono as chrono
@@ -11,6 +10,7 @@ from rostok.simulation_chrono.basic_simulation import RobotSimulationChrono, Rob
 from rostok.virtual_experiment.sensors import (SensorCalls, SensorObjectClassification)
 from rostok.simulation_chrono.simulation_utils import set_covering_sphere_based_position
 from rostok.control_chrono.controller import ConstController, SinControllerChrono, YaxisShaker
+from rostok.utils.json_encoder import RostokJSONEncoder
 
 
 class ParametrizedSimulation:
@@ -21,17 +21,14 @@ class ParametrizedSimulation:
 
     def run_simulation(self, graph: GraphGrammar, data):
         pass
-    
+
     def __repr__(self) -> str:
-        str_type = str(type(self))
-        str_class = re.findall('\'([^\']*)\'', str_type)[0]
-        self_attributes = dir(self)
-        self_fields = list(filter(lambda x: not (x.startswith("__") or x.endswith("__")), self_attributes))
-        self_fields = list(filter(lambda x: not isinstance(getattr(self, x), types.MethodType), self_fields))
-        str_self = f"{str_class}:\n"
-        for str_field in self_fields:
-            str_self = str_self + f"    {str_field} = {getattr(self, str_field)}, \n"
-        return str_self
+        json_data = json.dumps(self, cls=RostokJSONEncoder)
+        return json_data
+
+    def __str__(self) -> str:
+        json_data = json.dumps(self, indent=4, cls=RostokJSONEncoder)
+        return json_data
 
 
 class ConstTorqueGrasp(ParametrizedSimulation):
@@ -48,7 +45,7 @@ class ConstTorqueGrasp(ParametrizedSimulation):
         for event in self.event_container:
             event.reset()
 
-    def run_simulation(self, graph: GraphGrammar, data, vis=False, delay = False):
+    def run_simulation(self, graph: GraphGrammar, data, vis=False, delay=False):
         self.reset_events()
         #simulation = RobotSimulationChrono([])
         simulation = RobotSimulationWithForceTest(delay, [])

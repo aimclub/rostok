@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABC
 import numpy as np
-import re
+import json
 import types
 
 from scipy.optimize import direct, dual_annealing, shgo
@@ -11,6 +11,7 @@ from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
 from enum import Enum
 from rostok.simulation_chrono.simulation_scenario import ParametrizedSimulation
 from rostok.trajectory_optimizer.trajectory_generator import cable_length_linear_control, linear_control, joint_root_paths, tendon_like_control
+from rostok.utils.json_encoder import RostokJSONEncoder
 
 
 class GraphRewardCalculator:
@@ -25,17 +26,14 @@ class GraphRewardCalculator:
     @abstractmethod
     def print_log(self):
         pass
-    
+
     def __repr__(self) -> str:
-        str_type = str(type(self))
-        str_class = re.findall('\'([^\']*)\'', str_type)[0]
-        self_attributes = dir(self)
-        self_fields = list(filter(lambda x: not (x.startswith("__") or x.endswith("__")), self_attributes))
-        self_fields = list(filter(lambda x: not isinstance(getattr(self, x), types.MethodType), self_fields))
-        str_self = f"{str_class}:\n"
-        for str_field in self_fields:
-            str_self = str_self + f"    {str_field} = {getattr(self, str_field)}, \n"
-        return str_self
+        json_data = json.dumps(self, cls=RostokJSONEncoder)
+        return json_data
+
+    def __str__(self) -> str:
+        json_data = json.dumps(self, indent=4, cls=RostokJSONEncoder)
+        return json_data
 
 
 class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
@@ -162,9 +160,9 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
         data = {"initial_value": parameters}
 
         return data
-    
+
     def _postprocessing_parameters(self, parameters):
-        
+
         return np.round(parameters, 3)
 
     @abstractmethod
@@ -273,7 +271,7 @@ class ConstTorqueOptimizationBranchTemplate(CalculatorWithConstTorqueOptimizatio
 
     def bound_parameters(self, graph: GraphGrammar):
         n_branches = len(joint_root_paths(graph))
-        print('n_branches:',n_branches)
+        print('n_branches:', n_branches)
         if n_branches == 0:
             return []
         multi_bound = []
@@ -330,7 +328,7 @@ class TendonLikeControlOptimization(ConstControlOptimizationDirect):
     def generate_control_value_on_branch(self, graph: GraphGrammar,
                                          parameters_2d: list[tuple[float, float]]):
         return tendon_like_control(graph, parameters_2d)
-    
+
 
 class LinearCableControlOptimization(ConstControlOptimizationDirect):
 
