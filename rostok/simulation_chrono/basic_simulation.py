@@ -408,6 +408,9 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
                     vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
                     vis.Render()
                     vis.EndScene()
+                    # just to slow down the simulation
+                    if self.delay_flag:
+                        time.sleep(0.0000001)
                 else:
                     frame_simulation +=1
 
@@ -415,10 +418,6 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
 
             if stop_flag:
                 break
-
-            # just to slow down the simulation
-            if self.delay_flag:
-                time.sleep(0.0000001)
 
         if visualize:
             vis.GetDevice().closeDevice()

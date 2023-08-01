@@ -8,9 +8,9 @@ import hyperparameters as hp
 import mcts
 from mcts_run_setup import config_with_standard_multiobject
 
-from rostok.graph_generators.mcts_helper import (make_mcts_step, prepare_mcts_state_and_helper)
+from rostok.graph_generators.mcts_helper import (make_mcts_step, prepare_mcts_state_and_helper, CheckpointMCTS)
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.library.obj_grasp.objects import get_object_parametrized_sphere, get_obj_cyl_pos_parametrize, get_object_box_pos_parametrize
+from rostok.library.obj_grasp.objects import get_object_parametrized_sphere, get_object_cylinder, get_object_box
 from rostok.library.rule_sets.ruleset_new_style import create_rules
 
 weights = [1, 1, 1]
@@ -18,9 +18,9 @@ weights = [1, 1, 1]
 rule_vocabul = create_rules()
 # create blueprint for object to grasp
 grasp_object_blueprint = []
-grasp_object_blueprint.append(get_object_parametrized_sphere(0.2, 1))
-grasp_object_blueprint.append(get_obj_cyl_pos_parametrize())
-grasp_object_blueprint.append(get_object_box_pos_parametrize())
+grasp_object_blueprint.append(get_object_parametrized_sphere(0.4))
+grasp_object_blueprint.append(get_object_cylinder(0.4, 0.4, 0))
+grasp_object_blueprint.append(get_object_box(0.5,0.2,0.7,0))
 # create reward counter using run setup function
 control_optimizer = config_with_standard_multiobject(grasp_object_blueprint, weights)
 # Initialize MCTS
@@ -35,7 +35,7 @@ mcts_helper.report.search_parameter = base_iteration_limit
 
 # the constant that determines how we reduce the number of iterations in the MCTS search
 iteration_reduction_rate = hp.ITERATION_REDUCTION_TIME
-
+checkpointer = CheckpointMCTS(mcts_helper.report, "App", rewrite=True)
 start = time.time()
 finish = False
 n_steps = 0
@@ -44,7 +44,7 @@ while not finish:
     iteration_limit = base_iteration_limit - int(graph_env.counter_action / max_numbers_rules *
                                                  (base_iteration_limit * iteration_reduction_rate))
     searcher = mcts.mcts(iterationLimit=iteration_limit)
-    finish, graph_env = make_mcts_step(searcher, graph_env, n_steps)
+    finish, graph_env = make_mcts_step(searcher, graph_env, n_steps, checkpointer)
     n_steps += 1
     print(f"number iteration: {n_steps}, counter actions: {graph_env.counter_action} " +
           f"reward: {mcts_helper.report.get_best_info()[1]}")
@@ -68,23 +68,16 @@ with open(Path(path, "mcts_result.txt"), "a") as file:
         print(f"Object initial coordinats {k}:", obj.pos)
         print(f"Object weight {k}:", weight)
     print("Time optimization:", ex)
-    print("MAX_NUMBER_RULES:", hp.MAX_NUMBER_RULES)
-    print("BASE_ITERATION_LIMIT:", hp.BASE_ITERATION_LIMIT)
-    print("ITERATION_REDUCTION_TIME:", hp.ITERATION_REDUCTION_TIME)
-    print("CRITERION_WEIGHTS:",
-          [hp.TIME_CRITERION_WEIGHT, hp.FORCE_CRITERION_WEIGHT, hp.OBJECT_COG_CRITERION_WEIGHT])
-    print("CONTROL_OPTIMIZATION_ITERATION:", hp.CONTROL_OPTIMIZATION_ITERATION)
-    print("TIME_STEP_SIMULATION:", hp.TIME_STEP_SIMULATION)
-    print("TIME_SIMULATION:", hp.TIME_SIMULATION)
-    print("FLAG_TIME_NO_CONTACT:", hp.FLAG_TIME_NO_CONTACT)
-    print("FLAG_TIME_SLIPOUT:", hp.FLAG_TIME_SLIPOUT)
+    dict = {item:getattr(hp, item) for item in dir(hp) if not item.startswith("__") and not item.endswith("__")}
+    for key, value in dict.items():
+        print(key, "=", value)
     sys.stdout = original_stdout
 
 simulation_rewarder = control_optimizer.rewarder
-simulation_manager = control_optimizer.simulation_control[0]
+simulation_manager = control_optimizer.simulation_scenario[0]
 # visualisation in the end of the search
 best_graph, reward, best_control = mcts_helper.report.get_best_info()
 data = control_optimizer.optim_parameters2data_control(best_control)
 simulation_output = simulation_manager[0].run_simulation(best_graph, data[0], True)
-res = -simulation_rewarder.calculate_reward(simulation_output)
+res = simulation_rewarder.calculate_reward(simulation_output)
 print("Best reward obtained in the MCTS search:", res)
