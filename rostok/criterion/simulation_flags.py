@@ -29,10 +29,10 @@ class SimulationSingleEvent(ABC):
             simulation_stop (int): flag for stopping the simulation when an event occurs
     """
 
-    def __init__(self, simulation_stop=0):
+    def __init__(self, verbosity=0):
         self.state = False
         self.step_n = None
-        self.simulation_stop = simulation_stop
+        self.verbosity = verbosity
 
     def reset(self):
         """Reset the values of the attributes for the new simulation."""
@@ -184,12 +184,13 @@ class EventGrasp(SimulationSingleEvent):
         force_test_time (float): the time period of the force test of the grasp
     """
 
-    def __init__(self, grasp_limit_time: float, contact_event: EventContact, simulation_stop: int = 0):
-        super().__init__(simulation_stop)
+    def __init__(self, grasp_limit_time: float, contact_event: EventContact, verbosity: int = 0, simulation_stop = False):
+        super().__init__(verbosity=verbosity)
         self.grasp_steps: int = 0
         self.grasp_time: Optional[float] = None
         self.grasp_limit_time = grasp_limit_time
         self.contact_event: EventContact = contact_event
+        self.simulation_stop = simulation_stop
 
     def reset(self):
         super().reset()
@@ -228,8 +229,9 @@ class EventGrasp(SimulationSingleEvent):
                 self.state = True
                 self.step_n = step_n
                 self.grasp_time = current_time
+                if self.verbosity > 0:
+                    print('Grasp event!', current_time)
                 if self.simulation_stop > 0:
-                    #print('Grasp event!', current_time)
                     input('press enter to continue')
 
                 return EventCommands.ACTIVATE

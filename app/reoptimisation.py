@@ -5,15 +5,13 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-from mcts_run_setup import config_with_standard, config_with_standard_graph, config_with_standard_tendon, config_with_standard_multiobject
+from mcts_run_setup import config_with_standard_multiobject
 
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
 from rostok.graph_generators.mcts_helper import (MCTSSaveable, OptimizedGraphReport)
 from rostok.library.obj_grasp.objects import (get_obj_hard_mesh_piramida,
-                                              get_object_parametrized_sphere,
-                                              get_object_parametrized_tilt_ellipsoid, 
-                                              get_object_parametrized_cylinder,
-                                              get_object_parametrized_box)
+                                              get_object_parametrized_sphere, get_object_cylinder,
+                                              get_object_box, get_object_ellipsoid)
 #from rostok.library.rule_sets.ruleset_old_style import create_rules
 from rostok.utils.pickle_save import load_saveable
 
@@ -53,7 +51,7 @@ def reoptimize_nth_graph(n: int, obj: EnvironmentBodyBlueprint):
     graph_report = report.seen_graphs
     control_optimizer = config_with_standard_multiobject(*obj)
     control_optimizer.limit = 8
-    control_optimizer.bounds = (6,20)
+    control_optimizer.bounds = (6, 20)
     simulation_rewarder = control_optimizer.rewarder
     simulation_managers = control_optimizer.simulation_scenario
     graph_list = graph_report.graph_list
@@ -78,10 +76,9 @@ def reoptimize_nth_graph(n: int, obj: EnvironmentBodyBlueprint):
 
 
 if __name__ == "__main__":
-    #grasp_object_blueprint = get_object_parametrized_sphere(0.4, 1)
     grasp_object_blueprints = [[
-        get_object_parametrized_box(0.8, 1, 0.4, 10),
-        get_object_parametrized_cylinder(0.6, 0.9, 10),
-        get_object_parametrized_sphere(0.6, 2)
+        get_object_box(0.8, 1, 0.4, 10),
+        get_object_cylinder(0.6, 0.9, 10),
+        get_object_parametrized_sphere(0.6)
     ], [1, 1, 1]]
     reoptimize_nth_graph(2, grasp_object_blueprints)

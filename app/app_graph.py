@@ -8,7 +8,7 @@ from mcts_run_setup import config_with_standard_graph
 
 from rostok.graph_generators.mcts_helper import (make_mcts_step, prepare_mcts_state_and_helper)
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.library.obj_grasp.objects import get_object_parametrized_sphere, get_object_parametrized_tilt_ellipsoid
+from rostok.library.obj_grasp.objects import get_object_parametrized_sphere
 from rostok.library.rule_sets.ruleset_old_style_graph import create_rules
 
 # create rule vocabulary and torque dictionary for control in graph.
