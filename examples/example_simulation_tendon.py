@@ -310,7 +310,7 @@ plt.plot(np_pos2[:, 0], np_pos2[:, 1])
 plt.plot(np_pos3[:, 0], np_pos3[:, 1])
 
 plt.figure()
-plt.plot(-j_pos1 * 180 / np.pi)
+plt.plot(j_pos1 * 180 / np.pi)
 plt.plot(j_pos2 * 180 / np.pi)
 plt.plot(j_pos3 * 180 / np.pi)
 
