@@ -26,7 +26,7 @@ class SimulationSingleEvent(ABC):
         Attributes:
             state (bool): event occurrence flag 
             step_n (int): the step of the event occurrence
-            simulation_stop (int): flag for stopping the simulation when an event occurs
+            verbosity (int): controls the console output of the event
     """
 
     def __init__(self, verbosity=0):
@@ -158,7 +158,14 @@ class EventSlipOut(SimulationSingleEvent):
         Returns:
             EventCommands: return a command for simulation
         """
-        contact = env_data.get_amount_contacts()[0] > 0
+        # Old variant: contact = env_data.get_amount_contacts()[0] > 0
+        robot_contacts = robot_data.get_amount_contacts()
+        flat_idx_= list(robot_contacts.keys())[0]
+        contacts = 0
+        for key, value in robot_contacts.items():
+            if key != flat_idx_:
+                contacts += value
+        contact = contacts > 0
         if contact:
             self.time_last_contact = current_time
             return EventCommands.CONTINUE
