@@ -106,9 +106,9 @@ class Sensor:
         output = {}
         for idx, body in self.body_map_ordered.items():
             output[idx] = [
-                round(body.body.GetPos().x, 3),
-                round(body.body.GetPos().y, 3),
-                round(body.body.GetPos().z, 3)
+                round(body.body.GetPos().x, 4),
+                round(body.body.GetPos().y, 4),
+                round(body.body.GetPos().z, 4)
             ]
         return output
 
@@ -116,9 +116,9 @@ class Sensor:
         output = {}
         for idx, body in self.body_map_ordered.items():
             output[idx] = [
-                round(body.body.GetPos_dt().x, 3),
-                round(body.body.GetPos_dt().y, 3),
-                round(body.body.GetPos_dt().z, 3)
+                round(body.body.GetPos_dt().x, 4),
+                round(body.body.GetPos_dt().y, 4),
+                round(body.body.GetPos_dt().z, 4)
             ]
         return output
     
@@ -135,7 +135,7 @@ class Sensor:
             master_body: chrono.ChBodyFrame = joint.joint.GetBody2()
             slave_body: chrono.ChBodyFrame = joint.joint.GetBody1()
             angle = (master_body.GetInverse() * slave_body).GetRotAngle()
-            output[idx] = round(angle, 3)
+            output[idx] = round(angle, 5)
 
         return output
 
@@ -167,7 +167,7 @@ class Sensor:
             contacts_idx = contacts[idx]
             if len(contacts_idx) > 0:
                 body_contact_coordinates = [x[0] for x in contacts_idx]
-                body_contact_coordinates_sum = np.zeros(3)
+                body_contact_coordinates_sum = np.zeros(4)
                 for contact in body_contact_coordinates:
                     body_contact_coordinates_sum += np.array(contact)
 
