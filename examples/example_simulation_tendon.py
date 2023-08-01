@@ -129,14 +129,17 @@ sim.add_design(graph,
 telo1 = sim.robot.get_graph().body_map_ordered[20].body
 telo2 = sim.robot.get_graph().body_map_ordered[21].body
 telo3 = sim.robot.get_graph().body_map_ordered[22].body
-
-
+weighted_m = 0.05 * telo1.GetMass() + 0.15 * telo2.GetMass() + 0.2 * telo3.GetMass()
+total_m = telo1.GetMass() + telo2.GetMass() + telo3.GetMass()
+CoG_finger = weighted_m / total_m
+torque_on_base_j = 9.8 * weighted_m
+stifness = torque_on_base_j / np.deg2rad(45)
 j1 = sim.robot.get_graph().joint_map_ordered[23].joint
 j2 = sim.robot.get_graph().joint_map_ordered[24].joint
 j3 = sim.robot.get_graph().joint_map_ordered[25].joint
-STEPS = 1000*1
-VIS = False
-TENDON_FORCE = 0.5
+STEPS = 1000*10
+VIS = True
+TENDON_FORCE = 0   
 VINOS = -0.04
 force_tendon11 = TendonForce([VINOS, -0.04, 0])
 force_tendon12 = TendonForce([VINOS, 0.04, 0])
@@ -202,6 +205,7 @@ for i in range(STEPS):
     all_data = [data_11, data_12, data_21, data_22, data_31, data_tip]
     for a, b  in zip(forces, all_data):
         a.update(0,b)
+        pass
 
     if VIS:
         vis.Run()

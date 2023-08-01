@@ -49,6 +49,7 @@ class RevolveJointBlueprint(JointBlueprintType):
     density: float = 1000.0
     stiffness: float = 0.
     damping: float = 0.
+    equilibrium_position: float = 0.
     with_collision: bool = True
 
 

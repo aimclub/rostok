@@ -43,9 +43,9 @@ def create_rules():
     turn_90_transform = TransformBlueprint(FrameTransform([0, 0, 0], rotation_y(90)))
     #revolve = RevolveJointBlueprint(JointInputType.POSITION)
     revolve = RevolveJointBlueprint(JointInputType.TORQUE, 0.02, 0.04)
-    revolve1 = RevolveJointBlueprint(JointInputType.TORQUE, 0.02, 0.04, density = 100, stiffness=0.1, damping=0.001, starting_angle=-45)
-    revolve2 = RevolveJointBlueprint(JointInputType.TORQUE, 0.02, 0.04, density = 100, stiffness=0.06, damping=0.001)
-    revolve3 = RevolveJointBlueprint(JointInputType.TORQUE, 0.02, 0.04, density = 100, stiffness=0.04, damping=0.001)
+    revolve1 = RevolveJointBlueprint(JointInputType.TORQUE, 0.02, 0.04, density = 10, stiffness=0.12 * 4, damping=0.001, starting_angle=-45, equilibrium_position=-0.785398 / 4)
+    revolve2 = RevolveJointBlueprint(JointInputType.TORQUE, 0.02, 0.04, density = 10, stiffness=0.05 * 4, damping=0.001, equilibrium_position=(-0.785398 /  2) / 4)
+    revolve3 = RevolveJointBlueprint(JointInputType.TORQUE, 0.02, 0.04, density = 10, stiffness=0.015 * 4 , damping=0.001, equilibrium_position=(-0.785398 / 2) / 4)
     
     #revolve_45 = RevolveJointBlueprint(JointInputType.TORQUE, starting_angle=45)
     #no_control = RevolveJointBlueprint(JointInputType.UNCONTROL)
