@@ -106,9 +106,9 @@ class Sensor:
         output = {}
         for idx, body in self.body_map_ordered.items():
             output[idx] = [
-                round(body.body.GetPos().x, 3),
-                round(body.body.GetPos().y, 3),
-                round(body.body.GetPos().z, 3)
+                round(body.body.GetPos().x, 4),
+                round(body.body.GetPos().y, 4),
+                round(body.body.GetPos().z, 4)
             ]
         return output
 
@@ -116,9 +116,9 @@ class Sensor:
         output = {}
         for idx, body in self.body_map_ordered.items():
             output[idx] = [
-                round(body.body.GetPos_dt().x, 3),
-                round(body.body.GetPos_dt().y, 3),
-                round(body.body.GetPos_dt().z, 3)
+                round(body.body.GetPos_dt().x, 4),
+                round(body.body.GetPos_dt().y, 4),
+                round(body.body.GetPos_dt().z, 4)
             ]
         return output
     
@@ -129,14 +129,15 @@ class Sensor:
             output[idx] = [[mat.Get_A_Xaxis.x, mat.Get_A_Yaxis.x, mat.Get_A_Zaxis.x], [mat.Get_A_Xaxis.y, mat.Get_A_Yaxis.y, mat.Get_A_Zaxis.y], [mat.Get_A_Xaxis.z, mat.Get_A_Yaxis.z, mat.Get_A_Zaxis.z]]
         return output
 
-    def get_joint_trajectory_point(self):
+    def get_joint_z_trajectory_point(self):
         output = {}
         for idx, joint in self.joint_map_ordered.items():
             master_body: chrono.ChBodyFrame = joint.joint.GetBody2()
             slave_body: chrono.ChBodyFrame = joint.joint.GetBody1()
-            angle = (master_body.GetInverse() * slave_body).GetRotAngle()
-            output[idx] = round(angle, 3)
-
+            relative_rot = (master_body.GetInverse() * slave_body)
+            angle = chrono.Q_to_Euler123(chrono.ChQuaternionD(relative_rot.GetRot()))
+            output[idx] = round(angle.z, 5)
+        
         return output
 
     def get_forces(self):
@@ -167,7 +168,7 @@ class Sensor:
             contacts_idx = contacts[idx]
             if len(contacts_idx) > 0:
                 body_contact_coordinates = [x[0] for x in contacts_idx]
-                body_contact_coordinates_sum = np.zeros(3)
+                body_contact_coordinates_sum = np.zeros(4)
                 for contact in body_contact_coordinates:
                     body_contact_coordinates_sum += np.array(contact)
 
@@ -199,7 +200,7 @@ class SensorCalls(str, Enum):
         FORCE_CENTER: position of the center of the forces acting on a body from the body map
     """
     BODY_TRAJECTORY = Sensor.get_body_trajectory_point
-    JOINT_TRAJECTORY = Sensor.get_joint_trajectory_point
+    JOINT_TRAJECTORY = Sensor.get_joint_z_trajectory_point
     FORCE = Sensor.get_forces
     AMOUNT_FORCE = Sensor.get_amount_contacts
     FORCE_CENTER = Sensor.get_outer_force_center
