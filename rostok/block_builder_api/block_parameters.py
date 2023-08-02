@@ -14,8 +14,8 @@ class JointInputType(Enum):
     UNCONTROL = "Uncontrol"
 
 
-@dataclass
-class Material:
-    Friction = 0.5
-    DampingF = 0.5
-    Compliance = 0.0001
+# @dataclass
+# class Material:
+#     Friction = 0.5
+#     DampingF = 0.5
+#     Compliance = 0.0001

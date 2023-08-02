@@ -6,10 +6,11 @@ from typing import Any, Generic, Optional, Type, Union
 from traitlets import Bool
 
 import rostok.block_builder_api.easy_body_shapes as easy_body_shapes
+from rostok.utils.dataset_materials.material_dataclass_manipulating import DefaultChronoMaterialNSC, Material
 from rostok.block_builder_api.block_parameters import (DefaultFrame,
                                                        FrameTransform,
                                                        JointInputType,
-                                                       Material)
+                                                       )
 
 
 @dataclass
@@ -44,7 +45,7 @@ class RevolveJointBlueprint(JointBlueprintType):
     type_of_input: JointInputType = JointInputType.TORQUE
     radius: float = 0.7
     length: float = 3
-    material: Material = Material()
+    material: Material = DefaultChronoMaterialNSC()
     density: float= 0.0004
     starting_angle: float = 0.
     stiffness: float = 0.
@@ -56,7 +57,7 @@ class RevolveJointBlueprint(JointBlueprintType):
 class PrimitiveBodyBlueprint(BodyBlueprintType):
     shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
     density: float = 0.0004
-    material: Material = Material()
+    material: Material = DefaultChronoMaterialNSC()
     is_collide: bool = True
     color: Optional[list[int]] = None
 
@@ -65,7 +66,7 @@ class PrimitiveBodyBlueprint(BodyBlueprintType):
 class EnvironmentBodyBlueprint(BodyBlueprintType):
     shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
     density: float = 0.0001
-    material: Material = Material()
+    material: Material = DefaultChronoMaterialNSC()
     is_collide: bool = True
     color: Optional[list[int]] = None
     pos: FrameTransform = DefaultFrame

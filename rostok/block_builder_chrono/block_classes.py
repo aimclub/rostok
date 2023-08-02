@@ -15,7 +15,7 @@ from rostok.block_builder_chrono.blocks_utils import (
     SpringTorque, frame_transform_to_chcoordsys, rotation_z_q)
 from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
-    DefaultChronoMaterial, struct_material2object_material)
+    DefaultChronoMaterialNSC, struct_material2object_material)
 
 
 class BuildingBody(BlockBody):
@@ -195,7 +195,7 @@ class ChronoRevolveJoint(BlockBridge):
                  type_of_input: JointInputTypeChrono = JointInputTypeChrono.TORQUE,
                  radius=0.007,
                  length=0.031,
-                 material=DefaultChronoMaterial(),
+                 material=DefaultChronoMaterialNSC(),
                  density=100.0,
                  starting_angle=0,
                  stiffness: float = 0.,
@@ -306,24 +306,24 @@ class PrimitiveBody(BuildingBody):
         random_color (bool, optional): Flag of the random color of the body. Defaults to True.
         mass (float, optional): Value mass of the body box. Defaults to 1.
         material (Material, optional): Surface material, which define contact friction and etc.
-        Defaults to DefaultChronoMaterial.
+        Defaults to DefaultChronoMaterialNSC.
         pos (FrameTransform): The frame define initial position and orientation .
     """
 
     def __init__(self,
                  shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box(),
                  density: float = 100.0,
-                 material=DefaultChronoMaterial(),
+                 material=DefaultChronoMaterialNSC(),
                  is_collide: bool = True,
                  color: Optional[list[int]] = None):
 
         #offset
         eps = 0.001
         # Create body
-        #material = struct_material2object_material(material)
-        material = chrono.ChMaterialSurfaceSMC()
-        material.SetGn(10e5)
-        material.SetGt(10e5)
+        material = struct_material2object_material(material)
+        # material = chrono.ChMaterialSurfaceSMC()
+        # material.SetGn(10e5)
+        # material.SetGt(10e5)
         if isinstance(shape, easy_body_shapes.Box):
             body = chrono.ChBodyEasyBox(shape.width_x, shape.length_y, shape.height_z, density,
                                         True, True, material)
@@ -362,14 +362,14 @@ class ChronoEasyShapeObject():
         random_color (bool, optional): Flag of the random color of the body. Defaults to True.
         mass (float, optional): Value mass of the body box. Defaults to 1.
         material (Material, optional): Surface material, which define contact friction and etc.
-        Defaults to DefaultChronoMaterial.
+        Defaults to DefaultChronoMaterialNSC.
         pos (FrameTransform): The frame define initial position and orientation .
     """
 
     def __init__(self,
                  shape=easy_body_shapes.Box(),
                  density: float = 100.0,
-                 material=DefaultChronoMaterial(),
+                 material=DefaultChronoMaterialNSC(),
                  is_collide: bool = True,
                  color: Optional[list[int]] = None,
                  pos: FrameTransform = DefaultFrame):
