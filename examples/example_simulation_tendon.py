@@ -18,9 +18,9 @@ from rostok.block_builder_api.block_parameters import JointInputType
 from rostok.graph_grammar.node import GraphGrammar, Node
 
 STEPS = 1000 * 1
-VIS = False
+VIS = True
 
-TENDON_FORCE = 4
+TENDON_FORCE = 2
 VINOS = -0.03
 PULLEY_POS = 0.03
 CABEL_MOUNT_POS = 0.04
@@ -29,6 +29,7 @@ LINK_LENGTH = 0.1
 WIDTH = 0.02
 HEIGHT = 0.02
 DENSITY = 1300 * 0.5
+STARTING_ANGLE = -45
 
 
 def create_one_finger():
@@ -53,7 +54,7 @@ def create_one_finger():
                                      density=10,
                                      stiffness=0.12 * 4,
                                      damping=0.001,
-                                     starting_angle=-45,
+                                     starting_angle=STARTING_ANGLE,
                                      equilibrium_position=-0.785398 / 4)
     revolve2 = RevolveJointBlueprint(JointInputType.TORQUE,
                                      0.02,
@@ -156,6 +157,7 @@ class TendonForceTip(ForceControllerTemplate):
         sph_1.SetColor(chrono.ChColor(1, 0, 0))
         body.AddVisualShape(sph_1, chrono.ChFrameD(chrono.ChVectorD(*self.pos)))
         body.GetVisualShape(0).SetOpacity(0.6)
+        pass
 
 
 def convert_angle(angle: float):
@@ -182,7 +184,7 @@ mat.DampingF = 0.65
 
 obj = EnvironmentBodyBlueprint(shape=Sphere(0.05),
                                material=mat,
-                               pos=FrameTransform([0.02, 0.12, 0], [1, 0, 0, 0]))
+                               pos=FrameTransform([0.02, 0.22, 0], [1, 0, 0, 0]))
 
 cnorono_obj = creator.init_block_from_blueprint(obj)
 
@@ -195,9 +197,11 @@ sim.add_design(graph,
                is_fixed=True)
 #
 
+telo0 = sim.robot.get_graph().body_map_ordered[1].body
 telo1 = sim.robot.get_graph().body_map_ordered[4].body
 telo2 = sim.robot.get_graph().body_map_ordered[6].body
 telo3 = sim.robot.get_graph().body_map_ordered[8].body
+ 
 weighted_m = 0.05 * telo1.GetMass() + 0.15 * telo2.GetMass() + 0.2 * telo3.GetMass()
 total_m = telo1.GetMass() + telo2.GetMass() + telo3.GetMass()
 CoG_finger = weighted_m / total_m
@@ -245,9 +249,9 @@ if VIS:
     vis.SetWindowSize(1024, 768)
     vis.SetWindowTitle('Grab demo')
     vis.Initialize()
-    vis.AddCamera(chrono.ChVectorD(-0.51, -0.51, -0.51))
+    vis.AddCamera(chrono.ChVectorD(-0.51, 0.51, -0.51))
     vis.AddTypicalLights()
-    vis.EnableCollisionShapeDrawing(True)
+    #vis.EnableCollisionShapeDrawing(True)
 
 for i in range(STEPS):
     current_time = sim.chrono_system.GetChTime()
@@ -260,7 +264,7 @@ for i in range(STEPS):
     tendon_ang_22 = angle_z_2 / 2
     tendon_ang_3 = angle_z_3 / 2
 
-    data_11 = {"Angle": tendon_ang_11, "Force": TENDON_FORCE}
+    data_11 = {"Angle": (angle_z_1 + STARTING_ANGLE * np.pi / 180) / 2  , "Force": TENDON_FORCE}
     data_12 = {"Angle": tendon_ang_22, "Force": TENDON_FORCE}
     data_21 = {"Angle": tendon_ang_22, "Force": TENDON_FORCE}
     data_22 = {"Angle": tendon_ang_3, "Force": TENDON_FORCE}
