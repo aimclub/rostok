@@ -1,6 +1,6 @@
 from pathlib import Path
-from tkinter import *
-from tkinter import filedialog, ttk
+
+from tkinter import filedialog, ttk, Tk, NW, END
 from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
@@ -16,7 +16,7 @@ from rostok.library.obj_grasp.objects import (get_obj_hard_mesh_piramida,
 from rostok.utils.pickle_save import load_saveable
 
 
-def reoptimize_nth_graph(n: int, obj: EnvironmentBodyBlueprint):
+def reoptimize_nth_graph(n: int, objects_and_weights: Tuple[List[EnvironmentBodyBlueprint],List[int]]):
     root = Tk()
     root.geometry("400x300")
     root.title("Report loader")
@@ -49,7 +49,7 @@ def reoptimize_nth_graph(n: int, obj: EnvironmentBodyBlueprint):
     root.mainloop()
     report = load_saveable(report_path)
     graph_report = report.seen_graphs
-    control_optimizer = config_with_standard_multiobject(*obj)
+    control_optimizer = config_with_standard_multiobject(*objects_and_weights)
     control_optimizer.limit = 8
     control_optimizer.bounds = (6, 20)
     simulation_rewarder = control_optimizer.rewarder
@@ -76,9 +76,9 @@ def reoptimize_nth_graph(n: int, obj: EnvironmentBodyBlueprint):
 
 
 if __name__ == "__main__":
-    grasp_object_blueprints = [[
+    grasp_object_blueprints = ([
         get_object_box(0.8, 1, 0.4, 10),
         get_object_cylinder(0.6, 0.9, 10),
         get_object_parametrized_sphere(0.6)
-    ], [1, 1, 1]]
+    ], [1, 1, 1])
     reoptimize_nth_graph(2, grasp_object_blueprints)

@@ -1,5 +1,5 @@
 from pathlib import Path
-
+from typing import Any, Dict, List, Optional, Tuple
 from tkinter import filedialog, ttk, Tk, NW, END
 
 import matplotlib.pyplot as plt
@@ -15,7 +15,7 @@ from rostok.library.obj_grasp.objects import (get_obj_hard_mesh_piramida,
 from rostok.utils.pickle_save import load_saveable
 
 
-def reoptimize_nth_graph(n: int, obj: EnvironmentBodyBlueprint):
+def reoptimize_nth_graph(n: int, objects_and_weights: Tuple[List[EnvironmentBodyBlueprint],List[int]]):
     root = Tk()
     root.geometry("400x300")
     root.title("Report loader")
@@ -48,7 +48,7 @@ def reoptimize_nth_graph(n: int, obj: EnvironmentBodyBlueprint):
     root.mainloop()
     report = load_saveable(report_path)
     graph_report = report.seen_graphs
-    control_optimizer = config_cable_multiobject(*obj)
+    control_optimizer = config_cable_multiobject(*objects_and_weights)
     control_optimizer.limit = 16
     simulation_rewarder = control_optimizer.rewarder
     simulation_managers = control_optimizer.simulation_scenario
