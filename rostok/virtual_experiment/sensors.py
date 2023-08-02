@@ -154,7 +154,7 @@ class Sensor:
 
     def get_amount_contacts(self):
         output = {}
-        contacts = self.contact_reporter.get_contacts()
+        contacts = self.contact_reporter.get_outer_contacts()
         for idx in self.body_map_ordered:
             contacts_idx = contacts[idx]
             output[idx] = len(contacts_idx)
@@ -204,6 +204,7 @@ class SensorCalls(str, Enum):
     FORCE = Sensor.get_forces
     AMOUNT_FORCE = Sensor.get_amount_contacts
     FORCE_CENTER = Sensor.get_outer_force_center
+    BODY_VELOCITY = Sensor.get_velocity
 
 
 class SensorObjectClassification(str, Enum):
