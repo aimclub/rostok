@@ -178,11 +178,19 @@ class DesignEnvironment(Environment):
     def save_environment(
             self,
             prefix,
-            path="./rostok/graph_generators/graph_heuristic_search/dataset_design_space"):
+            path="./environments/"):
+        os.path.split(path)
+        if not os.path.exists(path):
+            print(f"Path {path} does not exist. Creating...")
+            os.mkdir(path)
+
         current_date = datetime.now()
         folder = f"{prefix}__{current_date.hour}h{current_date.minute}m_{current_date.second}s_date_{current_date.day}d{current_date.month}m{current_date.year}y"
         os_path = os.path.join(path, folder)
+        print(f"Saving environment to {os_path}")
         os.mkdir(os_path)
+        
+        
 
         file_names = [
             "actions.p", "terminal_states.p", "transition_function.p", "action2rule.p",
