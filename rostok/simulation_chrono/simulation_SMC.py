@@ -21,6 +21,7 @@ class ChronoSystems():
         system = chrono.ChSystemSMC()
         system.UseMaterialProperties(False)
         system.Set_G_acc(chrono.ChVectorD(gravity_list[0], gravity_list[1], gravity_list[2]))
+        return system
 
     @staticmethod
     def chrono_NSC_system(gravity_list = [0,0,0]):
@@ -30,6 +31,7 @@ class ChronoSystems():
         system.SetSolverForceTolerance(1e-6)
         system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
         system.Set_G_acc(chrono.ChVectorD(gravity_list[0], gravity_list[1], gravity_list[2]))
+        return system
 
 class EnvCreator():
     def __init__(self, object_list: List[Tuple[ChronoEasyShapeObject, bool]] = []):
@@ -80,8 +82,8 @@ class EnvCreator():
             self.data_storage.add_data_type(key, value[0], value[1], max_number_of_steps)
     
     def load_into_system(self, system:chrono.ChSystem):
-        for body in self.objects:
-            system.AddBody(body)
+        for obj in self.objects:
+            system.AddBody(obj.body)
 
 
 
@@ -95,9 +97,8 @@ class ChronoVisManager():
         self.vis.SetWindowSize(1024, 768)
         self.vis.SetWindowTitle('Grab demo')
         self.vis.Initialize()
-        self.vis.AddSkyBox()
-        self.vis.AddCamera(chrono.ChVectorD(15, 30, -40))
-        #vis.AddTypicalLights()
+        self.vis.AddCamera(chrono.ChVectorD(0.15, 0.30, -0.40))
+        self.vis.AddTypicalLights()
         self.vis.EnableCollisionShapeDrawing(True)
 
 
@@ -114,7 +115,7 @@ class SingleRobotSimulation():
         self.robot_data_dict = data_dict
 
     def initialize(self, max_number_of_steps:int):
-        self.env_creator.build_data_storage()
+        self.env_creator.build_data_storage(max_number_of_steps)
         self.env_creator.load_into_system(self.chrono_system)
 
         for key, value in self.robot_data_dict.items():
@@ -168,8 +169,8 @@ class SingleRobotSimulation():
         robot.data_storage.update_storage(step_n)
 
         #controller gets current states of the robot and environment and updates control functions
-        robot.controller.update_functions(current_time, robot.sensor, self.data_storage.sensor)
-        self.env_creator.force_torque_container.update_all(current_time, self.data_storage.sensor)
+        robot.controller.update_functions(current_time, robot.sensor, self.env_creator.data_storage.sensor)
+        self.env_creator.force_torque_container.update_all(current_time, self.env_creator.data_storage.sensor)
 
     def activate(self, current_time):
         self.env_creator.force_torque_container.controller_list[0].start_time = current_time
@@ -181,7 +182,7 @@ class SingleRobotSimulation():
         for event in event_container:
             if not event.state:
                 event_command = event.event_check(current_time, step_n, self.robot.sensor,
-                                                  self.data_storage.sensor)
+                                                  self.env_creator.data_storage.sensor)
                 if event_command == EventCommands.STOP:
                     return True
                 elif event_command == EventCommands.ACTIVATE:
@@ -209,7 +210,7 @@ class SingleRobotSimulation():
 
         if visualize:
             self.vis_manager.initialize_vis(self.chrono_system)
-            self.vis_manager.vis.Run()
+            
 
         stop_flag = False
         self.result.time_vector = [0]
@@ -221,12 +222,19 @@ class SingleRobotSimulation():
             if visualize:
                 if frame_simulation > 1/fps/step_length:
                     frame_simulation = 0
+                    self.vis_manager.vis.Run()
                     self.vis_manager.vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
                     self.vis_manager.vis.Render()
                     self.vis_manager.vis.EndScene()
                     # just to slow down the simulation
                     if self.vis_manager.delay_flag:
                         time.sleep(0.000001)
+                else:
+                    frame_simulation +=1
+            else:
+                if frame_simulation > 1/fps/step_length:
+                    frame_simulation = 0
+                    print(i)
                 else:
                     frame_simulation +=1
 

@@ -28,8 +28,10 @@ class DefaultChronoMaterialSMC():
     Friction:float = 0.5
     Kn:float = 1e4
     Kt:float = 1e4
-    Gn:float = 3.5
-    Gt:float = 3.5
+    Gn:float = 35000
+    Gt:float = 35000
+    Restitution:float = 0
+    YoungModulus:float = 0
 
 
 def struct_material2object_material(struct_material: Material, prefix_setter: str = "Set"):

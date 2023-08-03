@@ -97,6 +97,7 @@ def get_object_parametrized_sphere_smc(r) -> EnvironmentBodyBlueprint:
     shape = easy_body_shapes.Sphere(r)
     obj = EnvironmentBodyBlueprint(shape=shape,
                                    material=matich,
+                                   density=100,
                                    pos=FrameTransform([0, 0, 0], [1, 0, 0, 0]))
 
     return obj
