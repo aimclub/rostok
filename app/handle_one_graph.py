@@ -10,18 +10,18 @@ import mcts
 from mcts_run_setup import config_with_standard, config_with_standard_cable, config_with_standard_tendon, config_with_standard_linear
 
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.library.obj_grasp.objects import get_object_parametrized_sphere, get_object_ellipsoid
+from rostok.library.obj_grasp.objects import get_object_parametrized_sphere, get_object_ellipsoid, get_object_parametrized_sphere_smc
 from rostok.library.rule_sets.ruleset_old_style import create_rules
 from rostok.library.rule_sets.simple_designs import get_one_finger_one_link, get_two_link_three_finger, get_one_finger_one_link, get_three_link_one_finger, get_three_same_link_one_finger, get_four_same_link_one_finger
 from rostok.simulation_chrono.basic_simulation import SimulationResult
 # create rule vocabulary
 rule_vocabul = create_rules()
 # create blueprint for object to grasp
-grasp_object_blueprint = get_object_parametrized_sphere(0.06)
-grasp_object_blueprint = get_object_ellipsoid(10, 8, 14, 10)
+grasp_object_blueprint = get_object_parametrized_sphere_smc(0.15)
+#grasp_object_blueprint = get_object_ellipsoid(10, 8, 14, 10)
 # create reward counter using run setup function
-control_optimizer = config_with_standard_cable(grasp_object_blueprint)
-control_optimizer = config_with_standard_linear(grasp_object_blueprint)
+# control_optimizer = config_with_standard_cable(grasp_object_blueprint)
+# control_optimizer = config_with_standard_linear(grasp_object_blueprint)
 control_optimizer = config_with_standard(grasp_object_blueprint)
 
 path = Path("./app/single_graph/"+"graph_" + datetime.now().strftime("%yy_%mm_%dd_%HH_%MM")+".txt")
@@ -51,7 +51,7 @@ with open(path, "w") as file:
     #control = [1.05 , 1.683, 1.683, 0.417, 1.05 , 0.417]
     graph=get_one_finger_one_link()
     control = [1.683, 1.05,  0.3]
-    control = [5]
+    #control = [5]
     print('control:', control)
     data = control_optimizer.optim_parameters2data_control(control, graph)
     print(data)

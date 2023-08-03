@@ -15,7 +15,7 @@ from rostok.block_builder_chrono.blocks_utils import (
     SpringTorque, frame_transform_to_chcoordsys, rotation_z_q)
 from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
-    DefaultChronoMaterialNSC, struct_material2object_material)
+    DefaultChronoMaterialNSC, DefaultChronoMaterialSMC, struct_material2object_material)
 
 
 class BuildingBody(BlockBody):
@@ -212,8 +212,8 @@ class ChronoRevolveJoint(BlockBridge):
         self.length = length
         self.starting_angle = starting_angle
         self.density = density
-        material = chrono.ChMaterialSurfaceSMC()
-        #material = struct_material2object_material(material)
+        #material = chrono.ChMaterialSurfaceSMC()
+        material = struct_material2object_material(material)
         self.material = material
         # Spring Damper params
         self._joint_spring: Optional[chrono.ChLinkRSDA] = None
@@ -375,8 +375,8 @@ class ChronoEasyShapeObject():
                  pos: FrameTransform = DefaultFrame):
 
         # Create body
-        #material = struct_material2object_material(material)
-        material = chrono.ChMaterialSurfaceSMC()
+        material = struct_material2object_material(material)
+        #material = chrono.ChMaterialSurfaceSMC()
         if isinstance(shape, easy_body_shapes.Box):
             body = chrono.ChBodyEasyBox(shape.width_x, shape.length_y, shape.height_z, density,
                                         True, True, material)

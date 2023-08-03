@@ -1,5 +1,6 @@
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.library.rule_sets.ruleset_old_style import create_rules
+#from rostok.library.rule_sets.ruleset_old_style import create_rules
+from rostok.library.rule_sets.ruleset_old_style_smc import create_rules
 
 
 def get_palm():

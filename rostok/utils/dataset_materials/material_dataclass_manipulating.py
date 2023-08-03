@@ -18,17 +18,18 @@ class DefaultChronoMaterialNSC(Material):
     """
     name: str = "default_NSC"
     type_class: str = "ChMaterialSurfaceNSC"
-    Friction = 0.5
-    Restitution = 0.2
+    Friction:float = 0.5
+    Restitution:float = 0.2
 
-class DefaultChronoMaterialSMC(Material):
+class DefaultChronoMaterialSMC():
+    
     name: str = "default_SMC"
     type_class: str = "ChMaterialSurfaceSMC"
-    Friction = 0.5
-    Kn = 1e7
-    Kt = 1e7
-    Gn = 1e6
-    Gt = 1e6
+    Friction:float = 0.5
+    Kn:float = 1e4
+    Kt:float = 1e4
+    Gn:float = 3.5
+    Gt:float = 3.5
 
 
 def struct_material2object_material(struct_material: Material, prefix_setter: str = "Set"):

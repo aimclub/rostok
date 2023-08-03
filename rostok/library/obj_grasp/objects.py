@@ -90,7 +90,7 @@ def get_object_parametrized_sphere(r) -> EnvironmentBodyBlueprint:
 
     return obj
 
-def get_object_parametrized_sphere(r) -> EnvironmentBodyBlueprint:
+def get_object_parametrized_sphere_smc(r) -> EnvironmentBodyBlueprint:
     """Medium task"""
     matich = DefaultChronoMaterialSMC()
     matich.Friction = 0.65

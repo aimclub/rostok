@@ -11,7 +11,7 @@ from rostok.simulation_chrono.basic_simulation import RobotSimulationChrono, Rob
 from rostok.virtual_experiment.sensors import (SensorCalls, SensorObjectClassification)
 from rostok.simulation_chrono.simulation_utils import set_covering_sphere_based_position
 from rostok.control_chrono.controller import ConstController, SinControllerChrono, YaxisShaker
-
+from rostok.simulation_chrono.simulation_SMC import SingleRobotSimulation, ChronoVisManager, EnvCreator, ChronoSystems
 
 class ParametrizedSimulation:
 
@@ -92,13 +92,17 @@ class TestGrasp(ParametrizedSimulation):
     def run_simulation(self, graph: GraphGrammar, data, vis=False, delay = False):
         self.reset_events()
         #simulation = RobotSimulationChrono([])
-        simulation = RobotSimulationWithForceTest(delay, [])
+        system = ChronoSystems.chrono_SMC_system([0,0,0])
+        env_creator = EnvCreator([])
+        vis_manager = ChronoVisManager(delay)
+        simulation = SingleRobotSimulation(system, env_creator, vis_manager)
+        
         simulation.add_design(graph, data)
         grasp_object = self.grasp_object_callback()
         shake = YaxisShaker(0.05, 1, 0.5, float("inf"))
         set_covering_sphere_based_position(grasp_object,
                                            reference_point=chrono.ChVectorD(0, 0.05, 0))
-        simulation.add_object(grasp_object, read_data=True, force_torque_controller=shake)
+        simulation.env_creator.add_object(grasp_object, read_data=True, force_torque_controller=shake)
         n_steps = int(self.simulation_length / self.step_length)
         env_data_dict = {
             
@@ -108,11 +112,11 @@ class TestGrasp(ParametrizedSimulation):
                     SensorCalls.BODY_TRAJECTORY),
             "force_center": (SensorCalls.FORCE_CENTER, SensorObjectClassification.BODY)
         }
-        simulation.add_env_data_type_dict(env_data_dict)
+        simulation.env_creator.add_env_data_type_dict(env_data_dict)
         robot_data_dict = { "body_velocity": (SensorCalls.BODY_VELOCITY, SensorObjectClassification.BODY, SensorCalls.BODY_VELOCITY),
             "COG": (SensorCalls.BODY_TRAJECTORY, SensorObjectClassification.BODY,
                     SensorCalls.BODY_TRAJECTORY),
             "n_contacts": (SensorCalls.AMOUNT_FORCE, SensorObjectClassification.BODY)
         }
         simulation.add_robot_data_type_dict(robot_data_dict)
-        return simulation.simulate(n_steps, self.step_length, 10, self.event_container, vis)
+        return simulation.simulate(n_steps, self.step_length, 100, self.event_container, vis)
