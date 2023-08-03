@@ -98,7 +98,7 @@ class ForceControllerTemplate():
     specified in global coordinate system.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, is_local: bool = False) -> None:
 
         self.x_force_chrono = chrono.ChFunction_Const(0)
         self.y_force_chrono = chrono.ChFunction_Const(0)
@@ -115,6 +115,7 @@ class ForceControllerTemplate():
         self.force_maker_chrono = chrono.ChForce()
         self.torque_maker_chrono = chrono.ChForce()
         self.is_binded = False
+        self.is_local = is_local
         self.setup_makers()
 
     @abstractmethod
@@ -129,10 +130,14 @@ class ForceControllerTemplate():
 
     def setup_makers(self):
         self.force_maker_chrono.SetMode(chrono.ChForce.FORCE)
-        self.force_maker_chrono.SetAlign(chrono.ChForce.WORLD_DIR)
         self.torque_maker_chrono.SetMode(chrono.ChForce.TORQUE)
-        self.torque_maker_chrono.SetAlign(chrono.ChForce.WORLD_DIR)
-        
+        if self.is_local:
+            self.force_maker_chrono.SetAlign(chrono.ChForce.BODY_DIR)
+            self.torque_maker_chrono.SetAlign(chrono.ChForce.BODY_DIR)
+        else:
+            self.force_maker_chrono.SetAlign(chrono.ChForce.WORLD_DIR)
+            self.torque_maker_chrono.SetAlign(chrono.ChForce.WORLD_DIR)
+
         self.force_maker_chrono.SetF_x(self.x_force_chrono)
         self.force_maker_chrono.SetF_y(self.y_force_chrono)
         self.force_maker_chrono.SetF_z(self.z_force_chrono)
@@ -152,8 +157,8 @@ CALLBACK_TYPE = Callable[[float, Any], ForceTorque]
 
 class ForceControllerOnCallback(ForceControllerTemplate):
 
-    def __init__(self, callback: CALLBACK_TYPE) -> None:
-        super().__init__()
+    def __init__(self, callback: CALLBACK_TYPE, *args) -> None:
+        super().__init__(*args)
         self.callback = callback
 
     def get_force_torque(self, time: float, data) -> ForceTorque:
@@ -162,8 +167,13 @@ class ForceControllerOnCallback(ForceControllerTemplate):
 
 class YaxisShaker(ForceControllerTemplate):
 
-    def __init__(self, amp: float = 5, amp_offset: float = 1, freq: float = 5, start_time: float = 0.0) -> None:
-        super().__init__()
+    def __init__(self,
+                 amp: float = 5,
+                 amp_offset: float = 1,
+                 freq: float = 5,
+                 start_time: float = 0.0,
+                 *args) -> None:
+        super().__init__(*args)
         self.amp = amp
         self.amp_offset = amp_offset
         self.freq = freq
