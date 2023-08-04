@@ -3,7 +3,8 @@ from rostok.control_chrono.controller import ForceControllerTemplate, ForceTorqu
 from dataclasses import dataclass
 import numpy as np
 import pychrono as chrono
-
+from rostok.graph_grammar.node import GraphGrammar
+from collections import defaultdict
 @dataclass
 class PylleyParams:
     """ pos -- along planhx
@@ -45,13 +46,49 @@ class PulleyForce(ForceControllerTemplate):
 _summary_
 """
 
-def update_finger(dict_id_angles):
-    prepare_angle(dict_id_angles)
-    finger_force
+ 
+
+
+"Pulleys container [finger_num by uniq repr][id_body][lower/upper]"
+
+
+
+def magic_mapping_joint(finger, body, lower_upper) -> int:  # joint id from graph
     pass
 
-"Pulleys container [finger_num by uniq repr][id_body][botom/upper]"
-
-def create_mapping_angles_pulley():
-    """ create stuff  input: pulley id -> output: joint id"""
+def magic_mapping_finger(finger, body, lower_upper) -> int:  # number of finger from uniq repr 
     pass
+
+def magik_update_all_pulley(dict_angle, finger_force_dict):
+    for finger, body, lb in self.magik_pulley_container.keys:
+        pulley = self.magik_pulley_container[finger, body, lb]
+        id_force = magic_mapping_finger(finger, body, lb)
+        id_joint = magic_mapping_joint(finger, body, lb)
+        force = finger_force_dict[id_force]
+        angle = dict_angle[id_joint]
+        data = {"Force" : force, "Angle" : angle}
+        #pulley.update(time=0, data)
+
+def magik_create_default_shape_2_pulley(mech_graph: GraphGrammar): # -> magik_dict[finger][body][LB]{}:
+    pass
+
+def magik_create_pulley_params(mech_graph: GraphGrammar, settings_for_pulleys):
+    pass
+def magik_ini_pulleys_force_matrix(pulley_params): # -> magik_dict[finger][body][LB] {pulley_forcer}:
+    pass
+# mech_graph with init blocks needed for bind
+def magik_init(settings_for_pulleys, force_finger, mech_graph: GraphGrammar):
+    self.force_finger = force_finger
+    pulley_prams = magik_create_pulley_params(mech_graph, settings_for_pulleys)
+    magik_ini_pulleys_force_matrix(pulley_prams)
+
+
+d = dict()
+
+d[(0, 1, 1)] = 10
+d[(0, 1, 2)] = 1
+d[(1, 1, 1)] = 2
+d[(1, 1, 2)] = 2
+
+for i, j, k in d.keys():
+    print(i, j, k )
