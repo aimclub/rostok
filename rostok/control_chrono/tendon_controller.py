@@ -5,6 +5,12 @@ import numpy as np
 import pychrono as chrono
 from rostok.graph_grammar.node import GraphGrammar
 from collections import defaultdict
+from typing import Any, NamedTuple, TypedDict
+from rostok.graph_grammar.node_block_typing import NodeFeatures
+from rostok.library.rule_sets.simple_designs import get_one_link_four_finger
+import networkx as nx
+
+
 @dataclass
 class PylleyParams:
     """ pos -- along planhx
@@ -13,10 +19,11 @@ class PylleyParams:
     pos: float = 0
     offset: float = 0
 
+
 class PulleyForce(ForceControllerTemplate):
 
     def __init__(self, pos: list) -> None:
-        super().__init__(is_local= True)
+        super().__init__(is_local=True)
         #self.set_vector_in_local_cord()
         self.pos = pos
 
@@ -35,29 +42,159 @@ class PulleyForce(ForceControllerTemplate):
         self.__body = body
         self.force_maker_chrono.SetVrelpoint(chrono.ChVectorD(*self.pos))
 
-    
     def add_visual_pulley(self):
         sph_1 = chrono.ChSphereShape(0.005)
         sph_1.SetColor(chrono.ChColor(1, 0, 0))
         self.__body.AddVisualShape(sph_1, chrono.ChFrameD(chrono.ChVectorD(*self.pos)))
         self.__body.GetVisualShape(0).SetOpacity(0.6)
 
-"""
-_summary_
-"""
 
- 
+class TipForce(PulleyForce):
+
+    def get_force_torque(self, time: float, data) -> ForceTorque:
+        force = data["Force"]
+        angle = data["Angle"]
+        impact = ForceTorque()
+        x_force = -2 * np.sin(angle + 0.001) * force
+        if angle < 0:
+            x_force = 0
+        impact.force = (x_force, 0, 0)
+        return impact
+
+
+class PulleyKey(NamedTuple):
+    """
+        finger_id: int -- column in GraphGrammar.get_sorted_root_based_paths
+        body_id: int -- id from GraphGrammar
+        pulley_number: int -- from bootom to top pos
+    """
+    finger_id: int
+    body_id: int
+    pulley_number: int
+
+
+class PulleyParamsFinger_2p(NamedTuple):
+
+    finger_id: int
+    pos_bottom: tuple[float, float, float]
+    pos_top: tuple[float, float, float]
 
 
 "Pulleys container [finger_num by uniq repr][id_body][lower/upper]"
 
 
+def is_star_topology(graph: nx.DiGraph):
+    degree = dict(graph.degree())
+    root = [n for n, d in graph.in_degree() if d == 0][0]
+    del degree[root]
+    return all(value <= 2 for value in degree.values())
+
+
+def create_pulley_dict_n(graph: GraphGrammar, n=1) -> dict[PulleyKey, Any]:
+    if not is_star_topology(graph):
+        raise Exception("Graph should be star topology")
+    branches = graph.get_sorted_root_based_paths()
+    root = [n for n, d in graph.in_degree() if d == 0][0]
+    # Remove root id
+    branches_no_root = [[item for item in sublist if item != root] for sublist in branches]
+    is_body_id = lambda id: NodeFeatures.is_body(graph.get_node_by_id(id))
+    branches_body = [[item for item in sublist if is_body_id(item)] for sublist in branches_no_root]
+    pulley_dict = {}
+    for finger_num, branch in enumerate(branches_body):
+        for body_id in branch:
+            pulley_keys = [
+                PulleyKey(finger_num, body_id, pulley_number) for pulley_number in range(n)
+            ]
+            pulley_dict_buff = dict.fromkeys(pulley_keys, None)
+            pulley_dict.update(pulley_dict_buff)
+
+    return pulley_dict
+
+
+def create_pulley_params_same(mech_graph: GraphGrammar, settings_for_pulleys, amount_pulley):
+    """Same params on all pulleys
+
+    Args:
+        mech_graph (GraphGrammar): _description_
+        settings_for_pulleys (_type_): _description_
+    """
+    pulley_dict = create_pulley_dict_n(mech_graph, amount_pulley)
+    for p_k in pulley_dict.keys():
+        pulley_dict[p_k] = settings_for_pulleys
+    return pulley_dict
+
+
+def create_pulley_params_finger_2p(mech_graph: GraphGrammar,
+                                   settings_for_pulleys: list[PulleyParamsFinger_2p]):
+    """Same params on finger
+
+    Args:
+        mech_graph (GraphGrammar): _description_
+        settings_for_pulleys (_type_): _description_
+    """
+    AMOUNT_PULLEY_PHLANX = 2
+    pulley_dict = create_pulley_dict_n(mech_graph, AMOUNT_PULLEY_PHLANX)
+    ret = {}
+    for pulley_p in settings_for_pulleys:
+        pulleys_key_bottom = [
+            i for i in pulley_dict if i.finger_id == pulley_p.finger_id and i.pulley_number == 0
+        ]
+        pulleys_key_top = [
+            i for i in pulley_dict if i.finger_id == pulley_p.finger_id and i.pulley_number == 1
+        ]
+        finger_dict_bottom = dict.fromkeys(pulleys_key_bottom, pulley_p.pos_bottom)
+        finger_dict_top = dict.fromkeys(pulleys_key_top, pulley_p.pos_top)
+        ret.update(finger_dict_bottom)
+        ret.update(finger_dict_top)
+    return ret
+
+
+def get_leaf_body_id(graph: GraphGrammar) -> list[int]:
+    leaf_nodes = [node for node in graph.nodes() if graph.in_degree(node)!=0 and graph.out_degree(node)==0]
+    return leaf_nodes
+
+def init_pulley_force(pulley_dict: dict[PulleyKey, tuple[float, float, float]]):
+    ret_dict = {}
+    for key, value in pulley_dict.items():
+        ret_dict[key] = PulleyForce(list(value))
+
+
+def get_tips_elememt(graph: GraphGrammar, pulley_dict: dict[PulleyKey, Any]):
+    tip_bodies_id = get_leaf_body_id(graph)
+    tip_keys = []
+    for tip_b in tip_bodies_id:
+        pulleys = [i for i in pulley_dict if i.body_id == tip_b]
+        tip = max(pulleys, key=lambda x: x.pulley_number)
+        tip_keys.append(tip)
+
+    return {x : pulley_dict[x] for x in tip_keys}
+def create_pulley_params_bfs(mech_graph: GraphGrammar, settings_for_pulleys):
+    """Same params on level
+
+    Args:
+        mech_graph (GraphGrammar): _description_
+        settings_for_pulleys (_type_): _description_
+    """
+    pass
+
+
+def create_pulley_params_length(mech_graph: GraphGrammar, settings_for_pulleys):
+    """Same params on level
+
+    Args:
+        mech_graph (GraphGrammar): _description_
+        settings_for_pulleys (_type_): _description_
+    """
+    pass
+
 
 def magic_mapping_joint(finger, body, lower_upper) -> int:  # joint id from graph
     pass
 
-def magic_mapping_finger(finger, body, lower_upper) -> int:  # number of finger from uniq repr 
+
+def magic_mapping_finger(finger, body, lower_upper) -> int:  # number of finger from uniq repr
     pass
+
 
 def magik_update_all_pulley(dict_angle, finger_force_dict):
     for finger, body, lb in self.magik_pulley_container.keys:
@@ -66,16 +203,25 @@ def magik_update_all_pulley(dict_angle, finger_force_dict):
         id_joint = magic_mapping_joint(finger, body, lb)
         force = finger_force_dict[id_force]
         angle = dict_angle[id_joint]
-        data = {"Force" : force, "Angle" : angle}
+        data = {"Force": force, "Angle": angle}
         #pulley.update(time=0, data)
 
-def magik_create_default_shape_2_pulley(mech_graph: GraphGrammar): # -> magik_dict[finger][body][LB]{}:
+
+def magik_create_default_shape_n_pulley(
+        mech_graph: GraphGrammar,
+        n):  # -> magik_dict[finger][body][LB]{} n -- number of pulleys per planx:
     pass
+
 
 def magik_create_pulley_params(mech_graph: GraphGrammar, settings_for_pulleys):
     pass
-def magik_ini_pulleys_force_matrix(pulley_params): # -> magik_dict[finger][body][LB] {pulley_forcer}:
+
+
+def magik_ini_pulleys_force_matrix(
+        pulley_params):  # -> magik_dict[finger][body][LB] {pulley_forcer}:
     pass
+
+
 # mech_graph with init blocks needed for bind
 def magik_init(settings_for_pulleys, force_finger, mech_graph: GraphGrammar):
     self.force_finger = force_finger
@@ -91,4 +237,19 @@ d[(1, 1, 1)] = 2
 d[(1, 1, 2)] = 2
 
 for i, j, k in d.keys():
-    print(i, j, k )
+    print(i, j, k)
+fige = [i for i in d if i[0] == 1]
+Gyyu = get_one_link_four_finger()
+tt = is_star_topology(Gyyu)
+#Gyyu.add_edge(10, 100)
+tt = is_star_topology(GraphGrammar())
+kaifa = create_pulley_dict_n(Gyyu, 2)
+kaifa2 = create_pulley_params_same(Gyyu, 10, 2)
+pp0 = PulleyParamsFinger_2p(0, (0, -1, 2), (0, 1, 2))
+pp1 = PulleyParamsFinger_2p(1, (0, -1, 2), (0, 1, 2))
+pp2 = PulleyParamsFinger_2p(2, (0, -1, 2), (0, 1, 2))
+pp3 = PulleyParamsFinger_2p(3, (0, -1, 2), (0, 1, 2))
+finger_parametrs_list = [pp0, pp1, pp2, pp3]
+kaifa3 = create_pulley_params_finger_2p(Gyyu, finger_parametrs_list)
+kaifa4 = get_tips_elememt(Gyyu, kaifa3)
+print(kaifa)
