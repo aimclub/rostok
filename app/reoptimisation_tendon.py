@@ -1,21 +1,21 @@
 from pathlib import Path
-from tkinter import *
-from tkinter import filedialog, ttk
 from typing import Any, Dict, List, Optional, Tuple
+from tkinter import filedialog, ttk, Tk, NW, END
 
 import matplotlib.pyplot as plt
 import numpy as np
-from mcts_run_setup import config_with_standard, config_with_standard_graph
+from mcts_run_setup import (config_cable_multiobject)
 
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
 from rostok.graph_generators.mcts_helper import (MCTSSaveable, OptimizedGraphReport)
 from rostok.library.obj_grasp.objects import (get_obj_hard_mesh_piramida,
-                                              get_object_parametrized_sphere)
+                                              get_object_parametrized_sphere, get_object_cylinder,
+                                              get_object_box, get_object_ellipsoid)
 #from rostok.library.rule_sets.ruleset_old_style import create_rules
 from rostok.utils.pickle_save import load_saveable
 
 
-def vis_top_n_mechs(n: int, object: EnvironmentBodyBlueprint):
+def reoptimize_nth_graph(n: int, objects_and_weights: Tuple[List[EnvironmentBodyBlueprint],List[int]]):
     root = Tk()
     root.geometry("400x300")
     root.title("Report loader")
@@ -48,25 +48,34 @@ def vis_top_n_mechs(n: int, object: EnvironmentBodyBlueprint):
     root.mainloop()
     report = load_saveable(report_path)
     graph_report = report.seen_graphs
-    control_optimizer = config_with_standard(grasp_object_blueprint)
+    control_optimizer = config_cable_multiobject(*objects_and_weights)
+    control_optimizer.limit = 16
     simulation_rewarder = control_optimizer.rewarder
-    simulation_manager = control_optimizer.simulation_scenario
+    simulation_managers = control_optimizer.simulation_scenario
     graph_list = graph_report.graph_list
+    sorted_graph_list = sorted(graph_list, key=lambda x: -x.reward)
+    graph = sorted_graph_list[n]
+    G = graph.graph
+    reward = graph.reward
+    print(graph.control)
+    reward, optim_parameters = control_optimizer.calculate_reward(G)
+    control = control_optimizer.optim_parameters2data_control(optim_parameters, G)
+    print(control)
+    simulation_rewarder.verbosity = 1
+    i = 0
+    for simulation_scenario in simulation_managers:
 
-    sorted_graph_list = sorted(graph_list, key=lambda x: x.reward)
-    some_top = sorted_graph_list[-1:-(n + 1):-1]
-    for graph in some_top:
-        G = graph.graph
-        reward = graph.reward
-        control = graph.control
-        data = {"initial_value": control}
-        simulation_output = simulation_manager.run_simulation(G, data, True)
+        simulation_output = simulation_scenario[0].run_simulation(G, control[i], True, False)
         res = simulation_rewarder.calculate_reward(simulation_output)
-        print(reward)
         print(res)
         print()
+        i += 1
 
 
 if __name__ == "__main__":
-    grasp_object_blueprint = get_object_parametrized_sphere(0.5)
-    vis_top_n_mechs(3, grasp_object_blueprint)
+    grasp_object_blueprints = [[
+        get_object_box(0.8, 1, 0.4, 10),
+        get_object_cylinder(0.6, 0.9, 10),
+        get_object_parametrized_sphere(0.6)
+    ], [1, 1, 1]]
+    reoptimize_nth_graph(0, grasp_object_blueprints)

@@ -26,13 +26,13 @@ class SimulationSingleEvent(ABC):
         Attributes:
             state (bool): event occurrence flag 
             step_n (int): the step of the event occurrence
-            simulation_stop (int): flag for stopping the simulation when an event occurs
+            verbosity (int): controls the console output of the event
     """
 
-    def __init__(self, simulation_stop=0):
+    def __init__(self, verbosity=0):
         self.state = False
         self.step_n = None
-        self.simulation_stop = simulation_stop
+        self.verbosity = verbosity
 
     def reset(self):
         """Reset the values of the attributes for the new simulation."""
@@ -158,7 +158,14 @@ class EventSlipOut(SimulationSingleEvent):
         Returns:
             EventCommands: return a command for simulation
         """
-        contact = env_data.get_amount_contacts()[0] > 0
+        # Old variant: contact = env_data.get_amount_contacts()[0] > 0
+        robot_contacts = robot_data.get_amount_contacts()
+        flat_idx_= list(robot_contacts.keys())[0]
+        contacts = 0
+        for key, value in robot_contacts.items():
+            if key != flat_idx_:
+                contacts += value
+        contact = contacts > 0
         if contact:
             self.time_last_contact = current_time
             return EventCommands.CONTINUE
@@ -184,12 +191,13 @@ class EventGrasp(SimulationSingleEvent):
         force_test_time (float): the time period of the force test of the grasp
     """
 
-    def __init__(self, grasp_limit_time: float, contact_event: EventContact, simulation_stop: int = 0):
-        super().__init__(simulation_stop)
+    def __init__(self, grasp_limit_time: float, contact_event: EventContact, verbosity: int = 0, simulation_stop = False):
+        super().__init__(verbosity=verbosity)
         self.grasp_steps: int = 0
         self.grasp_time: Optional[float] = None
         self.grasp_limit_time = grasp_limit_time
         self.contact_event: EventContact = contact_event
+        self.simulation_stop = simulation_stop
 
     def reset(self):
         super().reset()
@@ -228,8 +236,9 @@ class EventGrasp(SimulationSingleEvent):
                 self.state = True
                 self.step_n = step_n
                 self.grasp_time = current_time
+                if self.verbosity > 0:
+                    print('Grasp event!', current_time)
                 if self.simulation_stop > 0:
-                    #print('Grasp event!', current_time)
                     input('press enter to continue')
 
                 return EventCommands.ACTIVATE
