@@ -9,7 +9,7 @@ from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransf
 from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject
 from rostok.control_chrono.controller import ConstController, ForceControllerTemplate, ForceTorqueContainer, YaxisShaker
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.virtual_experiment.built_graph_chrono import built_graph_chrono
+from rostok.virtual_experiment.built_graph_chrono import BuiltGraphChrono
 from rostok.virtual_experiment.robot_new import RobotChrono
 from rostok.virtual_experiment.sensors import DataStorage, Sensor
 from rostok.criterion.simulation_flags import SimulationSingleEvent, EventCommands
@@ -36,7 +36,7 @@ class SystemPreviewChrono:
                 frame (FrameTransform): initial position of the base body
         """
 
-        built_graph_chrono(graph, self.chrono_system, frame, is_fix_base)
+        BuiltGraphChrono(graph, self.chrono_system, frame, is_fix_base)
 
     def add_object(self, obj: ChronoEasyShapeObject):
         """Add an object to the environment.

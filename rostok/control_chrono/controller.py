@@ -7,7 +7,7 @@ from matplotlib.pyplot import cla
 import pychrono.core as chrono
 from typing import Callable, List
 from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, JointInputTypeChrono)
-from rostok.virtual_experiment.built_graph_chrono import built_graph_chrono
+from rostok.virtual_experiment.built_graph_chrono import BuiltGraphChrono
 from rostok.virtual_experiment.sensors import Sensor
 
 
@@ -21,7 +21,7 @@ class RobotControllerChrono:
             functions: list of functions currently attached to joints
     """
 
-    def __init__(self, built_graph: built_graph_chrono, parameters: Dict[str, Any]):
+    def __init__(self, built_graph: BuiltGraphChrono, parameters: Dict[str, Any]):
         """Initialize class fields and call the initialize_functions() to set starting state"""
         self.graph = built_graph.graph
         self.joint_map_ordered: Dict[int, ChronoRevolveJoint] = built_graph.joint_map_ordered

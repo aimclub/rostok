@@ -9,7 +9,10 @@ from typing import Any, NamedTuple, Optional, TypedDict, Union
 from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.library.rule_sets.simple_designs import get_one_link_four_finger
 import networkx as nx
-from rostok.virtual_experiment.built_graph_chrono import built_graph_chrono
+from rostok.virtual_experiment.built_graph_chrono import BuiltGraphChrono
+from rostok.control_chrono.controller import RobotControllerChrono
+from rostok.virtual_experiment.sensors import Sensor
+
 
 @dataclass
 class PylleyParams:
@@ -32,8 +35,8 @@ class PulleyForce(ForceControllerTemplate):
         angle = data["Angle"]
         impact = ForceTorque()
         x_force = -2 * np.sin(angle + 0.001) * force
-        if angle < 0:
-            x_force = 0
+        #if angle < 0:
+            #x_force = 0
         impact.force = (x_force, 0, 0)
         return impact
 
@@ -53,12 +56,13 @@ class TipForce(PulleyForce):
 
     def get_force_torque(self, time: float, data) -> ForceTorque:
         force = data["Force"]
-        angle = data["Angle"]
         impact = ForceTorque()
-        x_force = -2 * np.sin(angle + 0.001) * force
-        if angle < 0:
-            x_force = 0
-        impact.force = (x_force, 0, 0)
+        ANGLE = 30
+        # y_force = -force * np.cos(ANGLE * np.pi / 180 )
+        # x_force = -force *  np.sin(ANGLE * np.pi / 180 )
+        # impact.force = (x_force, y_force, 0)
+        y_force = -force
+        impact.force = (0, y_force, 0)
         return impact
 
 
@@ -179,6 +183,87 @@ def get_tips_elememt(graph: GraphGrammar, pulley_dict: dict[PulleyKey,
     return {x: pulley_dict[x] for x in tip_keys}
 
 
+def nearest_joint(mech_graph: GraphGrammar, start_find_id: int, is_before: bool) -> Optional[int]:
+    is_joint_id = lambda id: NodeFeatures.is_joint(mech_graph.get_node_by_id(id))
+    branches = mech_graph.get_sorted_root_based_paths()
+    cord = []
+    for col, branch in enumerate(branches):
+        if start_find_id in branch:
+            row = branch.index(start_find_id)
+            cord = [col, row]
+            break
+    if len(cord) == 0:
+        raise Exception("Body id not find")
+    target_finger = branches[cord[0]]
+
+    if is_before:
+        find_list = list(reversed(target_finger[:cord[1]]))
+    else:
+        find_list = target_finger[cord[1]:]
+
+    for el in find_list:
+        if is_joint_id(el):
+            return el
+    return None
+
+
+def create_map_joint_2p(mech_graph: GraphGrammar,
+                        pulley_dict_shape: dict[PulleyKey, Any]) -> dict[PulleyKey, int]:
+    map_joint = {}
+    for key in pulley_dict_shape.keys():
+        if (key.pulley_number == 0):
+            map_joint[key] = nearest_joint(mech_graph, key.body_id, is_before=True)
+        elif (key.pulley_number == 1):
+            map_joint[key] = nearest_joint(mech_graph, key.body_id, is_before=False)
+        else:
+            raise Exception("Pulley number should less 2")
+
+    return map_joint
+
+def create_map_joint_tip_2p(mech_graph: GraphGrammar,
+                        pulley_dict_shape: dict[PulleyKey, Any]) -> dict[PulleyKey, int]:
+    tips_dict = get_tips_elememt(mech_graph, pulley_dict_shape)
+    map_joint_tips = {}
+    for key in tips_dict.keys():
+        map_joint_tips[key] = nearest_joint(mech_graph, key.body_id, is_before=True)
+    return map_joint_tips
+         
+
+def bind_pulleys(built_graph: BuiltGraphChrono,
+                 pulley_dict: dict[PulleyKey, Union[PulleyForce, TipForce]],
+                 is_draw=True):
+
+    for key in pulley_dict.keys():
+        body = built_graph.body_map_ordered[key.body_id].body
+        pulley_dict[key].bind_body(body)
+        if is_draw:
+            pulley_dict[key].add_visual_pulley()
+
+
+class TendonController_2p(RobotControllerChrono):
+
+    def __init__(self, graph: BuiltGraphChrono, control_parameters):
+        pulley_params_dict: dict[PulleyKey, Any] = control_parameters["pulley_params_dict"]
+        self.force_finger_dict: dict = control_parameters["force_finger_dict"]
+
+        self.robot_graph = graph.graph
+        self.pulley_params_dict = pulley_params_dict
+        map_joint_tip = create_map_joint_tip_2p(self.robot_graph, self.pulley_params_dict)
+        self.map_joint_id_pulley = create_map_joint_2p(self.robot_graph, self.pulley_params_dict)
+        self.map_joint_id_pulley.update(map_joint_tip)
+        self.pulley_and_tip_dict_obj = init_pulley_and_tip_force(self.robot_graph, pulley_params_dict)
+        bind_pulleys(graph, self.pulley_and_tip_dict_obj)
+
+    def update_functions(self, time, robot_data: Sensor, environment_data):
+        angle_joint_dict = robot_data.get_joint_z_trajectory_point()
+        for key in self.pulley_and_tip_dict_obj.keys():
+            force = self.force_finger_dict[key.finger_id]
+            joint_id = self.map_joint_id_pulley[key]
+            angle = angle_joint_dict[joint_id]
+            data = {"Force" : force, "Angle": -angle}
+            self.pulley_and_tip_dict_obj[key].update(time, data)
+
+
 def create_pulley_params_bfs(mech_graph: GraphGrammar, settings_for_pulleys):
     """Same params on level
 
@@ -198,54 +283,6 @@ def create_pulley_params_length(mech_graph: GraphGrammar, settings_for_pulleys):
     """
     pass
 
-def nearest_joint(mech_graph: GraphGrammar, start_find_id: int, is_before: bool) -> Optional[int]:
-    is_joint_id = lambda id: NodeFeatures.is_joint(mech_graph.get_node_by_id(id))
-    branches = mech_graph.get_sorted_root_based_paths()
-    cord = []
-    for col, branch in enumerate(branches):
-        if start_find_id in branch:
-            row = branch.index(start_find_id)
-            cord = [col, row]
-            break
-    if len(cord) == 0:
-        raise Exception("Body id not find")
-    target_finger = branches[cord[0]]
-    
-
-    if is_before:
-        find_list = list(reversed(target_finger[:cord[1]]))
-    else:
-        find_list = target_finger[cord[1]:]
-    
-    for el in find_list:
-        if is_joint_id(el):
-            return el
-    return None
-
-def create_map_joint_2p(mech_graph: GraphGrammar, pulley_dict_shape: dict[PulleyKey, Any]) -> dict[PulleyKey, int]:
-    map_joint = {}
-    for key in pulley_dict_shape.keys():
-        if(key.pulley_number == 0):
-            map_joint[key] = nearest_joint(mech_graph, key.body_id, is_before=True)
-        elif(key.pulley_number == 1):
-            map_joint[key] = nearest_joint(mech_graph, key.body_id, is_before=False)
-        else:
-            raise Exception("Pulley number should less 2")
-
-    return map_joint
-
-
-class TendonController_2p():
-    def __init__(self, graph: built_graph_chrono, pulley_params_dict: dict[PulleyKey, Any], force_finger_dict: dict) -> None:
-        self.robot_graph = graph.graph
-        self.pulley_params_dict = pulley_params_dict
-        self.map_joint_id_pulley = create_map_joint_2p(self.robot_graph, self.pulley_params_dict)
-        self.pulley_tip_dict = init_pulley_and_tip_force(self.robot_graph, pulley_params_dict)
-
-    def update_all(self, data):
-        pass
-    
- 
 
 def magic_mapping_joint(finger, body, lower_upper) -> int:  # joint id from graph
     pass
@@ -253,6 +290,7 @@ def magic_mapping_joint(finger, body, lower_upper) -> int:  # joint id from grap
 
 def magic_mapping_finger(finger, body, lower_upper) -> int:  # number of finger from uniq repr
     pass
+
 
 def magik_update_all_pulley(dict_angle, finger_force_dict):
     for finger, body, lb in self.magik_pulley_container.keys:
@@ -287,6 +325,8 @@ def magik_init(settings_for_pulleys, force_finger, mech_graph: GraphGrammar):
     magik_ini_pulleys_force_matrix(pulley_prams)
 
 
+""" 
+
 d = dict()
 
 d[(0, 1, 1)] = 10
@@ -314,3 +354,5 @@ kaifa5 = init_pulley_and_tip_force(Gyyu, kaifa3)
 nearest_joint(Gyyu, 25, True)
 kaifa6 = create_map_joint_2p(Gyyu, kaifa3)
 print(kaifa)
+
+"""

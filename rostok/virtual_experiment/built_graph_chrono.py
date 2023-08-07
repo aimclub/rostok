@@ -14,7 +14,7 @@ from copy import deepcopy
 from typing import Dict, List, Tuple
 
 
-class built_graph_chrono:
+class BuiltGraphChrono:
     """The object of this class is a graph representation in Chrono engine.
 
     Attributes:

@@ -4,7 +4,7 @@ import pychrono.core as chrono
 from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform)
 from rostok.control_chrono.controller import ConstController
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.virtual_experiment.built_graph_chrono import built_graph_chrono
+from rostok.virtual_experiment.built_graph_chrono import BuiltGraphChrono
 from rostok.virtual_experiment.sensors import DataStorage, Sensor
 
 
@@ -33,7 +33,7 @@ class RobotChrono:
                 control_trajectories : list of trajectories for joints
                 start_frame: initial position of the base body"""
 
-        self.__built_graph = built_graph_chrono(robot_graph, system, start_frame, is_fixed)
+        self.__built_graph = BuiltGraphChrono(robot_graph, system, start_frame, is_fixed)
         self.sensor = Sensor(self.__built_graph.body_map_ordered,
                              self.__built_graph.joint_map_ordered)
         self.sensor.contact_reporter.reset_contact_dict()
