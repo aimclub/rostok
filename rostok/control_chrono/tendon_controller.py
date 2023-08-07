@@ -9,7 +9,7 @@ from typing import Any, NamedTuple, Optional, TypedDict, Union
 from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.library.rule_sets.simple_designs import get_one_link_four_finger
 import networkx as nx
-
+from rostok.virtual_experiment.built_graph_chrono import built_graph_chrono
 
 @dataclass
 class PylleyParams:
@@ -222,9 +222,9 @@ def nearest_joint(mech_graph: GraphGrammar, start_find_id: int, is_before: bool)
             return el
     return None
 
-def create_map_joint_2p(mech_graph: GraphGrammar, pulley_dict: dict[PulleyKey, Any]) -> dict[PulleyKey, int]:
+def create_map_joint_2p(mech_graph: GraphGrammar, pulley_dict_shape: dict[PulleyKey, Any]) -> dict[PulleyKey, int]:
     map_joint = {}
-    for key in pulley_dict.keys():
+    for key in pulley_dict_shape.keys():
         if(key.pulley_number == 0):
             map_joint[key] = nearest_joint(mech_graph, key.body_id, is_before=True)
         elif(key.pulley_number == 1):
@@ -235,13 +235,24 @@ def create_map_joint_2p(mech_graph: GraphGrammar, pulley_dict: dict[PulleyKey, A
     return map_joint
 
 
+class TendonController_2p():
+    def __init__(self, graph: built_graph_chrono, pulley_params_dict: dict[PulleyKey, Any], force_finger_dict: dict) -> None:
+        self.robot_graph = graph.graph
+        self.pulley_params_dict = pulley_params_dict
+        self.map_joint_id_pulley = create_map_joint_2p(self.robot_graph, self.pulley_params_dict)
+        self.pulley_tip_dict = init_pulley_and_tip_force(self.robot_graph, pulley_params_dict)
+
+    def update_all(self, data):
+        pass
+    
+ 
+
 def magic_mapping_joint(finger, body, lower_upper) -> int:  # joint id from graph
     pass
 
 
 def magic_mapping_finger(finger, body, lower_upper) -> int:  # number of finger from uniq repr
     pass
-
 
 def magik_update_all_pulley(dict_angle, finger_force_dict):
     for finger, body, lb in self.magik_pulley_container.keys:
