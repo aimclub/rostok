@@ -5,7 +5,7 @@ import numpy as np
 import pychrono as chrono
 from rostok.graph_grammar.node import GraphGrammar
 from collections import defaultdict
-from typing import Any, NamedTuple, TypedDict
+from typing import Any, NamedTuple, Optional, TypedDict, Union
 from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.library.rule_sets.simple_designs import get_one_link_four_finger
 import networkx as nx
@@ -150,24 +150,35 @@ def create_pulley_params_finger_2p(mech_graph: GraphGrammar,
 
 
 def get_leaf_body_id(graph: GraphGrammar) -> list[int]:
-    leaf_nodes = [node for node in graph.nodes() if graph.in_degree(node)!=0 and graph.out_degree(node)==0]
+    leaf_nodes = [
+        node for node in graph.nodes() if graph.in_degree(node) != 0 and graph.out_degree(node) == 0
+    ]
     return leaf_nodes
 
-def init_pulley_force(pulley_dict: dict[PulleyKey, tuple[float, float, float]]):
-    ret_dict = {}
+
+def init_pulley_and_tip_force(graph: GraphGrammar, pulley_dict: dict[PulleyKey, tuple[float, float,
+                                                                                      float]]):
+    ret_dict: dict[PulleyKey, Union[TipForce, PulleyForce]] = {}
+    tips_dict = get_tips_elememt(graph, pulley_dict)
     for key, value in pulley_dict.items():
-        ret_dict[key] = PulleyForce(list(value))
+        if key in tips_dict.keys():
+            ret_dict[key] = TipForce(list(value))
+        else:
+            ret_dict[key] = PulleyForce(list(value))
+    return ret_dict
 
 
-def get_tips_elememt(graph: GraphGrammar, pulley_dict: dict[PulleyKey, Any]):
+def get_tips_elememt(graph: GraphGrammar, pulley_dict: dict[PulleyKey,
+                                                            Any]) -> dict[PulleyKey, Any]:
     tip_bodies_id = get_leaf_body_id(graph)
     tip_keys = []
     for tip_b in tip_bodies_id:
         pulleys = [i for i in pulley_dict if i.body_id == tip_b]
         tip = max(pulleys, key=lambda x: x.pulley_number)
         tip_keys.append(tip)
+    return {x: pulley_dict[x] for x in tip_keys}
 
-    return {x : pulley_dict[x] for x in tip_keys}
+
 def create_pulley_params_bfs(mech_graph: GraphGrammar, settings_for_pulleys):
     """Same params on level
 
@@ -186,6 +197,42 @@ def create_pulley_params_length(mech_graph: GraphGrammar, settings_for_pulleys):
         settings_for_pulleys (_type_): _description_
     """
     pass
+
+def nearest_joint(mech_graph: GraphGrammar, start_find_id: int, is_before: bool) -> Optional[int]:
+    is_joint_id = lambda id: NodeFeatures.is_joint(mech_graph.get_node_by_id(id))
+    branches = mech_graph.get_sorted_root_based_paths()
+    cord = []
+    for col, branch in enumerate(branches):
+        if start_find_id in branch:
+            row = branch.index(start_find_id)
+            cord = [col, row]
+            break
+    if len(cord) == 0:
+        raise Exception("Body id not find")
+    target_finger = branches[cord[0]]
+    
+
+    if is_before:
+        find_list = list(reversed(target_finger[:cord[1]]))
+    else:
+        find_list = target_finger[cord[1]:]
+    
+    for el in find_list:
+        if is_joint_id(el):
+            return el
+    return None
+
+def create_map_joint_2p(mech_graph: GraphGrammar, pulley_dict: dict[PulleyKey, Any]) -> dict[PulleyKey, int]:
+    map_joint = {}
+    for key in pulley_dict.keys():
+        if(key.pulley_number == 0):
+            map_joint[key] = nearest_joint(mech_graph, key.body_id, is_before=True)
+        elif(key.pulley_number == 1):
+            map_joint[key] = nearest_joint(mech_graph, key.body_id, is_before=False)
+        else:
+            raise Exception("Pulley number should less 2")
+
+    return map_joint
 
 
 def magic_mapping_joint(finger, body, lower_upper) -> int:  # joint id from graph
@@ -244,7 +291,7 @@ tt = is_star_topology(Gyyu)
 #Gyyu.add_edge(10, 100)
 tt = is_star_topology(GraphGrammar())
 kaifa = create_pulley_dict_n(Gyyu, 2)
-kaifa2 = create_pulley_params_same(Gyyu, 10, 2)
+kaifa2 = create_pulley_params_same(Gyyu, (0, 0, 0), 2)
 pp0 = PulleyParamsFinger_2p(0, (0, -1, 2), (0, 1, 2))
 pp1 = PulleyParamsFinger_2p(1, (0, -1, 2), (0, 1, 2))
 pp2 = PulleyParamsFinger_2p(2, (0, -1, 2), (0, 1, 2))
@@ -252,4 +299,7 @@ pp3 = PulleyParamsFinger_2p(3, (0, -1, 2), (0, 1, 2))
 finger_parametrs_list = [pp0, pp1, pp2, pp3]
 kaifa3 = create_pulley_params_finger_2p(Gyyu, finger_parametrs_list)
 kaifa4 = get_tips_elememt(Gyyu, kaifa3)
+kaifa5 = init_pulley_and_tip_force(Gyyu, kaifa3)
+nearest_joint(Gyyu, 25, True)
+kaifa6 = create_map_joint_2p(Gyyu, kaifa3)
 print(kaifa)
