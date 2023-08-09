@@ -52,7 +52,7 @@ class SystemPreviewChrono:
         #self.chrono_system.DoStepDynamics(time_step)
         # TODO: add some check for collisions that can reveal the errors in objects or design positions.
 
-    def simulate(self, number_of_steps: int, visualize: bool = True):
+    def simulate(self, number_of_steps: int, visualize: bool = True, camera_pos: tuple = (1.5, 3, -2)):
         """Simulate several steps and visualize system.
 
             The simulation purpose is to check the initial positions of objects and visualize the 
@@ -71,7 +71,7 @@ class SystemPreviewChrono:
             vis.SetWindowTitle('Grab demo')
             vis.Initialize()
 
-            vis.AddCamera(chrono.ChVectorD(1.5, 3, -2))
+            vis.AddCamera(chrono.ChVectorD(*camera_pos))
             vis.AddTypicalLights()
             #vis.EnableCollisionShapeDrawing(True)
         self.chrono_system.Update()

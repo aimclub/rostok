@@ -34,7 +34,7 @@ class PulleyForce(ForceControllerTemplate):
         force = data["Force"]
         angle = data["Angle"]
         impact = ForceTorque()
-        x_force = -2 * np.sin(angle + 0.001) * force
+        x_force = -2 * np.sin(angle + 0.0005) * force
         #if angle < 0:
             #x_force = 0
         impact.force = (x_force, 0, 0)
@@ -260,7 +260,7 @@ class TendonController_2p(RobotControllerChrono):
             force = self.force_finger_dict[key.finger_id]
             joint_id = self.map_joint_id_pulley[key]
             angle = angle_joint_dict[joint_id]
-            data = {"Force" : force, "Angle": -angle}
+            data = {"Force" : force, "Angle": angle}
             self.pulley_and_tip_dict_obj[key].update(time, data)
 
 

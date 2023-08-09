@@ -10,14 +10,24 @@ from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.block_builder_api.block_parameters import JointInputType
 
 
-def create_rules():
+def create_rules(is_cm = False):
+    if is_cm:
+        length_link = [0.07, 0.09, 0.11]
+        super_flat = PrimitiveBodyBlueprint(Box(0.3, 0.03, 0.3))
+        link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.015, x, 0.025)), length_link))
+        radial_move_values = [0.11, 0.12, 0.15]
+        tan_move_values = [0.07, 0.09, 0.11]
+        revolve = RevolveJointBlueprint(JointInputType.TORQUE, radius = 0.01, length=0.025)
 
-    length_link = [0.4, 0.6, 0.8]
-    super_flat = PrimitiveBodyBlueprint(Box(3, 0.1, 3))
-    link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.1, x, 0.3)), length_link))
-    radial_move_values = [0.9, 1.05, 1.2]
+    else:
+        length_link = [0.4, 0.6, 0.8]
+        super_flat = PrimitiveBodyBlueprint(Box(3, 0.1, 3))
+        link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.1, x, 0.3)), length_link))
+        radial_move_values = [0.9, 1.05, 1.2]
+        tan_move_values = [0.4, 0.6, 0.8]
+        revolve = RevolveJointBlueprint(JointInputType.TORQUE)
+    
     RADIAL_MOVES = list(map(lambda x: FrameTransform([x, 0, 0], [1, 0, 0, 0]), radial_move_values))
-    tan_move_values = [0.4, 0.6, 0.8]
     MOVES_POSITIVE = list(map(lambda x: FrameTransform([0, 0, x], [1, 0, 0, 0]), tan_move_values))
     MOVES_NEGATIVE = list(map(lambda x: FrameTransform([0, 0, -x], [1, 0, 0, 0]), tan_move_values))
 
@@ -42,7 +52,7 @@ def create_rules():
     turn_transform_N = TransformBlueprint(TURN_N)
     turn_90_transform = TransformBlueprint(FrameTransform([0, 0, 0], rotation_y(90)))
     #revolve = RevolveJointBlueprint(JointInputType.POSITION)
-    revolve = RevolveJointBlueprint(JointInputType.TORQUE)
+ 
     #revolve_45 = RevolveJointBlueprint(JointInputType.TORQUE, starting_angle=45)
     #no_control = RevolveJointBlueprint(JointInputType.UNCONTROL)
     # Nodes
