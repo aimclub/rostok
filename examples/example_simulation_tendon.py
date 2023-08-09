@@ -20,7 +20,7 @@ from rostok.graph_grammar.node import GraphGrammar, Node
 STEPS = 1000 * 1
 VIS = True
 
-TENDON_FORCE = 2
+TENDON_FORCE = 0
 VINOS = -0.03
 PULLEY_POS = 0.03
 CABEL_MOUNT_POS = 0.04
@@ -30,7 +30,7 @@ WIDTH = 0.02
 HEIGHT = 0.02
 DENSITY = 1300 * 0.5
 STARTING_ANGLE = -45
-
+NOT_STIFNESS = False
 
 def create_one_finger():
     mat = Material()
@@ -72,6 +72,27 @@ def create_one_finger():
                                      stiffness=0.05 * 4,
                                      damping=0.001,
                                      equilibrium_position=(-0.785398 / 2) / 4)
+    
+    if NOT_STIFNESS:
+        revolve1 = RevolveJointBlueprint(JointInputType.TORQUE,
+                                    0.02,
+                                    HEIGHT,
+                                    material=mat,
+                                    density=10,                                 
+                                    damping=0.001,
+                                    starting_angle=STARTING_ANGLE)
+        revolve2 = RevolveJointBlueprint(JointInputType.TORQUE,
+                                    0.02,
+                                    HEIGHT,
+                                    material=mat,
+                                    density=10,                                 
+                                    damping=0.001)
+        revolve3 = RevolveJointBlueprint(JointInputType.TORQUE,
+                                    0.02,
+                                    HEIGHT,
+                                    material=mat,
+                                    density=10,                                 
+                                    damping=0.001)
 
     palm_node = Node("P1", True, palm)
     link_node_1 = Node("L1", True, link_1)

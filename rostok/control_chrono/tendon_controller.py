@@ -152,6 +152,34 @@ def create_pulley_params_finger_2p(mech_graph: GraphGrammar,
         ret.update(finger_dict_top)
     return ret
 
+@dataclass
+class RelativeSetting_2p:
+    bottom_percent: float 
+    top_percent: float
+    lever_percent: float
+
+def create_pulley_params_relative_finger_2p(mech_graph: GraphGrammar,
+                                   settings_for_pulleys: RelativeSetting_2p):
+ 
+    AMOUNT_PULLEY_PHLANX = 2
+    pulley_dict = create_pulley_dict_n(mech_graph, AMOUNT_PULLEY_PHLANX)
+    ret = {}
+    
+ 
+
+    for i in pulley_dict:
+        body_node = mech_graph.get_node_by_id(i.body_id)
+        length = body_node.block_blueprint.shape.length_y
+        height = body_node.block_blueprint.shape.height_z
+        if i.pulley_number == 0:
+            offset = -length / 2 * settings_for_pulleys.bottom_percent
+        elif i.pulley_number == 1:
+            offset = length / 2 * settings_for_pulleys.top_percent
+            
+        pulley_dict[i] = (settings_for_pulleys.lever_percent*height, offset, 0)
+
+ 
+    return pulley_dict
 
 def get_leaf_body_id(graph: GraphGrammar) -> list[int]:
     leaf_nodes = [
@@ -263,96 +291,3 @@ class TendonController_2p(RobotControllerChrono):
             data = {"Force" : force, "Angle": angle}
             self.pulley_and_tip_dict_obj[key].update(time, data)
 
-
-def create_pulley_params_bfs(mech_graph: GraphGrammar, settings_for_pulleys):
-    """Same params on level
-
-    Args:
-        mech_graph (GraphGrammar): _description_
-        settings_for_pulleys (_type_): _description_
-    """
-    pass
-
-
-def create_pulley_params_length(mech_graph: GraphGrammar, settings_for_pulleys):
-    """Same params on level
-
-    Args:
-        mech_graph (GraphGrammar): _description_
-        settings_for_pulleys (_type_): _description_
-    """
-    pass
-
-
-def magic_mapping_joint(finger, body, lower_upper) -> int:  # joint id from graph
-    pass
-
-
-def magic_mapping_finger(finger, body, lower_upper) -> int:  # number of finger from uniq repr
-    pass
-
-
-def magik_update_all_pulley(dict_angle, finger_force_dict):
-    for finger, body, lb in self.magik_pulley_container.keys:
-        pulley = self.magik_pulley_container[finger, body, lb]
-        id_force = magic_mapping_finger(finger, body, lb)
-        id_joint = magic_mapping_joint(finger, body, lb)
-        force = finger_force_dict[id_force]
-        angle = dict_angle[id_joint]
-        data = {"Force": force, "Angle": angle}
-        #pulley.update(time=0, data)
-
-
-def magik_create_default_shape_n_pulley(
-        mech_graph: GraphGrammar,
-        n):  # -> magik_dict[finger][body][LB]{} n -- number of pulleys per planx:
-    pass
-
-
-def magik_create_pulley_params(mech_graph: GraphGrammar, settings_for_pulleys):
-    pass
-
-
-def magik_ini_pulleys_force_matrix(
-        pulley_params):  # -> magik_dict[finger][body][LB] {pulley_forcer}:
-    pass
-
-
-# mech_graph with init blocks needed for bind
-def magik_init(settings_for_pulleys, force_finger, mech_graph: GraphGrammar):
-    self.force_finger = force_finger
-    pulley_prams = magik_create_pulley_params(mech_graph, settings_for_pulleys)
-    magik_ini_pulleys_force_matrix(pulley_prams)
-
-
-""" 
-
-d = dict()
-
-d[(0, 1, 1)] = 10
-d[(0, 1, 2)] = 1
-d[(1, 1, 1)] = 2
-d[(1, 1, 2)] = 2
-
-for i, j, k in d.keys():
-    print(i, j, k)
-fige = [i for i in d if i[0] == 1]
-Gyyu = get_one_link_four_finger()
-tt = is_star_topology(Gyyu)
-#Gyyu.add_edge(10, 100)
-tt = is_star_topology(GraphGrammar())
-kaifa = create_pulley_dict_n(Gyyu, 2)
-kaifa2 = create_pulley_params_same(Gyyu, (0, 0, 0), 2)
-pp0 = PulleyParamsFinger_2p(0, (0, -1, 2), (0, 1, 2))
-pp1 = PulleyParamsFinger_2p(1, (0, -1, 2), (0, 1, 2))
-pp2 = PulleyParamsFinger_2p(2, (0, -1, 2), (0, 1, 2))
-pp3 = PulleyParamsFinger_2p(3, (0, -1, 2), (0, 1, 2))
-finger_parametrs_list = [pp0, pp1, pp2, pp3]
-kaifa3 = create_pulley_params_finger_2p(Gyyu, finger_parametrs_list)
-kaifa4 = get_tips_elememt(Gyyu, kaifa3)
-kaifa5 = init_pulley_and_tip_force(Gyyu, kaifa3)
-nearest_joint(Gyyu, 25, True)
-kaifa6 = create_map_joint_2p(Gyyu, kaifa3)
-print(kaifa)
-
-"""

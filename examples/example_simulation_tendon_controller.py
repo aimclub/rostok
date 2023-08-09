@@ -11,11 +11,11 @@ from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.simulation_chrono.basic_simulation import RobotSimulationChrono, SystemPreviewChrono
 from rostok.block_builder_chrono.block_builder_chrono_api import ChronoBlockCreatorInterface as creator
 
-from rostok.library.rule_sets.simple_designs_cm import get_two_link_one_finger, get_2_3_link_2_finger, get_one_link_one_finger
+from rostok.library.rule_sets.simple_designs_cm import get_two_link_one_finger, get_2_3_link_2_finger, get_one_link_one_finger, get_two_link_one_finger_transform_0, get_5_link_one_finger
 
 from rostok.graph_grammar.graph_utils import plot_graph, plot_graph_ids
 from rostok.control_chrono.controller import ConstController, SinControllerChrono, YaxisShaker
-from rostok.control_chrono.tendon_controller import PulleyKey, PulleyParamsFinger_2p, TendonController_2p, create_pulley_params_finger_2p
+from rostok.control_chrono.tendon_controller import PulleyKey, PulleyParamsFinger_2p, RelativeSetting_2p, TendonController_2p, create_pulley_params_finger_2p, create_pulley_params_relative_finger_2p
 from rostok.virtual_experiment.sensors import SensorCalls, SensorObjectClassification
 
 mechs = [get_two_link_one_finger]
@@ -56,12 +56,15 @@ def setup_mech_one_link_one_finger():
     return graph, controll_parameters
 
 
-def setup_mech_2_3_link_2_finger():
+def setup_mech_2_3_link_2_finger(is_rel = False):
     graph = get_2_3_link_2_finger()
     pp1 = PulleyParamsFinger_2p(1, (-0.02*2, -0.03, 0), (-0.02*2, 0.03, 0))
     pp0 = PulleyParamsFinger_2p(0, (-0.01*2, -0.02, 0), (-0.01*2, 0.02, 0))
     finger_parametrs_list = [pp0, pp1]
     pulley_d = create_pulley_params_finger_2p(graph, finger_parametrs_list)
+    if is_rel:
+        param = RelativeSetting_2p(0.6, 0.6, -1)
+        pulley_d = create_pulley_params_relative_finger_2p(graph, param)
     #del pulley_d[PulleyKey(0, 39, 1)] 
     #del pulley_d[PulleyKey(1, 25, 1)] 
     controll_parameters = {
@@ -74,9 +77,55 @@ def setup_mech_2_3_link_2_finger():
     }
     return graph, controll_parameters
 
+def setup_mech_two_link_one_finger_transform_0():
+    graph = get_two_link_one_finger_transform_0()
+    pp0 = PulleyParamsFinger_2p(0, (-0.01, -0.02, 0), (-0.01, 0.02, 0))
+    finger_parametrs_list = [pp0]
+    pulley_d = create_pulley_params_finger_2p(graph, finger_parametrs_list)
+    controll_parameters = {
+        "initial_value": [0, 0],
+        "pulley_params_dict": pulley_d,
+        "force_finger_dict": {
+            0: 2
+        }
+    }
+    return graph, controll_parameters
 
-STEPS = 500
-graph, controll_parameters = setup_mech_2_3_link_2_finger()
+
+
+def setup_mech_5_link_one_finger():
+    graph = get_5_link_one_finger()
+    pp0 = PulleyParamsFinger_2p(0, (-0.01, -0.02, 0), (-0.01, 0.02, 0))
+    finger_parametrs_list = [pp0]
+    pulley_d = create_pulley_params_finger_2p(graph, finger_parametrs_list)
+    controll_parameters = {
+        "initial_value": [0, 0],
+        "pulley_params_dict": pulley_d,
+        "force_finger_dict": {
+            0: 10
+        }
+    }
+ 
+    return graph, controll_parameters
+
+
+
+def setup_mech_5_link_one_finger_rel():
+    graph = get_5_link_one_finger()
+    param = RelativeSetting_2p(0.9, 0.9, -0.9)
+    pulley_d = create_pulley_params_relative_finger_2p(graph, param)
+ 
+    controll_parameters = {
+        "initial_value": [0, 0],
+        "pulley_params_dict": pulley_d,
+        "force_finger_dict": {
+            0: 10
+        }
+    }
+
+    return graph, controll_parameters
+STEPS = 500*10
+graph, controll_parameters = setup_mech_2_3_link_2_finger(True)
  
  
 sim = RobotSimulationChrono([])

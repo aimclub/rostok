@@ -227,8 +227,30 @@ def get_2_3_link_2_finger():
 
     return graph
 
+def get_5_link_one_finger():
+    graph = GraphGrammar()
+    rules = ["Init",
+            "AddFinger", "Terminal_Radial_Translate1", 
+            "Phalanx", "Terminal_Link2", "Terminal_Joint6",
+            "Phalanx", "Terminal_Link2", "Terminal_Joint6",
+            "Phalanx", "Terminal_Link2", "Terminal_Joint6",
+            "Phalanx", "Terminal_Link2", "Terminal_Joint6",
+            "Phalanx", "Terminal_Link2", "Terminal_Joint6",
+            "Remove_FG", 
+            "RemoveFinger_N", 
+            "RemoveFinger_R", 
+            "RemoveFinger_RN", 
+            "RemoveFinger_P",
+            "RemoveFinger_RP"
+    ]
+    rule_vocabul, _ = create_rules(True)
+    for rule in rules:
+        graph.apply_rule(rule_vocabul.get_rule(rule))
+
+    return graph
+
 if __name__ == "__main__":
-    graph = get_2_3_link_2_finger()
+    graph = get_5_link_one_finger()
     plot_graph(graph)
     plot_graph_ids(graph)
     sim = SystemPreviewChrono()
