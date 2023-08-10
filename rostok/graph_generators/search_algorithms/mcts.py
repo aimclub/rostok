@@ -1,79 +1,82 @@
-
-
 from collections import defaultdict
 
-import numpy as np 
+import numpy as np
 
 from rostok.graph_generators.environments.design_environment import STATESTYPE, DesignEnvironment
 
 EPS = 1e-8
+
+
 class MCTS:
-    def __init__(self, environment: DesignEnvironment, root, max_nonterminal_action: int, c=1.4):
-        self.root = root
+
+    def __init__(self, environment: DesignEnvironment, max_nonterminal_action: int, c=1.4):
+
         self.c = c
         self.environment = environment
         self.max_nonterminal_action = max_nonterminal_action
-        
+
         self.Qsa = defaultdict(float)  # total reward of each state-action pair
-        self.Nsa = defaultdict(int) # total visit count for each state-action pair
-        self.Ns = defaultdict(int) # total visit count for each state
-        self.Vs = defaultdict(float) # total reward of each state
-        
+        self.Nsa = defaultdict(int)  # total visit count for each state-action pair
+        self.Ns = defaultdict(int)  # total visit count for each state
+        self.Vs = defaultdict(float)  # total reward of each state
+
     def get_actions_probalities(self, state: STATESTYPE):
+        pi = np.ones_like(self.environment.actions)
         for a in self.environment.get_available_actions(state):
             if self.Nsa[(state, a)] == 0:
-                self.Ps[(state, a)] = 1.0 / len(self.environment.get_available_actions(state))
+                pi[a] = 1.0 / len(self.environment.get_available_actions(state))
             else:
-                self.Ps[(state, a)] = self.Qsa[(state, a)] / self.Nsa[(state, a)]
-        return self.Ps
-    
-    
+                pi[a] = self.Nsa[(state, a)]
+        return pi
+
     def search(self, state: STATESTYPE, amount_nonterminal_actions):
-        
+
         if state not in self.Vs:
             is_terminal_s, __ = self.environment.is_terminal_state(state)
             self.Vs[state] = self.environment.terminal_states[state][0] if is_terminal_s else 0.0
-        
+
         if self.Vs[state] != 0.0:
             return self.Vs[state]
-        
+
         if state not in self.Ns:
-            hat_V = self.expansion_n_simulation(state, amount_nonterminal_actions)
-            
+            hat_V = self.default_policy(state, amount_nonterminal_actions)
+
             return hat_V
-            
+
         curr_best = -float('inf')
         best_action = -1
         for a in self.environment.get_available_actions(state):
             if (state, a) in self.Qsa:
-                u = self.Qsa[(state,a)] + self.c * np.sqrt(np.log(self.Ns[state]) / self.Nsa[(state,a)])
+                u = self.Qsa[(state,
+                              a)] + self.c * np.sqrt(np.log(self.Ns[state]) / self.Nsa[(state, a)])
             else:
-                u = self.c * np.sqrt(np.log(self.Ns[state]) + EPS)
-                
+                u = self.c * np.sqrt(np.log(self.Ns[state]+EPS))
+
             if u > curr_best:
                 curr_best = u
                 best_action = a
 
         new_state = self.environment.next_state(state, best_action)
-        
+
         v = self.search(new_state, amount_nonterminal_actions)
-        
+
         self.update_Q_function(state, best_action, v)
         return v
 
-    
     def update_Q_function(self, state, action, reward):
-        
-        if (state,action) in self.Qsa:
-            self.Qsa[(state,action)] += (reward - self.Qsa[(state,action)]) / (self.Nsa[(state,action)] + 1)
-            self.Nsa[(state,action)] += 1
+
+        if (state, action) in self.Qsa:
+            self.Qsa[(
+                state,
+                action)] += (reward - self.Qsa[(state, action)]) / (self.Nsa[(state, action)] + 1)
+            self.Nsa[(state, action)] += 1
         else:
-            self.Qsa[(state,action)] = reward
-            self.Nsa[(state,action)] = 1
+            self.Qsa[(state, action)] = reward
+            self.Nsa[(state, action)] = 1
 
         self.Ns[state] += 1
-    
-    def expansion_n_simulation(self, state, amount_nonterminal_actions):
+
+    def default_policy(self, state, amount_nonterminal_actions):
         rewards = []
         mask_terminal = self.environment.get_terminal_actions()
         mask_nonterminal = self.environment.get_nonterminal_actions()
