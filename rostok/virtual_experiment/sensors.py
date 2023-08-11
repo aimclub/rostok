@@ -168,7 +168,7 @@ class Sensor:
             contacts_idx = contacts[idx]
             if len(contacts_idx) > 0:
                 body_contact_coordinates = [x[0] for x in contacts_idx]
-                body_contact_coordinates_sum = np.zeros(4)
+                body_contact_coordinates_sum = np.zeros(3)
                 for contact in body_contact_coordinates:
                     body_contact_coordinates_sum += np.array(contact)
 
