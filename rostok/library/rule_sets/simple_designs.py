@@ -35,7 +35,7 @@ def get_one_finger_one_link():
 def get_three_link_one_finger():
     graph = GraphGrammar()
     rules = ["Init",
-        "AddFinger", "Terminal_Radial_Translate1", "Phalanx", "Phalanx", "Phalanx", "Remove_FG",
+        "AddFinger", "Terminal_Radial_Translate3", "Phalanx", "Phalanx", "Phalanx", "Remove_FG",
         "Terminal_Link3", "Terminal_Link2", "Terminal_Link1",
         "RemoveFinger_N",
         "RemoveFinger_R", 

@@ -21,6 +21,7 @@ class ChronoSystems():
         system = chrono.ChSystemSMC()
         system.UseMaterialProperties(False)
         system.Set_G_acc(chrono.ChVectorD(gravity_list[0], gravity_list[1], gravity_list[2]))
+        system.SetContactForceModel(0)
         return system
 
     @staticmethod

@@ -99,7 +99,7 @@ class TestGrasp(ParametrizedSimulation):
         
         simulation.add_design(graph, data)
         grasp_object = self.grasp_object_callback()
-        shake = YaxisShaker(0.05, 1, 0.5, float("inf"))
+        shake = YaxisShaker(0, 0, 0.5, float("inf"))
         set_covering_sphere_based_position(grasp_object,
                                            reference_point=chrono.ChVectorD(0, 0.05, 0))
         simulation.env_creator.add_object(grasp_object, read_data=True, force_torque_controller=shake)
@@ -119,4 +119,4 @@ class TestGrasp(ParametrizedSimulation):
             "n_contacts": (SensorCalls.AMOUNT_FORCE, SensorObjectClassification.BODY)
         }
         simulation.add_robot_data_type_dict(robot_data_dict)
-        return simulation.simulate(n_steps, self.step_length, 100, self.event_container, vis)
+        return simulation.simulate(n_steps, self.step_length, 10000, self.event_container, vis)

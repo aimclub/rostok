@@ -63,8 +63,8 @@ with open(path, "w") as file:
         velocity_data_idx = list(simulation_output.robot_final_ds.get_data("body_velocity").keys())
         trajectories = simulation_output.robot_final_ds.get_data("COG")[velocity_data_idx[-1]]
         velocity_data = simulation_output.robot_final_ds.get_data("body_velocity")[velocity_data_idx[-1]]
-        #velocity_data = [np.linalg.norm(x) for x in velocity_data]
-        velocity_data = [x[0] for x in velocity_data]
+        velocity_data = [np.linalg.norm(x) for x in velocity_data]
+        #velocity_data = [x[0] for x in velocity_data]
         plt.plot(time_vector, velocity_data)
         plt.show()
 
