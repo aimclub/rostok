@@ -43,22 +43,11 @@ class MCTS:
 
             return hat_V
 
-        curr_best = -float('inf')
-        best_action = -1
-        for a in self.environment.get_available_actions(state):
-            if (state, a) in self.Qsa:
-                u = self.Qsa[(state,
-                              a)] + self.c * np.sqrt(np.log(self.Ns[state]) / self.Nsa[(state, a)])
-            else:
-                u = self.c * np.sqrt(np.log(self.Ns[state]+EPS))
+        best_action = self.tree_policy(state)
+        
+        new_state = self.environment.next_state(state, best_action)[0]
 
-            if u > curr_best:
-                curr_best = u
-                best_action = a
-
-        new_state = self.environment.next_state(state, best_action)
-
-        v = self.search(new_state, amount_nonterminal_actions)
+        v = self.search(new_state, amount_nonterminal_actions-1)
 
         self.update_Q_function(state, best_action, v)
         return v
@@ -80,14 +69,16 @@ class MCTS:
         rewards = []
         mask_terminal = self.environment.get_terminal_actions()
         mask_nonterminal = self.environment.get_nonterminal_actions()
-
-        for a in self.environment.get_available_actions(state):
+        
+        mask = self.environment.get_available_actions(state)
+        available_actions = self.environment.actions[mask == 1]
+        
+        for a in available_actions:
             nonterminal_actions = amount_nonterminal_actions
             if mask_nonterminal[a] == 1:
                 nonterminal_actions += 1
 
-            s = self.environment.next_state(state, a)
-            is_terminal_state, __ = self.environment.is_terminal_state(s)
+            s, reward, is_terminal_state, is_known = self.environment.next_state(state, a)
             while not is_terminal_state:
                 mask = self.environment.get_available_actions(s)
                 if nonterminal_actions >= self.max_nonterminal_action:
@@ -98,10 +89,28 @@ class MCTS:
                 if mask_nonterminal[a] == 1:
                     nonterminal_actions += 1
 
-                s = self.environment.next_state(s, rnd_action)
-                is_terminal_state, __ = self.environment.is_terminal_state(s)
+                s, reward, is_terminal_state, is_known = self.environment.next_state(s, rnd_action)
 
-            rewards.append(self.environment.terminal_states[s][0])
+            rewards.append(reward)
             self.update_Q_function(state, a, rewards[-1])
 
         return np.mean(rewards)
+    
+    def tree_policy(self, state):
+        curr_best = -float('inf')
+        best_action = -1
+        
+        mask = self.environment.get_available_actions(state)
+        available_actions = self.environment.actions[mask == 1]
+        
+        for a in available_actions:
+            if (state, a) in self.Qsa:
+                u = self.Qsa[(state,
+                              a)] + self.c * np.sqrt(np.log(self.Ns[state]) / self.Nsa[(state, a)])
+            else:
+                u = self.c * np.sqrt(np.log(self.Ns[state]+EPS))
+
+            if u > curr_best:
+                curr_best = u
+                best_action = a
+        return best_action

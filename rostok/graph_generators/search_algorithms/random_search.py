@@ -20,26 +20,20 @@ class RandomSearch:
         self.save_history_iter = save_history_iteration
 
     def search(self, design_environment: DesignEnvironment, max_iteration):
-        mask_terminal = design_environment.get_terminal_actions()
-        mask_nonterminal = design_environment.get_nonterminal_actions()
 
         for iter in range(max_iteration):
             t_start = time.time()
             state = design_environment.initial_state
-            nonterminal_actions = 0
             is_terminal_state, is_known_state = design_environment.is_terminal_state(state)
             while not is_terminal_state:
                 mask = design_environment.get_available_actions(state)
-                if nonterminal_actions >= self.max_nonterminal_actions:
-                    mask *= mask_terminal
                 avb_actions = design_environment.actions[mask == 1]
+                # print(f"Available actions: {avb_actions}")
                 a = np.random.choice(avb_actions)
-                if mask_nonterminal[a] == 1:
-                    nonterminal_actions += 1
-                state = design_environment.next_state(state, a)
-                is_terminal_state, is_known_state = design_environment.is_terminal_state(state)
+                state, reward, is_terminal_state, is_known_state = design_environment.next_state(state, a)
+                # print(f"State: {state}, Reward: {reward}, is_terminal_state: {is_terminal_state}, is_known_state: {is_known_state}")
+                
 
-            reward = design_environment.terminal_states[state][0]
             if reward >= self.best_reward:
                 self.best_reward = reward
                 self.best_state = state
@@ -51,13 +45,12 @@ class RandomSearch:
             
             if self.save_history_iter != 0 and (iter+1) % self.save_history_iter == 0:
                 self.save_history()
-                design_environment.save_environment("rnd_srch")
             if self.verbosity > 0:
                 print(
                     f"Iter: {iter}, Iteration time {t_finish}, Current reward: {reward}, Best reward: {self.best_reward}"
                 )
                 if self.verbosity > 1:
-                    print(f"Amount nonterminal actions: {nonterminal_actions}, Seed design: {is_known_state}")
+                    print(f"Amount nonterminal actions: {design_environment.}, Viewed design: {is_known_state}")
                     print(
                         f"Num terminal states: {len(design_environment.terminal_states)}, Num seen designs {len(design_environment.state2graph)}"
                     )

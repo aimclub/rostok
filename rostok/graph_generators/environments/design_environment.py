@@ -1,7 +1,8 @@
+from collections import defaultdict
 from copy import deepcopy
 import pickle
 from abc import ABC, abstractmethod
-from typing import Any, Union
+from typing import Any, Union, TypeAlias
 import os
 from datetime import datetime
 import numpy as np
@@ -13,14 +14,17 @@ from rostok.trajectory_optimizer.control_optimizer import GraphRewardCalculator
 
 STATESTYPE = Union[int, str]
 
+StepType: TypeAlias = tuple[STATESTYPE, float, bool, bool]
+TransitionFunctionType: TypeAlias = dict[tuple[STATESTYPE, int], tuple[STATESTYPE, float, bool]]
 
 class Environment(ABC):
 
-    def __init__(self, initial_state: STATESTYPE, actions: np.ndarray):
+    def __init__(self, initial_state: STATESTYPE, actions: np.ndarray, verbosity = 0):
         self.initial_state = initial_state
         self.actions = actions
         self.terminal_states: dict[STATESTYPE, tuple[float, Any]] = {}
-        self.transition_function: dict[tuple[STATESTYPE, int], STATESTYPE] = {}
+        self.transition_function: TransitionFunctionType = {}
+        self.verbosity = verbosity
 
     def is_terminal_state(self, state) -> tuple[bool, bool]:
 
@@ -29,7 +33,7 @@ class Environment(ABC):
 
         return is_state_terminal, in_terminal_table
 
-    def get_reward(self, state: STATESTYPE) -> float:
+    def get_reward(self, state: STATESTYPE) -> tuple[float, bool]:
 
         is_terminal, is_known = self.is_terminal_state(state)
 
@@ -43,11 +47,23 @@ class Environment(ABC):
         if not is_terminal:
             reward = 0.0
 
-        return reward
+        return reward, is_known
+    
+    def info(self) -> str:
+        if self.verbosity > 0:
+            info_out =  f"Number of terminal states: {len(self.terminal_states)}"
+        if self.verbosity > 1:
+            info_out += f" Initial state: {self.initial_state}"
+        
+        
+    
+    def info_state(self, state: STATESTYPE) -> str:
+        return ""
+        
 
     @abstractmethod
-    def next_state(self, state: STATESTYPE, action: int) -> STATESTYPE:
-        return 0
+    def next_state(self, state: STATESTYPE, action: int) -> StepType:
+        return 0, 0.0, False, False
 
     @abstractmethod
     def data2state(self, data) -> STATESTYPE:
@@ -78,23 +94,25 @@ class DesignEnvironment(Environment):
 
         self.action2rule: dict[int, str] = {t[0]: t[1] for t in list(enumerate(sorted_name_rule))}
 
-        actions = np.array(list(self.action2rule.keys()))
-        initial_state = self.data2state(initial_graph)
-        super().__init__(initial_state, actions)
-
         self.node2id = {
             name_node: id
             for id, name_node in enumerate(self.rule_vocabulary.node_vocab.node_dict.keys())
         }
+
+        actions = np.array(list(self.action2rule.keys()))
+        initial_state = self.data2state(initial_graph)
+        super().__init__(initial_state, actions)
+
         self.control_optimizer = control_optimizer
 
         self.state2graph: dict[STATESTYPE, GraphGrammar] = {
             self.initial_state: deepcopy(initial_graph)
         }
 
-    def next_state(self, state: STATESTYPE, action: int) -> STATESTYPE:
+    def next_state(self, state: STATESTYPE, action: int) -> StepType:
         if (state, action) in self.transition_function:
-            next_state = self.transition_function[(state, action)]
+            next_state, reward, is_terminal_state = self.transition_function[(state, action)]
+            is_known = True
         else:
             name_rule = self.action2rule[action]
             rule = self.rule_vocabulary.rule_dict[name_rule]
@@ -102,8 +120,9 @@ class DesignEnvironment(Environment):
             new_graph = deepcopy(graph)
             new_graph.apply_rule(rule)
             next_state = self.data2state(new_graph)
-            self.update_environment(graph, action, new_graph)
-        return next_state
+            reward, is_known = self.update_environment(graph, action, new_graph)
+            is_terminal_state, __ = self.is_terminal_state(next_state)
+        return (next_state, reward, is_terminal_state, is_known)
 
     def possible_next_state(self, state: STATESTYPE, mask_actions=None) -> list[STATESTYPE]:
         if mask_actions is None:
@@ -112,7 +131,7 @@ class DesignEnvironment(Environment):
         avb_actions = self.actions[mask_actions == 1]
         possible_next_s = []
         for a in avb_actions:
-            possible_next_s.append(self.next_state(state, a))
+            possible_next_s.append(self.next_state(state, a)[0])
 
         return possible_next_s
 
@@ -146,9 +165,11 @@ class DesignEnvironment(Environment):
         return mask_terminal_actions
 
     def _calculate_reward(self, state: STATESTYPE) -> tuple[float, Any]:
-        result_optimizer = self.control_optimizer.calculate_reward(self.state2graph[state])
-        reward = result_optimizer[0]
-        movments_trajectory = result_optimizer[1]
+        # result_optimizer = self.control_optimizer.calculate_reward(self.state2graph[state])
+        # reward = result_optimizer[0]
+        # movments_trajectory = result_optimizer[1]
+        movments_trajectory: list[float] = []
+        reward = state + 0.0
         return reward, movments_trajectory
 
     def _check_terminal_state(self, state: STATESTYPE) -> bool:
@@ -158,6 +179,10 @@ class DesignEnvironment(Environment):
         return sum(terminal_nodes) == len(terminal_nodes)
 
     def data2state(self, data: GraphGrammar) -> STATESTYPE:
+
+        # if len(self.state2graph) != len(set(self.state2graph.values())):
+
+        #     print("WARNING: There are repeated states")
 
         sorted_id_nodes = list(
             nx.lexicographical_topological_sort(data, key=lambda x: data.get_node_by_id(x).label))
@@ -170,15 +195,12 @@ class DesignEnvironment(Environment):
         next_state = self.data2state(next_graph)
         if next_state not in self.state2graph:
             self.state2graph[next_state] = deepcopy(next_graph)
+        reward, is_known = self.get_reward(next_state)
         if (state, action) not in self.transition_function:
-            self.transition_function[(state, action)] = next_state
-        reward = self.get_reward(next_state)
-        return reward
+            self.transition_function[(state, action)] = (next_state, reward, self.is_terminal_state(next_state)[0])
+        return reward, is_known
 
-    def save_environment(
-            self,
-            prefix,
-            path="./environments/"):
+    def save_environment(self, prefix, path="./environments/"):
         os.path.split(path)
         if not os.path.exists(path):
             print(f"Path {path} does not exist. Creating...")
@@ -189,8 +211,6 @@ class DesignEnvironment(Environment):
         os_path = os.path.join(path, folder)
         print(f"Saving environment to {os_path}")
         os.mkdir(os_path)
-        
-        
 
         file_names = [
             "actions.p", "terminal_states.p", "transition_function.p", "action2rule.p",
@@ -222,3 +242,87 @@ class DesignEnvironment(Environment):
         self.terminal_states.update(s_t)
         self.transition_function.update(p_sa)
         self.state2graph.update(s2g)
+
+class SubDesignEnvironment(DesignEnvironment):
+    def __init__(self, rule_vocabulary: RuleVocabulary, control_optimizer: GraphRewardCalculator, max_number_nonterminal_rules, initial_graph: GraphGrammar = GraphGrammar()):
+        super().__init__(rule_vocabulary, control_optimizer, initial_graph)
+        self.max_number_nonterminal_rules = max_number_nonterminal_rules
+        self.counter_nonterminal_rules: dict[STATESTYPE, int] = defaultdict(int)
+        self.counter_nonterminal_rules[self.initial_state] = 0
+        
+        
+    def get_available_actions(self, state: STATESTYPE) -> np.ndarray:
+        graph = self.state2graph[state]
+        available_rules = self.rule_vocabulary.get_list_of_applicable_rules(graph)
+        mask_available_actions = np.zeros_like(self.actions)
+
+        rule_list = np.array(list(self.action2rule.values()))
+        mask = [rule in available_rules for rule in rule_list]
+        mask_available_actions[mask] = 1
+        
+        mask_terminal = self.get_terminal_actions(state)
+        
+        if self.max_number_nonterminal_rules < self.counter_nonterminal_rules[state]:
+            mask_available_actions *= mask_terminal
+
+        return mask_available_actions
+    
+    def update_environment(self, graph: GraphGrammar, action: int, next_graph: GraphGrammar):
+        state = self.data2state(graph)
+        next_state = self.data2state(next_graph)
+        if next_state not in self.state2graph:
+            self.state2graph[next_state] = deepcopy(next_graph)
+        reward, is_known = self.get_reward(next_state)
+        if (state, action) not in self.transition_function:
+            self.transition_function[(state, action)] = (next_state, reward, self.is_terminal_state(next_state)[0])
+
+        if self.get_nonterminal_actions()[action] == 1:
+            self.counter_nonterminal_rules[next_state] += self.counter_nonterminal_rules[state] + 1
+
+        return reward, is_known
+
+    def save_environment(self, prefix, path="./environments/"):
+        os.path.split(path)
+        if not os.path.exists(path):
+            print(f"Path {path} does not exist. Creating...")
+            os.mkdir(path)
+
+        current_date = datetime.now()
+        folder = f"{prefix}__{current_date.hour}h{current_date.minute}m_{current_date.second}s_date_{current_date.day}d{current_date.month}m{current_date.year}y"
+        os_path = os.path.join(path, folder)
+        print(f"Saving environment to {os_path}")
+        os.mkdir(os_path)
+
+        file_names = [
+            "actions.p", "terminal_states.p", "transition_function.p", "action2rule.p",
+            "state2graph.p", "rule_vocabulary.p", "counter_nonterminal_rules.p"
+        ]
+        variables = [
+            self.actions, self.terminal_states, self.transition_function, self.action2rule,
+            self.state2graph, self.rule_vocabulary, self.control_optimizer, self.counter_nonterminal_rules
+        ]
+        for file, var in zip(file_names, variables):
+            with open(os.path.join(os_path, file), "wb") as f:
+                pickle.dump(var, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    def load_environment(self, path_to_folder):
+        file_names = ["actions.p", "action2rule.p", "rule_vocabulary.p"]
+        variables = [self.actions, self.action2rule, self.rule_vocabulary, self.control_optimizer]
+
+        for file, var in zip(file_names, variables):
+            with open(os.path.join(path_to_folder, file), "rb") as f:
+                var = pickle.load(f)
+
+        with open(os.path.join(path_to_folder, "terminal_states.p"), "rb") as f:
+            s_t = pickle.load(f)
+        with open(os.path.join(path_to_folder, "transition_function.p"), "rb") as f:
+            p_sa = pickle.load(f)
+        with open(os.path.join(path_to_folder, "state2graph.p"), "rb") as f:
+            s2g = pickle.load(f)
+        with open(os.path.join(path_to_folder, "counter_nonterminal_rules.p"), "rb") as f:
+            counter_non_rules = pickle.load(f)
+
+        self.terminal_states.update(s_t)
+        self.transition_function.update(p_sa)
+        self.state2graph.update(s2g)
+        self.counter_nonterminal_rules.update(counter_non_rules)
