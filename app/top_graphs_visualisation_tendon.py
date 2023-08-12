@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-from mcts_run_setup import config_with_standard, config_with_standard_graph
+from mcts_run_setup import config_cable
 
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
 from rostok.graph_generators.mcts_helper import (MCTSSaveable, OptimizedGraphReport)
@@ -48,25 +48,26 @@ def vis_top_n_mechs(n: int, object: EnvironmentBodyBlueprint):
     root.mainloop()
     report = load_saveable(report_path)
     graph_report = report.seen_graphs
-    control_optimizer = config_with_standard(grasp_object_blueprint)
+    control_optimizer = config_cable(grasp_object_blueprint)
     simulation_rewarder = control_optimizer.rewarder
     simulation_manager = control_optimizer.simulation_scenario
     graph_list = graph_report.graph_list
-
+    simulation_rewarder.verbosity = 1
     sorted_graph_list = sorted(graph_list, key=lambda x: x.reward)
     some_top = sorted_graph_list[-1:-(n + 1):-1]
     for graph in some_top:
         G = graph.graph
         reward = graph.reward
-        control = graph.control
-        data = {"initial_value": control}
-        simulation_output = simulation_manager.run_simulation(G, data, True)
+        print(graph.control)
+        control = control_optimizer.optim_parameters2data_control(graph.control, G)
+        print(control)
+        #data = {"initial_value": control}
+        simulation_output = simulation_manager.run_simulation(G, control, True, False)
         res = simulation_rewarder.calculate_reward(simulation_output)
         print(reward)
         print(res)
         print()
 
-
 if __name__ == "__main__":
     grasp_object_blueprint = get_object_parametrized_sphere(0.5)
-    vis_top_n_mechs(3, grasp_object_blueprint)
+    vis_top_n_mechs(2, grasp_object_blueprint)
