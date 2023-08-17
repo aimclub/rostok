@@ -4,12 +4,11 @@ from functools import singledispatchmethod
 from typing import Any, Generic, Optional, Type, Union
 
 from traitlets import Bool
-
+from rostok.utils.dataset_materials.material_dataclass_manipulating import DefaultChronoMaterialNSC, Material
 import rostok.block_builder_api.easy_body_shapes as easy_body_shapes
 from rostok.block_builder_api.block_parameters import (DefaultFrame,
                                                        FrameTransform,
-                                                       JointInputType,
-                                                       Material)
+                                                       JointInputType)
 
 
 @dataclass
@@ -44,7 +43,7 @@ class RevolveJointBlueprint(JointBlueprintType):
     type_of_input: JointInputType = JointInputType.TORQUE
     radius: float = 0.07
     length: float = 0.4
-    material: Material = Material()
+    material: Material = DefaultChronoMaterialNSC()
     starting_angle: float = 0.
     density: float = 1000.0
     stiffness: float = 0.
@@ -66,7 +65,7 @@ class PrimitiveBodyBlueprint(BodyBlueprintType):
 class EnvironmentBodyBlueprint(BodyBlueprintType):
     shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
     density: float = 100.0
-    material: Material = Material()
+    material: Material = DefaultChronoMaterialNSC()
     is_collide: bool = True
     color: Optional[list[int]] = None
     pos: FrameTransform = DefaultFrame

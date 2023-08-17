@@ -4,12 +4,6 @@ from rostok.utils.dataset_materials.material_dataclass_manipulating import (
     DefaultChronoMaterial, struct_material2object_material)
 from rostok.block_builder_chrono.block_classes import JointInputTypeChrono
 
-def convert_material_to_chrono(block_material: Material) -> DefaultChronoMaterial:
-    ret = DefaultChronoMaterial()
-    ret.DampingF = block_material.DampingF
-    ret.Friction = block_material.Friction
-    return ret
-
 def convert_joint_input_type_to_chrono(joint_input_type: JointInputType) -> JointInputTypeChrono:
     convert_dict = {JointInputType.TORQUE : JointInputTypeChrono.TORQUE,
                     JointInputType.VELOCITY : JointInputTypeChrono.VELOCITY,

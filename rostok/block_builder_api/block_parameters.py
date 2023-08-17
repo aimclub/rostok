@@ -12,9 +12,3 @@ class JointInputType(Enum):
     VELOCITY = "Speed"
     POSITION = "Angle"
     UNCONTROL = "Uncontrol"
-
-
-@dataclass
-class Material:
-    Friction = 0.5
-    DampingF = 0.1

@@ -15,7 +15,7 @@ from rostok.block_builder_chrono.blocks_utils import (
     SpringTorque, frame_transform_to_chcoordsys, rotation_z_q)
 from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
-    DefaultChronoMaterial, struct_material2object_material)
+    DefaultChronoMaterialNSC, DefaultChronoMaterialSMC, struct_material2object_material)
 
 
 class BuildingBody(BlockBody):
@@ -193,9 +193,9 @@ class ChronoRevolveJoint(BlockBridge):
 
     def __init__(self,
                  type_of_input: JointInputTypeChrono = JointInputTypeChrono.TORQUE,
-                 radius=0.07,
-                 length=0.4,
-                 material=DefaultChronoMaterial(),
+                 radius=0.007,
+                 length=0.031,
+                 material=DefaultChronoMaterialNSC(),
                  density=100.0,
                  starting_angle=0,
                  stiffness: float = 0.,
@@ -257,7 +257,7 @@ class ChronoRevolveJoint(BlockBridge):
             self._add_spring_damper(in_block, out_block, system)
 
         if (self.with_collision):
-            eps = 0.002
+            eps = 0.00002
             cylinder = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, self.radius - eps, self.length, self.density, True,
                                                  True, self.material)
             turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROTATE_Y_TO_Z)
@@ -312,7 +312,7 @@ class PrimitiveBody(BuildingBody):
     def __init__(self,
                  shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box(),
                  density: float = 100.0,
-                 material=DefaultChronoMaterial(),
+                 material=DefaultChronoMaterialNSC(),
                  is_collide: bool = True,
                  color: Optional[list[int]] = None):
 
@@ -366,7 +366,7 @@ class ChronoEasyShapeObject():
     def __init__(self,
                  shape=easy_body_shapes.Box(),
                  density: float = 100.0,
-                 material=DefaultChronoMaterial(),
+                 material=DefaultChronoMaterialNSC(),
                  is_collide: bool = True,
                  color: Optional[list[int]] = None,
                  pos: FrameTransform = DefaultFrame):
