@@ -4,11 +4,13 @@ from functools import singledispatchmethod
 from typing import Any, Generic, Optional, Type, Union
 
 from traitlets import Bool
-from rostok.utils.dataset_materials.material_dataclass_manipulating import DefaultChronoMaterialNSC, Material
+
 import rostok.block_builder_api.easy_body_shapes as easy_body_shapes
+from rostok.utils.dataset_materials.material_dataclass_manipulating import DefaultChronoMaterialNSC, Material
 from rostok.block_builder_api.block_parameters import (DefaultFrame,
                                                        FrameTransform,
-                                                       JointInputType)
+                                                       JointInputType,
+                                                       )
 
 
 @dataclass
@@ -41,22 +43,21 @@ class TransformBlueprint(TransformBlueprintType):
 @dataclass
 class RevolveJointBlueprint(JointBlueprintType):
     type_of_input: JointInputType = JointInputType.TORQUE
-    radius: float = 0.07
-    length: float = 0.4
+    radius: float = 0.007
+    length: float = 0.03
     material: Material = DefaultChronoMaterialNSC()
+    density: float= 400
     starting_angle: float = 0.
-    density: float = 1000.0
     stiffness: float = 0.
     damping: float = 0.
-    equilibrium_position: float = 0
     with_collision: bool = True
 
 
 @dataclass
 class PrimitiveBodyBlueprint(BodyBlueprintType):
     shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
-    density: float = 1000.0
-    material: Material = Material()
+    density: float = 400
+    material: Material = DefaultChronoMaterialNSC()
     is_collide: bool = True
     color: Optional[list[int]] = None
 
@@ -64,7 +65,7 @@ class PrimitiveBodyBlueprint(BodyBlueprintType):
 @dataclass
 class EnvironmentBodyBlueprint(BodyBlueprintType):
     shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
-    density: float = 100.0
+    density: float = 100
     material: Material = DefaultChronoMaterialNSC()
     is_collide: bool = True
     color: Optional[list[int]] = None

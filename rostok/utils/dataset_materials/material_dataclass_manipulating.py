@@ -13,13 +13,25 @@ class Material:
 
 
 @dataclass
-class DefaultChronoMaterial(Material):
+class DefaultChronoMaterialNSC(Material):
     """Dataclass of default materials for chrono bodies
     """
-    name: str = "default"
+    name: str = "default_NSC"
     type_class: str = "ChMaterialSurfaceNSC"
-    Friction = 0.5
-    DampingF = 0.1
+    Friction:float = 0.5
+    Restitution:float = 0.2
+
+class DefaultChronoMaterialSMC():
+    
+    name: str = "default_SMC"
+    type_class: str = "ChMaterialSurfaceSMC"
+    Friction:float = 0.5
+    Kn:float = 400
+    Kt:float = 400
+    Gn:float = 240
+    Gt:float = 240
+    Restitution:float = 0
+    YoungModulus:float = 0
 
 
 def struct_material2object_material(struct_material: Material, prefix_setter: str = "Set"):

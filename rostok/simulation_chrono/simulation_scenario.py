@@ -11,6 +11,8 @@ from rostok.virtual_experiment.sensors import (SensorCalls, SensorObjectClassifi
 from rostok.simulation_chrono.simulation_utils import set_covering_sphere_based_position
 from rostok.control_chrono.controller import ConstController, SinControllerChrono, YaxisShaker
 from rostok.utils.json_encoder import RostokJSONEncoder
+from rostok.simulation_chrono.simulation_SMC import SingleRobotSimulation, ChronoVisManager, EnvCreator, ChronoSystems
+
 
 
 class ParametrizedSimulation:
@@ -69,3 +71,49 @@ class ConstTorqueGrasp(ParametrizedSimulation):
         }
         simulation.add_robot_data_type_dict(robot_data_dict)
         return simulation.simulate(n_steps, self.step_length, 10, self.event_container, vis)
+
+class TestGrasp(ParametrizedSimulation):
+
+    def __init__(self, step_length, simulation_length) -> None:
+        super().__init__(step_length, simulation_length)
+        self.grasp_object_callback = None
+        self.event_container: List[SimulationSingleEvent] = []
+
+    def add_event(self, event):
+        self.event_container.append(event)
+
+    def reset_events(self):
+        for event in self.event_container:
+            event.reset()
+
+    def run_simulation(self, graph: GraphGrammar, data, vis=False, delay = False):
+        self.reset_events()
+        #simulation = RobotSimulationChrono([])
+        system = ChronoSystems.chrono_SMC_system([0,0,0])
+        env_creator = EnvCreator([])
+        vis_manager = ChronoVisManager(delay)
+        simulation = SingleRobotSimulation(system, env_creator, vis_manager)
+        
+        simulation.add_design(graph, data)
+        grasp_object = self.grasp_object_callback()
+        shake = YaxisShaker(0, 0, 0.5, float("inf"))
+        set_covering_sphere_based_position(grasp_object,
+                                           reference_point=chrono.ChVectorD(0, 0.05, 0))
+        simulation.env_creator.add_object(grasp_object, read_data=True, force_torque_controller=shake)
+        n_steps = int(self.simulation_length / self.step_length)
+        env_data_dict = {
+            
+            "n_contacts": (SensorCalls.AMOUNT_FORCE, SensorObjectClassification.BODY),
+            "forces": (SensorCalls.FORCE, SensorObjectClassification.BODY),
+            "COG": (SensorCalls.BODY_TRAJECTORY, SensorObjectClassification.BODY,
+                    SensorCalls.BODY_TRAJECTORY),
+            "force_center": (SensorCalls.FORCE_CENTER, SensorObjectClassification.BODY)
+        }
+        simulation.env_creator.add_env_data_type_dict(env_data_dict)
+        robot_data_dict = { "body_velocity": (SensorCalls.BODY_VELOCITY, SensorObjectClassification.BODY, SensorCalls.BODY_VELOCITY),
+            "COG": (SensorCalls.BODY_TRAJECTORY, SensorObjectClassification.BODY,
+                    SensorCalls.BODY_TRAJECTORY),
+            "n_contacts": (SensorCalls.AMOUNT_FORCE, SensorObjectClassification.BODY)
+        }
+        simulation.add_robot_data_type_dict(robot_data_dict)
+        return simulation.simulate(n_steps, self.step_length, 10000, self.event_container, vis)

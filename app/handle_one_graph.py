@@ -7,7 +7,7 @@ from datetime import datetime
 
 import hyperparameters as hp
 import mcts
-from mcts_run_setup import config_with_standard, config_with_standard_cable, config_with_standard_tendon, config_with_standard_linear
+from mcts_run_setup import config_with_standard
 
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.library.obj_grasp.objects import get_object_parametrized_sphere, get_object_ellipsoid, get_object_parametrized_sphere_smc

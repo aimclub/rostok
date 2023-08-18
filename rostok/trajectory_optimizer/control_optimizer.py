@@ -156,14 +156,14 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
         Returns:
             dict: Dictionary of data control
         """
-        parameters = parameters.round(3)
+        parameters = parameters.round(6)
         data = {"initial_value": parameters}
 
         return data
 
     def _postprocessing_parameters(self, parameters):
 
-        return np.round(parameters, 3)
+        return np.round(parameters, 6)
 
     @abstractmethod
     def run_optimization(self, callback, multi_bound, args):
@@ -287,7 +287,7 @@ class ConstTorqueOptimizationBranchTemplate(CalculatorWithConstTorqueOptimizatio
         return -reward
 
     def _transform_parameters2data(self, parameters, graph):
-        parameters = parameters.round(3)
+        parameters = parameters.round(6)
         if isinstance(graph, tuple):
             graph = graph[0]
 
