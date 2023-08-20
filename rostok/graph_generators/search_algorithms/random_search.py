@@ -49,12 +49,11 @@ class RandomSearch:
                 print(
                     f"Iter: {iter}, Iteration time {t_finish}, Current reward: {reward}, Best reward: {self.best_reward}"
                 )
+                print(design_environment.info())
                 if self.verbosity > 1:
-                    print(f"Amount nonterminal actions: {design_environment.}, Viewed design: {is_known_state}")
-                    print(
-                        f"Num terminal states: {len(design_environment.terminal_states)}, Num seen designs {len(design_environment.state2graph)}"
-                    )
-                    print("===========")
+                    print(f"Best state: {self.best_state}")
+                    print(design_environment.get_info_state(state))
+                print("===========")
 
     def save_history(self,
                      prefix="",
