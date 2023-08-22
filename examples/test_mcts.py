@@ -9,12 +9,12 @@ from rostok.graph_grammar.node import GraphGrammar
 from rostok.library.obj_grasp.objects import get_object_parametrized_sphere
 import sys
 sys.path.append('d:\\lab_be2r\\rostok_09_01_2023\\rostok\\app')
-from mcts_run_setup import config_with_standard
+from mcts_run_setup import config_with_standard, config_cable
 
 rule_vocabulary = create_rules()
 grasp_object_blueprint = get_object_parametrized_sphere(0.5)
 # create reward counter using run setup function
-control_optimizer = config_with_standard(grasp_object_blueprint)
+control_optimizer = config_cable(grasp_object_blueprint)
 
 init_graph = GraphGrammar()
 env = SubDesignEnvironment(rule_vocabulary, control_optimizer, 5, init_graph, 2)
@@ -28,9 +28,10 @@ while not env.is_terminal_state(state)[0]:
         mcts.search(state)
     
     pi = mcts.get_policy(state)
-    a = np.random.choice(env.actions, p=pi)
+    a = max(env.actions, key=lambda x: pi[x])
     state, reward, is_terminal_state, __ = env.next_state(state, a)
     print(f"State: {state}, Reward: {reward}, is_terminal_state: {is_terminal_state}")
     trajectory.append(state)
 env.save_environment("test")
+mcts.save("test")
 print(f"Trajectory: {trajectory}")

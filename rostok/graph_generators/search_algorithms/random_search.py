@@ -44,7 +44,7 @@ class RandomSearch:
             self.time_history.append(t_finish)
             
             if self.save_history_iter != 0 and (iter+1) % self.save_history_iter == 0:
-                self.save_history()
+                self.save_history("checkpoint", rewrite=True, use_date=False)
             if self.verbosity > 0:
                 print(
                     f"Iter: {iter}, Iteration time {t_finish}, Current reward: {reward}, Best reward: {self.best_reward}"
@@ -57,10 +57,26 @@ class RandomSearch:
 
     def save_history(self,
                      prefix="",
-                     path='./results/random_search'):
-        current_date = datetime.now()
-        file = f"{prefix}_{current_date.hour}h{current_date.minute}m_{current_date.second}s_date_{current_date.day}d{current_date.month}m{current_date.year}y"
+                     path='./results/random_search', rewrite=False, use_date=True):
+        if use_date:
+            current_date = datetime.now()
+            file = f"{prefix}_{current_date.hour}h{current_date.minute}m_{current_date.second}s_date_{current_date.day}d{current_date.month}m{current_date.year}y"
+        else:
+            file = prefix
         full_path = os.path.join(path, file)
+        if not os.path.exists(full_path):
+            print(f"Saving search data to {full_path}")
+            os.mkdir(full_path)
+        elif rewrite:
+            print(f"Rewriting search data to {full_path}")
+        else:
+            postfix_folder = 1
+            full_path = full_path + f"_{postfix_folder}"
+            while os.path.exists(full_path):
+                full_path = full_path.replace(f"_{postfix_folder-1}", f"_{postfix_folder}")
+                postfix_folder += 1
+            print(f"Saving search data to {full_path}")
+
         np_reward = np.array(self.reward_history)
         np_best_reward = np.array(self.best_reward_history)
         np_time = np.array(self.time_history)

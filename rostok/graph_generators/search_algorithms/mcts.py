@@ -5,6 +5,7 @@ import pickle
 
 import numpy as np
 
+from rostok.graph_generators.mcts_helper import MCTSHelper
 from rostok.graph_generators.environments.design_environment import STATESTYPE, DesignEnvironment
 
 EPS = 1e-8
@@ -14,12 +15,10 @@ class MCTS:
 
     def __init__(self,
                  environment: DesignEnvironment,
-                 c=1.4,
-                 verbosity=0):
+                 c=1.4):
 
         self.c = c
         self.environment = environment
-        self.verbosity = verbosity
 
         self.Qsa = defaultdict(float)  # total reward of each state-action pair
         self.Nsa = defaultdict(int)  # total visit count for each state-action pair
@@ -38,7 +37,7 @@ class MCTS:
         pi /= np.sum(pi)
         return pi
 
-    def search(self, state: STATESTYPE):
+    def search(self, state: STATESTYPE, num_actions = 0):
 
         if state not in self.Vs:
             is_terminal_s, __ = self.environment.is_terminal_state(state)
@@ -48,7 +47,7 @@ class MCTS:
             return self.Vs[state]
 
         if state not in self.Ns:
-            hat_V = self.default_policy(state)
+            hat_V = self.default_policy(state, num_actions)
 
             return hat_V
 
@@ -77,11 +76,13 @@ class MCTS:
         else:
             self.Ns[state] = 1
 
-    def default_policy(self, state):
+    def default_policy(self, state, num_actions = 0):
         rewards = []
 
         mask = self.environment.get_available_actions(state)
         available_actions = self.environment.actions[mask == 1]
+        if num_actions != 0:
+            available_actions = np.random.choice(available_actions, num_actions)
 
         for a in available_actions:
 
@@ -119,17 +120,30 @@ class MCTS:
         
         return uct_scores
     
-    def save(self, prefix, path = "./LearnedMCTS/"):
+    def save(self, prefix, path = "./LearnedMCTS/", rewrite=False, use_date = True):
         os.path.split(path)
         if not os.path.exists(path):
             print(f"Path {path} does not exist. Creating...")
             os.mkdir(path)
 
-        current_date = datetime.now()
-        folder = f"{prefix}__{current_date.hour}h{current_date.minute}m_{current_date.second}s_date_{current_date.day}d{current_date.month}m{current_date.year}y"
+        if use_date:
+            current_date = datetime.now()
+            folder = f"{prefix}__{current_date.hour}h{current_date.minute}m_{current_date.second}s_date_{current_date.day}d{current_date.month}m{current_date.year}y"
+        else:
+            folder = prefix
         os_path = os.path.join(path, folder)
-        print(f"Saving MCTS to {os_path}")
-        os.mkdir(os_path)
+        if not os.path.exists(os_path):
+            print(f"Create dictionary {os_path} and save MCTS")
+            os.mkdir(os_path)
+        elif rewrite:
+            print(f"Rewite mcts data in {os_path}")
+        else:
+            postfix_folder = 1
+            os_path = os_path + f"_{postfix_folder}"
+            while os.path.exists(os_path):
+                os_path = os_path.replace(f"_{postfix_folder-1}", f"_{postfix_folder}")
+                postfix_folder += 1
+            print(f"Create dictionary {os_path} and save MCTS")
         
         self.environment.save_environment(prefix="MCTS_env", path=os_path, use_date=False)
         
@@ -142,6 +156,8 @@ class MCTS:
         for file, var in zip(file_names, variables):
             with open(os.path.join(os_path, file), "wb") as f:
                 pickle.dump(var, f, protocol=pickle.HIGHEST_PROTOCOL)
+        
+        return os_path
                 
     def load(self, path):
         
@@ -157,4 +173,15 @@ class MCTS:
         for file, var in zip(file_names, variables):
             with open(os.path.join(path, file), "rb") as f:
                 var.update(pickle.load(f))
+    
+    def get_data_state(self, state: STATESTYPE):
+        mask = self.environment.get_available_actions(state)
+        possible_actions = self.environment.actions[mask == 1]
+        Q = {self.environment.action2rule[a]: self.Qsa.get((state, a), 0) for a in possible_actions}
+        pi = self.get_policy(state)
+        V = sum([self.Qsa.get((state, a), 0) * pi[a] for a in possible_actions])
+        N = self.Ns[state]
+        Na = {self.environment.action2rule[a]: self.Nsa.get((state, a), 0) for a in possible_actions}
+        return {"Qa": Q, "pi": pi, "V": V, "N": N, "Na": Na}
+    
 

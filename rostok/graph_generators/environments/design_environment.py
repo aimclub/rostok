@@ -17,7 +17,6 @@ STATESTYPE = Union[int, str]
 StepType: TypeAlias = tuple[STATESTYPE, float, bool, bool]
 TransitionFunctionType: TypeAlias = dict[tuple[STATESTYPE, int], tuple[STATESTYPE, float, bool]]
 
-
 class Environment(ABC):
 
     def __init__(self, initial_state: STATESTYPE, actions: np.ndarray, verbosity=0):
@@ -50,26 +49,37 @@ class Environment(ABC):
 
         return reward, is_known
 
-    def info(self) -> str:
+    def info(self, verbosity=None) -> str:
+        if verbosity is None:
+            verbosity = self.verbosity
         info_out = ""
-        if self.verbosity > 0:
+        if verbosity > 0:
             info_out = f"Number of terminal states: {len(self.terminal_states)};"
-            if self.verbosity > 1:
+            if verbosity > 1:
                 info_out += f" Initial state: {self.initial_state};"
+                info_out += f"Best state: {self.get_best_states()[0]}; Reward: {self.terminal_states[self.get_best_states()[0]][0]};"
             info_out += "\n"
 
         return info_out
 
-    def get_info_state(self, state: STATESTYPE) -> str:
+    def get_info_state(self, state: STATESTYPE, verbosity=None) -> str:
+        if verbosity is None:
+            verbosity = self.verbosity
         info_out = ""
-        if self.verbosity > 0:
+        if verbosity > 0:
             info_out = f"State: {state};"
-            if self.verbosity > 1:
+            if verbosity > 1:
                 info_out += f" Is terminal: {self.is_terminal_state(state)[0]};"
                 info_out += f" Reward: {self.get_reward(state)[0]};"
             info_out += "\n"
 
         return info_out
+
+    def get_best_states(self, num=1) -> list[STATESTYPE]:
+        best_states = sorted(self.terminal_states,
+                            key=lambda x: self.terminal_states[x][0],
+                            reverse=True)[:num]
+        return best_states
 
     @abstractmethod
     def next_state(self, state: STATESTYPE, action: int) -> StepType:
@@ -90,6 +100,11 @@ class Environment(ABC):
     @abstractmethod
     def _check_terminal_state(self, state: STATESTYPE) -> bool:
         return False
+    
+    @abstractmethod
+    def prepare_state_for_simulation(self, state: STATESTYPE) -> tuple:
+        return tuple()
+
 
 
 class DesignEnvironment(Environment):
@@ -212,24 +227,28 @@ class DesignEnvironment(Environment):
                                                          self.is_terminal_state(next_state)[0])
         return reward, is_known
 
-    def info(self):
+    def info(self, verbosity=None):
+        if verbosity is None:
+            verbosity = self.verbosity
         info_out = ""
 
-        if self.verbosity > 0:
-            info_out = super().info()
-            if self.verbosity > 1:
+        if verbosity > 0:
+            info_out = super().info(verbosity=verbosity)
+            if verbosity > 1:
                 info_out += f"Number of states: {len(self.state2graph)};"
                 info_out += "\n"
 
         return info_out
 
-    def get_info_state(self, state: STATESTYPE) -> str:
+    def get_info_state(self, state: STATESTYPE, verbosity=None) -> str:
+        if verbosity is None:
+            verbosity = self.verbosity
         info_out = ""
-        if self.verbosity > 0:
-            info_out = super().get_info_state(state)
-            if self.verbosity > 1:
+        if verbosity > 0:
+            info_out = super().get_info_state(state, verbosity=verbosity)
+            if verbosity > 1:
                 info_out += f"Number of possible next states: {len(self.possible_next_state(state))};\n"
-            if self.verbosity > 2:
+            if verbosity > 2:
                 info_out += f"Graph representation: {self.state2graph[state].get_uniq_representation()};\n"
 
                 mask_action = self.get_available_actions(state)
@@ -241,20 +260,30 @@ class DesignEnvironment(Environment):
 
         return info_out
 
-    def save_environment(self, prefix, path="./environments/", use_date=True):
+    def save_environment(self, prefix, path="./environments/", rewrite=False, use_date=True):
         os.path.split(path)
         if not os.path.exists(path):
             print(f"Path {path} does not exist. Creating...")
             os.mkdir(path)
-        
+
         if use_date:
             current_date = datetime.now()
             folder = f"{prefix}__{current_date.hour}h{current_date.minute}m_{current_date.second}s_date_{current_date.day}d{current_date.month}m{current_date.year}y"
         else:
             folder = prefix
         os_path = os.path.join(path, folder)
-        print(f"Saving environment to {os_path}")
-        os.mkdir(os_path)
+        if not os.path.exists(os_path):
+            print(f"Saving environment to {os_path}")
+            os.mkdir(os_path)
+        elif rewrite:
+            print(f"Rewriting environment to {os_path}")
+        else:
+            postfix_folder = 1
+            os_path = os_path + f"_{postfix_folder}"
+            while os.path.exists(os_path):
+                os_path = os_path.replace(f"_{postfix_folder-1}", f"_{postfix_folder}")
+                postfix_folder += 1
+            print(f"Saving environment to {os_path}")
 
         file_names = [
             "actions.p", "terminal_states.p", "transition_function.p", "action2rule.p",
@@ -334,7 +363,7 @@ class SubDesignEnvironment(DesignEnvironment):
 
         return reward, is_known
 
-    def save_environment(self, prefix, path="./environments/", use_date=True):
+    def save_environment(self, prefix, path="./environments/", rewrite=False, use_date=True):
         os.path.split(path)
         if not os.path.exists(path):
             print(f"Path {path} does not exist. Creating...")
@@ -345,38 +374,50 @@ class SubDesignEnvironment(DesignEnvironment):
         else:
             folder = prefix
         os_path = os.path.join(path, folder)
-        print(f"Saving environment to {os_path}")
-        os.mkdir(os_path)
-
+        if not os.path.exists(os_path):
+            print(f"Saving environment to {os_path}")
+            os.mkdir(os_path)
+        elif rewrite:
+            print(f"Rewriting environment to {os_path}")
+        else:
+            postfix_folder = 1
+            os_path = os_path + f"_{postfix_folder}"
+            while os.path.exists(os_path):
+                os_path = os_path.replace(f"_{postfix_folder-1}", f"_{postfix_folder}")
+                postfix_folder += 1
+            print(f"Saving environment to {os_path}")
         file_names = [
             "actions.p", "terminal_states.p", "transition_function.p", "action2rule.p",
             "state2graph.p", "rule_vocabulary.p", "counter_nonterminal_rules.p"
         ]
         variables = [
             self.actions, self.terminal_states, self.transition_function, self.action2rule,
-            self.state2graph, self.rule_vocabulary,
-            self.counter_nonterminal_rules
+            self.state2graph, self.rule_vocabulary, self.counter_nonterminal_rules
         ]
         for file, var in zip(file_names, variables):
             with open(os.path.join(os_path, file), "wb") as f:
                 pickle.dump(var, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def info(self):
+    def info(self, verbosity=None):
+        if verbosity is None:
+            verbosity = self.verbosity
         info_out = ""
 
-        if self.verbosity > 0:
-            info_out = super().info()
-        if self.verbosity > 1:
+        if verbosity > 0:
+            info_out = super().info(verbosity=verbosity)
+        if verbosity > 1:
             info_out += f"Max number of nonterminal rules: {self.max_number_nonterminal_rules};"
             info_out += f" Max number of nonterminal rules of states: {max(self.counter_nonterminal_rules.values())};"
             info_out += "\n"
         return info_out
 
-    def get_info_state(self, state: STATESTYPE) -> str:
+    def get_info_state(self, state: STATESTYPE, verbosity=None) -> str:
+        if verbosity is None:
+            verbosity = self.verbosity
         info_out = ""
-        if self.verbosity > 0:
-            info_out = super().get_info_state(state)
-        if self.verbosity > 1:
+        if verbosity > 0:
+            info_out = super().get_info_state(state, verbosity=verbosity)
+        if verbosity > 1:
             info_out += f"Number nonterminal rules of states: {self.counter_nonterminal_rules.get(state, None)};"
             info_out += "\n"
         return info_out
@@ -402,3 +443,9 @@ class SubDesignEnvironment(DesignEnvironment):
         self.transition_function.update(p_sa)
         self.state2graph.update(s2g)
         self.counter_nonterminal_rules.update(counter_non_rules)
+        
+def prepare_state_for_optimal_simulation(state: STATESTYPE, env: DesignEnvironment) -> tuple:
+    graph = env.state2graph[state]
+    control = env.terminal_states[state][1]
+    data = env.control_optimizer.optim_parameters2data_control(control, graph)
+    return (data, graph)
