@@ -41,7 +41,7 @@ class SimulationSingleEvent(ABC):
         self.step_n = None
 
     @abstractmethod
-    def event_check(self, current_time: float, step_n: int, robot_data, env_data):
+    def event_check(self, current_time: float, step_n: int, robot_data: Sensor, env_data: Sensor):
         """Simulation calls that method each step to check if the event occurred.
 
         Args:
@@ -65,11 +65,27 @@ class EventContact(SimulationSingleEvent):
 
     """
 
-    def event_check(self, current_time: float, step_n: int, robot_data, env_data):
-        if env_data.get_amount_contacts()[0] > 0:
+    def event_check(self, current_time: float, step_n: int, robot_data: Sensor, env_data: Sensor):
+        if self.state:
+            return EventCommands.CONTINUE
+
+        # the contact information from the robot
+        robot_contacts = robot_data.get_amount_contacts()
+        # it works only with current rule set, where the palm/flat always has the smallest index among the bodies
+        flat_idx_ = list(robot_contacts.keys())[0]
+        contacts = 0
+        # we calculate only the amount of unique keys, therefore the amount of unique contacting bodies
+        for key, value in robot_contacts.items():
+            if key != flat_idx_:
+                contacts += 1
+        if contacts > 0:
             self.state = True
             self.step_n = step_n
-            return EventCommands.CONTINUE
+
+        # # the contact information from the object
+        # if env_data.get_amount_contacts()[0] > 0:
+        #     self.state = True
+        #     self.step_n = step_n
 
         return EventCommands.CONTINUE
 
@@ -160,11 +176,14 @@ class EventSlipOut(SimulationSingleEvent):
         """
         # Old variant: contact = env_data.get_amount_contacts()[0] > 0
         robot_contacts = robot_data.get_amount_contacts()
-        flat_idx_= list(robot_contacts.keys())[0]
+        # it works only with current rule set, where the palm/flat always has the smallest index among the bodies
+        flat_idx_ = list(robot_contacts.keys())[0]
         contacts = 0
+        # we calculate only the amount of unique keys, therefore the amount of unique contacting bodies
         for key, value in robot_contacts.items():
             if key != flat_idx_:
-                contacts += value
+                contacts += 1
+
         contact = contacts > 0
         if contact:
             self.time_last_contact = current_time
@@ -191,7 +210,11 @@ class EventGrasp(SimulationSingleEvent):
         force_test_time (float): the time period of the force test of the grasp
     """
 
-    def __init__(self, grasp_limit_time: float, contact_event: EventContact, verbosity: int = 0, simulation_stop = False):
+    def __init__(self,
+                 grasp_limit_time: float,
+                 contact_event: EventContact,
+                 verbosity: int = 0,
+                 simulation_stop=False):
         super().__init__(verbosity=verbosity)
         self.grasp_steps: int = 0
         self.grasp_time: Optional[float] = None
@@ -210,9 +233,18 @@ class EventGrasp(SimulationSingleEvent):
         else:
             return False
 
-    def check_grasp_current_step(self, env_data: Sensor):
+    def check_grasp_current_step(self, env_data: Sensor, robot_data: Sensor):
         obj_velocity = np.linalg.norm(np.array(env_data.get_velocity()[0]))
-        if obj_velocity <= 0.01 and env_data.get_amount_contacts()[0] >= 2:
+        robot_contacts = robot_data.get_amount_contacts()
+        # it works only with current rule set, where the palm/flat always has the smallest index among the bodies
+        flat_idx_ = list(robot_contacts.keys())[0]
+        contacts = 0
+        # we calculate only the amount of unique keys, therefore the amount of unique contacting bodies
+        for key, value in robot_contacts.items():
+            if key != flat_idx_:
+                contacts += 1
+
+        if obj_velocity <= 0.01 and contacts >= 2:
             self.grasp_steps += 1
         else:
             self.grasp_steps = 0
@@ -220,7 +252,6 @@ class EventGrasp(SimulationSingleEvent):
     def event_check(self, current_time: float, step_n: int, robot_data: Sensor, env_data: Sensor):
         """Return ACTIVATE if the body was in contact with the robot and after that at some 
         point doesn't move for at least 10 steps. Return STOP if the grasp didn't occur during grasp_limit_time. 
-        
 
         Returns:
             EventCommands: return a command for simulation

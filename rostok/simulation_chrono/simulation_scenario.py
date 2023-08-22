@@ -14,7 +14,6 @@ from rostok.utils.json_encoder import RostokJSONEncoder
 from rostok.simulation_chrono.simulation_SMC import SingleRobotSimulation, ChronoVisManager, EnvCreator, ChronoSystems
 
 
-
 class ParametrizedSimulation:
 
     def __init__(self, step_length, simulation_length):
@@ -72,7 +71,8 @@ class ConstTorqueGrasp(ParametrizedSimulation):
         simulation.add_robot_data_type_dict(robot_data_dict)
         return simulation.simulate(n_steps, self.step_length, 10, self.event_container, vis)
 
-class TestGrasp(ParametrizedSimulation):
+
+class SMCGrasp(ParametrizedSimulation):
 
     def __init__(self, step_length, simulation_length) -> None:
         super().__init__(step_length, simulation_length)
@@ -86,23 +86,26 @@ class TestGrasp(ParametrizedSimulation):
         for event in self.event_container:
             event.reset()
 
-    def run_simulation(self, graph: GraphGrammar, data, vis=False, delay = False):
+    def run_simulation(self, graph: GraphGrammar, data, vis=False, delay=False):
         self.reset_events()
-        #simulation = RobotSimulationChrono([])
-        system = ChronoSystems.chrono_SMC_system([0,0,0])
+        # build simulation from the subclasses
+        system = ChronoSystems.chrono_SMC_system([0, 0, 0])
         env_creator = EnvCreator([])
         vis_manager = ChronoVisManager(delay)
         simulation = SingleRobotSimulation(system, env_creator, vis_manager)
-        
+        # add design and determine the outer force
         simulation.add_design(graph, data)
         grasp_object = self.grasp_object_callback()
-        shake = YaxisShaker(0, 0, 0.5, float("inf"))
+        shake = YaxisShaker(0.1, 0.1, 0.5, float("inf"))
+        # the object  positioning based on the AABB
         set_covering_sphere_based_position(grasp_object,
                                            reference_point=chrono.ChVectorD(0, 0.05, 0))
-        simulation.env_creator.add_object(grasp_object, read_data=True, force_torque_controller=shake)
+        simulation.env_creator.add_object(grasp_object,
+                                          read_data=True,
+                                          force_torque_controller=shake)
+        # setup parameters for the data store
         n_steps = int(self.simulation_length / self.step_length)
         env_data_dict = {
-            
             "n_contacts": (SensorCalls.AMOUNT_FORCE, SensorObjectClassification.BODY),
             "forces": (SensorCalls.FORCE, SensorObjectClassification.BODY),
             "COG": (SensorCalls.BODY_TRAJECTORY, SensorObjectClassification.BODY,
@@ -110,7 +113,9 @@ class TestGrasp(ParametrizedSimulation):
             "force_center": (SensorCalls.FORCE_CENTER, SensorObjectClassification.BODY)
         }
         simulation.env_creator.add_env_data_type_dict(env_data_dict)
-        robot_data_dict = { "body_velocity": (SensorCalls.BODY_VELOCITY, SensorObjectClassification.BODY, SensorCalls.BODY_VELOCITY),
+        robot_data_dict = {
+            "body_velocity": (SensorCalls.BODY_VELOCITY, SensorObjectClassification.BODY,
+                              SensorCalls.BODY_VELOCITY),
             "COG": (SensorCalls.BODY_TRAJECTORY, SensorObjectClassification.BODY,
                     SensorCalls.BODY_TRAJECTORY),
             "n_contacts": (SensorCalls.AMOUNT_FORCE, SensorObjectClassification.BODY)

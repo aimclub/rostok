@@ -36,7 +36,6 @@ class ChronoSystems():
 
 class EnvCreator():
     def __init__(self, object_list: List[Tuple[ChronoEasyShapeObject, bool]] = []):
-        
         self.objects: List[ChronoEasyShapeObject] = []
         self.active_body_counter = 0
         self.active_objects_ordered: Dict[int, ChronoEasyShapeObject] = {}

@@ -11,7 +11,7 @@ from rostok.criterion.criterion_calculation import (ForceCriterion, InstantConta
                                                     GraspTimeCriterion)
 from rostok.criterion.simulation_flags import (EventContact, EventContactTimeOut, EventFlyingApart,
                                                EventGrasp, EventSlipOut, EventStopExternalForce)
-from rostok.simulation_chrono.simulation_scenario import ConstTorqueGrasp, TestGrasp
+from rostok.simulation_chrono.simulation_scenario import ConstTorqueGrasp, SMCGrasp
 from rostok.trajectory_optimizer.control_optimizer import (CalculatorWithGraphOptimization,
                                                            CalculatorWithOptimizationDirect,
                                                            LinearCableControlOptimization,
@@ -21,8 +21,8 @@ from rostok.trajectory_optimizer.control_optimizer import (CalculatorWithGraphOp
 
 def config_with_standard(grasp_object_blueprint):
     # configurate the simulation manager
-    #simulation_manager = ConstTorqueGrasp(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION)
-    simulation_manager = TestGrasp(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION)
+
+    simulation_manager = SMCGrasp(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION)
     simulation_manager.grasp_object_callback = lambda: creator.create_environment_body(
         grasp_object_blueprint)
     event_contact = EventContact()
@@ -36,7 +36,7 @@ def config_with_standard(grasp_object_blueprint):
     event_grasp = EventGrasp(
         grasp_limit_time=hp.GRASP_TIME,
         contact_event=event_contact,
-        verbosity=0,
+        verbosity=0,simulation_stop=1
     )
     simulation_manager.add_event(event_grasp)
     event_stop_external_force = EventStopExternalForce(grasp_event=event_grasp,
