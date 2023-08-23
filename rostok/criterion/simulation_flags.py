@@ -261,7 +261,7 @@ class EventGrasp(SimulationSingleEvent):
             return EventCommands.STOP
 
         if self.contact_event.state:
-            self.check_grasp_current_step(env_data)
+            self.check_grasp_current_step(env_data, robot_data)
 
             if self.grasp_steps == 10:
                 self.state = True
