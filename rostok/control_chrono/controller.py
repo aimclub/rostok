@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Tuple
 from abc import abstractmethod
 from dataclasses import dataclass, field
 from matplotlib.pyplot import cla
-
+from rostok.virtual_experiment.built_graph_chrono import BuiltGraphChrono
 import pychrono.core as chrono
 from typing import Callable, List
 from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, JointInputTypeChrono)
@@ -21,9 +21,11 @@ class RobotControllerChrono:
             functions: list of functions currently attached to joints
     """
 
-    def __init__(self, joint_map_ordered, parameters: Dict[str, Any]):
+    def __init__(self, built_graph:BuiltGraphChrono, parameters):
         """Initialize class fields and call the initialize_functions() to set starting state"""
-        self.joint_map_ordered: Dict[int, ChronoRevolveJoint] = joint_map_ordered
+        self.built_graph = built_graph
+        self.graph = built_graph.graph
+        self.joint_map_ordered: Dict[int, ChronoRevolveJoint] = built_graph.joint_map_ordered
         self.parameters = parameters
         self.functions: List[chrono.ChFunction_Const] = []
         self.chrono_joint_setters: Dict[JointInputTypeChrono, str] = {}
@@ -98,7 +100,7 @@ class ForceControllerTemplate():
     specified in global coordinate system.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, is_local: bool = False) -> None:
 
         self.x_force_chrono = chrono.ChFunction_Const(0)
         self.y_force_chrono = chrono.ChFunction_Const(0)
@@ -115,6 +117,7 @@ class ForceControllerTemplate():
         self.force_maker_chrono = chrono.ChForce()
         self.torque_maker_chrono = chrono.ChForce()
         self.is_binded = False
+        self.is_local = is_local
         self.setup_makers()
 
     @abstractmethod
@@ -129,10 +132,14 @@ class ForceControllerTemplate():
 
     def setup_makers(self):
         self.force_maker_chrono.SetMode(chrono.ChForce.FORCE)
-        self.force_maker_chrono.SetAlign(chrono.ChForce.WORLD_DIR)
         self.torque_maker_chrono.SetMode(chrono.ChForce.TORQUE)
-        self.torque_maker_chrono.SetAlign(chrono.ChForce.WORLD_DIR)
-        
+        if self.is_local:
+            self.force_maker_chrono.SetAlign(chrono.ChForce.BODY_DIR)
+            self.torque_maker_chrono.SetAlign(chrono.ChForce.BODY_DIR)
+        else:
+            self.force_maker_chrono.SetAlign(chrono.ChForce.WORLD_DIR)
+            self.torque_maker_chrono.SetAlign(chrono.ChForce.WORLD_DIR)
+
         self.force_maker_chrono.SetF_x(self.x_force_chrono)
         self.force_maker_chrono.SetF_y(self.y_force_chrono)
         self.force_maker_chrono.SetF_z(self.z_force_chrono)
