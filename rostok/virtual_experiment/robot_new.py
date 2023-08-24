@@ -22,6 +22,7 @@ class RobotChrono:
                  control_parameters,
                  control_cls=ConstController,
                  start_frame: FrameTransform = DefaultFrame,
+                 starting_positions = [],
                  is_fixed=True):
 
         """Build mechanism into system and bind sensor to robot blocks.
@@ -33,7 +34,7 @@ class RobotChrono:
                 control_trajectories : list of trajectories for joints
                 start_frame: initial position of the base body"""
 
-        self.__built_graph = BuiltGraphChrono(robot_graph, system, start_frame, is_fixed)
+        self.__built_graph = BuiltGraphChrono(robot_graph, system, start_frame, starting_positions, is_fixed)
         self.sensor = Sensor(self.__built_graph.body_map_ordered,
                              self.__built_graph.joint_map_ordered)
         self.sensor.contact_reporter.reset_contact_dict()

@@ -56,7 +56,7 @@ with open(path, "w") as file:
     data = control_optimizer.optim_parameters2data_control(control, graph)
     print(data)
     vis = True
-    simulation_output: SimulationResult = simulation_manager.run_simulation(graph, data, vis, True)
+    simulation_output: SimulationResult = simulation_manager.run_simulation(graph, data, [[-45]], vis, True)
     if not vis:
         fig = plt.figure(figsize=(12, 5))
         time_vector = simulation_output.time_vector

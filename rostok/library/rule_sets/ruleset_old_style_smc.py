@@ -46,7 +46,7 @@ def create_rules():
     #revolve = RevolveJointBlueprint(JointInputType.POSITION)
     revolve = RevolveJointBlueprint(JointInputType.TORQUE, material=DefaultChronoMaterialSMC())
     revolve_45 = RevolveJointBlueprint(JointInputType.TORQUE, starting_angle=45)
-    no_control = RevolveJointBlueprint(JointInputType.UNCONTROL)
+    no_control = RevolveJointBlueprint(JointInputType.UNCONTROL, stiffness=20 ,damping=10)
     # Nodes
     node_vocab = NodeVocabulary()
     node_vocab.add_node(ROOT)

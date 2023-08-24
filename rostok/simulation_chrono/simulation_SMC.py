@@ -125,7 +125,7 @@ class SingleRobotSimulation():
                    graph: GraphGrammar,
                    control_parameters,
                    control_cls=ConstController,
-                   Frame: FrameTransform = DefaultFrame,
+                   Frame: FrameTransform = DefaultFrame,starting_positions=[],
                    is_fixed=True,
                    with_data=True):
         """Add a robot to simulation using graph and control parameters
@@ -138,7 +138,7 @@ class SingleRobotSimulation():
                 is_fixed (bool): define if the base body is fixed
                 with_data (bool): define if we store sensor data for robot
         """
-        self.robot = RobotChrono(graph, self.chrono_system, control_parameters, control_cls, Frame,
+        self.robot = RobotChrono(graph, self.chrono_system, control_parameters, control_cls, Frame,starting_positions,
                                  is_fixed)
         self.robot_with_data = with_data
 

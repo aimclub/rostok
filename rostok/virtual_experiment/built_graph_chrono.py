@@ -43,23 +43,29 @@ class BuiltGraphChrono:
                 is_base_fixed (bool): determines if the base is fixed in the simulation"""
 
         self.__graph: GraphGrammar = deepcopy(graph)
+        self.starting_positions = starting_positions
         self.body_map_ordered: Dict[int, PrimitiveBody] = {}
         self.joint_map_ordered: Dict[int, ChronoRevolveJoint] = {}
         self.joint_link_map: Dict[int, Tuple[int, int]] = {}
+        self.build_joint_link_map()
         self.build_into_system(system, initial_position)
         if is_base_fixed:
             self.fix_base()
 
-        self.build_joint_link_map()
+        
 
     def build_joint_link_map(self):
         """Build the joint_link_map"""
         paths = self.__graph.get_sorted_root_based_paths()
-        for path in paths:
+        for i, path in enumerate(paths):
             pre_block = None
             current_joint = None
+            j = 0
             for idx in path:
                 if NodeFeatures.is_joint(self.__graph.nodes[idx]["Node"]):
+                    if self.starting_positions:
+                        self.graph.nodes[11]["Node"].block_blueprint.starting_angle = self.starting_positions[i][j]
+                        j += 1
                     current_joint = idx
                 if NodeFeatures.is_body(self.__graph.nodes[idx]["Node"]):
                     if pre_block is None:

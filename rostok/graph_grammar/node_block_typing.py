@@ -28,3 +28,13 @@ def get_joint_vector_from_graph(graph:GraphGrammar):
                 if NodeFeatures.is_joint(graph.get_node_by_id(idx)):
                     joint_vector.append(idx)
     return joint_vector
+
+def get_joint_matrix_from_graph(graph:GraphGrammar):
+    joint_matrix = []
+    paths = graph.get_sorted_root_based_paths()
+    for path in paths:
+        joint_matrix.append([])
+        for idx in path:
+            if NodeFeatures.is_joint(graph.get_node_by_id(idx)):
+                joint_matrix[-1].append(idx)
+    return joint_matrix
