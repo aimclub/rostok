@@ -190,18 +190,6 @@ class Environment(ABC):
             bool: condition of terminal state
         """
         return False
-    
-    @abstractmethod
-    def prepare_state_for_simulation(self, state: STATESTYPE) -> tuple:
-        """Prepare state for simulation. Need to override in child class.
-
-        Args:
-            state (STATESTYPE): state to prepare
-
-        Returns:
-            tuple: data for simulation state
-        """
-        return tuple()
 
 
 
