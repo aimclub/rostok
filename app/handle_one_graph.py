@@ -50,7 +50,7 @@ with open(path, "w") as file:
     #control = [10.5, 4.166667, 10.5, 10.5, 10.5, 10.5]
     #control = [1.05 , 1.683, 1.683, 0.417, 1.05 , 0.417]
     # graph=get_one_finger_one_link()
-    control = [0.001, 0.0005, 0.0001]
+    control = [0.02]
     #control = [5]
     print('control:', control)
     data = control_optimizer.optim_parameters2data_control(control, graph)

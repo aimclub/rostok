@@ -71,7 +71,7 @@ class ConstTorqueGrasp(ParametrizedSimulation):
         simulation.add_robot_data_type_dict(robot_data_dict)
         return simulation.simulate(n_steps, self.step_length, 10, self.event_container, vis)
 
-
+from rostok.control_chrono.tendon_controller import TendonController_2p
 class SMCGrasp(ParametrizedSimulation):
 
     def __init__(self, step_length, simulation_length) -> None:
@@ -94,7 +94,7 @@ class SMCGrasp(ParametrizedSimulation):
         vis_manager = ChronoVisManager(delay)
         simulation = SingleRobotSimulation(system, env_creator, vis_manager)
         # add design and determine the outer force
-        simulation.add_design(graph, data)
+        simulation.add_design(graph, data, TendonController_2p)
         grasp_object = self.grasp_object_callback()
         shake = YaxisShaker(0.1, 0.1, 0.5, float("inf"))
         # the object  positioning based on the AABB

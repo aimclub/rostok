@@ -335,3 +335,141 @@ class LinearCableControlOptimization(ConstControlOptimizationDirect):
     def generate_control_value_on_branch(self, graph: GraphGrammar,
                                          parameters_2d: list[tuple[float, float]]):
         return cable_length_linear_control(graph, parameters_2d)
+
+
+from rostok.control_chrono.tendon_controller import TendonControllerParameters
+
+class TendonOptimizer(GraphRewardCalculator):
+    def __init__(self,
+                 simulation_scenario,
+                 rewarder: SimulationReward,
+                 data:TendonControllerParameters,
+                 optimization_bounds=(0, 15),
+                 optimization_limit=10):
+        self.data: TendonControllerParameters = data
+        self.simulation_scenario = simulation_scenario
+        self.rewarder: SimulationReward = rewarder
+        self.bounds = optimization_bounds
+        self.limit = optimization_limit
+        self.round_const = 4
+    
+    def simulate_with_control_parameters(self, data, graph):
+        return self.simulation_scenario.run_simulation(graph, data)
+
+    def calculate_reward(self, graph: GraphGrammar):
+        """Constant moment optimization method using scenario simulation and rewarder for calculating objective function.
+
+        Args:
+            graph (GraphGrammar): A graph of the mechanism for which the control is to be found
+
+        Returns:
+            (float, np.ndarray): Return the reward and optimized variables of the best candidate
+        """
+        multi_bound = self.bound_parameters(graph)
+
+        if not multi_bound:
+            return (0, [])
+
+        if isinstance(self.simulation_scenario, list):
+            reward = 0
+            optim_parameters = np.array([])
+            for sim_scene in self.simulation_scenario:
+                result = self.run_optimization(self._reward_with_parameters,
+                                               multi_bound,
+                                               args=(graph, sim_scene[0]))
+
+                reward -= result.fun * sim_scene[1]
+                processed_parameters = self._postprocessing_parameters(result.x)
+                if optim_parameters.size == 0:
+                    optim_parameters = processed_parameters
+                else:
+                    optim_parameters = np.vstack((optim_parameters, processed_parameters))
+
+        else:
+            result = self.run_optimization(self._reward_with_parameters,
+                                           multi_bound,
+                                           args=(graph, self.simulation_scenario))
+
+            reward = -result.fun
+            optim_parameters = self._postprocessing_parameters(result.x)
+
+        return (reward, optim_parameters)
+
+    def optim_parameters2data_control(self, parameters, *args):
+        """Method convert optimizing variables to structure for class of control
+
+        Args:
+            parameters (list): List of parameters to be optimized. For several simulation scenarios this will be a 2d-list
+
+        Returns:
+            dict: Dictionary defining the parameters of the control class
+        """
+        parameters = np.array(parameters)
+        if isinstance(self.simulation_scenario, list):
+            list_args = [args for __ in range(len(parameters))]
+            data_control = list(map(self._transform_parameters2data, parameters, list_args))
+        else:
+            data_control = self._transform_parameters2data(parameters, args)
+        return data_control
+
+    def bound_parameters(self, graph: GraphGrammar):
+        n_branches = len(joint_root_paths(graph))
+        print('n_branches:', n_branches)
+        if n_branches == 0:
+            return []
+        multi_bound = []
+        for _ in range(n_branches):
+            multi_bound.append(self.bounds)
+
+        return multi_bound
+
+    def _reward_with_parameters(self, parameters, graph, simulator_scenario):
+        """Objective function to be optimized
+
+        Args:
+            parameters (np.ndarray): Array variables of objective function
+            graph (GraphGrammar): Graph of mechanism for which the optimization do
+            simulator_scenario (ParamtrizedAimulation): Simulation scenario in which data is collected for calcule the objective function
+
+        Returns:
+            float: Value of objective function
+        """
+        data = self._transform_parameters2data(parameters)
+        sim_output = simulator_scenario.run_simulation(graph, data)
+        reward = self.rewarder.calculate_reward(sim_output)
+        return -reward
+
+    def _transform_parameters2data(self, parameters, *args):
+        """Method define transofrm algorigm parameters to data control
+
+        Args:
+            parameters (list): Parameter list for optimizing
+
+        Returns:
+            dict: Dictionary of data control
+        """
+        parameters = parameters.round(self.round_const)
+        self.data.forces = list(parameters)
+        data = self.data
+        return data
+
+    def _postprocessing_parameters(self, parameters):
+
+        return np.round(parameters, self.round_const)
+
+    @abstractmethod
+    def run_optimization(self, callback, multi_bound, args):
+        pass
+
+
+class TendonOptimizerDirect(TendonOptimizer):
+    """A template class for constant torque optimization on branches of a graph
+    with direct optimization.  
+
+    Args:
+        ConstTorqueOptimizationBranchTemplate (_type_): _description_
+    """
+
+    def run_optimization(self, callback, multi_bound, args):
+        result = direct(callback, multi_bound, maxiter=self.limit, args=args)
+        return result

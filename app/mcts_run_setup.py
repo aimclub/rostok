@@ -16,8 +16,8 @@ from rostok.trajectory_optimizer.control_optimizer import (CalculatorWithGraphOp
                                                            CalculatorWithOptimizationDirect,
                                                            LinearCableControlOptimization,
                                                            TendonLikeControlOptimization,
-                                                           LinearControlOptimizationDirect)
-
+                                                           LinearControlOptimizationDirect, TendonOptimizerDirect)
+from rostok.control_chrono.tendon_controller import TendonControllerParameters
 
 def config_with_standard(grasp_object_blueprint):
     # configurate the simulation manager
@@ -62,10 +62,20 @@ def config_with_standard(grasp_object_blueprint):
     simulation_rewarder.add_criterion(
         FinalPositionCriterion(hp.REFERENCE_DISTANCE, event_grasp, event_slipout),
         hp.FINAL_POSITION_CRITERION_WEIGHT)
-
-    control_optimizer = CalculatorWithOptimizationDirect(simulation_manager, simulation_rewarder,
+    
+    data = TendonControllerParameters()
+    data.amount_pulley_in_body = 2
+    data.pulley_parameters_for_body = {0: [-0.8, -0.8, 0], 1:[-0.8, 0.8, 0]}
+    data.starting_point_parameters = [-1,-1,0]
+    data.tip_parameters = [-1,1,0]
+    
+    control_optimizer = TendonOptimizerDirect(simulation_manager, simulation_rewarder, data,
                                                          hp.CONTROL_OPTIMIZATION_BOUNDS,
                                                          hp.CONTROL_OPTIMIZATION_ITERATION)
+    
+    # control_optimizer = CalculatorWithOptimizationDirect(simulation_manager, simulation_rewarder,
+    #                                                      hp.CONTROL_OPTIMIZATION_BOUNDS,
+    #                                                      hp.CONTROL_OPTIMIZATION_ITERATION)
     return control_optimizer
 
 
