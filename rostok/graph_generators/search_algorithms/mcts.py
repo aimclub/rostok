@@ -16,7 +16,12 @@ class MCTS:
     def __init__(self,
                  environment: DesignEnvironment,
                  c=1.4):
+        """Class for Monte Carlo Tree Search algorithm. 
 
+        Args:
+            environment (DesignEnvironment): Environment for MCTS.
+            c (float, optional): Exploration coefficient. Defaults to 1.4.
+        """
         self.c = c
         self.environment = environment
 
@@ -26,6 +31,15 @@ class MCTS:
         self.Vs = defaultdict(float)  # total reward of each state
 
     def get_policy(self, state: STATESTYPE):
+        """Get policy for state. Policy is a probability distribution over actions.
+        Probability of action is proportional to number of visits of this action.
+        
+            Args:
+                state (STATESTYPE): State for which we want to get policy.
+                
+            Returns:
+                pi (np.ndarray): Policy for state.
+        """
         pi = np.zeros_like(self.environment.actions, dtype=np.float32)
         mask_actions = self.environment.get_available_actions(state)
         for a in self.environment.actions[mask_actions == 1]:
@@ -38,7 +52,17 @@ class MCTS:
         return pi
 
     def search(self, state: STATESTYPE, num_actions = 0):
-
+        """Search for best action for state. The method use recursive tree search.
+        If state is not in tree, then we use default policy for this state.
+        If state is in tree, then we use tree policy for this state.
+        If state is terminal, then we return reward of this state.
+        
+            Args:
+                state (STATESTYPE): State for which we want explore tree of actions.
+                
+            Returns:
+                float: Value reward of state.
+        """
         if state not in self.Vs:
             is_terminal_s, __ = self.environment.is_terminal_state(state)
             self.Vs[state] = self.environment.terminal_states[state][0] if is_terminal_s else 0.0
@@ -61,7 +85,13 @@ class MCTS:
         return v
 
     def update_Q_function(self, state, action, reward):
+        """Update Q function for pair (state, action).
 
+        Args:
+            state: State for which we want update Q function.
+            action: Action for which we want update Q function.
+            reward: Reward for pair (state, action) based on Monte Carlo estimation.
+        """
         if (state, action) in self.Qsa:
             self.Qsa[(
                 state,
@@ -77,6 +107,16 @@ class MCTS:
             self.Ns[state] = 1
 
     def default_policy(self, state, num_actions = 0):
+        """Default policy for unkown states. We use random actions until we reach terminal state.
+        If num_actions = 0, then we explore all actions. Otherwise we explore random num_actions actions.
+
+        Args:
+            state: Root state for which we want to get default policy to terminal state.
+            num_actions (int, optional): Number of actions which be explored. Defaults to 0.
+
+        Returns:
+            float: Return mean reward on actions.
+        """
         rewards = []
 
         mask = self.environment.get_available_actions(state)
@@ -97,10 +137,20 @@ class MCTS:
             rewards.append(reward)
             self.update_Q_function(state, a, reward)
 
+        if len(rewards) == 0:
+            return self.environment.get_reward(state)[0]
+
         return np.mean(rewards)
 
     def tree_policy(self, state):
-
+        """Tree policy for known states. We use UCT formula for choosing best action.
+        
+            Args:
+                state: State for which we want to get best action.
+                
+        Returns:
+            best_action: Best action for state.
+        """
         mask = self.environment.get_available_actions(state)
         available_actions = self.environment.actions[mask == 1]
         uct_score = self.uct_score(state)
@@ -109,6 +159,14 @@ class MCTS:
         return best_action
     
     def uct_score(self, state):
+        """UCT formula for choosing best action.
+
+        Args:
+            state: State for which we want to get UCT score.
+
+        Returns:
+            float: uct score for each action.
+        """
         mask = self.environment.get_available_actions(state)
         available_actions = self.environment.actions[mask == 1]
         
@@ -121,6 +179,17 @@ class MCTS:
         return uct_scores
     
     def save(self, prefix, path = "./LearnedMCTS/", rewrite=False, use_date = True):
+        """Save MCTS data in path. If path does not exist, then create it.
+        
+            Args:
+                prefix (str): Prefix for folder name.
+                path (str, optional): Path to folder where we want to save MCTS data. Defaults to "./LearnedMCTS/".
+                rewrite (bool, optional): If True, then rewrite data in path. Defaults to False.
+                use_date (bool, optional): If True, then add date to folder name. Defaults to True.
+                
+            Returns:
+                str: Path to folder where we save MCTS data.
+        """
         os.path.split(path)
         if not os.path.exists(path):
             print(f"Path {path} does not exist. Creating...")
@@ -160,7 +229,11 @@ class MCTS:
         return os_path
                 
     def load(self, path):
-        
+        """Load MCTS data from path.
+
+        Args:
+            path (str): Path to folder where we want to load MCTS data.
+        """
         self.environment.load_environment(os.path.join(path, "MCTS_env"))
         
         file_names = [
@@ -175,6 +248,19 @@ class MCTS:
                 var.update(pickle.load(f))
     
     def get_data_state(self, state: STATESTYPE):
+        """Get data for state. Data is a dictionary with keys:
+        "Qa" - Q function for each action,
+        "pi" - policy for state,
+        "V" - value of state,
+        "N" - number of visits of state,
+        "Na" - number of visits of each action.
+        
+            Args:
+                state (STATESTYPE): State for which we want to get data.
+                
+            Returns:
+                dict: Dictionary with data for state.
+        """
         mask = self.environment.get_available_actions(state)
         possible_actions = self.environment.actions[mask == 1]
         Q = {self.environment.action2rule[a]: self.Qsa.get((state, a), 0) for a in possible_actions}

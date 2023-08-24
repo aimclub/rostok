@@ -5,8 +5,10 @@ from abc import ABC, abstractmethod
 from typing import Any, Union, TypeAlias
 import os
 from datetime import datetime
+
 import numpy as np
 import networkx as nx
+import matplotlib.pyplot as plt
 
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
 from rostok.graph_grammar.node import GraphGrammar
@@ -18,23 +20,44 @@ StepType: TypeAlias = tuple[STATESTYPE, float, bool, bool]
 TransitionFunctionType: TypeAlias = dict[tuple[STATESTYPE, int], tuple[STATESTYPE, float, bool]]
 
 class Environment(ABC):
-
     def __init__(self, initial_state: STATESTYPE, actions: np.ndarray, verbosity=0):
+        """Abstract class environment for defining design space of the problem.
+
+        Args:
+            initial_state (STATESTYPE): initial state of the environment
+            actions (np.ndarray): array of all possible actions
+            verbosity (int, optional): Define verbosity of info and state_info. Maximum iss 3. Defaults to 0.
+        """
         self.initial_state = initial_state
         self.actions = actions
         self.terminal_states: dict[STATESTYPE, tuple[float, Any]] = {}
         self.transition_function: TransitionFunctionType = {}
         self.verbosity = verbosity
 
-    def is_terminal_state(self, state) -> tuple[bool, bool]:
+    def is_terminal_state(self, state: STATESTYPE) -> tuple[bool, bool]:
+        """Check if state is terminal. If state is terminal, return True and True if state is in terminal_states table, else False.
 
+        Args:
+            state (STATESTYPE): state to check
+
+        Returns:
+            tuple[bool, bool]: condition of terminal state and condition of state in terminal_states table
+        """
         in_terminal_table = state in self.terminal_states
         is_state_terminal = in_terminal_table or self._check_terminal_state(state)
 
         return is_state_terminal, in_terminal_table
 
     def get_reward(self, state: STATESTYPE) -> tuple[float, bool]:
+        """Get reward of state. If state is terminal, return reward and True if state is in terminal_states table, else False.
+        For nonterminal states return 0.0 and False.
 
+        Args:
+            state (STATESTYPE): state to get reward
+
+        Returns:
+            tuple[float, bool]: reward of state and condition of state in terminal_states table
+        """
         is_terminal, is_known = self.is_terminal_state(state)
 
         if is_terminal:
@@ -50,6 +73,15 @@ class Environment(ABC):
         return reward, is_known
 
     def info(self, verbosity=None) -> str:
+        """Get info about environment.
+
+        Args:
+            verbosity (int, optional): Define verbosity of information. If it is None, use the value of self.verbosity. Defaults to None.
+
+
+        Returns:
+            str: Information about environment
+        """
         if verbosity is None:
             verbosity = self.verbosity
         info_out = ""
@@ -57,12 +89,21 @@ class Environment(ABC):
             info_out = f"Number of terminal states: {len(self.terminal_states)};"
             if verbosity > 1:
                 info_out += f" Initial state: {self.initial_state};"
-                info_out += f"Best state: {self.get_best_states()[0]}; Reward: {self.terminal_states[self.get_best_states()[0]][0]};"
+                info_out += f"Best state: {self.get_best_states()[0]}; Reward: {self.terminal_states[self.get_best_states()[0]][0]:.4f};"
             info_out += "\n"
 
         return info_out
 
     def get_info_state(self, state: STATESTYPE, verbosity=None) -> str:
+        """Get info about state.
+
+        Args:
+            state (STATESTYPE): state to get info
+            verbosity (int, optional): Define verbosity of information. If it is None, use the value of self.verbosity. Defaults to None.
+
+        Returns:
+            str: Information about state
+        """
         if verbosity is None:
             verbosity = self.verbosity
         info_out = ""
@@ -70,12 +111,20 @@ class Environment(ABC):
             info_out = f"State: {state};"
             if verbosity > 1:
                 info_out += f" Is terminal: {self.is_terminal_state(state)[0]};"
-                info_out += f" Reward: {self.get_reward(state)[0]};"
+                info_out += f" Reward: {self.get_reward(state)[0]:.4f};"
             info_out += "\n"
 
         return info_out
 
     def get_best_states(self, num=1) -> list[STATESTYPE]:
+        """Get best states by reward.
+
+        Args:
+            num (int, optional): Number of best states. Defaults to 1.  
+
+        Returns:
+            list[STATESTYPE]: List of best states
+        """
         best_states = sorted(self.terminal_states,
                             key=lambda x: self.terminal_states[x][0],
                             reverse=True)[:num]
@@ -83,26 +132,75 @@ class Environment(ABC):
 
     @abstractmethod
     def next_state(self, state: STATESTYPE, action: int) -> StepType:
+        """Get next state by action.
+
+        Args:
+            state (STATESTYPE): state to get next state
+            action (int): action to get next state
+
+        Returns:
+            StepType: tuple of next state, reward, is_terminal_state, bool if state is in terminal_states table
+        """
         return 0, 0.0, False, False
 
     @abstractmethod
     def data2state(self, data) -> STATESTYPE:
+        """Convert data to state.
+
+        Args:
+            data (_type_): data to convert
+
+        Returns:
+            STATESTYPE: state
+        """
         return 0
 
     @abstractmethod
     def get_available_actions(self, state: STATESTYPE) -> np.ndarray:
+        """Get mask of available actions for state.
+
+        Args:
+            state (STATESTYPE): state to get mask of available actions
+
+        Returns:
+            np.ndarray: mask of available actions
+        """
         return np.array([])
 
     @abstractmethod
     def _calculate_reward(self, state: STATESTYPE) -> tuple[float, Any]:
+        """Calculate reward of state. Need to override in child class.
+
+        Args:
+            state (STATESTYPE): state to calculate reward
+
+        Returns:
+            tuple[float, Any]: reward and data of state
+        """
         return 0.0, None
 
     @abstractmethod
     def _check_terminal_state(self, state: STATESTYPE) -> bool:
+        """Check if state is terminal. Need to override in child class.
+
+        Args:
+            state (STATESTYPE): state to check
+
+        Returns:
+            bool: condition of terminal state
+        """
         return False
     
     @abstractmethod
     def prepare_state_for_simulation(self, state: STATESTYPE) -> tuple:
+        """Prepare state for simulation. Need to override in child class.
+
+        Args:
+            state (STATESTYPE): state to prepare
+
+        Returns:
+            tuple: data for simulation state
+        """
         return tuple()
 
 
@@ -114,7 +212,16 @@ class DesignEnvironment(Environment):
                  control_optimizer: GraphRewardCalculator,
                  initial_graph: GraphGrammar = GraphGrammar(),
                  verbosity=0):
+        """Environment for design space of mechanism. Create dictionary of rules and convert it to actions by sorted name of rules.
+        Create dictionary of nodes and convert it to states by sorted name of nodes.
+        Save graph of state in state2graph dictionary.
 
+        Args:
+            rule_vocabulary (RuleVocabulary): Vocabulary of rules
+            control_optimizer (GraphRewardCalculator): Class for optimizate control of mechanism
+            initial_graph (GraphGrammar, optional): Initial state of environment. Defaults to GraphGrammar().
+            verbosity (int, optional): Information verbosity. Defaults to 0.
+        """
         self.rule_vocabulary = rule_vocabulary
         sorted_name_rule = sorted(self.rule_vocabulary.rule_dict.keys())
 
@@ -136,6 +243,16 @@ class DesignEnvironment(Environment):
         }
 
     def next_state(self, state: STATESTYPE, action: int) -> StepType:
+        """Get next state by action. If next state is not in state2graph dictionary, apply rule to graph of state and save it in state2graph dictionary.
+        If next state is not in transition_function dictionary, calculate reward and save it in transition_function dictionary.
+
+        Args:
+            state (STATESTYPE): State to get next state
+            action (int): Action to get next state
+
+        Returns:
+            StepType: tuple of next state, reward, is_terminal_state, bool if state is in terminal_state dictionary
+        """
         if (state, action) in self.transition_function:
             next_state, reward, is_terminal_state = self.transition_function[(state, action)]
             is_known = True
@@ -151,6 +268,15 @@ class DesignEnvironment(Environment):
         return (next_state, reward, is_terminal_state, is_known)
 
     def possible_next_state(self, state: STATESTYPE, mask_actions=None) -> list[STATESTYPE]:
+        """Return list of possible next states by mask of available actions.
+
+        Args:
+            state (STATESTYPE): state to get possible next states
+            mask_actions (np.ndarray, optional): Mask of desired actions. Defaults to None. None means all available actions.
+
+        Returns:
+            list[STATESTYPE]: List of possible next states
+        """
         if mask_actions is None:
             mask_actions = self.get_available_actions(state)
 
@@ -162,6 +288,14 @@ class DesignEnvironment(Environment):
         return possible_next_s
 
     def get_available_actions(self, state: STATESTYPE) -> np.ndarray:
+        """Get mask of available actions for state.
+
+        Args:
+            state (STATESTYPE): state to get mask of available actions
+
+        Returns:
+            np.ndarray: mask of available actions
+        """
         graph = self.state2graph[state]
         available_rules = self.rule_vocabulary.get_list_of_applicable_rules(graph)
         mask_available_actions = np.zeros_like(self.actions)
@@ -173,6 +307,11 @@ class DesignEnvironment(Environment):
         return mask_available_actions
 
     def get_nonterminal_actions(self) -> np.ndarray:
+        """Get mask of nonterminal actions. Nonterminal actions are actions that apply nonterminal rules.
+
+        Returns:
+            np.ndarray: mask of nonterminal actions
+        """
         nonterminal_rules = self.rule_vocabulary.nonterminal_rule_dict.keys()
         mask_nonterminal_actions = np.zeros_like(self.actions)
         rule_list = np.array(list(self.action2rule.values()))
@@ -182,6 +321,11 @@ class DesignEnvironment(Environment):
         return mask_nonterminal_actions
 
     def get_terminal_actions(self) -> np.ndarray:
+        """Get mask of terminal actions. Terminal actions are actions that apply terminal rules.
+
+        Returns:
+            np.ndarray: mask of terminal actions
+        """
         terminal_rules = self.rule_vocabulary.terminal_rule_dict.keys()
         mask_terminal_actions = np.zeros_like(self.actions)
         rule_list = np.array(list(self.action2rule.values()))
@@ -191,6 +335,15 @@ class DesignEnvironment(Environment):
         return mask_terminal_actions
 
     def _calculate_reward(self, state: STATESTYPE) -> tuple[float, Any]:
+        """Calculate reward of state. Use control_optimizer to calculate reward.
+        Don't use the method directly. Use get_reward instead.
+
+        Args:
+            state (STATESTYPE): state to calculate reward
+
+        Returns:
+            tuple[float, Any]: reward and data of state
+        """
         result_optimizer = self.control_optimizer.calculate_reward(self.state2graph[state])
         reward = result_optimizer[0]
         movments_trajectory = result_optimizer[1]
@@ -199,13 +352,29 @@ class DesignEnvironment(Environment):
         return reward, movments_trajectory
 
     def _check_terminal_state(self, state: STATESTYPE) -> bool:
+        """Check if state is terminal. If state is terminal, return True, else False.
+        Don't use the method directly. Use is_terminal_state instead.
+
+        Args:
+            state (STATESTYPE): state to check
+
+        Returns:
+            bool: condition of terminal state
+        """
         terminal_nodes = [
             node[1]["Node"].is_terminal for node in self.state2graph[state].nodes.items()
         ]
         return sum(terminal_nodes) == len(terminal_nodes)
 
     def data2state(self, data: GraphGrammar) -> STATESTYPE:
+        """Convert data to state. Convert graph to int of sorted id of nodes.
 
+        Args:
+            data (GraphGrammar): graph to convert
+
+        Returns:
+            STATESTYPE: state of graph
+        """
         # if len(self.state2graph) != len(set(self.state2graph.values())):
 
         #     print("WARNING: There are repeated states")
@@ -217,6 +386,18 @@ class DesignEnvironment(Environment):
         return int(''.join([str(n) for n in id_nodes]))
 
     def update_environment(self, graph: GraphGrammar, action: int, next_graph: GraphGrammar):
+        """Update environment. If next state is not in state2graph dictionary, save it in state2graph dictionary.
+        If next state is not in transition_function dictionary, calculate reward and save it in transition_function dictionary.
+        Save reward and data of state in terminal_states dictionary.
+
+        Args:
+            graph (GraphGrammar): Previous state in the form of a graph
+            action (int): Action that was applied to the previous state
+            next_graph (GraphGrammar): Next state in the form of a graph
+
+        Returns:
+            _type_: reward and bool if state is in terminal_states table
+        """
         state = self.data2state(graph)
         next_state = self.data2state(next_graph)
         if next_state not in self.state2graph:
@@ -227,7 +408,16 @@ class DesignEnvironment(Environment):
                                                          self.is_terminal_state(next_state)[0])
         return reward, is_known
 
-    def info(self, verbosity=None):
+    def info(self, verbosity=None) -> str:
+        """Get info about environment. If verbosity is None, use the value of self.verbosity.
+        
+
+        Args:
+            verbosity (int, optional): Define verbosity of info and state_info. Maximum is 3. Defaults to None.
+
+        Returns:
+            str: String with information about environment
+        """
         if verbosity is None:
             verbosity = self.verbosity
         info_out = ""
@@ -241,6 +431,15 @@ class DesignEnvironment(Environment):
         return info_out
 
     def get_info_state(self, state: STATESTYPE, verbosity=None) -> str:
+        """Get info about state. If verbosity is None, use the value of self.verbosity.
+
+        Args:
+            state (STATESTYPE): state to get info
+            verbosity (int, optional): Define verbosity of info and state_info. Maximum is 3. Defaults to None.
+
+        Returns:
+            str: String with information about state
+        """
         if verbosity is None:
             verbosity = self.verbosity
         info_out = ""
@@ -261,6 +460,14 @@ class DesignEnvironment(Environment):
         return info_out
 
     def save_environment(self, prefix, path="./environments/", rewrite=False, use_date=True):
+        """Save environment to folder. If folder does not exist, create it. If folder exist, create new folder with postfix.
+
+        Args:
+            prefix (str): Prefix of folder name
+            path (str, optional): Folder to save environment. Defaults to "./environments/".
+            rewrite (bool, optional): Rewrite folder if it exist. Defaults to False.
+            use_date (bool, optional): Use date in folder name. Defaults to True.
+        """
         os.path.split(path)
         if not os.path.exists(path):
             print(f"Path {path} does not exist. Creating...")
@@ -298,6 +505,12 @@ class DesignEnvironment(Environment):
                 pickle.dump(var, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     def load_environment(self, path_to_folder):
+        """Load environment from folder.
+        The method don't clear the current state of the environment. It add saved data to current state.
+
+        Args:
+            path_to_folder (str): Path to folder with saved environment
+        """
         file_names = ["actions.p", "action2rule.p", "rule_vocabulary.p"]
         variables = [self.actions, self.action2rule, self.rule_vocabulary]
 
@@ -315,6 +528,24 @@ class DesignEnvironment(Environment):
         self.terminal_states.update(s_t)
         self.transition_function.update(p_sa)
         self.state2graph.update(s2g)
+    
+    def plot_metrics(self, save, path, name):
+        """Plot metrics of environment.
+
+        Args:
+            save (bool): Save plot
+            path (str): Path to save plot
+            name (str): Name of plot
+        """
+
+        plt.figure(figsize=(10, 5))
+        plt.plot(metrics)
+        plt.title(name)
+        plt.xlabel("Iteration")
+        plt.ylabel("Reward")
+        if save:
+            plt.savefig(os.path.join(path, name))
+        plt.show()
 
 
 class SubDesignEnvironment(DesignEnvironment):
@@ -325,12 +556,30 @@ class SubDesignEnvironment(DesignEnvironment):
                  max_number_nonterminal_rules,
                  initial_graph: GraphGrammar = GraphGrammar(),
                  verbosity=0):
+        """Environment for design subspace of mechanism. Create dictionary of rules and convert it to actions by sorted name of rules.
+        Max number of nonterminal rules is restriction the design space.
+
+        Args:
+            rule_vocabulary (RuleVocabulary): Vocabulary of rules
+            control_optimizer (GraphRewardCalculator): Class for optimizate control of mechanism
+            max_number_nonterminal_rules (_type_): Max number of nonterminal rules
+            initial_graph (GraphGrammar, optional): Initial state of environment. Defaults to GraphGrammar().
+            verbosity (int, optional): Information verbosity. Defaults to 0.
+        """
         super().__init__(rule_vocabulary, control_optimizer, initial_graph, verbosity)
         self.max_number_nonterminal_rules = max_number_nonterminal_rules
         self.counter_nonterminal_rules: dict[STATESTYPE, int] = defaultdict(int)
         self.counter_nonterminal_rules[self.initial_state] = 0
 
     def get_available_actions(self, state: STATESTYPE) -> np.ndarray:
+        """Get mask of available actions for state. If number of nonterminal rules of state is greater than max_number_nonterminal_rules, return mask of terminal actions.
+        
+        Args:
+            state (STATESTYPE): state to get mask of available actions
+            
+        Returns:
+            np.ndarray: mask of available actions
+        """
         graph = self.state2graph[state]
         available_rules = self.rule_vocabulary.get_list_of_applicable_rules(graph)
         mask_available_actions = np.zeros_like(self.actions)
@@ -347,6 +596,16 @@ class SubDesignEnvironment(DesignEnvironment):
         return mask_available_actions
 
     def update_environment(self, graph: GraphGrammar, action: int, next_graph: GraphGrammar):
+        """Update environment. If next state is not in state2graph dictionary, save it in state2graph dictionary.
+
+        Args:
+            graph (GraphGrammar): Previous state in the form of a graph
+            action (int): Action that was applied to the previous state
+            next_graph (GraphGrammar): Next state in the form of a graph
+
+        Returns:
+            tuple[float, bool]: reward and bool if state is in terminal_states table
+        """
         state = self.data2state(graph)
         next_state = self.data2state(next_graph)
         if next_state not in self.state2graph:
@@ -364,6 +623,14 @@ class SubDesignEnvironment(DesignEnvironment):
         return reward, is_known
 
     def save_environment(self, prefix, path="./environments/", rewrite=False, use_date=True):
+        """Save environment to folder. If folder does not exist, create it. If folder exist, create new folder with postfix.
+        
+        Args:
+            prefix (str): Prefix of folder name
+            path (str, optional): Folder to save environment. Defaults to "./environments/".
+            rewrite (bool, optional): Rewrite folder if it exist. Defaults to False.
+            use_date (bool, optional): Use date in folder name. Defaults to True.
+        """
         os.path.split(path)
         if not os.path.exists(path):
             print(f"Path {path} does not exist. Creating...")
@@ -398,7 +665,15 @@ class SubDesignEnvironment(DesignEnvironment):
             with open(os.path.join(os_path, file), "wb") as f:
                 pickle.dump(var, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def info(self, verbosity=None):
+    def info(self, verbosity=None) -> str:
+        """Get info about environment. If verbosity is None, use the value of self.verbosity.
+
+        Args:
+            verbosity (int, optional): Define verbosity of info and state_info. Maximum is 3. Defaults to None.
+
+        Returns:
+            str: String with information about environment
+        """
         if verbosity is None:
             verbosity = self.verbosity
         info_out = ""
@@ -412,6 +687,15 @@ class SubDesignEnvironment(DesignEnvironment):
         return info_out
 
     def get_info_state(self, state: STATESTYPE, verbosity=None) -> str:
+        """Get info about state. If verbosity is None, use the value of self.verbosity.
+
+        Args:
+            state (STATESTYPE): state to get info
+            verbosity (int, optional): Define verbosity of info and state_info. Maximum is 3. Defaults to None.
+
+        Returns:
+            str: String with information about state
+        """
         if verbosity is None:
             verbosity = self.verbosity
         info_out = ""
@@ -423,6 +707,12 @@ class SubDesignEnvironment(DesignEnvironment):
         return info_out
 
     def load_environment(self, path_to_folder):
+        """Load environment from folder. The method don't clear the current state of the environment. It add saved data to current state.
+
+
+        Args:
+            path_to_folder (str): Path to folder with saved environment
+        """
         file_names = ["actions.p", "action2rule.p", "rule_vocabulary.p"]
         variables = [self.actions, self.action2rule, self.rule_vocabulary]
 
@@ -445,6 +735,15 @@ class SubDesignEnvironment(DesignEnvironment):
         self.counter_nonterminal_rules.update(counter_non_rules)
         
 def prepare_state_for_optimal_simulation(state: STATESTYPE, env: DesignEnvironment) -> tuple:
+    """Prepare state for simulation. Convert state to data and graph.
+
+    Args:
+        state (STATESTYPE): state to prepare
+        env (DesignEnvironment): environment
+
+    Returns:
+        tuple: data and graph of state
+    """
     graph = env.state2graph[state]
     control = env.terminal_states[state][1]
     data = env.control_optimizer.optim_parameters2data_control(control, graph)
