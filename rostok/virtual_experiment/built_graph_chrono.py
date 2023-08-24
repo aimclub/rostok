@@ -32,6 +32,7 @@ class BuiltGraphChrono:
                  graph: GraphGrammar,
                  system: chrono.ChSystem,
                  initial_position: FrameTransform = DefaultFrame,
+                 starting_positions = [],
                  is_base_fixed=True):
         """Build graph into system and fill vectors.
 

@@ -45,12 +45,12 @@ with open(path, "w") as file:
     graph=get_three_link_one_finger()
     # graph=get_three_same_link_one_finger()
     #graph=get_four_same_link_one_finger()
-    # graph = get_one_finger_one_link()
+    graph = get_one_finger_one_link()
     #graph=get_two_link_three_finger()
     #control = [10.5, 4.166667, 10.5, 10.5, 10.5, 10.5]
     #control = [1.05 , 1.683, 1.683, 0.417, 1.05 , 0.417]
     # graph=get_one_finger_one_link()
-    control = [0.02]
+    control = [0.2]
     #control = [5]
     print('control:', control)
     data = control_optimizer.optim_parameters2data_control(control, graph)
