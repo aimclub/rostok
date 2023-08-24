@@ -76,7 +76,7 @@ class EventContact(SimulationSingleEvent):
         contacts = 0
         # we calculate only the amount of unique keys, therefore the amount of unique contacting bodies
         for key, value in robot_contacts.items():
-            if key != flat_idx_:
+            if key != flat_idx_ and value > 0:
                 contacts += 1
         if contacts > 0:
             self.state = True
@@ -181,7 +181,7 @@ class EventSlipOut(SimulationSingleEvent):
         contacts = 0
         # we calculate only the amount of unique keys, therefore the amount of unique contacting bodies
         for key, value in robot_contacts.items():
-            if key != flat_idx_:
+            if key != flat_idx_ and value > 0:
                 contacts += 1
 
         contact = contacts > 0
@@ -241,7 +241,7 @@ class EventGrasp(SimulationSingleEvent):
         contacts = 0
         # we calculate only the amount of unique keys, therefore the amount of unique contacting bodies
         for key, value in robot_contacts.items():
-            if key != flat_idx_:
+            if key != flat_idx_ and value > 0:
                 contacts += 1
 
         if obj_velocity <= 0.01 and contacts >= 2:
