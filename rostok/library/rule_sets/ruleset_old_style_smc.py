@@ -15,7 +15,7 @@ def create_rules():
 
     length_link = [0.06, 0.08, 0.1]
     super_flat = PrimitiveBodyBlueprint(Box(0.3, 0.01, 0.30), material=DefaultChronoMaterialSMC(),color=[255,0,0])
-    link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.01, x, 0.03), material=DefaultChronoMaterialSMC(), color= [0, 120, 255]), length_link))
+    link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.03, x, 0.03), material=DefaultChronoMaterialSMC(), color= [0, 120, 255]), length_link))
     radial_move_values = [0.09, 0.105, 0.12]
     #radial_move_values = [0.65, 0.85, 1.05 ]
     RADIAL_MOVES = list(map(lambda x: FrameTransform([x, 0, 0], [1, 0, 0, 0]), radial_move_values))
@@ -46,7 +46,7 @@ def create_rules():
     #revolve = RevolveJointBlueprint(JointInputType.POSITION)
     revolve = RevolveJointBlueprint(JointInputType.TORQUE, material=DefaultChronoMaterialSMC())
     revolve_45 = RevolveJointBlueprint(JointInputType.TORQUE, starting_angle=45)
-    no_control = RevolveJointBlueprint(JointInputType.UNCONTROL, stiffness=20 ,damping=10)
+    no_control = RevolveJointBlueprint(JointInputType.UNCONTROL, stiffness=0.02 ,damping=0)
     # Nodes
     node_vocab = NodeVocabulary()
     node_vocab.add_node(ROOT)

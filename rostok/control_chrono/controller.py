@@ -116,6 +116,7 @@ class ForceControllerTemplate():
         ]
         self.force_maker_chrono = chrono.ChForce()
         self.torque_maker_chrono = chrono.ChForce()
+        # self.force_maker_chrono.
         self.is_binded = False
         self.is_local = is_local
         self.setup_makers()

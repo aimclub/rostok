@@ -115,6 +115,7 @@ class TendonController_2p(RobotControllerChrono):
                         force_point.bind_body(body.body)
                         force_point.add_visual_pulley()
                         self.pulley_lists[-1].append(force_point)
+                        force_point.force_maker_chrono.SetNameString("Bottom_force")
                         first_body = False
 
                     for i in range(self.parameters.amount_pulley_in_body):
@@ -127,6 +128,7 @@ class TendonController_2p(RobotControllerChrono):
                         force_point = PulleyForce(pos)
                         force_point.bind_body(body.body)
                         force_point.add_visual_pulley()
+                        force_point.force_maker_chrono.SetNameString(f"Pulley_force {i}")
                         self.pulley_lists[-1].append(force_point)
             # do tip
             body = self.built_graph.body_map_ordered[tip_id]
@@ -139,6 +141,7 @@ class TendonController_2p(RobotControllerChrono):
             force_point = TipForce(pos)
             force_point.bind_body(body.body)
             force_point.add_visual_pulley()
+            force_point.force_maker_chrono.SetNameString("Tip_force")
             self.pulley_lists[-1].append(force_point)
 
 

@@ -101,7 +101,9 @@ class BuiltGraphChrono:
                     if NodeFeatures.is_joint(self.__graph.nodes[idx].get("Node", None)):
                         self.joint_map_ordered[idx] = created_blocks
                     elif NodeFeatures.is_body(self.__graph.nodes[idx].get("Node", None)):
+                        label = self.__graph.nodes[idx].get("Node", None).label
                         self.body_map_ordered[idx] = created_blocks
+                        created_blocks.body.SetNameString(label+f"_{id}")
 
                     chain.append(created_blocks)
                     self.__graph.nodes[idx]["Blocks"] = created_blocks

@@ -96,10 +96,12 @@ class ChronoVisManager():
         self.vis.AttachSystem(chrono_system)
         self.vis.SetWindowSize(1024, 768)
         self.vis.SetWindowTitle('Grab demo')
+        
         self.vis.Initialize()
         self.vis.AddCamera(chrono.ChVectorD(0.15, 0.30, -0.40))
         self.vis.AddTypicalLights()
-        self.vis.EnableCollisionShapeDrawing(True)
+        #self.vis.EnableCollisionShapeDrawing(True)
+        
 
 
 
