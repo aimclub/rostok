@@ -70,7 +70,7 @@ class MCTS:
         if self.Vs[state] != 0.0:
             return self.Vs[state]
 
-        if state not in self.Ns:
+        if state not in self.Ns or self.Ns[state] == 0:
             hat_V = self.default_policy(state, num_actions)
 
             return hat_V
@@ -79,7 +79,7 @@ class MCTS:
 
         new_state = self.environment.next_state(state, best_action)[0]
 
-        v = self.search(new_state)
+        v = self.search(new_state, num_actions)
 
         self.update_Q_function(state, best_action, v)
         return v
@@ -121,8 +121,11 @@ class MCTS:
 
         mask = self.environment.get_available_actions(state)
         available_actions = self.environment.actions[mask == 1]
+        print(f"Num actions: {num_actions}")
         if num_actions != 0:
-            available_actions = np.random.choice(available_actions, num_actions)
+            num_actions = min(num_actions, len(available_actions))
+            available_actions = np.random.choice(available_actions, num_actions, replace=False)
+            print(f"Available actions: {available_actions}")
 
         for a in available_actions:
 
@@ -214,7 +217,7 @@ class MCTS:
                 postfix_folder += 1
             print(f"Create dictionary {os_path} and save MCTS")
         
-        self.environment.save_environment(prefix="MCTS_env", path=os_path, use_date=False)
+        self.environment.save_environment(prefix="MCTS_env", path=os_path, rewrite=rewrite, use_date=False)
         
         file_names = [
             "Qsa.p", "Nsa.p", "Ns.p", "Vs.p"

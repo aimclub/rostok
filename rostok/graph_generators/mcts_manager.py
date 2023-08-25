@@ -45,8 +45,9 @@ class MCTSManager:
             path = os.path.join(path, folder)
             if not os.path.exists(path):
                 os.mkdir(path)
-
+        path = os.path.abspath(path)
         print(f"MCTS data will be in {path}")
+        
         return path
 
     def run_search(self,
@@ -153,7 +154,7 @@ class MCTSManager:
             if not item.startswith("__") and not item.endswith("__")
         }
         path_to_info = os.path.join(self.path, "info.txt")
-        with open(path_to_info, "a", encoding="utf-8") as file:
+        with open(path_to_info, "w+", encoding="utf-8") as file:
             original_stdout = sys.stdout
             sys.stdout = file
             print()
@@ -181,7 +182,7 @@ class MCTSManager:
             while not is_terminal_state:
                 pi = self.mcts_algorithm.get_policy(state)
                 a = max(env.actions, key=lambda x: pi[x])
-                state, reward, is_terminal_state,  = env.next_state(state, a)
+                state, reward, is_terminal_state, __ = env.next_state(state, a)
             rewards.append(reward)
         return np.mean(rewards), np.std(rewards)
     
@@ -218,10 +219,16 @@ class MCTSManager:
             print("No trajectories")
             return
         plt.figure(figsize=(10, 5))
+        v_traj = []
+        q_traj = []
         for state, a in trajectory:
             state_data = self.mcts_algorithm.get_data_state(state)
-            plt.plot(state_data["V"], label=f"V-function")
-            plt.plot(state_data["Qa"][a], label=f"Q-function")
+            v_traj.append(state_data["V"])
+            if a != -1:
+                rule = self.mcts_algorithm.environment.action2rule[a]
+                q_traj.append(state_data["Qa"][rule])
+        plt.plot(q_traj, label=f"Q-function")
+        plt.plot(v_traj, label=f"V-function")
         plt.xlabel("Iteration")
         plt.ylabel("V-function")
         plt.title("Trajectory")
