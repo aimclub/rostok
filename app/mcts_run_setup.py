@@ -22,7 +22,7 @@ from rostok.control_chrono.tendon_controller import TendonControllerParameters
 def config_with_const_troques(grasp_object_blueprint):
     # configurate the simulation manager
 
-    simulation_manager = SMCGrasp(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION)
+    simulation_manager = SMCGrasp(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION, tendon=False)
     simulation_manager.grasp_object_callback = lambda: creator.create_environment_body(
         grasp_object_blueprint)
     event_contact = EventContact()
@@ -86,7 +86,7 @@ def config_with_tendon(grasp_object_blueprint):
     event_grasp = EventGrasp(
         grasp_limit_time=hp.GRASP_TIME,
         contact_event=event_contact,
-        verbosity=0,simulation_stop=1
+        verbosity=0,simulation_stop=0
     )
     simulation_manager.add_event(event_grasp)
     event_stop_external_force = EventStopExternalForce(grasp_event=event_grasp,
@@ -115,9 +115,9 @@ def config_with_tendon(grasp_object_blueprint):
     
     data = TendonControllerParameters()
     data.amount_pulley_in_body = 2
-    data.pulley_parameters_for_body = {0: [-0.8, -0.8, 0], 1:[-0.8, 0.8, 0]}
-    data.starting_point_parameters = [-1,-1,0]
-    data.tip_parameters = [-1,1,0]
+    data.pulley_parameters_for_body = {0: [-0.7, 0.02, 0], 1:[-0.7, -0.02, 0]}
+    data.starting_point_parameters = [-1, 0, 0]
+    data.tip_parameters = [-1, 1, 0]
     
     control_optimizer = TendonOptimizerDirect(simulation_manager, simulation_rewarder, data,
                                                          hp.CONTROL_OPTIMIZATION_BOUNDS,

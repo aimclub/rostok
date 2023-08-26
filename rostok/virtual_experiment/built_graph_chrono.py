@@ -60,12 +60,8 @@ class BuiltGraphChrono:
         for i, path in enumerate(paths):
             pre_block = None
             current_joint = None
-            j = 0
             for idx in path:
                 if NodeFeatures.is_joint(self.__graph.nodes[idx]["Node"]):
-                    if self.starting_positions:
-                        self.graph.nodes[idx]["Node"].block_blueprint.starting_angle = self.starting_positions[i][j]
-                        j += 1
                     current_joint = idx
                 if NodeFeatures.is_body(self.__graph.nodes[idx]["Node"]):
                     if pre_block is None:
@@ -90,8 +86,9 @@ class BuiltGraphChrono:
         # builds the root based paths in the sorted root based paths order
         paths = self.__graph.get_sorted_root_based_paths()
         block_chains: List[List[BLOCK_CLASS_TYPES]] = []
-        for path in paths:
+        for i, path in enumerate(paths):
             chain: List[BLOCK_CLASS_TYPES] = []
+            j = 0
             for idx in path:
                 # if the node hasn't been built yet
                 if self.__graph.nodes[idx].get("Blocks", None) is None:
@@ -99,11 +96,18 @@ class BuiltGraphChrono:
                     blueprint = self.__graph.nodes[idx]["Node"].block_blueprint
                     created_blocks = creator.init_block_from_blueprint(blueprint)
                     if NodeFeatures.is_joint(self.__graph.nodes[idx].get("Node", None)):
+                        label = self.__graph.nodes[idx].get("Node", None).label
                         self.joint_map_ordered[idx] = created_blocks
+                        name = label + "_"+ str(idx)
+                        created_blocks.name = name
+                        if self.starting_positions:
+                            created_blocks.starting_angle = self.starting_positions[i][j]
+                            j += 1
                     elif NodeFeatures.is_body(self.__graph.nodes[idx].get("Node", None)):
                         label = self.__graph.nodes[idx].get("Node", None).label
                         self.body_map_ordered[idx] = created_blocks
-                        created_blocks.body.SetNameString(label+f"_{id}")
+                        name = label + "_" + str(idx)
+                        created_blocks.body.SetNameString(name)
 
                     chain.append(created_blocks)
                     self.__graph.nodes[idx]["Blocks"] = created_blocks

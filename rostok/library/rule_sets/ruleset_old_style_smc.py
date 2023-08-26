@@ -11,10 +11,11 @@ from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.block_builder_api.block_parameters import JointInputType
 
 
-def create_rules():
+def create_rules(tendon = True):
 
     length_link = [0.06, 0.08, 0.1]
-    super_flat = PrimitiveBodyBlueprint(Box(0.3, 0.01, 0.30), material=DefaultChronoMaterialSMC(),color=[255,0,0])
+    super_flat = PrimitiveBodyBlueprint(Box(0.3, 0.01, 0.30), material=DefaultChronoMaterialSMC(), color=[255,0,0])
+    base = PrimitiveBodyBlueprint(Box(0.03, 0.03, 0.03), material=DefaultChronoMaterialSMC(), color=[0,120, 255])
     link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.03, x, 0.03), material=DefaultChronoMaterialSMC(), color= [0, 120, 255]), length_link))
     radial_move_values = [0.09, 0.105, 0.12]
     #radial_move_values = [0.65, 0.85, 1.05 ]
@@ -63,9 +64,13 @@ def create_rules():
     node_vocab.create_node(label="RT2", is_terminal=True, block_blueprint=radial_transform[1])
     node_vocab.create_node(label="RT3", is_terminal=True, block_blueprint=radial_transform[2])
     node_vocab.create_node(label="FG")
-    node_vocab.create_node(label="J", is_terminal=True, block_blueprint=revolve)
-    #node_vocab.create_node(label="J", is_terminal=True, block_blueprint=no_control)
+    node_vocab.create_node(label="FG1")
+    if tendon:
+        node_vocab.create_node(label="J", is_terminal=True, block_blueprint=no_control)
+    else:
+        node_vocab.create_node(label="J", is_terminal=True, block_blueprint=revolve)
     node_vocab.create_node(label="L")
+    node_vocab.create_node(label="B", is_terminal=True, block_blueprint=base)
     node_vocab.create_node(label="L1", is_terminal=True, block_blueprint=link[0])
     node_vocab.create_node(label="L2", is_terminal=True, block_blueprint=link[1])
     node_vocab.create_node(label="L3", is_terminal=True, block_blueprint=link[2])
@@ -82,21 +87,24 @@ def create_rules():
 
     rule_vocab = rule_vocabulary.RuleVocabulary(node_vocab)
     rule_vocab.create_rule("Init", ["ROOT"], ["FT", "F", "RF", "PF", "NF", "RPF", "RNF"], 0, 0, [(0,1), (0,2), (0,3), (0,4), (0,5),(0, 6)])
-    rule_vocab.create_rule("AddFinger", ["F"], [ "RT", "FG"], 0, 0, [(0, 1)])
+    rule_vocab.create_rule("AddFinger", ["F"], [ "RT", "FG1"], 0, 0, [(0, 1)])
     rule_vocab.create_rule("RemoveFinger", ["F"], [], 0, 0, [])
-    rule_vocab.create_rule("AddFinger_R", ["RF"], ["RE", "RT", "FG"], 0, 0, [(0, 1), (1, 2)])
+    rule_vocab.create_rule("AddFinger_R", ["RF"], ["RE", "RT", "FG1"], 0, 0, [(0, 1), (1, 2)])
     rule_vocab.create_rule("RemoveFinger_R", ["RF"], [], 0, 0, [])
     rule_vocab.create_rule("Terminal_Radial_Translate1", ["RT"], ["RT1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Radial_Translate2", ["RT"], ["RT2"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Radial_Translate3", ["RT"], ["RT3"], 0, 0, [])
+
     rule_vocab.create_rule("Phalanx", ["FG"], ["J", "L", "FG"], 0, 0, [(0, 1), (1, 2)])
+    rule_vocab.create_rule("Phalanx_1", ["FG1"], ["B","J", "L", "FG"], 0, 0, [(0, 1), (1, 2),(2,3)])
     rule_vocab.create_rule("Terminal_Link1", ["L"], ["L1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Link2", ["L"], ["L2"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Link3", ["L"], ["L3"], 0, 0, [])
     rule_vocab.create_rule("Remove_FG", ["FG"], [], 0, 0, [])
+    rule_vocab.create_rule("Remove_FG1", ["FG1"], [], 0, 0, [])
 
-    rule_vocab.create_rule("AddFinger_P", ["PF"], ["RT", "TP", "FG"], 0, 0, [(0, 1), (1, 2)])
-    rule_vocab.create_rule("AddFinger_PT", ["PF"], ["TURN_N", "RT",  "FG"], 0, 0, [(0, 1), (1, 2)])
+    rule_vocab.create_rule("AddFinger_P", ["PF"], ["RT", "TP", "FG1"], 0, 0, [(0, 1), (1, 2)])
+    rule_vocab.create_rule("AddFinger_PT", ["PF"], ["TURN_N", "RT",  "FG1"], 0, 0, [(0, 1), (1, 2)])
     rule_vocab.create_rule("RemoveFinger_P", ["PF"], [], 0, 0, [])
     rule_vocab.create_rule("AddFinger_N", ["NF"], ["RT", "TN", "FG"], 0, 0, [(0, 1), (1, 2)])
     rule_vocab.create_rule("AddFinger_NT", ["NF"], ["TURN_P", "RT", "FG"], 0, 0, [(0, 1), (1, 2)])

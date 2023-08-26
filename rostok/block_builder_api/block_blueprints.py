@@ -43,7 +43,7 @@ class TransformBlueprint(TransformBlueprintType):
 @dataclass
 class RevolveJointBlueprint(JointBlueprintType):
     type_of_input: JointInputType = JointInputType.TORQUE
-    radius: float = 0.007
+    radius: float = 0.015
     length: float = 0.03
     material: Material = DefaultChronoMaterialNSC()
     density: float= 400

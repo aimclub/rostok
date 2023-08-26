@@ -197,11 +197,11 @@ class ChronoRevolveJoint(BlockBridge):
                  length=0.031,
                  material=DefaultChronoMaterialNSC(),
                  density=100.0,
-                 starting_angle=0,
+                 starting_angle=0.,
                  stiffness: float = 0.,
                  damping: float = 0.,
                  equilibrium_position: float = 0.,
-                 with_collision=True):
+                 with_collision=True, name = 'unnamed'):
         super().__init__()
         self.joint: Optional[Union[chrono.ChLinkMotorRotationTorque,
                                    chrono.ChLinkMotorRotationSpeed, chrono.ChLinkMotorRotationAngle,
@@ -221,10 +221,12 @@ class ChronoRevolveJoint(BlockBridge):
         self.damping = damping
         self.equilibrium_position = equilibrium_position
         self.with_collision = with_collision
+        self.name = name
+        self.offset = 0.01
 
     def set_prev_body_frame(self, prev_block: BuildingBody, system: chrono.ChSystem):
         # additional transform is just a translation along y axis to the radius of the joint
-        additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(0, self.radius, 0),
+        additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(self.offset, self.radius, 0),
                                                   chrono.ChQuaternionD(1, 0, 0, 0))
         additional_transform *= chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0),
                                                    rotation_z_q(self.starting_angle))
@@ -233,7 +235,7 @@ class ChronoRevolveJoint(BlockBridge):
         system.Update()
 
     def set_next_body_frame(self, next_block: BuildingBody, system: chrono.ChSystem):
-        additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(0, -self.radius, 0),
+        additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(self.offset, -self.radius, 0),
                                                   chrono.ChQuaternionD(1, 0, 0, 0))
         transform = next_block.transformed_frame_input.GetCoord()
         next_block.transformed_frame_input.SetCoord(transform * additional_transform)
@@ -251,27 +253,39 @@ class ChronoRevolveJoint(BlockBridge):
         system.Update()
 
         self.joint = self.input_type.motor()
-        self.joint.Initialize(out_block.body, in_block.body, chrono.ChFrameD(in_block.transformed_frame_out.GetAbsCoord()))
+        self.joint.SetNameString(self.name)
+        reverse_turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0),
+                                                   rotation_z_q(-self.starting_angle))
+        turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0),
+                                                   rotation_z_q(self.starting_angle))
+        offset_transform = chrono.ChCoordsysD(chrono.ChVectorD(self.offset, 0, 0),
+                                                  chrono.ChQuaternionD(1, 0, 0, 0))
+        #joint_transform = in_block.transformed_frame_out.GetAbsCoord()* reverse_turn * offset_transform * turn
+        joint_transform = in_block.transformed_frame_out.GetAbsCoord()
+        self.joint.Initialize(out_block.body, in_block.body, chrono.ChFrameD(joint_transform))
         system.AddLink(self.joint)
         if (self.stiffness != 0) or (self.damping != 0):
             self._add_spring_damper(in_block, out_block, system)
 
         if (self.with_collision):
             eps = 0.00002
-            cylinder = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, self.radius - eps, self.length, self.density, True,
+            cylinder = chrono.ChBodyEasyCylinder(chrono.ChAxis_Z, self.radius - eps, self.length, self.density, True,
                                                  True, self.material)
-            turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROTATE_Y_TO_Z)
-            reversed_turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROTATE_Z_TO_Y)
+            # turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROTATE_Y_TO_Z)
+            # reversed_turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROTATE_Z_TO_Y)
 
-            cylinder.SetCoord(in_block.transformed_frame_out.GetAbsCoord() * turn)
+            #cylinder.SetCoord(in_block.transformed_frame_out.GetAbsCoord() * turn)
+            cylinder.SetCoord(joint_transform)
+            cylinder.SetNameString(self.name)
             system.Add(cylinder)
             marker = chrono.ChMarker()
-            marker.SetMotionType(chrono.ChMarker.M_MOTION_KEYFRAMED)
-            marker.SetCoord(reversed_turn)
-            cylinder.AddMarker(marker)
+            # marker.SetMotionType(chrono.ChMarker.M_MOTION_KEYFRAMED)
+            # marker.SetCoord(reversed_turn)
+            # cylinder.AddMarker(marker)
             system.Update()
             fix_joint = chrono.ChLinkMateFix()
-            fix_joint.Initialize(cylinder, in_block.body, chrono.ChFrameD(in_block.transformed_frame_out.GetAbsCoord()))
+            #fix_joint.Initialize(cylinder, in_block.body, chrono.ChFrameD(in_block.transformed_frame_out.GetAbsCoord()))
+            fix_joint.Initialize(cylinder, in_block.body, chrono.ChFrameD(joint_transform))
             system.Add(fix_joint)
         else:
             # Add cylinder visual only

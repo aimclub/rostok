@@ -28,7 +28,7 @@ class PulleyForce(ForceControllerTemplate):
         point = data[1]
         post_point = data[2]
         tension = data[3]
-        force_v = ((post_point-point).GetNormalized() +(pre_point-point).GetNormalized())*tension
+        force_v = ((post_point-point).GetNormalized() + (pre_point-point).GetNormalized())*tension
         chrono.ChVectorD().GetNormalized
         impact.force = (force_v.x, force_v.y, force_v.z)
         return impact
@@ -52,7 +52,7 @@ class TipForce(PulleyForce):
         pre_point = data[0]
         point = data[1]
         tension = data[2]
-        force_v = (pre_point - point)*tension
+        force_v = (pre_point - point).GetNormalized()*tension
         impact.force = (force_v.x, force_v.y, force_v.z)
         return impact
 
@@ -117,19 +117,20 @@ class TendonController_2p(RobotControllerChrono):
                         self.pulley_lists[-1].append(force_point)
                         force_point.force_maker_chrono.SetNameString("Bottom_force")
                         first_body = False
-
-                    for i in range(self.parameters.amount_pulley_in_body):
-                        node = self.graph.get_node_by_id(id)
-                        x = node.block_blueprint.shape.width_x
-                        y = node.block_blueprint.shape.length_y
-                        z = node.block_blueprint.shape.height_z
-                        parameters = self.parameters.pulley_parameters_for_body[i]
-                        pos = [i[0]*(i[1]*0.5) for i in zip(parameters,[x,y,z])]
-                        force_point = PulleyForce(pos)
-                        force_point.bind_body(body.body)
-                        force_point.add_visual_pulley()
-                        force_point.force_maker_chrono.SetNameString(f"Pulley_force {i}")
-                        self.pulley_lists[-1].append(force_point)
+                    else:
+                        for i in range(self.parameters.amount_pulley_in_body):
+                            node = self.graph.get_node_by_id(id)
+                            x = node.block_blueprint.shape.width_x
+                            y = node.block_blueprint.shape.length_y
+                            z = node.block_blueprint.shape.height_z
+                            parameters = self.parameters.pulley_parameters_for_body[i]
+                            #pos = [i[0]*(i[1]*0.5) for i in zip(parameters,[x,y,z])]
+                            pos = [parameters[0]*0.5*x, 0.5*y*(i*2-1)+parameters[1], parameters[1]*0.5*z]
+                            force_point = PulleyForce(pos)
+                            force_point.bind_body(body.body)
+                            force_point.add_visual_pulley()
+                            force_point.force_maker_chrono.SetNameString(f"Pulley_force {i}")
+                            self.pulley_lists[-1].append(force_point)
             # do tip
             body = self.built_graph.body_map_ordered[tip_id]
             node = self.graph.get_node_by_id(tip_id)
@@ -153,7 +154,7 @@ class TendonController_2p(RobotControllerChrono):
             for j in range(1,len(finger)-1):
                 pre_point = finger[j-1].force_maker_chrono.GetVpoint()
                 point = finger[j].force_maker_chrono.GetVpoint()
-                post_point = finger[j-1].force_maker_chrono.GetVpoint()
+                post_point = finger[j+1].force_maker_chrono.GetVpoint()
                 finger[j].update(time, [pre_point, point, post_point, tension])
             pre_point = finger[-2].force_maker_chrono.GetVpoint()
             point = finger[-1].force_maker_chrono.GetVpoint()
