@@ -44,7 +44,7 @@ def create_rules():
     turn_transform_N = TransformBlueprint(TURN_N)
 
     #revolve = RevolveJointBlueprint(JointInputType.POSITION)
-    revolve = RevolveJointBlueprint(JointInputType.TORQUE, material=DefaultChronoMaterialSMC())
+    revolve = RevolveJointBlueprint(JointInputType.TORQUE, material=DefaultChronoMaterialSMC(), stiffness=0.02 ,damping=0)
     revolve_45 = RevolveJointBlueprint(JointInputType.TORQUE, starting_angle=45)
     no_control = RevolveJointBlueprint(JointInputType.UNCONTROL, stiffness=0.02 ,damping=0)
     # Nodes
@@ -63,8 +63,8 @@ def create_rules():
     node_vocab.create_node(label="RT2", is_terminal=True, block_blueprint=radial_transform[1])
     node_vocab.create_node(label="RT3", is_terminal=True, block_blueprint=radial_transform[2])
     node_vocab.create_node(label="FG")
-    #node_vocab.create_node(label="J", is_terminal=True, block_blueprint=revolve)
-    node_vocab.create_node(label="J", is_terminal=True, block_blueprint=no_control)
+    node_vocab.create_node(label="J", is_terminal=True, block_blueprint=revolve)
+    #node_vocab.create_node(label="J", is_terminal=True, block_blueprint=no_control)
     node_vocab.create_node(label="L")
     node_vocab.create_node(label="L1", is_terminal=True, block_blueprint=link[0])
     node_vocab.create_node(label="L2", is_terminal=True, block_blueprint=link[1])

@@ -64,7 +64,7 @@ class BuiltGraphChrono:
             for idx in path:
                 if NodeFeatures.is_joint(self.__graph.nodes[idx]["Node"]):
                     if self.starting_positions:
-                        self.graph.nodes[11]["Node"].block_blueprint.starting_angle = self.starting_positions[i][j]
+                        self.graph.nodes[idx]["Node"].block_blueprint.starting_angle = self.starting_positions[i][j]
                         j += 1
                     current_joint = idx
                 if NodeFeatures.is_body(self.__graph.nodes[idx]["Node"]):

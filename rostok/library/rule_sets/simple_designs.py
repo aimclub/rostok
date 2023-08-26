@@ -31,6 +31,22 @@ def get_one_finger_one_link():
 
     return graph
 
+def get_one_finger_one_nlink():
+    graph = GraphGrammar()
+    rules = ["Init",
+        "RemoveFinger", 
+        "RemoveFinger_N",
+        "AddFinger_R", "Terminal_Radial_Translate1", "Phalanx","Remove_FG", "Terminal_Link3", 
+        "RemoveFinger_RN", 
+        "RemoveFinger_P", 
+        "RemoveFinger_RP"
+    ]
+    rule_vocabul = create_rules()
+    for rule in rules:
+        graph.apply_rule(rule_vocabul.get_rule(rule))
+
+    return graph
+
 
 def get_three_link_one_finger():
     graph = GraphGrammar()

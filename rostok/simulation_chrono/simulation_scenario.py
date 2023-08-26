@@ -89,12 +89,13 @@ class SMCGrasp(ParametrizedSimulation):
     def run_simulation(self, graph: GraphGrammar, data, starting_positions = [],vis=False, delay=False):
         self.reset_events()
         # build simulation from the subclasses
-        system = ChronoSystems.chrono_SMC_system([0, 0, 0])
+        system = ChronoSystems.chrono_SMC_system([0, -10, 0])
         env_creator = EnvCreator([])
         vis_manager = ChronoVisManager(delay)
         simulation = SingleRobotSimulation(system, env_creator, vis_manager)
         # add design and determine the outer force
-        simulation.add_design(graph, data, TendonController_2p, starting_positions=starting_positions)
+        #simulation.add_design(graph, data, TendonController_2p, starting_positions=starting_positions)
+        simulation.add_design(graph, data, starting_positions=starting_positions)
         grasp_object = self.grasp_object_callback()
         shake = YaxisShaker(0.1, 0.1, 0.5, float("inf"))
         # the object  positioning based on the AABB

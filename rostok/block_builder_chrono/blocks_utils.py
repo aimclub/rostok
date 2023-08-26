@@ -1,6 +1,6 @@
 from collections import namedtuple
 from enum import Enum
-
+from math import exp
 import numpy as np
 import pychrono.core as chrono
 
@@ -75,7 +75,10 @@ class SpringTorque(chrono.TorqueFunctor):
         torque = 0
 
         if self.spring_coef > 10**-3:
-            torque = -self.spring_coef * (angle - rest_angle) - self.damping_coef * vel
+            if angle <=rest_angle:
+                torque = -self.spring_coef * (angle - rest_angle) - self.damping_coef * vel
+            else: 
+                torque = - self.damping_coef * vel - (exp(self.spring_coef * (angle - rest_angle)*10000)-1)
         else:
             torque = -self.damping_coef * vel
         return torque
