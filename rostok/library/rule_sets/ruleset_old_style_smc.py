@@ -47,7 +47,8 @@ def create_rules(tendon = True):
     #revolve = RevolveJointBlueprint(JointInputType.POSITION)
     revolve = RevolveJointBlueprint(JointInputType.TORQUE, material=DefaultChronoMaterialSMC(), stiffness=0.02 ,damping=0)
     revolve_45 = RevolveJointBlueprint(JointInputType.TORQUE, starting_angle=45)
-    no_control = RevolveJointBlueprint(JointInputType.UNCONTROL, stiffness=0.02 ,damping=0)
+    no_control = RevolveJointBlueprint(JointInputType.UNCONTROL, stiffness=0.03 ,damping=0.01)
+    no_control_base = RevolveJointBlueprint(JointInputType.UNCONTROL, stiffness=0.06 ,damping=0.01)
     # Nodes
     node_vocab = NodeVocabulary()
     node_vocab.add_node(ROOT)
@@ -67,6 +68,7 @@ def create_rules(tendon = True):
     node_vocab.create_node(label="FG1")
     if tendon:
         node_vocab.create_node(label="J", is_terminal=True, block_blueprint=no_control)
+        node_vocab.create_node(label="JB", is_terminal=True, block_blueprint=no_control_base)
     else:
         node_vocab.create_node(label="J", is_terminal=True, block_blueprint=revolve)
     node_vocab.create_node(label="L")
@@ -96,7 +98,7 @@ def create_rules(tendon = True):
     rule_vocab.create_rule("Terminal_Radial_Translate3", ["RT"], ["RT3"], 0, 0, [])
 
     rule_vocab.create_rule("Phalanx", ["FG"], ["J", "L", "FG"], 0, 0, [(0, 1), (1, 2)])
-    rule_vocab.create_rule("Phalanx_1", ["FG1"], ["B","J", "L", "FG"], 0, 0, [(0, 1), (1, 2),(2,3)])
+    rule_vocab.create_rule("Phalanx_1", ["FG1"], ["B","JB", "L", "FG"], 0, 0, [(0, 1), (1, 2),(2,3)])
     rule_vocab.create_rule("Terminal_Link1", ["L"], ["L1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Link2", ["L"], ["L2"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Link3", ["L"], ["L3"], 0, 0, [])

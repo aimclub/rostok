@@ -17,7 +17,7 @@ from rostok.simulation_chrono.basic_simulation import SimulationResult
 # create rule vocabulary
 #rule_vocabul = create_rules()
 # create blueprint for object to grasp
-grasp_object_blueprint = get_object_parametrized_sphere_smc(0.05)
+grasp_object_blueprint = get_object_parametrized_sphere_smc(0.005)
 #grasp_object_blueprint = get_object_ellipsoid(10, 8, 14, 10)
 # create reward counter using run setup function
 # control_optimizer = config_with_standard_cable(grasp_object_blueprint)
@@ -52,14 +52,13 @@ with open(path, "w") as file:
     #control = [10.5, 4.166667, 10.5, 10.5, 10.5, 10.5]
     #control = [1.05 , 1.683, 1.683, 0.417, 1.05 , 0.417]
     # graph=get_one_finger_one_link()
-    control = [4]
-    #control = [5]
+    control = [3]
     print('control:', control)
     data = control_optimizer.optim_parameters2data_control(control, graph)
     print(data)
     sys.stdout = original_stdout
     vis = True
-    simulation_output: SimulationResult = simulation_manager.run_simulation(graph, data, [[0.0, 0.0, 0.0]], vis, True)
+    simulation_output: SimulationResult = simulation_manager.run_simulation(graph, data, [[-45.0, 0.0, 0.0]], vis, True)
     if not vis:
         fig = plt.figure(figsize=(12, 5))
         time_vector = simulation_output.time_vector
