@@ -44,6 +44,7 @@ with open(path, "w") as file:
     simulation_manager = control_optimizer.simulation_scenario
     # visualisation in the end of the search
     graph=get_three_link_one_finger()
+    graph=get_two_link_three_finger()
     # graph=get_three_same_link_one_finger()
     #graph=get_four_same_link_one_finger()
     #graph = get_one_finger_one_link()
@@ -52,13 +53,13 @@ with open(path, "w") as file:
     #control = [10.5, 4.166667, 10.5, 10.5, 10.5, 10.5]
     #control = [1.05 , 1.683, 1.683, 0.417, 1.05 , 0.417]
     # graph=get_one_finger_one_link()
-    control = [3]
+    control = [3,2,1]
     print('control:', control)
     data = control_optimizer.optim_parameters2data_control(control, graph)
     print(data)
     sys.stdout = original_stdout
     vis = True
-    simulation_output: SimulationResult = simulation_manager.run_simulation(graph, data, [[-45.0, 0.0, 0.0]], vis, True)
+    simulation_output: SimulationResult = simulation_manager.run_simulation(graph, data, [[-45.0, 0.0],[-45,0],[-45,0]], vis, True)
     if not vis:
         fig = plt.figure(figsize=(12, 5))
         time_vector = simulation_output.time_vector

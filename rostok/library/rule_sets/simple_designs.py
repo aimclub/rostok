@@ -105,14 +105,14 @@ def get_four_same_link_one_finger():
 def get_two_link_three_finger():
     graph = GraphGrammar()
     rules = ["Init",
-        "AddFinger", "Terminal_Radial_Translate2", "Phalanx", "Phalanx", "Remove_FG",
+        "AddFinger", "Terminal_Radial_Translate2", "Phalanx_1", "Phalanx", "Remove_FG",
         "Terminal_Link3",  "Terminal_Link3", 
         "RemoveFinger_N",
         "RemoveFinger_R", 
-        "AddFinger_RNT", "Terminal_Radial_Translate2", "Phalanx", "Phalanx",
+        "AddFinger_RNT", "Terminal_Radial_Translate2", "Phalanx_1", "Phalanx",
         "Remove_FG",  "Terminal_Link3",  "Terminal_Link3",
         "RemoveFinger_P", 
-        "AddFinger_RPT", "Terminal_Radial_Translate2", "Phalanx", "Phalanx",
+        "AddFinger_RPT", "Terminal_Radial_Translate2", "Phalanx_1", "Phalanx",
         "Remove_FG", "Terminal_Link3", "Terminal_Link3"
     ]
     rule_vocabul = create_rules()
