@@ -29,8 +29,8 @@ class PulleyForce(ForceControllerTemplate):
         post_point = data[2]
         tension = data[3]
         force_v = ((post_point-point).GetNormalized() + (pre_point-point).GetNormalized())*tension
-        chrono.ChVectorD().GetNormalized
         impact.force = (force_v.x, force_v.y, force_v.z)
+
         return impact
 
     def bind_body(self, body: chrono.ChBody):
@@ -42,6 +42,7 @@ class PulleyForce(ForceControllerTemplate):
         sph_1 = chrono.ChSphereShape(0.005)
         sph_1.SetColor(chrono.ChColor(1, 0, 0))
         self.__body.AddVisualShape(sph_1, chrono.ChFrameD(chrono.ChVectorD(*self.pos)))
+
         self.__body.GetVisualShape(0).SetOpacity(0.6)
 
 
@@ -73,7 +74,6 @@ class TendonControllerParameters:
         
 
 
-
 class TendonController_2p(RobotControllerChrono):
 
     def __init__(self, graph: BuiltGraphChrono, control_parameters:TendonControllerParameters):
@@ -99,7 +99,11 @@ class TendonController_2p(RobotControllerChrono):
             # find bodies from root to tip, w/o root 
             path.pop(0)
             self.pulley_lists.append([])
-            tip_id = path[-1]
+            i = 0
+            while True:
+                tip_id = path[-1-i]
+                if NodeFeatures.is_body(self.graph.get_node_by_id(tip_id)):
+                    break
             first_body = True
             for id in path:
                 if id in self.built_graph.body_map_ordered:

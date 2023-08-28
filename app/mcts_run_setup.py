@@ -119,7 +119,7 @@ def config_with_tendon(grasp_object_blueprint):
     data.starting_point_parameters = [-1, 0, 0]
     data.tip_parameters = [-1, 1, 0]
     
-    control_optimizer = TendonOptimizerDirect(simulation_manager, simulation_rewarder, data,
+    control_optimizer = TendonOptimizerDirect(simulation_manager, simulation_rewarder, data,-45,
                                                          hp.CONTROL_OPTIMIZATION_BOUNDS,
                                                          hp.CONTROL_OPTIMIZATION_ITERATION)
     

@@ -2,7 +2,8 @@ from abc import abstractmethod, ABC
 import numpy as np
 import json
 import types
-
+from rostok.control_chrono.tendon_controller import TendonControllerParameters
+from rostok.graph_grammar.node_block_typing import get_joint_matrix_from_graph
 from scipy.optimize import direct, dual_annealing, shgo
 
 from rostok.criterion.criterion_calculation import SimulationReward
@@ -337,14 +338,13 @@ class LinearCableControlOptimization(ConstControlOptimizationDirect):
         return cable_length_linear_control(graph, parameters_2d)
 
 
-from rostok.control_chrono.tendon_controller import TendonControllerParameters
-from rostok.graph_grammar.node_block_typing import get_joint_matrix_from_graph
 class TendonOptimizer(GraphRewardCalculator):
+
     def __init__(self,
                  simulation_scenario,
                  rewarder: SimulationReward,
-                 data:TendonControllerParameters,
-                 starting_finger_angles = 45,
+                 data: TendonControllerParameters,
+                 starting_finger_angles=45,
                  optimization_bounds=(0, 15),
                  optimization_limit=10):
         self.data: TendonControllerParameters = data
@@ -354,8 +354,8 @@ class TendonOptimizer(GraphRewardCalculator):
         self.limit = optimization_limit
         self.round_const = 4
         self.starting_finger_angles = starting_finger_angles
-    
-    def build_starting_positions(self, graph:GraphGrammar):
+
+    def build_starting_positions(self, graph: GraphGrammar):
         if self.starting_finger_angles:
             joint_matrix = get_joint_matrix_from_graph(graph)
             for i in range(len(joint_matrix)):
@@ -364,6 +364,7 @@ class TendonOptimizer(GraphRewardCalculator):
                         joint_matrix[i][j] = self.starting_finger_angles
                     else:
                         joint_matrix[i][j] = 0
+
     def simulate_with_control_parameters(self, data, graph):
         starting_positions = self.build_starting_positions(graph)
         return self.simulation_scenario.run_simulation(graph, data, starting_positions)
