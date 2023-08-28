@@ -17,10 +17,13 @@ from rostok.virtual_experiment.sensors import Sensor
 
 class PulleyForce(ForceControllerTemplate):
 
-    def __init__(self, pos: list) -> None:
+    def __init__(self, pos: list, name = 'default') -> None:
         super().__init__(is_local=False)
         #self.set_vector_in_local_cord()
         self.pos = pos
+        self.name = name
+        with open(f"{self.name}.dat",'w') as file:
+            pass
 
     def get_force_torque(self, time: float, data) -> ForceTorque:
         impact = ForceTorque()
@@ -30,7 +33,9 @@ class PulleyForce(ForceControllerTemplate):
         tension = data[3]
         force_v = ((post_point-point).GetNormalized() + (pre_point-point).GetNormalized())*tension
         impact.force = (force_v.x, force_v.y, force_v.z)
-
+        #with open(f"self.name_force_{round(self.pos[0],5)}_{round(self.pos[1],5)}.dat",'a') as file:
+        # with open(f"{self.name}.dat",'a') as file:
+        #     file.write(f'{round(force_v.x, 6)} {round(force_v.y,6)} {round(time, 5)} \n')
         return impact
 
     def bind_body(self, body: chrono.ChBody):
@@ -55,6 +60,8 @@ class TipForce(PulleyForce):
         tension = data[2]
         force_v = (pre_point - point).GetNormalized()*tension
         impact.force = (force_v.x, force_v.y, force_v.z)
+        # with open(f"{self.name}.dat",'a') as file:
+        #     file.write(f'{round(force_v.x, 6)} {round(force_v.y,6)} {round(time, 5)} \n')
         return impact
 
 field(default_factory=list)
@@ -115,7 +122,7 @@ class TendonController_2p(RobotControllerChrono):
                     if first_body:
                         parameters = self.parameters.starting_point_parameters
                         pos = [i[0]*(i[1]*0.5) for i in zip(parameters,[x,y,z])]
-                        force_point = PulleyForce(pos)
+                        force_point = PulleyForce(pos, f'bottom_force_{id}')
                         force_point.bind_body(body.body)
                         force_point.add_visual_pulley()
                         self.pulley_lists[-1].append(force_point)
@@ -130,7 +137,7 @@ class TendonController_2p(RobotControllerChrono):
                             parameters = self.parameters.pulley_parameters_for_body[i]
                             #pos = [i[0]*(i[1]*0.5) for i in zip(parameters,[x,y,z])]
                             pos = [parameters[0]*0.5*x, 0.5*y*(i*2-1)+parameters[1], parameters[1]*0.5*z]
-                            force_point = PulleyForce(pos)
+                            force_point = PulleyForce(pos, f'pulley_force_{id}_{i}')
                             force_point.bind_body(body.body)
                             force_point.add_visual_pulley()
                             force_point.force_maker_chrono.SetNameString(f"Pulley_force {i}")
@@ -143,7 +150,7 @@ class TendonController_2p(RobotControllerChrono):
             z = node.block_blueprint.shape.height_z
             parameters = self.parameters.tip_parameters
             pos = [i[0]*(i[1]*0.5) for i in zip(parameters,[x,y,z])]
-            force_point = TipForce(pos)
+            force_point = TipForce(pos, f'tip_force_{id}')
             force_point.bind_body(body.body)
             force_point.add_visual_pulley()
             force_point.force_maker_chrono.SetNameString("Tip_force")

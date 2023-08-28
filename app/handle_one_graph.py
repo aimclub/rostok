@@ -31,47 +31,42 @@ start = time.time()
 ex = time.time() - start
 print(f"time :{ex}")
 
-# additions to the file
-with open(path, "w") as file:
-    original_stdout = sys.stdout
-    sys.stdout = file
-    print()
-    print("Object to grasp:", grasp_object_blueprint.shape)
-    dict = {item:getattr(hp, item) for item in dir(hp) if not item.startswith("__") and not item.endswith("__")}
-    for key, value in dict.items():
-        print(key, value)
-    simulation_rewarder = control_optimizer.rewarder
-    simulation_manager = control_optimizer.simulation_scenario
-    # visualisation in the end of the search
-    graph=get_three_link_one_finger()
-    #graph=get_two_link_three_finger()
-    # graph=get_three_same_link_one_finger()
-    #graph=get_four_same_link_one_finger()
-    #graph = get_one_finger_one_link()
-    #graph = get_one_finger_one_nlink()
-    #graph=get_two_link_three_finger()
-    #control = [10.5, 4.166667, 10.5, 10.5, 10.5, 10.5]
-    #control = [1.05 , 1.683, 1.683, 0.417, 1.05 , 0.417]
-    # graph=get_one_finger_one_link()
-    control = [5]
-    print('control:', control)
-    data = control_optimizer.optim_parameters2data_control(control, graph)
-    print(data)
-    sys.stdout = original_stdout
-    vis = True
-    #simulation_output: SimulationResult = simulation_manager.run_simulation(graph, data, [[-45.0, 0.0],[-45,0],[-45,0]], vis, True)
-    simulation_output: SimulationResult = simulation_manager.run_simulation(graph, data, [[-45.0, 0.0, 0]], vis, True)
-    if not vis:
-        fig = plt.figure(figsize=(12, 5))
-        time_vector = simulation_output.time_vector
-        velocity_data_idx = list(simulation_output.robot_final_ds.get_data("body_velocity").keys())
-        trajectories = simulation_output.robot_final_ds.get_data("COG")[velocity_data_idx[-1]]
-        velocity_data = simulation_output.robot_final_ds.get_data("body_velocity")[velocity_data_idx[-1]]
-        velocity_data = [np.linalg.norm(x) for x in velocity_data]
-        #velocity_data = [x[0] for x in velocity_data]
-        plt.plot(time_vector, velocity_data)
-        plt.show()
 
-    res = simulation_rewarder.calculate_reward(simulation_output)
-    print('reward', res)
-    sys.stdout = original_stdout
+
+print("Object to grasp:", grasp_object_blueprint.shape)
+dict = {item:getattr(hp, item) for item in dir(hp) if not item.startswith("__") and not item.endswith("__")}
+for key, value in dict.items():
+    print(key, value)
+simulation_rewarder = control_optimizer.rewarder
+simulation_manager = control_optimizer.simulation_scenario
+# visualisation in the end of the search
+graph=get_three_link_one_finger()
+#graph=get_two_link_three_finger()
+# graph=get_three_same_link_one_finger()
+#graph=get_four_same_link_one_finger()
+#graph = get_one_finger_one_link()
+#graph = get_one_finger_one_nlink()
+#graph=get_two_link_three_finger()
+#control = [10.5, 4.166667, 10.5, 10.5, 10.5, 10.5]
+#control = [1.05 , 1.683, 1.683, 0.417, 1.05 , 0.417]
+# graph=get_one_finger_one_link()
+control = [15]
+print('control:', control)
+data = control_optimizer.optim_parameters2data_control(control, graph)
+print(data)
+vis = True
+#simulation_output: SimulationResult = simulation_manager.run_simulation(graph, data, [[-45.0, 0.0],[-45,0],[-45,0]], vis, True)
+simulation_output: SimulationResult = simulation_manager.run_simulation(graph, data, [[-45.0, 0, 0]], vis, True)
+if not vis:
+    fig = plt.figure(figsize=(12, 5))
+    time_vector = simulation_output.time_vector
+    velocity_data_idx = list(simulation_output.robot_final_ds.get_data("body_velocity").keys())
+    trajectories = simulation_output.robot_final_ds.get_data("COG")[velocity_data_idx[-1]]
+    velocity_data = simulation_output.robot_final_ds.get_data("body_velocity")[velocity_data_idx[-1]]
+    velocity_data = [np.linalg.norm(x) for x in velocity_data]
+    #velocity_data = [x[0] for x in velocity_data]
+    plt.plot(time_vector, velocity_data)
+    plt.show()
+
+res = simulation_rewarder.calculate_reward(simulation_output)
+print('reward', res)
