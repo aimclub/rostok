@@ -22,8 +22,8 @@ class PulleyForce(ForceControllerTemplate):
         #self.set_vector_in_local_cord()
         self.pos = pos
         self.name = name
-        with open(f"{self.name}.dat",'w') as file:
-            pass
+        # with open(f"{self.name}.dat",'w') as file:
+        #     pass
 
     def get_force_torque(self, time: float, data) -> ForceTorque:
         impact = ForceTorque()

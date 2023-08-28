@@ -50,6 +50,7 @@ class RevolveJointBlueprint(JointBlueprintType):
     starting_angle: float = 0.
     stiffness: float = 0.
     damping: float = 0.
+    offset: float = 0.
     with_collision: bool = True
 
 

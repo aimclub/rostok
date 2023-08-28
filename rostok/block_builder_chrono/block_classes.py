@@ -201,6 +201,7 @@ class ChronoRevolveJoint(BlockBridge):
                  stiffness: float = 0.,
                  damping: float = 0.,
                  equilibrium_position: float = 0.,
+                 offset = 0.0,
                  with_collision=True, name = 'unnamed'):
         super().__init__()
         self.joint: Optional[Union[chrono.ChLinkMotorRotationTorque,
@@ -222,7 +223,7 @@ class ChronoRevolveJoint(BlockBridge):
         self.equilibrium_position = equilibrium_position
         self.with_collision = with_collision
         self.name = name
-        self.offset = 0.01
+        self.offset = offset
 
     def set_prev_body_frame(self, prev_block: BuildingBody, system: chrono.ChSystem):
         # additional transform is just a translation along y axis to the radius of the joint

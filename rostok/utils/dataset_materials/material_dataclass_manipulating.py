@@ -26,10 +26,10 @@ class DefaultChronoMaterialSMC():
     name: str = "default_SMC"
     type_class: str = "ChMaterialSurfaceSMC"
     Friction:float = 0.5
-    Kn:float = 1000
-    Kt:float = 1000
-    Gn:float = 1000
-    Gt:float = 1000
+    Kn:float = 10000
+    Kt:float = 10000
+    Gn:float = 10000
+    Gt:float = 10000
     Restitution:float = 0
     YoungModulus:float = 0
 
