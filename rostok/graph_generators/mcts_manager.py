@@ -1,6 +1,7 @@
 import sys
 import os
 import time
+import pickle
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -236,3 +237,26 @@ class MCTSManager:
         if save:
             plt.savefig(os.path.join(self.path, name))
         plt.show()
+        
+    def save_results(self, save_plot=True):
+        """Save the trajectories of the states and actions to the file.
+        """
+        date = time.strftime("%Y-%m-%d_%H-%M-%S")
+        path_result = os.path.join(self.path, "result_" + date)
+        os.mkdir(path_result)
+        print(f"Results are saved in {path_result}")
+        
+        path_to_trajectories = os.path.join(self.path, "trajectories.p")
+        with open(path_to_trajectories, "wb") as file:
+            pickle.dump(self.trajectories, file)
+
+        
+        if save_plot:
+            path_plot = os.path.join(path_result, "plot")
+            os.mkdir(path_plot)
+            
+            self.plot_test_mcts(save=True, name=os.path.join("plot", "test_mcts.svg"))
+            for num, traj in enumerate(self.trajectories):
+                self.plot_v_trajectory(traj, save=True, name=os.path.join("plot", "v_trajectory"+num+".svg"))
+        
+        self.mcts_algorithm.save("final", path_result, rewrite=True, use_date=False)

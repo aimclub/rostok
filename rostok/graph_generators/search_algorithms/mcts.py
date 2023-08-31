@@ -45,7 +45,7 @@ class MCTS:
         for a in self.environment.actions[mask_actions == 1]:
             pi[a] = 0.0 if self.Nsa[(state, a)] == 0 else self.Nsa[(state, a)]
         
-        if np.sum(pi) == 0.0:
+        if np.isclose(np.sum(pi), 0.0):
             pi = np.ones_like(self.environment.actions, dtype=np.float32)
             pi *= mask_actions
         pi /= np.sum(pi)
