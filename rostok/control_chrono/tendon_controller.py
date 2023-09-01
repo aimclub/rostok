@@ -13,8 +13,12 @@ import networkx as nx
 from rostok.virtual_experiment.built_graph_chrono import BuiltGraphChrono
 from rostok.control_chrono.controller import RobotControllerChrono
 from rostok.virtual_experiment.sensors import Sensor
+from rostok.graph_grammar.graph_comprehension import is_star_topology, get_tip_ids
 
-
+class ForceType(Enum):
+    PULLEY = 0
+    TIP = 1
+    POINT = 2
 class PulleyForce(ForceControllerTemplate):
 
     def __init__(self, pos: list, name = 'default') -> None:
@@ -64,7 +68,6 @@ class TipForce(PulleyForce):
         #     file.write(f'{round(force_v.x, 6)} {round(force_v.y,6)} {round(time, 5)} \n')
         return impact
 
-field(default_factory=list)
 @dataclass
 class TendonControllerParameters:
     amount_pulley_in_body:int = 2
@@ -78,7 +81,42 @@ class TendonControllerParameters:
     def check_parameters_length(self):
         if self.amount_pulley_in_body != len(self.pulley_parameters_for_body):
             raise Exception("Invalid parameters for pulleys...")
-        
+
+@dataclass
+class PulleyParameters():
+    """
+        finger_id: int -- column in GraphGrammar.get_sorted_root_based_paths
+        body_id: int -- id from GraphGrammar
+        pulley_number: int -- from bootom to top pos
+    """
+    finger_id: int = 0
+    body_id: int = 0
+    pulley_number: int = 0
+    position: List[float] = field(default_factory=list)
+    force_type: ForceType = ForceType.POINT 
+
+def create_pulley_lines(graph: GraphGrammar, pulleys_in_phalanx=2, finger_base = True):
+    if not is_star_topology(graph):
+        raise Exception("Graph should be star topology")
+    tip_ids = get_tip_ids(graph)
+    branches = graph.get_sorted_root_based_paths()
+    pulley_lines = []
+    for finger_n, path in enumerate(branches):
+        # find bodies from root to tip, w/o root 
+        path.pop(0)
+        line = []
+        for idx in path:
+            if  not NodeFeatures.is_body(self.graph.get_node_by_id(idx)):
+                continue
+
+            if len(line)==0:
+                pulley_parameters = PulleyParameters(finger_id=finger_n, body_id=idx)
+            else:
+                for i in range(pulleys_in_phalanx):
+
+                
+            
+
 
 
 class TendonController_2p(RobotControllerChrono):
@@ -157,9 +195,7 @@ class TendonController_2p(RobotControllerChrono):
             self.pulley_lists[-1].append(force_point)
 
 
-
     def update_functions(self, time, robot_data: Sensor, environment_data):
-        
         for i, finger in enumerate(self.pulley_lists):
             tension = self.parameters.forces[i]
             for j in range(1,len(finger)-1):
@@ -170,10 +206,3 @@ class TendonController_2p(RobotControllerChrono):
             pre_point = finger[-2].force_maker_chrono.GetVpoint()
             point = finger[-1].force_maker_chrono.GetVpoint()
             finger[-1].update(time, [pre_point, point, tension])
-        # angle_joint_dict = robot_data.get_joint_z_trajectory_point()
-        # for key in self.pulley_and_tip_dict_obj.keys():
-        #     force = self.force_finger_dict[key.finger_id]
-        #     joint_id = self.map_joint_id_pulley[key]
-        #     angle = angle_joint_dict[joint_id]
-        #     data = {"Force" : force, "Angle": angle}
-        #     self.pulley_and_tip_dict_obj[key].update(time, data)
