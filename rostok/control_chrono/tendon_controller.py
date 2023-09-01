@@ -72,7 +72,6 @@ class TipForce(PulleyForce):
 class TendonControllerParameters:
     amount_pulley_in_body:int = 2
     pulley_parameters_for_body: Dict[int, List[float]] = field(default_factory=dict)
-    #pulley_parameters_for_body: Dict[int, List[float]] = {i:[0,0,0] for i in range(amount_pulley_in_body)}
     tip: bool = True
     tip_parameters: List[float] = field(default_factory=list)
     forces:List[float] = field(default_factory=list)
@@ -95,6 +94,7 @@ class PulleyParameters():
     position: List[float] = field(default_factory=list)
     force_type: ForceType = ForceType.POINT 
 
+
 def create_pulley_lines(graph: GraphGrammar, pulleys_in_phalanx=2, finger_base = True):
     if not is_star_topology(graph):
         raise Exception("Graph should be star topology")
@@ -103,19 +103,24 @@ def create_pulley_lines(graph: GraphGrammar, pulleys_in_phalanx=2, finger_base =
     pulley_lines = []
     for finger_n, path in enumerate(branches):
         # find bodies from root to tip, w/o root 
-        path.pop(0)
+        if finger_base:
+            path.pop(0)
         line = []
         for idx in path:
-            if  not NodeFeatures.is_body(self.graph.get_node_by_id(idx)):
+            if  not NodeFeatures.is_body(graph.get_node_by_id(idx)):
                 continue
 
             if len(line)==0:
                 pulley_parameters = PulleyParameters(finger_id=finger_n, body_id=idx)
+                line.append((pulley_parameters, None))
             else:
                 for i in range(pulleys_in_phalanx):
-
-                
-            
+                    pulley_parameters = PulleyParameters(finger_id=finger_n, body_id=idx, pulley_number=i, force_type=ForceType.PULLEY)
+                    line.append((pulley_parameters, None))
+                if idx in tip_ids:
+                    pulley_parameters = PulleyParameters(finger_id=finger_n, body_id=idx, pulley_number=i+1, force_type=ForceType.TIP)
+                    line.append((pulley_parameters, None))
+        pulley_lines.append(line)
 
 
 
@@ -126,17 +131,36 @@ class TendonController_2p(RobotControllerChrono):
         self.pulley_lists =[] 
         self.create_force_points()
 
-        # pulley_params_dict: dict[PulleyKey, Any] = control_parameters["pulley_params_dict"]
-        # self.force_finger_dict: dict = control_parameters["force_finger_dict"]
+    def set_pulley_positions(self, tendon_lines, size_vector):
+        for line in tendon_lines:
+            for force_point in line:
+                idx = force_point[0].body_id
+                body = self.built_graph.body_map_ordered[idx]
+                node = self.graph.get_node_by_id(id)
+                x = node.block_blueprint.shape.width_x
+                y = node.block_blueprint.shape.length_y
+                z = node.block_blueprint.shape.height_z
+                if force_point[0].force_type == 2:
+                    parameters = self.parameters.starting_point_parameters
+                    pos_x = parameters[0].get_offset(0.5*x)
+                    pos_y = parameters[1].get_offset(0.5*y)
+                    pos_z = parameters[2].get_offset(0.5*z)
+                    force_point[0].position = [pos_x, pos_y, pos_z]
+                
+                elif force_point[0].force_type == 1:
+                    parameters = self.parameters.tip_parameters
+                    pos_x = parameters[0].get_offset(0.5*x)
+                    pos_y = parameters[1].get_offset(0.5*y)
+                    pos_z = parameters[2].get_offset(0.5*z)
+                    force_point[0].position = [pos_x, pos_y, pos_z]
+                else:
+                    parameters = self.parameters.pulley_parameters_for_body[force_point[0].pulley_number]
+                    pos_x = parameters[0].get_offset(0.5*x)
+                    pos_y = parameters[1].get_offset(y*(-0.5+force_point[0].pulley_number)
+                    pos_z = parameters[2].get_offset(0.5*z)
+                    force_point[0].position = [pos_x, pos_y, pos_z]
 
-        # self.robot_graph = graph.graph
-        # self.pulley_params_dict = pulley_params_dict
-        # map_joint_tip = create_map_joint_tip_2p(self.robot_graph, self.pulley_params_dict)
-        # self.map_joint_id_pulley = create_map_joint_2p(self.robot_graph, self.pulley_params_dict)
-        # self.map_joint_id_pulley.update(map_joint_tip)
-        # self.pulley_and_tip_dict_obj = init_pulley_and_tip_force(self.robot_graph, pulley_params_dict)
-        # bind_pulleys(graph, self.pulley_and_tip_dict_obj)
-
+                    
     def create_force_points(self):
         paths = self.graph.get_sorted_root_based_paths()
         # for each finger

@@ -69,6 +69,23 @@ def config_with_const_troques(grasp_object_blueprint):
                                                          hp.CONTROL_OPTIMIZATION_ITERATION)
     return control_optimizer
 
+class Offset:
+    def __init__(self, value:float, is_ratio:bool, inverted:bool = False):
+        self.value = value
+        self.is_ratio = is_ratio
+        self.inverted = inverted
+
+    def get_offset(self, x):
+        if not (self.is_ratio or self.inverted):
+            return self.value
+        
+        if not self.is_ratio and self.inverted:
+            return x - self.value
+        
+        if self.is_ratio:
+            return x*self.inverted + 2*(0.5-self.inverted)*x*self.value 
+        
+
 def config_with_tendon(grasp_object_blueprint):
     # configurate the simulation manager
 
@@ -115,9 +132,10 @@ def config_with_tendon(grasp_object_blueprint):
     
     data = TendonControllerParameters()
     data.amount_pulley_in_body = 2
-    data.pulley_parameters_for_body = {0: [-0.7, 0.02, 0], 1:[-0.7, -0.02, 0]}
-    data.starting_point_parameters = [-1, 0, 0]
-    data.tip_parameters = [-1, 1, 0]
+    data.pulley_parameters_for_body = {0: [Offset(-0.7,True), Offset(0.02, False, inverted=True), Offset(0,True)], 
+                                       1:[Offset(-0.7,True), Offset(-0.02, False, inverted=True), Offset(0,True)]}
+    data.starting_point_parameters = [Offset(-1,True), Offset(0, True), Offset(0,True)]
+    data.tip_parameters = [Offset(-1,True), Offset(1, True), Offset(0,True)]
     
     control_optimizer = TendonOptimizerDirect(simulation_manager, simulation_rewarder, data,-45,
                                                          hp.CONTROL_OPTIMIZATION_BOUNDS,
