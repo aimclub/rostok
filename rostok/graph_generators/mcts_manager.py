@@ -246,7 +246,7 @@ class MCTSManager:
         os.mkdir(path_result)
         print(f"Results are saved in {path_result}")
         
-        path_to_trajectories = os.path.join(self.path, "trajectories.p")
+        path_to_trajectories = os.path.join(path_result, "trajectories.p")
         with open(path_to_trajectories, "wb") as file:
             pickle.dump(self.trajectories, file)
 
@@ -255,8 +255,8 @@ class MCTSManager:
             path_plot = os.path.join(path_result, "plot")
             os.mkdir(path_plot)
             
-            self.plot_test_mcts(save=True, name=os.path.join("plot", "test_mcts.svg"))
+            self.plot_test_mcts(save=True, name=os.path.join(path_plot, "test_mcts.svg"))
             for num, traj in enumerate(self.trajectories):
-                self.plot_v_trajectory(traj, save=True, name=os.path.join("plot", "v_trajectory"+num+".svg"))
+                self.plot_v_trajectory(traj, save=True, name=os.path.join(path_plot, f"v_trajectory_{num}.svg"))
         
         self.mcts_algorithm.save("final", path_result, rewrite=True, use_date=False)
