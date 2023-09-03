@@ -23,13 +23,6 @@ grasp_object_blueprint = get_object_parametrized_sphere_smc(0.08)
 control_optimizer = config_with_const_troques(grasp_object_blueprint)
 control_optimizer = config_with_tendon(grasp_object_blueprint)
 
-path = Path("./app/single_graph/" + "graph_" + datetime.now().strftime("%yy_%mm_%dd_%HH_%MM") +
-            ".txt")
-start = time.time()
-
-ex = time.time() - start
-print(f"time :{ex}")
-
 print("Object to grasp:", grasp_object_blueprint.shape)
 dict = {
     item: getattr(hp, item)
@@ -40,7 +33,7 @@ for key, value in dict.items():
     print(key, value)
 simulation_rewarder = control_optimizer.rewarder
 simulation_manager = control_optimizer.simulation_scenario
-# visualisation in the end of the search
+
 graph = get_three_link_one_finger()
 #graph=get_two_link_three_finger()
 # graph=get_three_same_link_one_finger()
@@ -48,13 +41,12 @@ graph = get_three_link_one_finger()
 #graph = get_one_finger_one_link()
 #graph = get_one_finger_one_nlink()
 #graph=get_two_link_three_finger()
-#control = [10.5, 4.166667, 10.5, 10.5, 10.5, 10.5]
-#control = [1.05 , 1.683, 1.683, 0.417, 1.05 , 0.417]
 # graph=get_one_finger_one_link()
+
 control = [15]
-print('control:', control)
+
 data = control_optimizer.optim_parameters2data_control(control, graph)
-print(data)
+
 vis = True
 #simulation_output: SimulationResult = simulation_manager.run_simulation(graph, data, [[-45.0, 0.0],[-45,0],[-45,0]], vis, True)
 simulation_output: SimulationResult = simulation_manager.run_simulation(
