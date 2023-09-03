@@ -11,11 +11,13 @@ def is_star_topology(graph: nx.DiGraph):
     del degree[root]
     return all(value <= 2 for value in degree.values())
 
+
 def get_leaf_body_ids(graph: GraphGrammar) -> list[int]:
     leaf_nodes = [
         node for node in graph.nodes() if graph.in_degree(node) != 0 and graph.out_degree(node) == 0
     ]
     return leaf_nodes
+
 
 def nearest_joint(mech_graph: GraphGrammar, start_find_id: int, is_before: bool) -> Optional[int]:
     is_joint_id = lambda id: NodeFeatures.is_joint(mech_graph.get_node_by_id(id))
@@ -40,19 +42,18 @@ def nearest_joint(mech_graph: GraphGrammar, start_find_id: int, is_before: bool)
             return el
     return None
 
+
 def get_tip_ids(graph: GraphGrammar) -> list[int]:
     tip_bodies = []
     paths = graph.get_sorted_root_based_paths()
-        for path in paths:
-            tip = False
-            path = path.reverse()
-            for idx in path
-                if NodeFeatures.is_body(self.graph.get_node_by_id(idx)):
-                    tip = True
-                    break
-            if not tip:
-                raise Exception('Attempt to find a tip on a path without bodies')
+    for path in paths:
+        tip = False
+        path.reverse()
+        for idx in path:
+            if NodeFeatures.is_body(graph.get_node_by_id(idx)):
+                tip = True
+                tip_bodies.append(idx)
+                break
+        if not tip:
+            raise Exception('Attempt to find a tip on a path without bodies')
     return tip_bodies
-
-
-

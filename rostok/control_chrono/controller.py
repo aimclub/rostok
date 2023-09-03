@@ -21,7 +21,7 @@ class RobotControllerChrono:
             functions: list of functions currently attached to joints
     """
 
-    def __init__(self, built_graph:BuiltGraphChrono, parameters):
+    def __init__(self, built_graph: BuiltGraphChrono, parameters):
         """Initialize class fields and call the initialize_functions() to set starting state"""
         self.built_graph = built_graph
         self.graph = built_graph.graph
@@ -170,7 +170,11 @@ class ForceControllerOnCallback(ForceControllerTemplate):
 
 class YaxisShaker(ForceControllerTemplate):
 
-    def __init__(self, amp: float = 5, amp_offset: float = 1, freq: float = 5, start_time: float = 0.0) -> None:
+    def __init__(self,
+                 amp: float = 5,
+                 amp_offset: float = 1,
+                 freq: float = 5,
+                 start_time: float = 0.0) -> None:
         super().__init__()
         self.amp = amp
         self.amp_offset = amp_offset

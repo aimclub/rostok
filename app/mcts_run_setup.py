@@ -16,8 +16,10 @@ from rostok.trajectory_optimizer.control_optimizer import (CalculatorWithGraphOp
                                                            CalculatorWithOptimizationDirect,
                                                            LinearCableControlOptimization,
                                                            TendonLikeControlOptimization,
-                                                           LinearControlOptimizationDirect, TendonOptimizerDirect)
+                                                           LinearControlOptimizationDirect,
+                                                           TendonOptimizerDirect)
 from rostok.control_chrono.tendon_controller import TendonControllerParameters
+
 
 def config_with_const_troques(grasp_object_blueprint):
     # configurate the simulation manager
@@ -33,11 +35,10 @@ def config_with_const_troques(grasp_object_blueprint):
     simulation_manager.add_event(event_flying_apart)
     event_slipout = EventSlipOut(hp.FLAG_TIME_SLIPOUT)
     simulation_manager.add_event(event_slipout)
-    event_grasp = EventGrasp(
-        grasp_limit_time=hp.GRASP_TIME,
-        contact_event=event_contact,
-        verbosity=0,simulation_stop=1
-    )
+    event_grasp = EventGrasp(grasp_limit_time=hp.GRASP_TIME,
+                             contact_event=event_contact,
+                             verbosity=0,
+                             simulation_stop=1)
     simulation_manager.add_event(event_grasp)
     event_stop_external_force = EventStopExternalForce(grasp_event=event_grasp,
                                                        force_test_time=hp.FORCE_TEST_TIME)
@@ -62,29 +63,26 @@ def config_with_const_troques(grasp_object_blueprint):
     simulation_rewarder.add_criterion(
         FinalPositionCriterion(hp.REFERENCE_DISTANCE, event_grasp, event_slipout),
         hp.FINAL_POSITION_CRITERION_WEIGHT)
-    
 
     control_optimizer = CalculatorWithOptimizationDirect(simulation_manager, simulation_rewarder,
                                                          hp.CONTROL_OPTIMIZATION_BOUNDS,
                                                          hp.CONTROL_OPTIMIZATION_ITERATION)
     return control_optimizer
 
+
 class Offset:
-    def __init__(self, value:float, is_ratio:bool, inverted:bool = False):
+
+    def __init__(self, value: float, is_ratio: bool, x_shift: bool = False):
         self.value = value
         self.is_ratio = is_ratio
-        self.inverted = inverted
+        self.x_shift = x_shift
 
     def get_offset(self, x):
-        if not (self.is_ratio or self.inverted):
-            return self.value
-        
-        if not self.is_ratio and self.inverted:
-            return x - self.value
-        
         if self.is_ratio:
-            return x*self.inverted + 2*(0.5-self.inverted)*x*self.value 
-        
+            return x * self.x_shift + x * self.value
+        else:
+            return x * self.x_shift + self.value
+
 
 def config_with_tendon(grasp_object_blueprint):
     # configurate the simulation manager
@@ -100,11 +98,10 @@ def config_with_tendon(grasp_object_blueprint):
     simulation_manager.add_event(event_flying_apart)
     event_slipout = EventSlipOut(hp.FLAG_TIME_SLIPOUT)
     simulation_manager.add_event(event_slipout)
-    event_grasp = EventGrasp(
-        grasp_limit_time=hp.GRASP_TIME,
-        contact_event=event_contact,
-        verbosity=0,simulation_stop=0
-    )
+    event_grasp = EventGrasp(grasp_limit_time=hp.GRASP_TIME,
+                             contact_event=event_contact,
+                             verbosity=0,
+                             simulation_stop=1)
     simulation_manager.add_event(event_grasp)
     event_stop_external_force = EventStopExternalForce(grasp_event=event_grasp,
                                                        force_test_time=hp.FORCE_TEST_TIME)
@@ -129,22 +126,27 @@ def config_with_tendon(grasp_object_blueprint):
     simulation_rewarder.add_criterion(
         FinalPositionCriterion(hp.REFERENCE_DISTANCE, event_grasp, event_slipout),
         hp.FINAL_POSITION_CRITERION_WEIGHT)
-    
+
     data = TendonControllerParameters()
     data.amount_pulley_in_body = 2
-    data.pulley_parameters_for_body = {0: [Offset(-0.7,True), Offset(0.02, False, inverted=True), Offset(0,True)], 
-                                       1:[Offset(-0.7,True), Offset(-0.02, False, inverted=True), Offset(0,True)]}
-    data.starting_point_parameters = [Offset(-1,True), Offset(0, True), Offset(0,True)]
-    data.tip_parameters = [Offset(-1,True), Offset(1, True), Offset(0,True)]
-    
-    control_optimizer = TendonOptimizerDirect(simulation_manager, simulation_rewarder, data,-45,
-                                                         hp.CONTROL_OPTIMIZATION_BOUNDS,
-                                                         hp.CONTROL_OPTIMIZATION_ITERATION)
-    
+    data.pulley_parameters_for_body = {
+        0: [Offset(-0.7, True), Offset(0.02, False, True),
+            Offset(0, True)],
+        1: [Offset(-0.7, True), Offset(-0.02, False, True),
+            Offset(0, True)]
+    }
+    data.starting_point_parameters = [Offset(-1, True), Offset(0, True), Offset(0, True)]
+    data.tip_parameters = [Offset(-1, True), Offset(1, True), Offset(0, True)]
+
+    control_optimizer = TendonOptimizerDirect(simulation_manager, simulation_rewarder, data, -45,
+                                              hp.CONTROL_OPTIMIZATION_BOUNDS,
+                                              hp.CONTROL_OPTIMIZATION_ITERATION)
+
     # control_optimizer = CalculatorWithOptimizationDirect(simulation_manager, simulation_rewarder,
     #                                                      hp.CONTROL_OPTIMIZATION_BOUNDS,
     #                                                      hp.CONTROL_OPTIMIZATION_ITERATION)
     return control_optimizer
+
 
 def config_tendon(grasp_object_blueprint):
     # configurate the simulation manager
@@ -403,9 +405,9 @@ def config_cable_multiobject(grasp_object_blueprint, weights):
         hp.FINAL_POSITION_CRITERION_WEIGHT)
 
     control_optimizer = LinearCableControlOptimization(simulation_managers,
-                                                        simulation_rewarder,
-                                                        hp.CONTROL_OPTIMIZATION_BOUNDS_TENDON,
-                                                        hp.CONTROL_OPTIMIZATION_ITERATION_TENDON,
-                                                        const_parameter=hp.TENDON_CONST)
+                                                       simulation_rewarder,
+                                                       hp.CONTROL_OPTIMIZATION_BOUNDS_TENDON,
+                                                       hp.CONTROL_OPTIMIZATION_ITERATION_TENDON,
+                                                       const_parameter=hp.TENDON_CONST)
 
     return control_optimizer
