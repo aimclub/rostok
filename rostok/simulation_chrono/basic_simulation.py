@@ -222,7 +222,7 @@ class RobotSimulationChrono():
                 with_data (bool): define if we store sensor data for robot
         """
         self.robot = RobotChrono(graph, self.chrono_system, control_parameters, control_cls, Frame,
-                                 is_fixed)
+                                 [],is_fixed)
         self.robot_with_data = with_data
 
     def add_object(self,
