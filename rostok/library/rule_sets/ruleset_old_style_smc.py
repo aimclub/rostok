@@ -1,14 +1,17 @@
 import numpy as np
 import pychrono as chrono
 
-from rostok.block_builder_chrono.blocks_utils import FrameTransform
-from rostok.graph_grammar.node_vocabulary import NodeVocabulary
-from rostok.graph_grammar.node import ROOT
-from rostok.graph_grammar import rule_vocabulary
-from rostok.block_builder_api.block_blueprints import TransformBlueprint, PrimitiveBodyBlueprint, RevolveJointBlueprint
-from rostok.utils.dataset_materials.material_dataclass_manipulating import DefaultChronoMaterialSMC
-from rostok.block_builder_api.easy_body_shapes import Box
+from rostok.block_builder_api.block_blueprints import (PrimitiveBodyBlueprint,
+                                                       RevolveJointBlueprint,
+                                                       TransformBlueprint)
 from rostok.block_builder_api.block_parameters import JointInputType
+from rostok.block_builder_api.easy_body_shapes import Box
+from rostok.block_builder_chrono.blocks_utils import FrameTransform
+from rostok.graph_grammar import rule_vocabulary
+from rostok.graph_grammar.node import ROOT
+from rostok.graph_grammar.node_vocabulary import NodeVocabulary
+from rostok.utils.dataset_materials.material_dataclass_manipulating import \
+    DefaultChronoMaterialSMC
 
 
 def create_rules(tendon = True):

@@ -1,23 +1,29 @@
+import time
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple, Union
 
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 
-from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform)
+from rostok.block_builder_api.block_parameters import (DefaultFrame,
+                                                       FrameTransform)
 from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject
-from rostok.control_chrono.controller import ConstController, ForceControllerTemplate, ForceTorqueContainer, YaxisShaker
+from rostok.control_chrono.controller import (ConstController,
+                                              ForceControllerTemplate,
+                                              ForceTorqueContainer,
+                                              YaxisShaker)
+from rostok.criterion.simulation_flags import (EventCommands,
+                                               SimulationSingleEvent)
 from rostok.graph_grammar.node import GraphGrammar
+from rostok.simulation_chrono.basic_simulation import SimulationResult
 from rostok.virtual_experiment.robot_new import BuiltGraphChrono, RobotChrono
 from rostok.virtual_experiment.sensors import DataStorage, Sensor
-from rostok.criterion.simulation_flags import SimulationSingleEvent, EventCommands
-from rostok.simulation_chrono.basic_simulation import SimulationResult
-import time
+
 
 class ChronoSystems():
 
     @staticmethod
-    def chrono_SMC_system(gravity_list = [0,0,0]):
+    def chrono_SMC_system(gravity_list=[0, 0, 0]):
         system = chrono.ChSystemSMC()
         system.UseMaterialProperties(False)
         system.Set_G_acc(chrono.ChVectorD(gravity_list[0], gravity_list[1], gravity_list[2]))
@@ -25,7 +31,7 @@ class ChronoSystems():
         return system
 
     @staticmethod
-    def chrono_NSC_system(gravity_list = [0,0,0]):
+    def chrono_NSC_system(gravity_list=[0, 0, 0]):
         system = chrono.ChSystemNSC()
         system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
         system.SetSolverMaxIterations(100)
@@ -34,7 +40,9 @@ class ChronoSystems():
         system.Set_G_acc(chrono.ChVectorD(gravity_list[0], gravity_list[1], gravity_list[2]))
         return system
 
+
 class EnvCreator():
+
     def __init__(self, object_list: List[Tuple[ChronoEasyShapeObject, bool]] = []):
         self.objects: List[ChronoEasyShapeObject] = []
         self.active_body_counter = 0
@@ -80,15 +88,15 @@ class EnvCreator():
         self.data_storage: DataStorage = DataStorage(env_sensor)
         for key, value in self.env_data_dict.items():
             self.data_storage.add_data_type(key, value[0], value[1], max_number_of_steps)
-    
-    def load_into_system(self, system:chrono.ChSystem):
+
+    def load_into_system(self, system: chrono.ChSystem):
         for obj in self.objects:
             system.AddBody(obj.body)
 
 
-
 class ChronoVisManager():
-    def __init__(self, delay:bool = False):
+
+    def __init__(self, delay: bool = False):
         self.vis = chronoirr.ChVisualSystemIrrlicht()
         self.delay_flag = delay
 
@@ -96,17 +104,17 @@ class ChronoVisManager():
         self.vis.AttachSystem(chrono_system)
         self.vis.SetWindowSize(1024, 768)
         self.vis.SetWindowTitle('Grab demo')
-        
+
         self.vis.Initialize()
         self.vis.AddCamera(chrono.ChVectorD(0.15, 0.30, -0.40))
         self.vis.AddTypicalLights()
         #self.vis.EnableCollisionShapeDrawing(True)
-        
-
 
 
 class SingleRobotSimulation():
-    def __init__(self, system:chrono.ChSystem, env_creator:EnvCreator, vis_manager:ChronoVisManager):
+
+    def __init__(self, system: chrono.ChSystem, env_creator: EnvCreator,
+                 vis_manager: ChronoVisManager):
         self.chrono_system = system
         self.env_creator = env_creator
         self.vis_manager = vis_manager
@@ -116,7 +124,7 @@ class SingleRobotSimulation():
     def add_robot_data_type_dict(self, data_dict):
         self.robot_data_dict = data_dict
 
-    def initialize(self, max_number_of_steps:int):
+    def initialize(self, max_number_of_steps: int):
         self.env_creator.build_data_storage(max_number_of_steps)
         self.env_creator.load_into_system(self.chrono_system)
 
@@ -127,7 +135,8 @@ class SingleRobotSimulation():
                    graph: GraphGrammar,
                    control_parameters,
                    control_cls=ConstController,
-                   Frame: FrameTransform = DefaultFrame,starting_positions=[],
+                   Frame: FrameTransform = DefaultFrame,
+                   starting_positions=[],
                    is_fixed=True,
                    with_data=True):
         """Add a robot to simulation using graph and control parameters
@@ -140,9 +149,8 @@ class SingleRobotSimulation():
                 is_fixed (bool): define if the base body is fixed
                 with_data (bool): define if we store sensor data for robot
         """
-        self.robot = RobotChrono(graph, self.chrono_system, control_parameters, control_cls, Frame,starting_positions,
-                                 is_fixed)
-        self.robot_with_data = with_data
+        self.robot = RobotChrono(graph, self.chrono_system, control_parameters, control_cls, Frame,
+                                 starting_positions, is_fixed)
 
     def update_data(self, step_n):
         """Update the env_sensor and env_data.
@@ -171,8 +179,10 @@ class SingleRobotSimulation():
         robot.data_storage.update_storage(step_n)
 
         #controller gets current states of the robot and environment and updates control functions
-        robot.controller.update_functions(current_time, robot.sensor, self.env_creator.data_storage.sensor)
-        self.env_creator.force_torque_container.update_all(current_time, self.env_creator.data_storage.sensor)
+        robot.controller.update_functions(current_time, robot.sensor,
+                                          self.env_creator.data_storage.sensor)
+        self.env_creator.force_torque_container.update_all(current_time,
+                                                           self.env_creator.data_storage.sensor)
 
     def activate(self, current_time):
         self.env_creator.force_torque_container.controller_list[0].start_time = current_time
@@ -212,7 +222,6 @@ class SingleRobotSimulation():
 
         if visualize:
             self.vis_manager.initialize_vis(self.chrono_system)
-            
 
         stop_flag = False
         self.result.time_vector = [0]
@@ -222,7 +231,7 @@ class SingleRobotSimulation():
             self.simulate_step(step_length, current_time, i)
             self.result.time_vector.append(self.chrono_system.GetChTime())
             if visualize:
-                if frame_simulation > 1/fps/step_length:
+                if frame_simulation > 1 / fps / step_length:
                     frame_simulation = 0
                     self.vis_manager.vis.Run()
                     self.vis_manager.vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
@@ -232,13 +241,13 @@ class SingleRobotSimulation():
                     if self.vis_manager.delay_flag:
                         time.sleep(0.000001)
                 else:
-                    frame_simulation +=1
+                    frame_simulation += 1
             else:
-                if frame_simulation > 1/fps/step_length:
+                if frame_simulation > 1 / fps / step_length:
                     frame_simulation = 0
                     print(i)
                 else:
-                    frame_simulation +=1
+                    frame_simulation += 1
 
             stop_flag = self.handle_single_events(event_container, current_time, i)
 

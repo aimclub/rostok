@@ -181,17 +181,20 @@ class TendonController_2p(RobotControllerChrono):
                 if force_point[0].force_type == ForceType.PULLEY:
                     force_point[1] = PulleyForce(list(force_point[0].position))
                     force_point[1].bind_body(body.body)
+                    force_point[1].add_visual_pulley()
                     force_point[1].force_maker_chrono.SetNameString(
                         f"Pulley_force {force_point[0].pulley_number}")
 
                 if force_point[0].force_type == ForceType.TIP:
                     force_point[1] = TipForce(list(force_point[0].position))
                     force_point[1].bind_body(body.body)
+                    force_point[1].add_visual_pulley()
                     force_point[1].force_maker_chrono.SetNameString("Tip_force")
 
                 if force_point[0].force_type == ForceType.POINT:
                     force_point[1] = TipForce(list(force_point[0].position))
                     force_point[1].bind_body(body.body)
+                    force_point[1].add_visual_pulley()
                     force_point[1].force_maker_chrono.SetNameString("Bottom_force")
 
     def create_force_points(self):
