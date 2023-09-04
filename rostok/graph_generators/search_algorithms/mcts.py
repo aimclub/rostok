@@ -30,7 +30,7 @@ class MCTS:
         self.Ns = defaultdict(int)  # total visit count for each state
         self.Vs = defaultdict(float)  # total reward of each state
 
-    def get_policy(self, state: STATESTYPE, weighted=False):
+    def get_policy_by_N(self, state: STATESTYPE, weighted=False):
         """Get policy for state. Policy is a probability distribution over actions.
         Probability of action is proportional to number of visits of this action.
         
@@ -51,6 +51,26 @@ class MCTS:
                 actions = np.argwhere(pi == num)
                 for a in actions:
                     pi[a] = num*self.Qsa[(state, a)] if self.Qsa.get((state, a),0) != 0 else num
+        if np.isclose(np.sum(pi), 0.0):
+            pi = np.ones_like(self.environment.actions, dtype=np.float32)
+            pi *= mask_actions
+        pi /= np.sum(pi)
+        return pi
+    
+    def get_policy_by_Q(self, state: STATESTYPE):
+        """Get policy for state. Policy is a probability distribution over actions.
+        Probability of action is proportional to Q function of this action.
+        
+            Args:
+                state (STATESTYPE): State for which we want to get policy.
+                
+            Returns:
+                pi (np.ndarray): Policy for state.
+        """
+        pi = np.zeros_like(self.environment.actions, dtype=np.float32)
+        mask_actions = self.environment.get_available_actions(state)
+        for a in self.environment.actions[mask_actions == 1]:
+            pi[a] = self.Qsa.get((state, a), 0)
         if np.isclose(np.sum(pi), 0.0):
             pi = np.ones_like(self.environment.actions, dtype=np.float32)
             pi *= mask_actions
