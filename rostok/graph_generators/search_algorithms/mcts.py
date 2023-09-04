@@ -47,7 +47,7 @@ class MCTS:
         
         if weighted:
             max_pi = np.max(pi)
-            for num in range(1,max_pi):
+            for num in range(1,int(max_pi)):
                 actions = np.argwhere(pi == num)
                 for a in actions:
                     pi[a] = num*self.Qsa[(state, a)] if self.Qsa.get((state, a),0) != 0 else num
@@ -293,15 +293,17 @@ class MCTS:
         mask = self.environment.get_available_actions(state)
         possible_actions = self.environment.actions[mask == 1]
         if not possible_actions.any():
-            pi = np.zeros_like(self.environment.actions, dtype=np.float32)
+            pi_Q = np.zeros_like(self.environment.actions, dtype=np.float32)
+            pi_N = np.zeros_like(self.environment.actions, dtype=np.float32)
             V = self.environment.get_reward(state)[0]
         else:
-            pi = self.get_policy(state)
-            V = sum([self.Qsa.get((state, a), 0) * pi[a] for a in possible_actions])
+            pi_Q = self.get_policy_by_Q(state)
+            pi_N = self.get_policy_by_Q(state)
+            V = sum([self.Qsa.get((state, a), 0) * pi_N[a] for a in possible_actions])
 
         Q = {self.environment.action2rule[a]: self.Qsa.get((state, a), 0) for a in possible_actions}
         N = self.Ns[state]
         Na = {self.environment.action2rule[a]: self.Nsa.get((state, a), 0) for a in possible_actions}
-        return {"Qa": Q, "pi": pi, "V": V, "N": N, "Na": Na}
+        return {"Qa": Q, "pi_N": pi_N, "pi_Q": pi_Q, "V": V, "N": N, "Na": Na}
     
 
