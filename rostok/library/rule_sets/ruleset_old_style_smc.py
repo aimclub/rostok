@@ -2,8 +2,7 @@ import numpy as np
 import pychrono as chrono
 
 from rostok.block_builder_api.block_blueprints import (PrimitiveBodyBlueprint,
-                                                       RevolveJointBlueprint,
-                                                       TransformBlueprint)
+                                                       RevolveJointBlueprint, TransformBlueprint)
 from rostok.block_builder_api.block_parameters import JointInputType
 from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.block_builder_chrono.blocks_utils import FrameTransform
@@ -14,16 +13,34 @@ from rostok.utils.dataset_materials.material_dataclass_manipulating import \
     DefaultChronoMaterialSMC
 
 
-def create_rules(tendon = True):
+def get_density_box(mass: float, box: Box):
+    volume = box.height_z * box.length_y * box.width_x
+    return mass / volume
 
-    length_link = [0.06, 0.08, 0.1]
-    super_flat = PrimitiveBodyBlueprint(Box(0.3, 0.01, 0.30), material=DefaultChronoMaterialSMC(), color=[255,0,0])
-    base = PrimitiveBodyBlueprint(Box(0.03, 0.03, 0.03), material=DefaultChronoMaterialSMC(), color=[0,120, 255])
-    link = list(map(lambda x: PrimitiveBodyBlueprint(Box(0.03, x, 0.03), material=DefaultChronoMaterialSMC(), color= [0, 120, 255]), length_link))
-    radial_move_values = [0.09, 0.105, 0.12]
-    #radial_move_values = [0.65, 0.85, 1.05 ]
+
+def create_rules(tendon=True):
+
+    length_link = [0.04, 0.06, 0.08]
+    super_flat = PrimitiveBodyBlueprint(Box(0.3, 0.01, 0.30),
+                                        material=DefaultChronoMaterialSMC(),
+                                        color=[255, 0, 0])
+    base = PrimitiveBodyBlueprint(Box(0.03, 0.01, 0.03),
+                                  material=DefaultChronoMaterialSMC(),
+                                  color=[0, 120, 255], density= 10000)
+    #sets effective density for the
+    link_mass = 0.03
+    link = list(
+        map(
+            lambda x: PrimitiveBodyBlueprint(Box(0.03, x, 0.03),
+                                             material=DefaultChronoMaterialSMC(),
+                                             color=[0, 120, 255],
+                                             density=get_density_box(link_mass, Box(0.03, x, 0.03))
+                                            ), length_link))
+
+    radial_move_values = [0.06, 0.085, 0.11]
+
     RADIAL_MOVES = list(map(lambda x: FrameTransform([x, 0, 0], [1, 0, 0, 0]), radial_move_values))
-    tan_move_values = [0.04, 0.06, 0.08]
+    tan_move_values = [0.04, 0.065, 0.09]
     MOVES_POSITIVE = list(map(lambda x: FrameTransform([0, 0, x], [1, 0, 0, 0]), tan_move_values))
     MOVES_NEGATIVE = list(map(lambda x: FrameTransform([0, 0, -x], [1, 0, 0, 0]), tan_move_values))
 
@@ -36,22 +53,51 @@ def create_rules(tendon = True):
         return [quat_Z_ang_alpha.e0, quat_Z_ang_alpha.e1, quat_Z_ang_alpha.e2, quat_Z_ang_alpha.e3]
 
     REVERSE_Y = FrameTransform([0, 0, 0], [0, 0, 1, 0])
-    turn_const = 60
-    TURN_P = FrameTransform([0, 0, 0], rotation_y(turn_const))
-    TURN_N = FrameTransform([0, 0, 0], rotation_y(-turn_const))
-    # MOVE = FrameTransform([1, 0, 0], rotation(45))
+    turn_const_0 = 0
+    turn_const_1 = 30
+    turn_const_2 = 60
+    TURN_P_0 = FrameTransform([0, 0, 0], rotation_y(turn_const_0))
+    TURN_N_0 = FrameTransform([0, 0, 0], rotation_y(-turn_const_0))
+    TURN_P_1 = FrameTransform([0, 0, 0], rotation_y(turn_const_1))
+    TURN_N_1 = FrameTransform([0, 0, 0], rotation_y(-turn_const_1))
+    TURN_P_2 = FrameTransform([0, 0, 0], rotation_y(turn_const_2))
+    TURN_N_2 = FrameTransform([0, 0, 0], rotation_y(-turn_const_2))
+
     radial_transform = list(map(lambda x: TransformBlueprint(x), RADIAL_MOVES))
     positive_transforms = list(map(lambda x: TransformBlueprint(x), MOVES_POSITIVE))
     negative_transforms = list(map(lambda x: TransformBlueprint(x), MOVES_NEGATIVE))
     reverse_transform = TransformBlueprint(REVERSE_Y)
-    turn_transform_P = TransformBlueprint(TURN_P)
-    turn_transform_N = TransformBlueprint(TURN_N)
+    turn_transform_P_0 = TransformBlueprint(TURN_P_0)
+    turn_transform_N_0 = TransformBlueprint(TURN_N_0)
+    turn_transform_P_1 = TransformBlueprint(TURN_P_1)
+    turn_transform_N_1 = TransformBlueprint(TURN_N_1)
+    turn_transform_P_2 = TransformBlueprint(TURN_P_2)
+    turn_transform_N_2 = TransformBlueprint(TURN_N_2)
 
     #revolve = RevolveJointBlueprint(JointInputType.POSITION)
-    revolve = RevolveJointBlueprint(JointInputType.TORQUE, material=DefaultChronoMaterialSMC(), stiffness=0.02 ,damping=0)
-    revolve_45 = RevolveJointBlueprint(JointInputType.TORQUE, starting_angle=45)
-    no_control = RevolveJointBlueprint(JointInputType.UNCONTROL, stiffness=0.03 ,damping=0.01, offset = 0.005)
-    no_control_base = RevolveJointBlueprint(JointInputType.UNCONTROL, stiffness=0.06 ,damping=0.01, offset= 0)
+    revolve = RevolveJointBlueprint(JointInputType.TORQUE,
+                                    material=DefaultChronoMaterialSMC(),
+                                    stiffness=0.02,
+                                    damping=0)
+    mass_joint = 0.012
+    joint_radius = 0.02
+    joint_length = 0.03
+    density_joint = (mass_joint / (0.03 * 3.14 * joint_radius**2))
+
+    no_control = RevolveJointBlueprint(JointInputType.UNCONTROL,
+                                       stiffness=0.02,
+                                       damping=0.01,
+                                       offset=0.005,
+                                       radius=joint_radius,
+                                       length=joint_length,
+                                       density=density_joint)
+    no_control_base = RevolveJointBlueprint(JointInputType.UNCONTROL,
+                                            stiffness=0.01,
+                                            damping=0.01,
+                                            offset=0,
+                                            radius=joint_radius,
+                                            length=joint_length,
+                                            density=density_joint)
     # Nodes
     node_vocab = NodeVocabulary()
     node_vocab.add_node(ROOT)
@@ -87,38 +133,53 @@ def create_rules(tendon = True):
     node_vocab.create_node(label="TN1", is_terminal=True, block_blueprint=negative_transforms[0])
     node_vocab.create_node(label="TN2", is_terminal=True, block_blueprint=negative_transforms[1])
     node_vocab.create_node(label="TN3", is_terminal=True, block_blueprint=negative_transforms[2])
-    node_vocab.create_node(label="TURN_P", is_terminal=True, block_blueprint=turn_transform_P)
-    node_vocab.create_node(label="TURN_N", is_terminal=True, block_blueprint=turn_transform_N)
+    
+    node_vocab.create_node(label="TURN_P")
+    node_vocab.create_node(label="TURN_N")
+
+    node_vocab.create_node(label="TURN_P_0", is_terminal=True, block_blueprint=turn_transform_P_0)
+    node_vocab.create_node(label="TURN_N_0", is_terminal=True, block_blueprint=turn_transform_N_0)
+    node_vocab.create_node(label="TURN_P_1", is_terminal=True, block_blueprint=turn_transform_P_1)
+    node_vocab.create_node(label="TURN_N_1", is_terminal=True, block_blueprint=turn_transform_N_1)
+    node_vocab.create_node(label="TURN_P_2", is_terminal=True, block_blueprint=turn_transform_P_2)
+    node_vocab.create_node(label="TURN_N_2", is_terminal=True, block_blueprint=turn_transform_N_2)
+
 
     rule_vocab = rule_vocabulary.RuleVocabulary(node_vocab)
-    rule_vocab.create_rule("Init", ["ROOT"], ["FT", "F", "RF", "PF", "NF", "RPF", "RNF"], 0, 0, [(0,1), (0,2), (0,3), (0,4), (0,5),(0, 6)])
-    rule_vocab.create_rule("AddFinger", ["F"], [ "RT", "FG1"], 0, 0, [(0, 1)])
+    rule_vocab.create_rule("Init", ["ROOT"], ["FT", "F", "RF", "PF", "NF", "RPF", "RNF"], 0, 0,
+                           [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6)])
+    rule_vocab.create_rule("AddFinger", ["F"], ["RT", "FG1"], 0, 0, [(0, 1)])
     rule_vocab.create_rule("RemoveFinger", ["F"], [], 0, 0, [])
+    
     rule_vocab.create_rule("AddFinger_R", ["RF"], ["RE", "RT", "FG1"], 0, 0, [(0, 1), (1, 2)])
     rule_vocab.create_rule("RemoveFinger_R", ["RF"], [], 0, 0, [])
+
     rule_vocab.create_rule("Terminal_Radial_Translate1", ["RT"], ["RT1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Radial_Translate2", ["RT"], ["RT2"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Radial_Translate3", ["RT"], ["RT3"], 0, 0, [])
 
     rule_vocab.create_rule("Phalanx", ["FG"], ["J", "L", "FG"], 0, 0, [(0, 1), (1, 2)])
-    rule_vocab.create_rule("Phalanx_1", ["FG1"], ["B","JB", "L", "FG"], 0, 0, [(0, 1), (1, 2),(2,3)])
+    rule_vocab.create_rule("Phalanx_1", ["FG1"], ["B", "JB", "L", "FG"], 0, 0, [(0, 1), (1, 2),
+                                                                                (2, 3)])
+
     rule_vocab.create_rule("Terminal_Link1", ["L"], ["L1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Link2", ["L"], ["L2"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Link3", ["L"], ["L3"], 0, 0, [])
     rule_vocab.create_rule("Remove_FG", ["FG"], [], 0, 0, [])
     rule_vocab.create_rule("Remove_FG1", ["FG1"], [], 0, 0, [])
 
-    rule_vocab.create_rule("AddFinger_P", ["PF"], ["RT", "TP", "FG1"], 0, 0, [(0, 1), (1, 2)])
-    rule_vocab.create_rule("AddFinger_PT", ["PF"], ["TURN_N", "RT",  "FG1"], 0, 0, [(0, 1), (1, 2)])
+    rule_vocab.create_rule("AddFinger_P", ["PF"], ["RT", "TP", "TURN_N","FG1"], 0, 0, [(0, 1), (1, 2), (2,3)])
     rule_vocab.create_rule("RemoveFinger_P", ["PF"], [], 0, 0, [])
-    rule_vocab.create_rule("AddFinger_N", ["NF"], ["RT", "TN", "FG1"], 0, 0, [(0, 1), (1, 2)])
-    rule_vocab.create_rule("AddFinger_NT", ["NF"], ["TURN_P", "RT", "FG1"], 0, 0, [(0, 1), (1, 2)])
+
+    rule_vocab.create_rule("AddFinger_N", ["NF"], ["RT", "TN", "TURN_P" ,"FG1"], 0, 0, [(0, 1), (1, 2), (2,3)])
     rule_vocab.create_rule("RemoveFinger_N", ["NF"], [], 0, 0, [])
-    rule_vocab.create_rule("AddFinger_RP", ["RPF"], ["RE", "RT", "TP", "FG1"], 0, 0, [(0, 1), (1, 2), (2, 3)])
-    rule_vocab.create_rule("AddFinger_RPT", ["RPF"], ["RE", "TURN_N", "RT", "FG1"], 0, 0, [(0, 1), (1, 2),(2, 3)])
+
+    rule_vocab.create_rule("AddFinger_RP", ["RPF"], ["RE", "RT", "TP", "TURN_N", "FG1"], 0, 0,
+                           [(0, 1), (1, 2), (2, 3), (3,4)])
     rule_vocab.create_rule("RemoveFinger_RP", ["RPF"], [], 0, 0, [])
-    rule_vocab.create_rule("AddFinger_RN", ["RNF"], ["RE", "RT", "TN", "FG1"], 0, 0, [(0, 1), (1, 2),(2, 3)])
-    rule_vocab.create_rule("AddFinger_RNT", ["RNF"], ["RE", "TURN_P", "RT", "FG1"], 0, 0, [(0, 1), (1, 2), (2, 3)])
+    rule_vocab.create_rule("AddFinger_RN", ["RNF"], ["RE", "RT", "TN", "TURN_P", "FG1"], 0, 0,
+                           [(0, 1), (1, 2), (2, 3), (3,4)])
+
     rule_vocab.create_rule("RemoveFinger_RN", ["RNF"], [], 0, 0, [])
     rule_vocab.create_rule("Terminal_Positive_Translate1", ["TP"], ["TP1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Positive_Translate2", ["TP"], ["TP2"], 0, 0, [])
@@ -126,6 +187,12 @@ def create_rules(tendon = True):
     rule_vocab.create_rule("Terminal_Negative_Translate1", ["TN"], ["TN1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Negative_Translate2", ["TN"], ["TN2"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Negative_Translate3", ["TN"], ["TN3"], 0, 0, [])
+    rule_vocab.create_rule("Terminal_Positive_Turn_0", ["TURN_P"], ["TURN_P_0"], 0, 0, [])
+    rule_vocab.create_rule("Terminal_Positive_Turn_1", ["TURN_P"], ["TURN_P_1"], 0, 0, [])
+    rule_vocab.create_rule("Terminal_Positive_Turn_2", ["TURN_P"], ["TURN_P_2"], 0, 0, [])
+    rule_vocab.create_rule("Terminal_Negative_Turn_0", ["TURN_N"], ["TURN_N_0"], 0, 0, [])
+    rule_vocab.create_rule("Terminal_Negative_Turn_1", ["TURN_N"], ["TURN_N_1"], 0, 0, [])
+    rule_vocab.create_rule("Terminal_Negative_Turn_2", ["TURN_N"], ["TURN_N_2"], 0, 0, [])
     return rule_vocab
 
 
