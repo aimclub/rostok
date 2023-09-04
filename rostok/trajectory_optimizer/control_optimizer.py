@@ -1,4 +1,5 @@
 from abc import abstractmethod, ABC
+from dataclasses import dataclass, field
 import numpy as np
 import json
 import types
@@ -13,7 +14,7 @@ from enum import Enum
 from rostok.simulation_chrono.simulation_scenario import ParametrizedSimulation
 from rostok.trajectory_optimizer.trajectory_generator import cable_length_linear_control, linear_control, joint_root_paths, tendon_like_control
 from rostok.utils.json_encoder import RostokJSONEncoder
-
+from itertools import combinations_with_replacement
 
 class GraphRewardCalculator:
 
@@ -485,4 +486,37 @@ class TendonOptimizerDirect(TendonOptimizer):
 
     def run_optimization(self, callback, multi_bound, args):
         result = direct(callback, multi_bound, maxiter=self.limit, args=args)
+        return result
+
+@dataclass
+class Resault:
+    fun: float = 0
+    x : list[float] = field(default_factory=list)
+
+class TendonOptimizerCombinationForce(TendonOptimizer):
+
+    def __init__(self,
+                 simulation_scenario,
+                 rewarder: SimulationReward,
+                 data: TendonControllerParameters,
+                 tendon_forces: list[float],
+                 starting_finger_angles=45):
+        mock_optimization_bounds = (0, 15)
+        mock_optimization_limit = 10
+        self.tendon_forces = tendon_forces
+        super().__init__(simulation_scenario, rewarder, data, starting_finger_angles,
+                         mock_optimization_bounds, mock_optimization_limit)
+
+
+    def run_optimization(self, callback, multi_bound, args):
+        graph = args[0]
+        number_of_fingers = len(joint_root_paths(graph))
+        all_variants_control = list(
+            combinations_with_replacement(self.tendon_forces, number_of_fingers))
+        results = []
+        for variant in all_variants_control:
+            res = callback(np.array(variant), *args)
+            res_comp = Resault(res, np.array(variant))
+            results.append(res_comp)
+        result = min(results, key=lambda i: i.fun)
         return result
