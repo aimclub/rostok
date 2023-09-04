@@ -245,7 +245,7 @@ class SingleRobotSimulation():
             else:
                 if frame_simulation > 1 / fps / step_length:
                     frame_simulation = 0
-                    print(i)
+                    # print(i)
                 else:
                     frame_simulation += 1
 

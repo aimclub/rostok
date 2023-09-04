@@ -132,7 +132,8 @@ def create_pulley_lines(graph: GraphGrammar, pulleys_in_phalanx=2, finger_base=T
                                                          pulley_number=i + 1,
                                                          force_type=ForceType.TIP)
                     line.append([pulley_parameters, None])
-        pulley_lines.append(line)
+        if len(line) > 0:
+            pulley_lines.append(line)
 
     return pulley_lines
 
