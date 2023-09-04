@@ -536,6 +536,24 @@ class DesignEnvironment(Environment):
         plt.show()
 
 
+class StringDesignEnvironment(DesignEnvironment):
+    def __init__(self, rule_vocabulary: RuleVocabulary, control_optimizer: GraphRewardCalculator, initial_graph: GraphGrammar = GraphGrammar(), verbosity=0):
+        super().__init__(rule_vocabulary, control_optimizer, initial_graph, verbosity)
+    
+    def data2state(self, data: GraphGrammar) -> STATESTYPE:
+        """Convert data to state. Convert graph to string of sorted id of nodes.
+
+        Args:
+            data (GraphGrammar): graph to convert
+
+        Returns:
+            STATESTYPE: state of graph
+        """
+        data_list = data.get_uniq_representation()
+        list_branches = ["".join(branch) for branch in data_list]
+
+        return ''.join(list_branches)
+
 class SubDesignEnvironment(DesignEnvironment):
 
     def __init__(self,
@@ -722,6 +740,25 @@ class SubDesignEnvironment(DesignEnvironment):
         self.state2graph.update(s2g)
         self.counter_nonterminal_rules.update(counter_non_rules)
         
+        
+class SubStringDesignEnvironment(SubDesignEnvironment):
+    def __init__(self, rule_vocabulary: RuleVocabulary, control_optimizer: GraphRewardCalculator, max_number_nonterminal_rules, initial_graph: GraphGrammar = GraphGrammar(), verbosity=0):
+        super().__init__(rule_vocabulary, control_optimizer, max_number_nonterminal_rules, initial_graph, verbosity)
+    
+    def data2state(self, data: GraphGrammar) -> STATESTYPE:
+        """Convert data to state. Convert graph to string of sorted id of nodes.
+
+        Args:
+            data (GraphGrammar): graph to convert
+
+        Returns:
+            STATESTYPE: state of graph
+        """
+        data_list = data.get_uniq_representation()
+        list_branches = ["".join(branch) for branch in data_list]
+
+        return ''.join(list_branches)
+    
 def prepare_state_for_optimal_simulation(state: STATESTYPE, env: DesignEnvironment) -> tuple:
     """Prepare state for simulation. Convert state to data and graph.
 

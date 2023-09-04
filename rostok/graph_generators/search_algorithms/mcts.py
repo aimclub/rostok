@@ -30,7 +30,7 @@ class MCTS:
         self.Ns = defaultdict(int)  # total visit count for each state
         self.Vs = defaultdict(float)  # total reward of each state
 
-    def get_policy(self, state: STATESTYPE):
+    def get_policy_by_N(self, state: STATESTYPE, weighted=False):
         """Get policy for state. Policy is a probability distribution over actions.
         Probability of action is proportional to number of visits of this action.
         
@@ -45,6 +45,32 @@ class MCTS:
         for a in self.environment.actions[mask_actions == 1]:
             pi[a] = 0.0 if self.Nsa[(state, a)] == 0 else self.Nsa[(state, a)]
         
+        if weighted:
+            max_pi = np.max(pi)
+            for num in range(1,int(max_pi)):
+                actions = np.argwhere(pi == num)
+                for a in actions:
+                    pi[a] = num*self.Qsa[(state, a)] if self.Qsa.get((state, a),0) != 0 else num
+        if np.isclose(np.sum(pi), 0.0):
+            pi = np.ones_like(self.environment.actions, dtype=np.float32)
+            pi *= mask_actions
+        pi /= np.sum(pi)
+        return pi
+    
+    def get_policy_by_Q(self, state: STATESTYPE):
+        """Get policy for state. Policy is a probability distribution over actions.
+        Probability of action is proportional to Q function of this action.
+        
+            Args:
+                state (STATESTYPE): State for which we want to get policy.
+                
+            Returns:
+                pi (np.ndarray): Policy for state.
+        """
+        pi = np.zeros_like(self.environment.actions, dtype=np.float32)
+        mask_actions = self.environment.get_available_actions(state)
+        for a in self.environment.actions[mask_actions == 1]:
+            pi[a] = self.Qsa.get((state, a), 0)
         if np.isclose(np.sum(pi), 0.0):
             pi = np.ones_like(self.environment.actions, dtype=np.float32)
             pi *= mask_actions
@@ -266,11 +292,18 @@ class MCTS:
         """
         mask = self.environment.get_available_actions(state)
         possible_actions = self.environment.actions[mask == 1]
+        if not possible_actions.any():
+            pi_Q = np.zeros_like(self.environment.actions, dtype=np.float32)
+            pi_N = np.zeros_like(self.environment.actions, dtype=np.float32)
+            V = self.environment.get_reward(state)[0]
+        else:
+            pi_Q = self.get_policy_by_Q(state)
+            pi_N = self.get_policy_by_Q(state)
+            V = sum([self.Qsa.get((state, a), 0) * pi_N[a] for a in possible_actions])
+
         Q = {self.environment.action2rule[a]: self.Qsa.get((state, a), 0) for a in possible_actions}
-        pi = self.get_policy(state)
-        V = sum([self.Qsa.get((state, a), 0) * pi[a] for a in possible_actions])
         N = self.Ns[state]
         Na = {self.environment.action2rule[a]: self.Nsa.get((state, a), 0) for a in possible_actions}
-        return {"Qa": Q, "pi": pi, "V": V, "N": N, "Na": Na}
+        return {"Qa": Q, "pi_N": pi_N, "pi_Q": pi_Q, "V": V, "N": N, "Na": Na}
     
 

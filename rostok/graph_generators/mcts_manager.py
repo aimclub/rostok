@@ -97,7 +97,7 @@ class MCTSManager:
             if iteration_checkpoint != 0 and iterator % (iteration_checkpoint + 1) == 0:
                 self.save_checkpoint(iter, state, finish_time)
 
-            pi = self.mcts_algorithm.get_policy(state)
+            pi = self.mcts_algorithm.get_policy_by_Q(state)
             a = max(env.actions, key=lambda x: pi[x])
             trajectory.append((state, a))
             state, __, is_terminal_state, __ = env.next_state(state, a)
@@ -181,7 +181,7 @@ class MCTSManager:
             state = env.initial_state
             is_terminal_state = env.is_terminal_state(state)[0]
             while not is_terminal_state:
-                pi = self.mcts_algorithm.get_policy(state)
+                pi = self.mcts_algorithm.get_policy_by_Q(state)
                 a = max(env.actions, key=lambda x: pi[x])
                 state, reward, is_terminal_state, __ = env.next_state(state, a)
             rewards.append(reward)
