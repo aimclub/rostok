@@ -118,7 +118,6 @@ class SMCGrasp(ParametrizedSimulation):
             simulation.add_design(graph, data, TendonController_2p, starting_positions=starting_positions)
         else:
             simulation.add_design(graph, data, starting_positions=starting_positions)
-                                          force_torque_controller=grav_n_shake)
         # setup parameters for the data store
         
         n_steps = int(self.simulation_length / self.step_length)
