@@ -9,7 +9,7 @@ from rostok.graph_grammar.node import GraphGrammar
 from rostok.simulation_chrono.basic_simulation import RobotSimulationChrono, RobotSimulationWithForceTest
 from rostok.virtual_experiment.sensors import (SensorCalls, SensorObjectClassification)
 from rostok.simulation_chrono.simulation_utils import set_covering_sphere_based_position
-from rostok.control_chrono.controller import ConstController, SinControllerChrono, YaxisShaker
+from rostok.control_chrono.controller import ConstController, SinControllerChrono, YaxisShaker, ShakeAndNullGravity
 from rostok.utils.json_encoder import RostokJSONEncoder
 from rostok.simulation_chrono.simulation_SMC import SingleRobotSimulation, ChronoVisManager, EnvCreator, ChronoSystems
 
@@ -52,7 +52,10 @@ class ConstTorqueGrasp(ParametrizedSimulation):
         simulation = RobotSimulationWithForceTest(delay, [])
         simulation.add_design(graph, data)
         grasp_object = self.grasp_object_callback()
-        shake = YaxisShaker(1, 1, 0.5, float("inf"))
+        mass_object = grasp_object.body.GetMass()
+        gravity = simulation.chrono_system.Get_G_acc().y
+        # shake = YaxisShaker(1, 1, 0.5, float("inf"))
+        shake = YaxisShaker(0, -mass_object*gravity, 0, 0)
         set_covering_sphere_based_position(grasp_object,
                                            reference_point=chrono.ChVectorD(0, 0.05, 0))
         simulation.add_object(grasp_object, read_data=True, force_torque_controller=shake)
@@ -90,24 +93,33 @@ class SMCGrasp(ParametrizedSimulation):
     def run_simulation(self, graph: GraphGrammar, data, starting_positions = [],vis=False, delay=False):
         self.reset_events()
         # build simulation from the subclasses
-        system = ChronoSystems.chrono_SMC_system([0, -10, 0])
+        #system = ChronoSystems.chrono_SMC_system([0, -10, 0])
+        system = ChronoSystems.chrono_NSC_system([0, -10, 0])
         env_creator = EnvCreator([])
         vis_manager = ChronoVisManager(delay)
         simulation = SingleRobotSimulation(system, env_creator, vis_manager)
-        # add design and determine the outer force
-        if self.tendon:
-            simulation.add_design(graph, data, TendonController_2p, starting_positions=starting_positions)
-        else:
-            simulation.add_design(graph, data, starting_positions=starting_positions)
+        
+        
+        
+
         grasp_object = self.grasp_object_callback()
-        shake = YaxisShaker(1, 3, 0.5, float("inf"))
+        mass_object = grasp_object.body.GetMass()
+        gravity = simulation.chrono_system.Get_G_acc().y
+        # shake = YaxisShaker(1, 3, 0.5, float("inf"))
+        grav_n_shake = ShakeAndNullGravity(mass_object*gravity, 5, 5, 1, float("inf"))
         # the object  positioning based on the AABB
         set_covering_sphere_based_position(grasp_object,
                                            reference_point=chrono.ChVectorD(0, 0.05, 0))
         simulation.env_creator.add_object(grasp_object,
                                           read_data=True,
-                                          force_torque_controller=shake)
+                                          force_torque_controller=grav_n_shake)
+        # add design and determine the outer force
+        if self.tendon:
+            simulation.add_design(graph, data, TendonController_2p, starting_positions=starting_positions)
+        else:
+            simulation.add_design(graph, data, starting_positions=starting_positions)
         # setup parameters for the data store
+        
         n_steps = int(self.simulation_length / self.step_length)
         env_data_dict = {
             "n_contacts": (SensorCalls.AMOUNT_FORCE, SensorObjectClassification.BODY),

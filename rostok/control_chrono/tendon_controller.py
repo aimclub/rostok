@@ -127,19 +127,29 @@ def create_pulley_lines(graph: GraphGrammar, pulleys_in_phalanx=2, finger_base=T
                 pulley_parameters = PulleyParameters(finger_id=finger_n, body_id=idx)
                 line.append([pulley_parameters, None])
             else:
-                for i in range(pulleys_in_phalanx):
-                    pulley_parameters = PulleyParameters(finger_id=finger_n,
-                                                         body_id=idx,
-                                                         pulley_number=i,
-                                                         force_type=ForceType.PULLEY)
-                    line.append([pulley_parameters, None])
                 if idx in tip_ids:
+                    for i in range(pulleys_in_phalanx-1):
+                        pulley_parameters = PulleyParameters(finger_id=finger_n,
+                                                            body_id=idx,
+                                                            pulley_number=i,
+                                                            force_type=ForceType.PULLEY)
+                        line.append([pulley_parameters, None])
+
                     pulley_parameters = PulleyParameters(finger_id=finger_n,
-                                                         body_id=idx,
-                                                         pulley_number=i + 1,
-                                                         force_type=ForceType.TIP)
+                                                        body_id=idx,
+                                                        pulley_number=i + 1,
+                                                        force_type=ForceType.TIP)
                     line.append([pulley_parameters, None])
-        if len(line) > 0:
+                else:
+                    for i in range(pulleys_in_phalanx):
+                        pulley_parameters = PulleyParameters(finger_id=finger_n,
+                                                            body_id=idx,
+                                                            pulley_number=i,
+                                                            force_type=ForceType.PULLEY)
+                        line.append([pulley_parameters, None])
+
+                
+        if len(line)>0:
             pulley_lines.append(line)
 
     return pulley_lines

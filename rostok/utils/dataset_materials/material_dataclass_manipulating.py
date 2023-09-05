@@ -19,7 +19,10 @@ class DefaultChronoMaterialNSC(Material):
     name: str = "default_NSC"
     type_class: str = "ChMaterialSurfaceNSC"
     Friction:float = 0.5
-    Restitution:float = 0.2
+    Restitution:float = 0.15
+    Compliance: float = 1e-6
+    ComplianceT: float = 1e-6
+    DampingF:float = 1e6
 
 class DefaultChronoMaterialSMC():
     

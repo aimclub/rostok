@@ -189,7 +189,18 @@ class YaxisShaker(ForceControllerTemplate):
         impact.force = (0, y_force, 0)
         return impact
 
-
+class ShakeAndNullGravity(YaxisShaker):
+    def __init__(self, gravity,  amp: float = 5, amp_offset: float = 1, freq: float = 5, start_time: float = 0) -> None:
+        super().__init__(amp, amp_offset, freq, start_time)
+        self.gravity = gravity
+    
+    def get_force_torque(self, time: float, data) -> ForceTorque:
+        impact = ForceTorque()
+        y_force = -self.gravity
+        if time >= self.start_time:
+            y_force += self.amp * sin(self.freq * (time - self.start_time)) + self.amp_offset
+        impact.force = (0, y_force, 0)
+        return impact
 @dataclass
 class ForceTorqueContainer:
     controller_list: list[ForceControllerTemplate] = field(default_factory=list)

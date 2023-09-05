@@ -7,6 +7,7 @@
 /results/
 /temp_*/
 test*.ipynb
+yefim_test*.py
 /.vscode/tasks.json
 /app/checkpoint/
 /app/single_graph/
