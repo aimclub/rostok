@@ -106,6 +106,13 @@ def create_pulley_lines(graph: GraphGrammar, pulleys_in_phalanx=2, finger_base=T
         raise Exception("Graph should be star topology")
     tip_ids = get_tip_ids(graph)
     branches = graph.get_sorted_root_based_paths()
+    is_joint_id = lambda id: NodeFeatures.is_joint(graph.get_node_by_id(id))
+    branches2 = []
+    for branch in branches:
+        is_add = any(map(is_joint_id, branch))
+        if is_add:
+            branches2.append(branch)
+    branches = branches2
     pulley_lines = []
     for finger_n, path in enumerate(branches):
         # find bodies from root to tip, w/o root
@@ -132,7 +139,8 @@ def create_pulley_lines(graph: GraphGrammar, pulleys_in_phalanx=2, finger_base=T
                                                          pulley_number=i + 1,
                                                          force_type=ForceType.TIP)
                     line.append([pulley_parameters, None])
-        pulley_lines.append(line)
+        if len(line)>0:
+            pulley_lines.append(line)
 
     return pulley_lines
 
