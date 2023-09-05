@@ -26,7 +26,17 @@ class ChronoSystems():
     def chrono_SMC_system(gravity_list=[0, 0, 0]):
         system = chrono.ChSystemSMC()
         system.UseMaterialProperties(False)
+        system.SetSolverMaxIterations(1000)
+        system.SetSolverForceTolerance(1e-4)
         system.Set_G_acc(chrono.ChVectorD(gravity_list[0], gravity_list[1], gravity_list[2]))
+        # time_stepper = chrono.ChTimestepperHHT()
+        # time_stepper.SetMaxiters(4)
+        # time_stepper.SetMinStepSize(1e-4)
+        # system.SetTimestepper(time_stepper)
+        # stepper = system.GetTimestepper()
+        #system.SetTimestepperType(chrono.ChTimestepper.Type_HHT)
+        # stepper = system.GetTimestepper()
+        # stepper = chrono.ChTimestepperHHT(stepper)
         system.SetContactForceModel(0)
         return system
 
@@ -137,8 +147,7 @@ class SingleRobotSimulation():
                    control_cls=ConstController,
                    Frame: FrameTransform = DefaultFrame,
                    starting_positions=[],
-                   is_fixed=True,
-                   with_data=True):
+                   is_fixed=True):
         """Add a robot to simulation using graph and control parameters
 
             Args:
