@@ -20,7 +20,7 @@ def get_density_box(mass: float, box: Box):
 
 def create_rules(tendon=True):
 
-    length_link = [0.04, 0.06, 0.08]
+    length_link = [0.05, 0.06, 0.075]
     super_flat = PrimitiveBodyBlueprint(Box(0.3, 0.01, 0.30),
                                         material=DefaultChronoMaterialSMC(),
                                         color=[255, 0, 0])
@@ -31,10 +31,10 @@ def create_rules(tendon=True):
     link_mass = (28 + 1.62 + 2.77) * 1e-3
     link = list(
         map(
-            lambda x: PrimitiveBodyBlueprint(Box(0.03, x, 0.03),
+            lambda x: PrimitiveBodyBlueprint(Box(0.035, x, 0.035),
                                              material=DefaultChronoMaterialSMC(),
                                              color=[0, 120, 255],
-                                             density=get_density_box(link_mass, Box(0.03, x, 0.03))
+                                             density=get_density_box(link_mass, Box(0.035, x, 0.035))
                                             ), length_link))
 
     radial_move_values = [0.06, 0.085, 0.11]
@@ -80,14 +80,15 @@ def create_rules(tendon=True):
                                     stiffness=0.02,
                                     damping=0)
     mass_joint = (10/3 + 0.51*2 + 0.64 + 1.3) * 1e-3  #0.012
-    joint_radius = 0.02
+    joint_radius_base = 0.015
+    joint_radius = 0.015
     joint_length = 0.03
     density_joint = (mass_joint / (0.03 * 3.14 * joint_radius**2))
 
     no_control = RevolveJointBlueprint(JointInputType.UNCONTROL,
                                        stiffness=0.02,
                                        damping=0.01,
-                                       offset=0.005,
+                                       offset=0.0025,
                                        radius=joint_radius,
                                        length=joint_length,
                                        density=density_joint)
@@ -95,7 +96,7 @@ def create_rules(tendon=True):
                                             stiffness=0.01,
                                             damping=0.01,
                                             offset=0,
-                                            radius=joint_radius,
+                                            radius=joint_radius_base,
                                             length=joint_length,
                                             density=density_joint)
     # Nodes

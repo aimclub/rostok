@@ -13,9 +13,9 @@ from mcts_run_setup import config_combination_force_tendon_multiobject
 
 rule_vocabulary = create_rules()
 grasp_object_blueprint = []
-grasp_object_blueprint.append(get_object_parametrized_sphere(0.05))
-grasp_object_blueprint.append(get_object_parametrized_sphere(0.03))
-grasp_object_blueprint.append(get_object_parametrized_sphere(0.035))
+grasp_object_blueprint.append(get_object_parametrized_sphere_smc(0.05))
+grasp_object_blueprint.append(get_object_parametrized_sphere_smc(0.03))
+grasp_object_blueprint.append(get_object_parametrized_sphere_smc(0.035))
 # create reward counter using run setup function
 control_optimizer = config_combination_force_tendon_multiobject(grasp_object_blueprint, [ 1, 1, 1])
 
