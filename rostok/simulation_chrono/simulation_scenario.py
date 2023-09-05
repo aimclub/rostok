@@ -87,7 +87,7 @@ class SMCGrasp(ParametrizedSimulation):
         for event in self.event_container:
             event.reset()
 
-    def run_simulation(self, graph: GraphGrammar, data, starting_positions = [],vis=True, delay=False):
+    def run_simulation(self, graph: GraphGrammar, data, starting_positions = [],vis=False, delay=False):
         self.reset_events()
         # build simulation from the subclasses
         #system = ChronoSystems.chrono_SMC_system([0, -10, 0])

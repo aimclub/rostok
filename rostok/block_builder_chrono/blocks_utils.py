@@ -78,7 +78,7 @@ class SpringTorque(chrono.TorqueFunctor):
             if angle <= 0:
                 torque = -self.spring_coef * (angle - rest_angle) - self.damping_coef * vel
             else:
-                torque = - self.damping_coef * vel - (exp((angle)*1000)-1)
+                torque = - self.damping_coef * vel - (exp((angle)*100)-1)
         else:
             torque = -self.damping_coef * vel
         return torque
