@@ -8,14 +8,14 @@ from rostok.library.rule_sets.ruleset_old_style_smc import create_rules
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.library.obj_grasp.objects import get_object_parametrized_sphere, get_object_parametrized_sphere_smc
 import sys
- 
+
 from mcts_run_setup import config_combination_force_tendon_multiobject
 
 rule_vocabulary = create_rules()
 grasp_object_blueprint = []
-grasp_object_blueprint.append(get_object_parametrized_sphere(0.05))
-grasp_object_blueprint.append(get_object_parametrized_sphere(0.03))
-grasp_object_blueprint.append(get_object_parametrized_sphere(0.035))
+grasp_object_blueprint.append(get_object_parametrized_sphere_smc(0.05))
+grasp_object_blueprint.append(get_object_parametrized_sphere_smc(0.03))
+grasp_object_blueprint.append(get_object_parametrized_sphere_smc(0.035))
 # create reward counter using run setup function
 control_optimizer = config_combination_force_tendon_multiobject(grasp_object_blueprint, [ 1, 1, 1])
 

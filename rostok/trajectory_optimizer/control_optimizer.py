@@ -365,10 +365,14 @@ class TendonOptimizer(GraphRewardCalculator):
                         joint_matrix[i][j] = self.starting_finger_angles
                     else:
                         joint_matrix[i][j] = 0
+            return joint_matrix
+        else:
+            return []
 
-    def simulate_with_control_parameters(self, data, graph):
+
+    def simulate_with_control_parameters(self, data, graph, simulation_scenario):
         starting_positions = self.build_starting_positions(graph)
-        return self.simulation_scenario.run_simulation(graph, data, starting_positions)
+        return simulation_scenario.run_simulation(graph, data, starting_positions)
 
     def calculate_reward(self, graph: GraphGrammar):
         """Constant moment optimization method using scenario simulation and rewarder for calculating objective function.
@@ -449,7 +453,7 @@ class TendonOptimizer(GraphRewardCalculator):
             float: Value of objective function
         """
         data = self._transform_parameters2data(parameters)
-        sim_output = simulator_scenario.run_simulation(graph, data)
+        sim_output = self.simulate_with_control_parameters(data, graph, simulator_scenario)
         reward = self.rewarder.calculate_reward(sim_output)
         return -reward
 

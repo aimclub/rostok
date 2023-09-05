@@ -26,6 +26,8 @@ class ChronoSystems():
     def chrono_SMC_system(gravity_list=[0, 0, 0]):
         system = chrono.ChSystemSMC()
         system.UseMaterialProperties(False)
+        system.SetSolverMaxIterations(1000)
+        system.SetSolverForceTolerance(1e-4)
         system.Set_G_acc(chrono.ChVectorD(gravity_list[0], gravity_list[1], gravity_list[2]))
         system.SetContactForceModel(0)
         return system

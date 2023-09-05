@@ -467,9 +467,9 @@ def config_combination_force_tendon_multiobject(grasp_object_blueprint, weights)
     data = TendonControllerParameters()
     data.amount_pulley_in_body = 2
     data.pulley_parameters_for_body = {
-        0: [Offset(-0.7, True), Offset(0.02, False, True),
+        0: [Offset(-0.7, True), Offset(0.01, False, True),
             Offset(0, True)],
-        1: [Offset(-0.7, True), Offset(-0.02, False, True),
+        1: [Offset(-0.7, True), Offset(-0.01, False, True),
             Offset(0, True)]
     }
     data.starting_point_parameters = [Offset(-1, True), Offset(0, True), Offset(0, True)]
@@ -477,6 +477,6 @@ def config_combination_force_tendon_multiobject(grasp_object_blueprint, weights)
 
 
     control_optimizer = TendonOptimizerCombinationForce(simulation_managers,
-                                                       simulation_rewarder, data, hp.TENDON_DISCRETE_FORCES, -45)
+                                                       simulation_rewarder, data, hp.TENDON_DISCRETE_FORCES, starting_finger_angles=-45)
 
     return control_optimizer
