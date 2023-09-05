@@ -78,8 +78,8 @@ class BuildingBody(BlockBody):
         self.transformed_frame_out = transformed_out_marker
 
         # set the parameters of body collision model
-        self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
-        self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
+        self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.0001)
+        self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.00005)
         self.body.SetCollide(is_collide)
         # Normal Forces
         # set a color for the body, default is random
@@ -269,7 +269,7 @@ class ChronoRevolveJoint(BlockBridge):
             self._add_spring_damper(in_block, out_block, system)
 
         if (self.with_collision):
-            eps = 0.01
+            eps = 0.005
             cylinder = chrono.ChBodyEasyCylinder(chrono.ChAxis_Z, self.radius - eps, self.length, self.density, True,
                                                  True, self.material)
             # turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROTATE_Y_TO_Z)
@@ -390,8 +390,8 @@ class ChronoEasyShapeObject():
         # each body independet by standart API. 
         fake_body = chrono.ChBody()
         fake_body.SetCollide(True)
-        fake_body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
-        fake_body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
+        fake_body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.0001)
+        fake_body.GetCollisionModel().SetDefaultSuggestedMargin(0.00005)
 
         # Create body
         material = struct_material2object_material(material)
@@ -425,8 +425,8 @@ class ChronoEasyShapeObject():
             raise Exception("Unknown shape for ChronoBodyEnv object")
 
         body.SetCoord(frame_transform_to_chcoordsys(pos))
-        body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
-        body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
+        body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.0001)
+        body.GetCollisionModel().SetDefaultSuggestedMargin(0.00005)
         body.SetCollide(is_collide)
         self.body = body
         if color is None:

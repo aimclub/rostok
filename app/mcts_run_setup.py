@@ -467,12 +467,12 @@ def config_combination_force_tendon_multiobject(grasp_object_blueprint, weights)
     data = TendonControllerParameters()
     data.amount_pulley_in_body = 2
     data.pulley_parameters_for_body = {
-        0: [Offset(-0.95, True), Offset(0.005, False, True),
+        0: [Offset(-0.55, True), Offset(0.005, False, True),
             Offset(0, True)],
-        1: [Offset(-0.95, True), Offset(-0.005, False, True),
+        1: [Offset(-0.55, True), Offset(-0.005, False, True),
             Offset(0, True)]
     }
-    data.starting_point_parameters = [Offset(-0.015, False), Offset(0.015, False), Offset(0, True)]
+    data.starting_point_parameters = [Offset(-0.045, False), Offset(0.025, False), Offset(0, True)]
     data.tip_parameters = [Offset(-1, True), Offset(1, True), Offset(0, True)]
 
 

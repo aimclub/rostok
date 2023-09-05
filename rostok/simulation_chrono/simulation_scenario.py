@@ -90,15 +90,15 @@ class SMCGrasp(ParametrizedSimulation):
     def run_simulation(self, graph: GraphGrammar, data, starting_positions = [],vis=True, delay=False):
         self.reset_events()
         # build simulation from the subclasses
-        system = ChronoSystems.chrono_SMC_system([0, -10, 0])
+        #system = ChronoSystems.chrono_SMC_system([0, -10, 0])
+        system = ChronoSystems.chrono_NSC_system([0, -10, 0])
         env_creator = EnvCreator([])
         vis_manager = ChronoVisManager(delay)
         simulation = SingleRobotSimulation(system, env_creator, vis_manager)
-        # add design and determine the outer force
-        if self.tendon:
-            simulation.add_design(graph, data, TendonController_2p, starting_positions=starting_positions)
-        else:
-            simulation.add_design(graph, data, starting_positions=starting_positions)
+        
+        
+        
+
         grasp_object = self.grasp_object_callback()
         shake = YaxisShaker(1, 3, 0.5, float("inf"))
         # the object  positioning based on the AABB
@@ -107,7 +107,13 @@ class SMCGrasp(ParametrizedSimulation):
         simulation.env_creator.add_object(grasp_object,
                                           read_data=True,
                                           force_torque_controller=shake)
+        # add design and determine the outer force
+        if self.tendon:
+            simulation.add_design(graph, data, TendonController_2p, starting_positions=starting_positions)
+        else:
+            simulation.add_design(graph, data, starting_positions=starting_positions)
         # setup parameters for the data store
+        
         n_steps = int(self.simulation_length / self.step_length)
         env_data_dict = {
             "n_contacts": (SensorCalls.AMOUNT_FORCE, SensorObjectClassification.BODY),
