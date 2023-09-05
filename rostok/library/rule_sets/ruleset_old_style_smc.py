@@ -28,7 +28,7 @@ def create_rules(tendon=True):
                                   material=DefaultChronoMaterialSMC(),
                                   color=[0, 120, 255], density= 10000)
     #sets effective density for the
-    link_mass = 0.03
+    link_mass = (28 + 1.62 + 2.77) * 1e-3
     link = list(
         map(
             lambda x: PrimitiveBodyBlueprint(Box(0.03, x, 0.03),
@@ -79,7 +79,7 @@ def create_rules(tendon=True):
                                     material=DefaultChronoMaterialSMC(),
                                     stiffness=0.02,
                                     damping=0)
-    mass_joint = 0.012
+    mass_joint = (10/3 + 0.51*2 + 0.64 + 1.3) * 1e-3  #0.012
     joint_radius = 0.02
     joint_length = 0.03
     density_joint = (mass_joint / (0.03 * 3.14 * joint_radius**2))
