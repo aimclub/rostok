@@ -21,7 +21,7 @@ from rostok.library.rule_sets.simple_designs import (
 from rostok.simulation_chrono.basic_simulation import SimulationResult
 
 # create blueprint for object to grasp
-grasp_object_blueprint = get_object_parametrized_sphere_smc(0.01)
+grasp_object_blueprint = get_object_parametrized_sphere_smc(0.05)
 #grasp_object_blueprint = get_object_ellipsoid(10, 8, 14, 10)
 
 # create reward counter using run setup function

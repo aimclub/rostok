@@ -8,7 +8,7 @@ from rostok.library.rule_sets.ruleset_old_style_smc import create_rules
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.library.obj_grasp.objects import get_object_parametrized_sphere, get_object_parametrized_sphere_smc
 import sys
- 
+
 from mcts_run_setup import config_combination_force_tendon_multiobject
 
 rule_vocabulary = create_rules()
