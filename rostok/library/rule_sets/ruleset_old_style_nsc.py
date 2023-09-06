@@ -31,7 +31,7 @@ def create_rules(tendon=True):
     link_mass = (28 + 1.62 + 2.77) * 1e-3
     link = list(
         map(
-            lambda x: PrimitiveBodyBlueprint(Box(0.035, x, 0.023),
+            lambda x: PrimitiveBodyBlueprint(Box(0.035, x, 0.035),
                                              #material=DefaultChronoMaterialSMC(),
                                              color=[0, 120, 255],
                                              density=get_density_box(link_mass, Box(0.035, x, 0.035))
@@ -76,7 +76,6 @@ def create_rules(tendon=True):
 
     #revolve = RevolveJointBlueprint(JointInputType.POSITION)
     revolve = RevolveJointBlueprint(JointInputType.TORQUE,
-                                    #material=DefaultChronoMaterialSMC(),
                                     stiffness=0.02,
                                     damping=0)
     mass_joint = (10/3 + 0.51*2 + 0.64 + 1.3) * 1e-3  #0.012
@@ -85,25 +84,27 @@ def create_rules(tendon=True):
     joint_length = 0.03
     density_joint = (mass_joint / (0.03 * 3.14 * joint_radius**2))
 
-    no_control = RevolveJointBlueprint(JointInputType.UNCONTROL,
-                                       stiffness=0.08,
-                                       #material=DefaultChronoMaterialSMC(),
+    stiffness = [0.095, 0.07] 
+    preload = [0.8, 0.8]
+    no_control = list(map(lambda x, y: RevolveJointBlueprint(JointInputType.UNCONTROL,
+                                       stiffness=x,
                                        damping=0.01,
                                        offset=0.0085,
                                        radius=joint_radius,
                                        length=joint_length,
                                        density=density_joint,
-                                       equilibrium_position = 1)
+                                       equilibrium_position = y), stiffness, preload))
 
-    no_control_base = RevolveJointBlueprint(JointInputType.UNCONTROL,
+    stiffness_base = [0.17, 0.095, 0.07]
+    preload_base = [0, 0, 0]
+    no_control_base = list(map(lambda x, y: RevolveJointBlueprint(JointInputType.UNCONTROL,
                                             stiffness=0.01,
                                             damping=0.01,
-                                            #material=DefaultChronoMaterialSMC(),
                                             offset=0,
                                             radius=joint_radius_base,
                                             length=joint_length,
                                             density=density_joint,
-                                            equilibrium_position = 0)
+                                            equilibrium_position = 0), stiffness_base, preload_base))
     # Nodes
     node_vocab = NodeVocabulary()
     node_vocab.add_node(ROOT)
@@ -122,8 +123,15 @@ def create_rules(tendon=True):
     node_vocab.create_node(label="FG")
     node_vocab.create_node(label="FG1")
     if tendon:
-        node_vocab.create_node(label="J", is_terminal=True, block_blueprint=no_control)
-        node_vocab.create_node(label="JB", is_terminal=True, block_blueprint=no_control_base)
+        node_vocab.create_node(label="J")
+        node_vocab.create_node(label="J_1", is_terminal=True, block_blueprint=no_control[0])
+        node_vocab.create_node(label="J_2", is_terminal=True, block_blueprint=no_control[1])
+        
+
+        node_vocab.create_node(label="JB")
+        node_vocab.create_node(label="JB_1", is_terminal=True, block_blueprint=no_control_base[0])
+        node_vocab.create_node(label="JB_2", is_terminal=True, block_blueprint=no_control_base[1])
+        node_vocab.create_node(label="JB_3", is_terminal=True, block_blueprint=no_control_base[2])
     else:
         node_vocab.create_node(label="J", is_terminal=True, block_blueprint=revolve)
     node_vocab.create_node(label="L")
@@ -154,10 +162,10 @@ def create_rules(tendon=True):
     rule_vocab = rule_vocabulary.RuleVocabulary(node_vocab)
     rule_vocab.create_rule("Init", ["ROOT"], ["FT", "F", "RF", "PF", "NF", "RPF", "RNF"], 0, 0,
                            [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6)])
-    rule_vocab.create_rule("AddFinger", ["F"], ["RT", "FG1"], 0, 0, [(0, 1)])
+    rule_vocab.create_rule("AddFinger", ["F"], ["RT", "B", "JB", "L", "FG"], 0, 0, [(0, 1), (1,2), (2,3), (3, 4)])
     rule_vocab.create_rule("RemoveFinger", ["F"], [], 0, 0, [])
     
-    rule_vocab.create_rule("AddFinger_R", ["RF"], ["RE", "RT", "FG1"], 0, 0, [(0, 1), (1, 2)])
+    rule_vocab.create_rule("AddFinger_R", ["RF"], ["RE", "RT", "B", "JB", "L", "FG"], 0, 0, [(0, 1), (1, 2), (2,3), (3,4), (4,5)])
     rule_vocab.create_rule("RemoveFinger_R", ["RF"], [], 0, 0, [])
 
     rule_vocab.create_rule("Terminal_Radial_Translate1", ["RT"], ["RT1"], 0, 0, [])
@@ -165,28 +173,34 @@ def create_rules(tendon=True):
     rule_vocab.create_rule("Terminal_Radial_Translate3", ["RT"], ["RT3"], 0, 0, [])
 
     rule_vocab.create_rule("Phalanx", ["FG"], ["J", "L", "FG"], 0, 0, [(0, 1), (1, 2)])
-    rule_vocab.create_rule("Phalanx_1", ["FG1"], ["B", "JB", "L", "FG"], 0, 0, [(0, 1), (1, 2),
-                                                                                (2, 3)])
+    # rule_vocab.create_rule("Phalanx_1", ["FG1"], ["B", "JB", "L", "FG"], 0, 0, [(0, 1), (1, 2),
+    #                                                                       (2, 3)])
+    rule_vocab.create_rule('Terminal_Joint_1', ['J'], ["J_1"], 0, 0, [])
+    rule_vocab.create_rule('Terminal_Joint_2', ['J'], ["J_2"], 0, 0, [])
+
+    rule_vocab.create_rule('Terminal_Base_Joint_1', ['JB'], ["JB_1"], 0, 0, [])
+    rule_vocab.create_rule('Terminal_Base_Joint_2', ['JB'], ["JB_2"], 0, 0, [])
+    rule_vocab.create_rule('Terminal_Base_Joint_3', ['JB'], ["JB_3"], 0, 0, [])
 
     rule_vocab.create_rule("Terminal_Link1", ["L"], ["L1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Link2", ["L"], ["L2"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Link3", ["L"], ["L3"], 0, 0, [])
     rule_vocab.create_rule("Remove_FG", ["FG"], [], 0, 0, [])
-    rule_vocab.create_rule("Remove_FG1", ["FG1"], [], 0, 0, [])
+    # rule_vocab.create_rule("Remove_FG1", ["FG1"], [], 0, 0, [])
 
-    rule_vocab.create_rule("AddFinger_P", ["PF"], ["RT", "TP", "TURN_N","FG1"], 0, 0, [(0, 1), (1, 2), (2,3)])
+    rule_vocab.create_rule("AddFinger_P", ["PF"], ["RT", "TP", "TURN_N", "B", "JB", "L", "FG"], 0, 0, [(0, 1), (1, 2), (2,3), (3,4), (4,5), (5,6)])
     rule_vocab.create_rule("RemoveFinger_P", ["PF"], [], 0, 0, [])
 
-    rule_vocab.create_rule("AddFinger_N", ["NF"], ["RT", "TN", "TURN_P" ,"FG1"], 0, 0, [(0, 1), (1, 2), (2,3)])
+    rule_vocab.create_rule("AddFinger_N", ["NF"], ["RT", "TN", "TURN_P" , "B", "JB", "L", "FG"], 0, 0, [(0, 1), (1, 2), (2,3), (3,4), (4,5), (5,6)])
     rule_vocab.create_rule("RemoveFinger_N", ["NF"], [], 0, 0, [])
 
-    rule_vocab.create_rule("AddFinger_RP", ["RPF"], ["RE", "RT", "TP", "TURN_N", "FG1"], 0, 0,
-                           [(0, 1), (1, 2), (2, 3), (3,4)])
+    rule_vocab.create_rule("AddFinger_RP", ["RPF"], ["RE", "RT", "TP", "TURN_N", "B", "JB", "L", "FG"], 0, 0,
+                           [(0, 1), (1, 2), (2, 3), (3,4), (4,5), (5,6), (6,7)])
     rule_vocab.create_rule("RemoveFinger_RP", ["RPF"], [], 0, 0, [])
-    rule_vocab.create_rule("AddFinger_RN", ["RNF"], ["RE", "RT", "TN", "TURN_P", "FG1"], 0, 0,
-                           [(0, 1), (1, 2), (2, 3), (3,4)])
-
+    rule_vocab.create_rule("AddFinger_RN", ["RNF"], ["RE", "RT", "TN", "TURN_P", "B", "JB", "L", "FG"], 0, 0,
+                           [(0, 1), (1, 2), (2, 3), (3,4), (4,5), (5,6), (6,7)])
     rule_vocab.create_rule("RemoveFinger_RN", ["RNF"], [], 0, 0, [])
+
     rule_vocab.create_rule("Terminal_Positive_Translate1", ["TP"], ["TP1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Positive_Translate2", ["TP"], ["TP2"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Positive_Translate3", ["TP"], ["TP3"], 0, 0, [])
