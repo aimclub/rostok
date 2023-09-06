@@ -71,7 +71,7 @@ def vis_top_n_mechs(n: int, env: DesignEnvironment):
             reward = simulation_rewarder.calculate_reward(simulation_output, True)
             full_reward = simulation_rewarder.calculate_reward(simulation_output)
             print("=====================================")
-            print(f"Object: {simulation_manager.grasp_object_callback()}")
+            print(f"Object: {sim_scen[0].grasp_object_callback()}")
             print(f"Reward: {reward}")
             print(f"Full reward: {full_reward}, old reward: {env.terminal_states[s]}")
             print("=====================================")
