@@ -1,4 +1,5 @@
 from math import sin
+import numpy as np
 from typing import Any, Dict, List, Tuple
 from abc import abstractmethod
 from dataclasses import dataclass, field
@@ -190,16 +191,23 @@ class YaxisShaker(ForceControllerTemplate):
         return impact
 
 class ShakeAndNullGravity(YaxisShaker):
-    def __init__(self, gravity,  amp: float = 5, amp_offset: float = 1, freq: float = 5, start_time: float = 0) -> None:
+    def __init__(self, gravity, xz_amp: float = 0.1, amp: float = 5, amp_offset: float = 1, freq: float = 5, start_time: float = 0) -> None:
         super().__init__(amp, amp_offset, freq, start_time)
         self.gravity = gravity
+        self.xz_amp = xz_amp
     
     def get_force_torque(self, time: float, data) -> ForceTorque:
         impact = ForceTorque()
         y_force = -self.gravity
+        x_force = 0
+        z_force = 0
         if time >= self.start_time:
             y_force += self.amp * sin(self.freq * (time - self.start_time)) + self.amp_offset
-        impact.force = (0, y_force, 0)
+            x_force = np.random.uniform(-self.xz_amp, self.xz_amp)
+            z_force = np.random.uniform(-self.xz_amp, self.xz_amp)
+            x_force /= np.sqrt(x_force**2 + z_force**2)
+            z_force /= np.sqrt(x_force**2 + z_force**2)
+        impact.force = (x_force, y_force, z_force)
         return impact
 @dataclass
 class ForceTorqueContainer:
