@@ -5,6 +5,7 @@ import pickle
 
 import numpy as np
 import matplotlib.pyplot as plt
+from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
 
 from rostok.graph_generators.search_algorithms.mcts import MCTS
 
@@ -22,9 +23,9 @@ class MCTSManager:
         """
         self.mcts_algorithm = mcts_algorithm
 
-        date = time.strftime("%Y-%m-%d_%H-%M-%S") if use_date else ""
+        date = "_" + time.strftime("%Y-%m-%d_%H-%M-%S") if use_date else ""
 
-        self.folder_name = folder_name + "_" + date
+        self.folder_name = folder_name + date
         self.path = self._prepare_path(self.folder_name)
 
         self.trajectories: list = []
@@ -142,11 +143,12 @@ class MCTSManager:
 
         self.mcts_algorithm.save("checkpoint", self.path, rewrite=True, use_date=False)
 
-    def save_information_about_search(self, hyperparameters):
+    def save_information_about_search(self, hyperparameters, grasp_object: EnvironmentBodyBlueprint | list[EnvironmentBodyBlueprint]):
         """Save the information about the search to the file.
         
             Args:
                 hyperparameters: The hyperparameters of the MCTS algorithm.
+                grasp_object (EnvironmentBodyBlueprint): The object to grasp.
         """
         ctrl_optim = self.mcts_algorithm.environment.control_optimizer
         dict_hp = {
@@ -164,6 +166,8 @@ class MCTSManager:
                 print(key, " = ", value)
             print()
             print(str(ctrl_optim))
+            print()
+            print(str(grasp_object))
             sys.stdout = original_stdout
             
     def test_mcts(self, num_test):
