@@ -130,12 +130,12 @@ def config_with_tendon(grasp_object_blueprint):
     data = TendonControllerParameters()
     data.amount_pulley_in_body = 2
     data.pulley_parameters_for_body = {
-        0: [Offset(-0.2, True), Offset(0.01, False, True),
+        0: [Offset(-0.14, True), Offset(0.005, False, True),
             Offset(0, True)],
-        1: [Offset(-0.2, True), Offset(-0.01, False, True),
+        1: [Offset(-0.14, True), Offset(-0.005, False, True),
             Offset(0, True)]
     }
-    data.starting_point_parameters = [Offset(-2, True), Offset(7, True), Offset(0, True)]
+    data.starting_point_parameters = [Offset(-1.5, True), Offset(5, True), Offset(0, True)]
     data.tip_parameters = [Offset(-1, True), Offset(0.8, True), Offset(0, True)]
 
     control_optimizer = TendonOptimizerDirect(simulation_manager, simulation_rewarder, data, -45,
