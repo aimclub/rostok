@@ -150,8 +150,8 @@ class MCTS:
         print(f"Num actions: {num_actions}")
         if num_actions != 0:
             num_actions = min(num_actions, len(available_actions))
-            available_actions = np.random.choice(available_actions, num_actions, replace=False)
             print(f"Available actions: {available_actions}")
+            available_actions = np.random.choice(available_actions, num_actions, replace=False)
 
         for a in available_actions:
 
@@ -183,8 +183,9 @@ class MCTS:
         mask = self.environment.get_available_actions(state)
         available_actions = self.environment.actions[mask == 1]
         uct_score = self.uct_score(state)
-        best_action = available_actions[np.argmax(uct_score)]
-
+        max_score = np.max(uct_score)
+        args_max_score = np.argwhere(uct_score == max_score).flatten()
+        best_action = available_actions[np.random.choice(args_max_score)]
         return best_action
     
     def uct_score(self, state):
