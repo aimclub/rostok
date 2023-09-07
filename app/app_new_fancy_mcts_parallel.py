@@ -1,6 +1,6 @@
 import numpy as np
 
-from rostok.graph_generators.environments.design_environment import (DesignEnvironment, SubDesignEnvironment, SubStringDesignEnvironments)
+from rostok.graph_generators.environments.design_environment import (DesignEnvironment, SubDesignEnvironment, SubStringDesignEnvironment)
 from rostok.graph_generators.mcts_manager import MCTSManager
 from rostok.graph_generators.search_algorithms.mcts import MCTS
 from rostok.graph_generators.search_algorithms.random_search import RandomSearch
@@ -22,7 +22,7 @@ if __name__ == "__main__":
     control_optimizer = config_combination_force_tendon_multiobject_parallel(grasp_object_blueprint, [ 1, 1, 1])
 
     init_graph = GraphGrammar()
-    env = SubStringDesignEnvironments(rule_vocabulary, control_optimizer, 13, init_graph, 0)
+    env = SubStringDesignEnvironment(rule_vocabulary, control_optimizer, 13, init_graph, 0)
 
     mcts = MCTS(env)
     # name_directory = input("enter directory name: ")
