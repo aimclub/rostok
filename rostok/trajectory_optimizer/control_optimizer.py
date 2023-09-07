@@ -14,7 +14,7 @@ from enum import Enum
 from rostok.simulation_chrono.simulation_scenario import ParametrizedSimulation
 from rostok.trajectory_optimizer.trajectory_generator import cable_length_linear_control, linear_control, joint_root_paths, tendon_like_control
 from rostok.utils.json_encoder import RostokJSONEncoder
-from itertools import combinations_with_replacement
+from itertools import product
 
 class GraphRewardCalculator:
 
@@ -516,7 +516,7 @@ class TendonOptimizerCombinationForce(TendonOptimizer):
         graph = args[0]
         number_of_fingers = len(joint_root_paths(graph))
         all_variants_control = list(
-            combinations_with_replacement(self.tendon_forces, number_of_fingers))
+            product(self.tendon_forces, repeat=number_of_fingers))
         results = []
         for variant in all_variants_control:
             res = callback(np.array(variant), *args)
