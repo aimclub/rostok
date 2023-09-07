@@ -29,7 +29,7 @@ env = SubStringDesignEnvironment(rule_vocabulary, control_optimizer, 13, init_gr
 mcts = MCTS(env)
 name_directory = input("enter directory name")
 mcts_manager = MCTSManager(mcts, name_directory,verbosity=4)
-mcts_manager.save_information_about_search(hp)
+mcts_manager.save_information_about_search(hp, grasp_object_blueprint)
 
 for i in range(10):
     mcts_manager.run_search(10, 1, iteration_checkpoint=1, num_test=3)
