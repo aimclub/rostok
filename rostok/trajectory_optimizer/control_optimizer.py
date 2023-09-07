@@ -580,8 +580,6 @@ class ParralelOptimizerCombinationForce(TendonOptimizer):
         input_dates = [(np.array(put[0]), graph, put[1][0]) for put in all_simulations]
         np.random.shuffle(input_dates)
         
-        # time_start = time.time()
-        
         cpus = len(input_dates) if len(input_dates) < cpus else cpus
         
         parallel_results = []
@@ -596,36 +594,6 @@ class ParralelOptimizerCombinationForce(TendonOptimizer):
             parallel_results.append(Resault(np.sum([i[1]*object_weight[i[0]] for i in value]), np.array(key)))
         best_par_result = max(parallel_results, key=lambda i: i.fun)
         
-        # time_end_parallel = time.time() - time_start
-        # ================================================
-        # time_start = time.time()
-        # if isinstance(self.simulation_scenario, list):
-        #     reward = 0
-        #     optim_parameters = np.array([])
-        #     for sim_scene in self.simulation_scenario:
-        #         result = self.run_optimization(self._reward_with_parameters,
-        #                                        multi_bound,
-        #                                        args=(graph, sim_scene[0]))
-
-        #         reward -= result.fun * sim_scene[1]
-        #         processed_parameters = self._postprocessing_parameters(result.x)
-        #         if optim_parameters.size == 0:
-        #             optim_parameters = processed_parameters
-        #         else:
-        #             optim_parameters = np.vstack((optim_parameters, processed_parameters))
-
-        # else:
-        #     result = self.run_optimization(self._reward_with_parameters,
-        #                                    multi_bound,
-        #                                    args=(graph, self.simulation_scenario))
-
-        #     reward = -result.fun
-        #     optim_parameters = self._postprocessing_parameters(result.x)
-        # time_end_serial = time.time() - time_start
-
-
-        # print(f"Serial time: {time_end_serial}, reward: {(reward, result.x)}")
-        # print(f"Parallel time: {time_end_parallel}, reward: {best_par_result}")
         return (best_par_result.fun, best_par_result.x)
     
     def run_optimization(self, callback, multi_bound, args):
