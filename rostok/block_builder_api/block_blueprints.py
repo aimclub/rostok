@@ -72,6 +72,10 @@ class EnvironmentBodyBlueprint(BodyBlueprintType):
     is_collide: bool = True
     color: Optional[list[int]] = None
     pos: FrameTransform = DefaultFrame
+    
+    def __hash__(self) -> int:
+        atrb = [self.shape, self.density, self.material, self.is_collide, self.pos]
+        return hash(("EnvironmentBodyBlueprint".join([str(i) for i in atrb])))
 
 
 ALL_BLUEPRINT = Union[TransformBlueprint, RevolveJointBlueprint, PrimitiveBodyBlueprint,
