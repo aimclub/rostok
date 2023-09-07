@@ -3,6 +3,8 @@ from typing import Dict, List, Optional, Tuple
 
 import pychrono as chrono
 import numpy as np
+from rostok.block_builder_chrono.block_builder_chrono_api import \
+    ChronoBlockCreatorInterface as creator
 
 from rostok.criterion.simulation_flags import SimulationSingleEvent
 from rostok.graph_grammar.node import GraphGrammar
@@ -102,7 +104,8 @@ class SMCGrasp(ParametrizedSimulation):
         
         
 
-        grasp_object = self.grasp_object_callback()
+        # grasp_object = self.grasp_object_callback()
+        grasp_object = creator.create_environment_body(self.grasp_object_callback)
         mass_object = grasp_object.body.GetMass()
         gravity = simulation.chrono_system.Get_G_acc().y
         # shake = YaxisShaker(1, 3, 0.5, float("inf"))

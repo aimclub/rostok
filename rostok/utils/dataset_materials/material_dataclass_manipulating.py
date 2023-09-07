@@ -23,6 +23,9 @@ class DefaultChronoMaterialNSC(Material):
     Compliance: float = 1e-6
     ComplianceT: float = 1e-6
     DampingF:float = 1e6
+    
+    def __hash__(self) -> int:
+        return hash(("DefaultChronoMaterialNSC", self.Friction, self.Restitution, self.Compliance, self.ComplianceT, self.DampingF))
 
 class DefaultChronoMaterialSMC():
     
@@ -35,6 +38,9 @@ class DefaultChronoMaterialSMC():
     Gt:float = 10000
     Restitution:float = 0
     YoungModulus:float = 0
+    
+    def __hash__(self) -> int:
+        return hash(("DefaultChronoMaterialSMC", self.Friction, self.Kn, self.Kt, self.Gn, self.Gt, self.Restitution, self.YoungModulus))
 
 
 def struct_material2object_material(struct_material: Material, prefix_setter: str = "Set"):

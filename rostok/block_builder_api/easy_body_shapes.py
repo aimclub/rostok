@@ -8,6 +8,9 @@ class Box:
     width_x: float = 0.1
     length_y: float = 0.5
     height_z: float = 0.1
+    
+    def __hash__(self) -> int:
+        return hash(("Box", self.width_x, self.length_y, self.height_z))
 
 
 @dataclass
@@ -16,11 +19,17 @@ class Cylinder:
     """
     radius: float = 0.1
     height_y: float = 0.5
+    
+    def __hash__(self) -> int:
+        return hash(("Cylinder", self.radius, self.height_y))
 
 
 @dataclass
 class Sphere:
     radius: float = 0.15
+    
+    def __hash__(self) -> int:
+        return hash(("Sphere", self.radius))
 
 
 @dataclass
@@ -28,11 +37,17 @@ class Ellipsoid:
     radius_x: float = 0.1
     radius_y: float = 0.2
     radius_z: float = 0.3
+    
+    def __hash__(self) -> int:
+        return hash(("Ellipsoid", self.radius_x, self.radius_y, self.radius_z))
 
 
 @dataclass
 class FromMesh:
     path: Path
+    
+    def __hash__(self) -> int:
+        return hash(("FromMesh", self.path))
 
 
 # All types of shape
