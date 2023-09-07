@@ -13,7 +13,7 @@ from rostok.graph_grammar.node import GraphGrammar
 from rostok.library.obj_grasp.objects import (get_object_ellipsoid, get_object_parametrized_sphere,
                                               get_object_parametrized_sphere_smc)
 from rostok.library.rule_sets.ruleset_old_style_smc import create_rules
-from rostok.library.rule_sets.simple_designs_nsc import (get_two_link_three_finger, get_two_same_link_one_finger, get_four_same_link_one_finger, get_three_same_link_one_finger, get_three_link_one_finger)
+from rostok.library.rule_sets.simple_designs import (get_two_link_three_finger, get_two_same_link_one_finger, get_four_same_link_one_finger, get_three_same_link_one_finger, get_three_link_one_finger)
 from rostok.simulation_chrono.basic_simulation import SimulationResult
 
 # create blueprint for object to grasp
