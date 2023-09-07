@@ -212,7 +212,11 @@ class MCTSManager:
             plt.savefig(os.path.join(self.path, name))
         else:
             plt.show()
+<<<<<<< HEAD
             time.sleep(10)
+=======
+            time.sleep(20)
+>>>>>>> 33a1b4f538d1cb6a88f8b56e39c9f3cfa7e99022
         plt.close()
     
     def plot_v_trajectory(self, trajectory, save=False, name="v_trajectory.svg"):
@@ -245,7 +249,11 @@ class MCTSManager:
             plt.savefig(os.path.join(self.path, name))
         else:
             plt.show()
+<<<<<<< HEAD
             time.sleep(10)
+=======
+            time.sleep(20)
+>>>>>>> 33a1b4f538d1cb6a88f8b56e39c9f3cfa7e99022
         plt.close()
         
     def save_results(self, save_plot=True):
