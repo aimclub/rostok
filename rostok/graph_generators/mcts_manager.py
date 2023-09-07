@@ -210,7 +210,10 @@ class MCTSManager:
         plt.title("MCTS test")
         if save:
             plt.savefig(os.path.join(self.path, name))
-        plt.show()
+        else:
+            plt.show()
+            time.sleep(20)
+        plt.close()
     
     def plot_v_trajectory(self, trajectory, save=False, name="v_trajectory.svg"):
         """Plot the V-function and Q-function for the trajectory.
@@ -240,7 +243,10 @@ class MCTSManager:
         plt.legend()
         if save:
             plt.savefig(os.path.join(self.path, name))
-        plt.show()
+        else:
+            plt.show()
+            time.sleep(20)
+        plt.close()
         
     def save_results(self, save_plot=True):
         """Save the trajectories of the states and actions to the file.
