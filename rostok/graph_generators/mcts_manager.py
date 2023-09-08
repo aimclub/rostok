@@ -96,7 +96,7 @@ class MCTSManager:
             finish_time = time.time() - time_start
 
             if iteration_checkpoint != 0 and iterator % (iteration_checkpoint + 1) == 0:
-                self.save_checkpoint(iter, state, finish_time)
+                self.save_checkpoint(iterator, state, finish_time)
 
             pi = self.mcts_algorithm.get_policy_by_Q(state)
             a = max(env.actions, key=lambda x: pi[x])
@@ -212,11 +212,7 @@ class MCTSManager:
             plt.savefig(os.path.join(self.path, name))
         else:
             plt.show()
-<<<<<<< HEAD
             time.sleep(10)
-=======
-            time.sleep(20)
->>>>>>> 33a1b4f538d1cb6a88f8b56e39c9f3cfa7e99022
         plt.close()
     
     def plot_v_trajectory(self, trajectory, save=False, name="v_trajectory.svg"):
@@ -249,11 +245,7 @@ class MCTSManager:
             plt.savefig(os.path.join(self.path, name))
         else:
             plt.show()
-<<<<<<< HEAD
             time.sleep(10)
-=======
-            time.sleep(20)
->>>>>>> 33a1b4f538d1cb6a88f8b56e39c9f3cfa7e99022
         plt.close()
         
     def save_results(self, save_plot=True):
