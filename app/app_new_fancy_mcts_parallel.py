@@ -5,7 +5,7 @@ from rostok.graph_generators.mcts_manager import MCTSManager
 from rostok.graph_generators.search_algorithms.mcts import MCTS
 from rostok.graph_generators.search_algorithms.random_search import RandomSearch
 
-from rostok.library.rule_sets.ruleset_old_style_nsc import create_rules
+from rostok.library.rule_sets.ruleset_simple_fingers import create_rules
 # from rostok.library.rule_sets.ruleset_old_style_smc import create_rules
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.library.obj_grasp.objects import get_object_ellipsoid, get_object_cylinder, get_object_box
