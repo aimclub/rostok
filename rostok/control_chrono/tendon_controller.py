@@ -197,7 +197,7 @@ class TendonController_2p(RobotControllerChrono):
 
     def set_forces_to_pulley_line(self, tendon_lines):
         if self.parameters.create_pulley_data_file:
-            path = Path("./pulley_data.dat")
+            path = Path("./results/pulley_data.dat")
             open(path, "w")
         else:
             path = None

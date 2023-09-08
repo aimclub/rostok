@@ -4,7 +4,7 @@ import hyperparameters as hp
 
 from rostok.block_builder_chrono.block_builder_chrono_api import \
     ChronoBlockCreatorInterface as creator
-from rostok.criterion.criterion_calculation import (ForceCriterion, InstantContactingLinkCriterion,
+from rostok.criterion.criterion_calculation import (InstantContactingLinkCriterion,
                                                     InstantForceCriterion,
                                                     InstantObjectCOGCriterion, SimulationReward,
                                                     TimeCriterion, FinalPositionCriterion,

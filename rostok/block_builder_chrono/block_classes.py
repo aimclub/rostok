@@ -386,8 +386,8 @@ class ChronoEasyShapeObject():
                  color: Optional[list[int]] = None,
                  pos: FrameTransform = DefaultFrame):
         # It's real magic. This code fix bug with set Envelope and Margin
-        # On python version Chrono we can't set envelop and margin localy for 
-        # each body independet by standart API. 
+        # On python version Chrono we can't set envelop and margin localy for
+        # each body independet by standart API.
         fake_body = chrono.ChBody()
         fake_body.SetCollide(True)
         fake_body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.0001)
@@ -421,6 +421,11 @@ class ChronoEasyShapeObject():
                 True,  # collide?
                 material,  # contact material
             )
+        elif isinstance(shape, easy_body_shapes.ConvexHull):
+            points_shape = chrono.vector_ChVectorD()
+            for p_i in shape.points:
+                points_shape.append(chrono.ChVectorD(*p_i))
+            body = chrono.ChBodyEasyConvexHull(points_shape, density, True, True, material)
         else:
             raise Exception("Unknown shape for ChronoBodyEnv object")
 
