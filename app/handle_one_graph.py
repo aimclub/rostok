@@ -17,8 +17,8 @@ from rostok.library.rule_sets.simple_designs_nsc import (get_two_link_three_fing
 from rostok.simulation_chrono.basic_simulation import SimulationResult
 
 # create blueprint for object to grasp
-grasp_object_blueprint = get_object_parametrized_sphere(0.01)
-#grasp_object_blueprint = get_object_ellipsoid(0.1, 0.12, 0.2, 0)
+# grasp_object_blueprint = get_object_parametrized_sphere(0.01)
+grasp_object_blueprint = get_object_ellipsoid(0.1, 0.1, 0.15, 0)
 #grasp_object_blueprint = get_object_ellipsoid(10, 8, 14, 10)
 
 # create reward counter using run setup function
@@ -39,8 +39,8 @@ simulation_manager = control_optimizer.simulation_scenario
 
 graph = get_two_link_three_finger()
 # graph = get_two_same_link_one_finger()
-graph = get_four_same_link_one_finger()
-graph = get_three_same_link_one_finger()
+# graph = get_four_same_link_one_finger()
+# graph = get_three_same_link_one_finger()
 control = [5, 10, 10]
 
 data = control_optimizer.optim_parameters2data_control(control, graph)

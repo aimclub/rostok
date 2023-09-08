@@ -435,6 +435,7 @@ def config_combination_force_tendon_multiobject(grasp_object_blueprint, weights)
         grasp_limit_time=hp.GRASP_TIME,
         contact_event=event_contact,
         verbosity=0,
+        simulation_stop=0
     )
     event_stop_external_force = EventStopExternalForce(grasp_event=event_grasp,
                                                        force_test_time=hp.FORCE_TEST_TIME)
