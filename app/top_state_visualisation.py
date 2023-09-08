@@ -16,10 +16,11 @@ from rostok.graph_generators.search_algorithms.mcts import MCTS
 from rostok.graph_generators.mcts_manager import MCTSManager
 
 # =============================================================================
-from rostok.library.rule_sets.ruleset_old_style_smc import create_rules
-from mcts_run_setup import config_with_standard_graph, config_combination_force_tendon_multiobject
+# from rostok.library.rule_sets.ruleset_old_style_smc import create_rules
+from rostok.library.rule_sets.ruleset_old_style_nsc import create_rules
+from mcts_run_setup import config_with_standard_graph, config_combination_force_tendon_multiobject, config_combination_force_tendon_multiobject_parallel
 
-from rostok.library.obj_grasp.objects import (get_object_parametrized_sphere,get_object_cylinder,get_object_box)
+from rostok.library.obj_grasp.objects import (get_object_parametrized_sphere,get_object_cylinder,get_object_box, get_object_ellipsoid)
 
 
 INIT_GRAPH = GraphGrammar()
@@ -64,28 +65,35 @@ def vis_top_n_mechs(n: int, env: DesignEnvironment):
 
     simulation_rewarder = env.control_optimizer.rewarder
     simulation_manager = env.control_optimizer.simulation_scenario
+
     for s in best_s:
+        full_reward = 0
+        # env.terminal_states[s] = (env.terminal_states[s], [env.terminal_states[s][1] for __ in range(len(simulation_manager))])
         data, graph = prepare_state_for_optimal_simulation(s, env)
+        # data = [data for __ in range(len(simulation_manager))]
         for d, sim_scen in zip(data, simulation_manager):
             simulation_output = env.control_optimizer.simulate_with_control_parameters(d, graph, sim_scen[0])
-            reward = simulation_rewarder.calculate_reward(simulation_output, True)
-            full_reward = simulation_rewarder.calculate_reward(simulation_output)
+            part_reward = simulation_rewarder.calculate_reward(simulation_output, True)
+            reward = simulation_rewarder.calculate_reward(simulation_output)
+            full_reward += reward*sim_scen[1]
             print("=====================================")
-            print(f"Object: {sim_scen[0].grasp_object_callback()}")
+            print(f"Object: {sim_scen[0].grasp_object_callback}")
+            print(f"Partial reward: {part_reward}")
             print(f"Reward: {reward}")
-            print(f"Full reward: {full_reward}, old reward: {env.terminal_states[s]}")
             print("=====================================")
+        print(f"Full reward: {full_reward}, old reward: {env.terminal_states[s][0]}")
 
 
 if __name__ == "__main__":
     top = 3
     
     grasp_object_blueprint = []
-    grasp_object_blueprint.append(get_object_parametrized_sphere(0.11))
+    grasp_object_blueprint.append(get_object_ellipsoid(0.10, 0.08, 0.14, 10))
     grasp_object_blueprint.append(get_object_cylinder(0.07, 0.09, 0))
     grasp_object_blueprint.append(get_object_box(0.12, 0.12, 0.1, 0))
     
-    control_optimizer = config_combination_force_tendon_multiobject(grasp_object_blueprint, [1,1,1])
+    # control_optimizer = config_combination_force_tendon_multiobject(grasp_object_blueprint, [1,1,1])
+    control_optimizer = config_combination_force_tendon_multiobject_parallel(grasp_object_blueprint, [1,1,1])
 
     env = SubStringDesignEnvironment(RULE_VOCABULARY, control_optimizer, 13, INIT_GRAPH, 4)
     

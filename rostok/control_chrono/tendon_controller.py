@@ -1,4 +1,5 @@
 from collections import namedtuple, UserDict
+from pathlib import Path
 from typing import Any, Dict, List, Tuple
 from rostok.control_chrono.controller import ForceControllerTemplate, ForceTorque
 from dataclasses import dataclass, field
@@ -24,11 +25,12 @@ class ForceType(Enum):
 
 class PulleyForce(ForceControllerTemplate):
 
-    def __init__(self, pos: list, name='default') -> None:
+    def __init__(self, pos: list, name='default', path = None) -> None:
         super().__init__(is_local=False)
         #self.set_vector_in_local_cord()
         self.pos = pos
         self.name = name
+        self.path = path
         # with open(f"{self.name}.dat",'w') as file:
         #     pass
 
@@ -41,9 +43,9 @@ class PulleyForce(ForceControllerTemplate):
         force_v = ((post_point - point).GetNormalized() +
                    (pre_point - point).GetNormalized()) * tension
         impact.force = (force_v.x, force_v.y, force_v.z)
-        #with open(f"self.name_force_{round(self.pos[0],5)}_{round(self.pos[1],5)}.dat",'a') as file:
-        # with open(f"{self.name}.dat",'a') as file:
-        #     file.write(f'{round(force_v.x, 6)} {round(force_v.y,6)} {round(time, 5)} \n')
+        if self.path:
+            with open(self.path, 'a') as file:
+                file.write(f'{self.name} {round(time, 5)} {round(point.x,5)} {round(point.y,5)} {round(point.z,5)} {round(force_v.x, 6)} {round(force_v.y,6)} {round(force_v.z,6)}\n')
         return impact
 
     def bind_body(self, body: chrono.ChBody):
@@ -68,8 +70,9 @@ class TipForce(PulleyForce):
         tension = data[2]
         force_v = (pre_point - point).GetNormalized() * tension
         impact.force = (force_v.x, force_v.y, force_v.z)
-        # with open(f"{self.name}.dat",'a') as file:
-        #     file.write(f'{round(force_v.x, 6)} {round(force_v.y,6)} {round(time, 5)} \n')
+        if self.path:
+            with open(self.path, 'a') as file:
+                file.write(f'{self.name} {round(time, 5)} {round(point.x,5)} {round(point.y,5)} {round(point.z,5)} {round(force_v.x, 6)} {round(force_v.y,6)} {round(force_v.z,6)}\n')
         return impact
 
 
@@ -81,6 +84,7 @@ class TendonControllerParameters:
     tip_parameters: List[float] = field(default_factory=list)
     forces: List[float] = field(default_factory=list)
     starting_point_parameters: List[float] = field(default_factory=list)
+    create_pulley_data_file:bool = False
 
     def check_parameters_length(self):
         if self.amount_pulley_in_body != len(self.pulley_parameters_for_body):
@@ -192,19 +196,25 @@ class TendonController_2p(RobotControllerChrono):
                     force_point[0].position = [pos_x, pos_y, pos_z]
 
     def set_forces_to_pulley_line(self, tendon_lines):
+        if self.parameters.create_pulley_data_file:
+            path = Path("./pulley_data.dat")
+            open(path, "w")
+        else:
+            path = None
+        
         for line in tendon_lines:
             for force_point in line:
                 idx = force_point[0].body_id
                 body = self.built_graph.body_map_ordered[idx]
                 if force_point[0].force_type == ForceType.PULLEY:
-                    force_point[1] = PulleyForce(list(force_point[0].position))
+                    force_point[1] = PulleyForce(list(force_point[0].position), name = f'{idx}_p_{force_point[0].pulley_number}',path=path)
                     force_point[1].bind_body(body.body)
                     force_point[1].add_visual_pulley()
                     force_point[1].force_maker_chrono.SetNameString(
                         f"Pulley_force {force_point[0].pulley_number}")
 
                 if force_point[0].force_type == ForceType.TIP:
-                    force_point[1] = TipForce(list(force_point[0].position))
+                    force_point[1] = TipForce(list(force_point[0].position), name = f'{idx}_t', path=path)
                     force_point[1].bind_body(body.body)
                     force_point[1].add_visual_pulley()
                     force_point[1].force_maker_chrono.SetNameString("Tip_force")

@@ -195,19 +195,23 @@ class ShakeAndNullGravity(YaxisShaker):
         super().__init__(amp, amp_offset, freq, start_time)
         self.gravity = gravity
         self.xz_amp = xz_amp
+        self.counter = 0
+        self.x_force = 0
+        self.z_force = 0
     
     def get_force_torque(self, time: float, data) -> ForceTorque:
         impact = ForceTorque()
         y_force = -self.gravity
-        x_force = 0
-        z_force = 0
         if time >= self.start_time:
             y_force += self.amp * sin(self.freq * (time - self.start_time)) + self.amp_offset
-            x_force = np.random.uniform(-self.xz_amp, self.xz_amp)
-            z_force = np.random.uniform(-self.xz_amp, self.xz_amp)
-            x_force /= np.sqrt(x_force**2 + z_force**2)
-            z_force /= np.sqrt(x_force**2 + z_force**2)
-        impact.force = (x_force, y_force, z_force)
+            if self.xz_amp > 0:
+                if self.counter % 10 == 0:
+                    self.x_force = np.random.uniform(-self.xz_amp, self.xz_amp)
+                    self.z_force = np.random.uniform(-self.xz_amp, self.xz_amp)
+                    self.x_force /= np.sqrt(self.x_force**2 + self.z_force**2)
+                    self.z_force /= np.sqrt(self.x_force**2 + self.z_force**2)
+                self.counter += 1
+        impact.force = (self.x_force, y_force, self.z_force)
         return impact
 @dataclass
 class ForceTorqueContainer:
