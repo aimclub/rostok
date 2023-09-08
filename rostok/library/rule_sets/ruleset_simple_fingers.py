@@ -48,11 +48,11 @@ def create_rules(tendon=True, smc=False):
     # create link blueprints using mass and length parameters
     link = list(
         map(
-            lambda x: PrimitiveBodyBlueprint(Box(0.035, x, 0.024),
+            lambda x: PrimitiveBodyBlueprint(Box(0.035, x, 0.027),
                                              material=def_mat,
                                              color=[0, 120, 255],
                                              density=get_density_box(link_mass, Box(
-                                                 0.035, x, 0.024))), length_link))
+                                                 0.035, x, 0.027))), length_link))
 
     x_translation_values = [0.06, 0.085, 0.11]
     X_TRANSLATIONS = list(
