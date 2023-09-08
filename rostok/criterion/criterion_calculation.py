@@ -67,46 +67,46 @@ class TimeCriterion(Criterion):
                 return 0
 
 
-class ForceCriterion(Criterion):
-    """Reward based on the mean force of the robot and object contact.
+# class ForceCriterion(Criterion):
+#     """Reward based on the mean force of the robot and object contact.
 
-        Attributes:
-            event_timeout (EventContactTimeOut): event of contact time out
-    """
+#         Attributes:
+#             event_timeout (EventContactTimeOut): event of contact time out
+#     """
 
-    def __init__(self, event_timeout: EventContactTimeOut):
-        self.event_timeout = event_timeout
+#     def __init__(self, event_timeout: EventContactTimeOut):
+#         self.event_timeout = event_timeout
 
-    def calculate_reward(self, simulation_output: SimulationResult) -> float:
-        """Return 0 if there is no contact. For every step where object is in contact with robot
-            the total force is added to a list and the final reward is calculated using the mean 
-            value of that list
+#     def calculate_reward(self, simulation_output: SimulationResult) -> float:
+#         """Return 0 if there is no contact. For every step where object is in contact with robot
+#             the total force is added to a list and the final reward is calculated using the mean 
+#             value of that list
 
-        Returns:
-            float: reward of the criterion
-        """
+#         Returns:
+#             float: reward of the criterion
+#         """
 
-        if self.event_timeout.state:
-            return 0
-        else:
-            env_data = simulation_output.environment_final_ds
-            body_contacts: List[np.ndarray] = env_data.get_data("forces")[0]
-            force_modules = []
-            for data in body_contacts:
-                if data.size > 0:
-                    total_force = np.zeros(3)
-                    for force in data:
-                        total_force += force[1]
+#         if self.event_timeout.state:
+#             return 0
+#         else:
+#             env_data = simulation_output.environment_final_ds
+#             body_contacts: List[np.ndarray] = env_data.get_data("forces")[0]
+#             force_modules = []
+#             for data in body_contacts:
+#                 if data.size > 0:
+#                     total_force = np.zeros(3)
+#                     for force in data:
+#                         total_force += force[1]
 
-                    force_module = np.linalg.norm(total_force)
-                    # Cut the steps with huge forces
-                    if force_module < 100:
-                        force_modules.append(force_module)
+#                     force_module = np.linalg.norm(total_force)
+#                     # Cut the steps with huge forces
+#                     if force_module < 100:
+#                         force_modules.append(force_module)
 
-            if len(force_modules) > 0:
-                return 1 / (1 + np.mean(np.array(force_modules)))
-            else:
-                return 0
+#             if len(force_modules) > 0:
+#                 return 1 / (1 + np.mean(np.array(force_modules)))
+#             else:
+#                 return 0
 
 
 class InstantObjectCOGCriterion(Criterion):
