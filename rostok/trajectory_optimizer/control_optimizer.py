@@ -573,7 +573,7 @@ class ParralelOptimizerCombinationForce(TendonOptimizer):
         if not multi_bound:
             return (0, [])
         
-        cpus = os.cpu_count() // 2
+        cpus = os.cpu_count() - 2
         all_variants_control = list(product(self.tendon_forces, repeat=len(joint_root_paths(graph))))
         object_weight = {sim_scen[0].grasp_object_callback: sim_scen[1] for sim_scen in self.simulation_scenario}
         all_simulations = list(product(all_variants_control, self.simulation_scenario))
