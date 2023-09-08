@@ -586,15 +586,20 @@ class ParralelOptimizerCombinationForce(TendonOptimizer):
         with Pool(processes=cpus) as pool:
             for out in pool.imap_unordered(self._parallel_reward_with_parameters, input_dates):
                 parallel_results.append(out)
-        raw_data = {var_ctrl: [] for var_ctrl in all_variants_control}
+                
+        result_group_object = {sim_scen[0].grasp_object_callback: [] for sim_scen in self.simulation_scenario}
         for results in parallel_results:
-            raw_data[tuple(results[0])].append((results[1].grasp_object_callback, results[2]))
-        parallel_results = []
-        for key, value in raw_data.items():
-            parallel_results.append(Resault(np.sum([i[1]*object_weight[i[0]] for i in value]), np.array(key)))
-        best_par_result = max(parallel_results, key=lambda i: i.fun)
+            obj = results[1].grasp_object_callback
+            result_group_object[obj].append((results[0], results[2]*object_weight[obj]))
         
-        return (best_par_result.fun, best_par_result.x)
+        reward = 0
+        control = []
+        for value in result_group_object.values():
+            best_res = max(value, key=lambda i: i[1])
+            reward += best_res[1]
+            control.append(best_res[0])
+        
+        return (reward, control)
     
     def run_optimization(self, callback, multi_bound, args):
         graph = args[0]
