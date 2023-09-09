@@ -191,8 +191,8 @@ def get_object_parametrized_cuboctahedron(a) -> EnvironmentBodyBlueprint:
     return obj
 
 
-def get_object_parametrized_dipyramid_3(a) -> EnvironmentBodyBlueprint:
-    """Medium task"""
+def get_object_parametrized_dipyramid_3(a, alpha=0) -> EnvironmentBodyBlueprint:
+    # edge is 2*a
     matich = DefaultChronoMaterialNSC()
     C0 = np.sqrt(3) / 3
     C1 = 2 / 3
@@ -207,7 +207,7 @@ def get_object_parametrized_dipyramid_3(a) -> EnvironmentBodyBlueprint:
     shape = easy_body_shapes.ConvexHull(points)
     obj = EnvironmentBodyBlueprint(shape=shape,
                                    material=matich,
-                                   pos=FrameTransform([0, 0, 0], [1, 0, 0, 0]))
+                                   pos=FrameTransform([0, 0, 0], rotation_x(alpha)))
     return obj
 
 

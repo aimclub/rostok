@@ -11,8 +11,8 @@ from rostok.simulation_chrono.basic_simulation import SimulationResult
 
 # create blueprint for object to grasp
 grasp_object_blueprint = get_object_sphere(0.01)
-grasp_object_blueprint = get_object_parametrized_trapezohedron(0.1)
-grasp_object_blueprint = get_object_parametrized_dipyramid_3(0.1)
+grasp_object_blueprint = get_object_parametrized_trapezohedron(0.15)
+grasp_object_blueprint = get_object_parametrized_dipyramid_3(0.1, 90)
 grasp_object_blueprint = get_object_ellipsoid(0.14, 0.14, 0.22, 0, mass = 0.188)
 
 # create reward counter using run setup function
@@ -35,7 +35,7 @@ graph = get_two_link_three_finger()
 graph = get_four_same_link_one_finger()
 graph = get_three_same_link_one_finger()
 
-control = [[30]]
+control = [[0]]
 
 data = control_optimizer.optim_parameters2data_control(control, graph)[0]
 
