@@ -146,7 +146,7 @@ class EventFlyingApart(SimulationSingleEvent):
             if np.linalg.norm(np.array(base_position) - np.array(position)) > self.max_distance:
                 self.state = True
                 self.step_n = step_n
-                return EventCommands.STOP
+                return EventCommands.STOP 
 
         return EventCommands.CONTINUE
 
