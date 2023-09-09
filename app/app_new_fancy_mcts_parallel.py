@@ -15,6 +15,7 @@ from rostok.library.obj_grasp.objects import (get_object_ellipsoid, get_object_c
                                               get_object_parametrized_trapezohedron)
 import sys
 
+import hyperparameters as hp
 from mcts_run_setup import config_combination_force_tendon_multiobject_parallel
 
 if __name__ == "__main__":
@@ -28,13 +29,13 @@ if __name__ == "__main__":
         grasp_object_blueprint, [1.1, 1.2, 0.5])
 
     init_graph = GraphGrammar()
-    env = SubStringDesignEnvironment(rule_vocabulary, control_optimizer, 13, init_graph, 2)
+    env = SubStringDesignEnvironment(rule_vocabulary, control_optimizer, hp.MAX_NUMBER_RULES, init_graph, 0)
 
-    mcts = MCTS(env)
+    mcts = MCTS(env, hp.MCTS_C)
     name_directory = input("enter directory name: ")
-    mcts_manager = MCTSManager(mcts, name_directory, verbosity=2, use_date=True)
+    mcts_manager = MCTSManager(mcts, name_directory,verbosity=2, use_date=False)
     mcts_manager.save_information_about_search(hp, grasp_object_blueprint)
 
-    for i in range(30):
-        mcts_manager.run_search(10, 1, iteration_checkpoint=1, num_test=3)
+    for i in range(hp.FULL_LOOP_MCTS):
+        mcts_manager.run_search(hp.BASE_ITERATION_LIMIT_TENDON, 1, 1, 2)
         mcts_manager.save_results()

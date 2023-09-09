@@ -191,7 +191,7 @@ def get_object_parametrized_cuboctahedron(a) -> EnvironmentBodyBlueprint:
     return obj
 
 
-def get_object_parametrized_dipyramid_3(a, alpha=0) -> EnvironmentBodyBlueprint:
+def get_object_parametrized_dipyramid_3(a, mass = 0.1, alpha=0) -> EnvironmentBodyBlueprint:
     # edge is 2*a
     matich = DefaultChronoMaterialNSC()
     C0 = np.sqrt(3) / 3
@@ -205,13 +205,16 @@ def get_object_parametrized_dipyramid_3(a, alpha=0) -> EnvironmentBodyBlueprint:
     V4 = (0.0, -C2 * a, 0.0)
     points = [V0, V1, V2, V3, V4]
     shape = easy_body_shapes.ConvexHull(points)
+    volume = 3.973e+5/1000**3
+    density = mass / volume
     obj = EnvironmentBodyBlueprint(shape=shape,
                                    material=matich,
+                                   density=density,
                                    pos=FrameTransform([0, 0, 0], rotation_x(alpha)))
     return obj
 
 
-def get_object_parametrized_trapezohedron(a) -> EnvironmentBodyBlueprint:
+def get_object_parametrized_trapezohedron(a, mass = 0.150) -> EnvironmentBodyBlueprint:
     matich = DefaultChronoMaterialNSC()
     C0 = np.sqrt(2 * (3 * np.sqrt(2) - 4)) / 4
     C1 = np.sqrt(2) / 2
@@ -230,7 +233,11 @@ def get_object_parametrized_trapezohedron(a) -> EnvironmentBodyBlueprint:
 
     points = [V0, V1, V2, V3, V4, V5, V6, V7, V8, V9]
     shape = easy_body_shapes.ConvexHull(points)
+    
+    volume = 1.912e+6/1000**3
+    density = mass / volume
     obj = EnvironmentBodyBlueprint(shape=shape,
                                    material=matich,
+                                   density=density,
                                    pos=FrameTransform([0, 0, 0], [1, 0, 0, 0]))
     return obj
