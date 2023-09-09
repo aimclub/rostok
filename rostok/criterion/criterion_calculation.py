@@ -128,10 +128,9 @@ class InstantObjectCOGCriterion(Criterion):
         if self.grasp_event.state:
             env_data = simulation_output.environment_final_ds
             body_COG = env_data.get_data("COG")[0][self.grasp_event.step_n + 1]
-            body_outer_force_center = env_data.get_data("force_center")[0][self.grasp_event.step_n +
-                                                                           1]
+            body_outer_force_center = env_data.get_data("force_center")[0][self.grasp_event.step_n + 1]
             if body_outer_force_center is np.nan:
-                print(body_COG, body_outer_force_center)
+                return 0
             dist = distance.euclidean(body_COG, body_outer_force_center)
             return 1 / (1 + dist)
         else:
@@ -195,8 +194,8 @@ class InstantContactingLinkCriterion(Criterion):
                     contacting_bodies += 1
 
             return contacting_bodies / n_bodies
-        else:
-            return 0
+
+        return 0
 
 
 class GraspTimeCriterion(Criterion):
@@ -219,8 +218,8 @@ class GraspTimeCriterion(Criterion):
         """
         if self.grasp_event.state:
             return (self.total_steps - self.grasp_event.step_n) / self.total_steps
-        else:
-            return 0
+
+        return 0
 
 
 class FinalPositionCriterion(Criterion):
