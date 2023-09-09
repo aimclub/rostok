@@ -53,6 +53,7 @@ def get_object_box_rotation(x, y, z, yaw=0, pitch=0, roll=0, mass = 0.1, smc = F
                                     material=mat,
                                     density=density,
                                     color=[215, 255, 0],
+                                    material=mat,
                                     pos=FrameTransform([0, 0, 0], quat))
     return obj
 
@@ -82,12 +83,13 @@ def get_object_cylinder_rotation(radius, length, yaw=0, pitch=0, roll=0, mass = 
         mat = DefaultChronoMaterialSMC()
     else:
         mat = DefaultChronoMaterialNSC()
+    shape = easy_body_shapes.Cylinder(radius, length)
     density = mass / (3.14*radius**2*length)
     obj = EnvironmentBodyBlueprint(shape=shape_box,
                                     material=mat,
                                     density=density,
                                     color=[215, 255, 0],
-                                    pos=FrameTransform([0, 0, 0], quat))
+                                   pos=FrameTransform([0, 0, 0], quat))
 
     return obj
 
