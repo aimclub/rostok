@@ -19,7 +19,7 @@ if __name__ == "__main__":
     grasp_object_blueprint.append(get_object_cylinder(0.07, 0.09, 0))
     grasp_object_blueprint.append(get_object_box(0.12, 0.12, 0.1, 0))
     # create reward counter using run setup function
-    control_optimizer = config_combination_force_tendon_multiobject_parallel(grasp_object_blueprint, [ 1, 1, 1])
+    control_optimizer = config_combination_force_tendon_multiobject_parallel(grasp_object_blueprint, [1, 1, 1])
 
     init_graph = GraphGrammar()
     env = SubStringDesignEnvironment(rule_vocabulary, control_optimizer, 13, init_graph, 0)

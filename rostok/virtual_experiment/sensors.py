@@ -110,6 +110,7 @@ class Sensor:
                 round(body.body.GetPos().y, 4),
                 round(body.body.GetPos().z, 4)
             ]
+            output[idx] = np.nan_to_num(output[idx], nan=9999).tolist()
         return output
 
     def get_velocity(self):
@@ -120,6 +121,7 @@ class Sensor:
                 round(body.body.GetPos_dt().y, 4),
                 round(body.body.GetPos_dt().z, 4)
             ]
+            output[idx] = np.nan_to_num(output[idx], nan=9999).tolist()
         return output
     
     def get_rotation_velocity(self):
@@ -127,6 +129,7 @@ class Sensor:
         for idx, body in self.body_map_ordered.items():
             mat = body.body.GetA_dt()
             output[idx] = [[mat.Get_A_Xaxis.x, mat.Get_A_Yaxis.x, mat.Get_A_Zaxis.x], [mat.Get_A_Xaxis.y, mat.Get_A_Yaxis.y, mat.Get_A_Zaxis.y], [mat.Get_A_Xaxis.z, mat.Get_A_Yaxis.z, mat.Get_A_Zaxis.z]]
+            output[idx] = np.nan_to_num(output[idx], nan=9999).tolist()
         return output
 
     def get_joint_z_trajectory_point(self):
@@ -137,6 +140,7 @@ class Sensor:
             relative_rot = (master_body.GetInverse() * slave_body)
             angle = chrono.Q_to_Euler123(chrono.ChQuaternionD(relative_rot.GetRot()))
             output[idx] = round(angle.z, 5)
+            output[idx] = np.nan_to_num(output[idx], nan=9999).tolist()
         
         return output
 
@@ -147,9 +151,9 @@ class Sensor:
             contacts_idx = contacts[idx]
             if len(contacts_idx) > 0:
                 output[idx] = contacts_idx
+                output[idx] = np.nan_to_num(output[idx], nan=0).tolist()
             else:
                 output[idx] = []
-
         return output
 
     def get_amount_contacts(self):
@@ -158,7 +162,7 @@ class Sensor:
         for idx in self.body_map_ordered:
             contacts_idx = contacts[idx]
             output[idx] = len(contacts_idx)
-
+            output[idx] = np.nan_to_num(output[idx], nan=0).tolist()
         return output
 
     def get_outer_force_center(self):
@@ -175,6 +179,7 @@ class Sensor:
                 body_contact_coordinates_sum = body_contact_coordinates_sum * (1 /
                                                                                len(contacts_idx))
                 output[idx] = list(body_contact_coordinates_sum)
+                output[idx] = np.nan_to_num(output[idx], nan=9999).tolist()
             else:
                 output[idx] = None
 
