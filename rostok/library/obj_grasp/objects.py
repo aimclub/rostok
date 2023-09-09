@@ -53,7 +53,6 @@ def get_object_box_rotation(x, y, z, yaw=0, pitch=0, roll=0, mass = 0.1, smc = F
                                     material=mat,
                                     density=density,
                                     color=[215, 255, 0],
-                                    material=mat,
                                     pos=FrameTransform([0, 0, 0], quat))
     return obj
 
