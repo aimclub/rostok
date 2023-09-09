@@ -42,7 +42,7 @@ graph = get_two_link_three_finger()
 # graph = get_three_same_link_one_finger()
 # graph = get_two_link_three_finger_rotated()
 # graph = get_three_link_three_finger()
-control = [8.5, 10, 10]
+control = [10, 10, 10]
 
 data = control_optimizer.optim_parameters2data_control(control, graph)
 #control_optimizer.data.create_pulley_data_file = True
