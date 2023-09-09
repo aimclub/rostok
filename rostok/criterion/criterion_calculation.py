@@ -291,21 +291,24 @@ class SimulationReward:
         Returns:
             float: total reward
         """
-        partial_rewards = []
-        for criterion in self.criteria:
-            reward = criterion.calculate_reward(simulation_output)
-            partial_rewards.append(round(reward,3))
+        try:
+            partial_rewards = []
+            for criterion in self.criteria:
+                reward = criterion.calculate_reward(simulation_output)
+                partial_rewards.append(round(reward,3))
 
-        if partial:
-            return partial_rewards
-        if self.verbosity > 0:
-            print([round(x, 3) for x in partial_rewards])
+            if partial:
+                return partial_rewards
+            if self.verbosity > 0:
+                print([round(x, 3) for x in partial_rewards])
 
-        total_reward = sum([a * b for a, b in zip(partial_rewards, self.weights)])
-        
-        if np.isclose(total_reward, 0, atol=1e-3):
-            total_reward = 0.02
-        return round(total_reward, 3)
+            total_reward = sum([a * b for a, b in zip(partial_rewards, self.weights)])
+            
+            if np.isclose(total_reward, 0, atol=1e-3):
+                total_reward = 0.02
+            return round(total_reward, 3)
+        except ValueError:
+            return -1
 
     def __repr__(self) -> str:
         json_data = json.dumps(self, cls=RostokJSONEncoder)
