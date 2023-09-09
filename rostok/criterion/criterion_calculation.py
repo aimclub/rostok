@@ -307,8 +307,8 @@ class SimulationReward:
             if np.isclose(total_reward, 0, atol=1e-3):
                 total_reward = 0.02
             return round(total_reward, 3)
-        except ValueError:
-            return -1
+        except:
+            return -1.0
 
     def __repr__(self) -> str:
         json_data = json.dumps(self, cls=RostokJSONEncoder)
