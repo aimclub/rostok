@@ -586,7 +586,7 @@ class ParralelOptimizerCombinationForce(TendonOptimizer):
         print(f"Use CPUs processor: {cpus}")
         parallel_results = []
         try:
-            parallel_results = Parallel(cpus, backend = "multiprocessing", verbose=100, timeout=60*5)(delayed(self._parallel_reward_with_parameters)(i) for i in input_dates)
+            parallel_results = Parallel(cpus, backend = "multiprocessing", verbose=100, timeout=60)(delayed(self._parallel_reward_with_parameters)(i) for i in input_dates)
         except:
              print("TIMEOUT")
              return (0.01, [])
