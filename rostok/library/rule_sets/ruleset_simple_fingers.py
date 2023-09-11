@@ -54,11 +54,11 @@ def create_rules(tendon=True, smc=False):
                                              density=get_density_box(link_mass, Box(
                                                  0.035, x, 0.027))), length_link))
 
-    x_translation_values = [0.06, 0.085, 0.11]
+    x_translation_values = [0.06, 0.095, 0.130]
     X_TRANSLATIONS = list(
         map(lambda x: FrameTransform([x, 0, 0], [1, 0, 0, 0]), x_translation_values))
 
-    z_translation_values = [0.05, 0.075, 0.1]
+    z_translation_values = [0.055, 0.09, 0.125]
     Z_TRANSLATIONS_POSITIVE = list(
         map(lambda x: FrameTransform([0, 0, x], [1, 0, 0, 0]), z_translation_values))
     Z_TRANSLATIONS_NEGATIVE = list(

@@ -218,7 +218,7 @@ class EventGrasp(SimulationSingleEvent):
                  grasp_limit_time: float,
                  contact_event: EventContact,
                  verbosity: int = 0,
-                 simulation_stop=False):
+                 simulation_stop:bool = False):
         super().__init__(verbosity=verbosity)
         self.grasp_steps: int = 0
         self.grasp_time: Optional[float] = None
@@ -260,7 +260,7 @@ class EventGrasp(SimulationSingleEvent):
             EventCommands: return a command for simulation
         """
 
-        if self.grasp_time:
+        if self.state:
             return EventCommands.CONTINUE
 
         if self.check_grasp_timeout(current_time):
