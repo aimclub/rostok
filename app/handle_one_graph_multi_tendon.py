@@ -36,6 +36,10 @@ graph = des.get_four_same_link_one_finger()
 graph = des.get_three_same_link_one_finger()
 graph = des.get_three_same_link_one_finger()
 graph = des.get_four_same_link_one_finger()
+graph = des.get_five_same_link_one_finger()
+graph = des.get_six_same_link_one_finger()
+graph = des.get_seven_same_link_one_finger()
+
 
 control = [[10,10,10,10]]
 
