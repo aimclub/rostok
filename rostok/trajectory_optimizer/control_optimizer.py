@@ -437,7 +437,7 @@ class TendonOptimizer(GraphRewardCalculator):
     def bound_parameters(self, graph: GraphGrammar):
         n_branches = len(joint_root_paths(graph))
         print('n_branches:', n_branches)
-        if n_branches == 0:
+        if n_branches == 0 or n_branches > 5:
             return []
         multi_bound = []
         for _ in range(n_branches):
@@ -587,7 +587,7 @@ class ParralelOptimizerCombinationForce(TendonOptimizer):
         with Pool(processes=cpus) as pool:
             for out in pool.imap_unordered(self._parallel_reward_with_parameters, input_dates):
                 parallel_results.append(out)
-                
+
         result_group_object = {sim_scen[0].grasp_object_callback: [] for sim_scen in self.simulation_scenario}
         for results in parallel_results:
             obj = results[1].grasp_object_callback
