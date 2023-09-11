@@ -1,6 +1,7 @@
 from multiprocessing import Pool, TimeoutError
+import multiprocessing
 import os
-
+from joblib import Parallel, delayed
 from abc import abstractmethod, ABC
 from dataclasses import dataclass, field
 import time
@@ -584,10 +585,16 @@ class ParralelOptimizerCombinationForce(TendonOptimizer):
         cpus = len(input_dates) + 1 if len(input_dates) < cpus else cpus
         print(f"Use CPUs processor: {cpus}")
         parallel_results = []
+        try:
+            parallel_results = Parallel(cpus, backend = "multiprocessing", verbose=100, timeout=60*5)(delayed(self._parallel_reward_with_parameters)(i) for i in input_dates)
+        except:
+             print("TIMEOUT")
+             return (0.01, [])
+        """
         with Pool(processes=cpus) as pool:
             for out in pool.imap_unordered(self._parallel_reward_with_parameters, input_dates):
                 parallel_results.append(out)
-                
+        """        
         result_group_object = {sim_scen[0].grasp_object_callback: [] for sim_scen in self.simulation_scenario}
         for results in parallel_results:
             obj = results[1].grasp_object_callback
