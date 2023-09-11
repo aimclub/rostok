@@ -22,8 +22,8 @@ if __name__ == "__main__":
     rule_vocabulary = create_rules()
     grasp_object_blueprint = []
     grasp_object_blueprint.append(get_object_box(0.25, 0.146, 0.147, 0, mass=0.164))
-    # grasp_object_blueprint.append(get_object_ellipsoid(0.14, 0.14, 0.22, 0, mass=0.188))
-    # grasp_object_blueprint.append(get_object_cylinder(0.155/2, 0.155, 0, mass = 0.261))
+    grasp_object_blueprint.append(get_object_ellipsoid(0.14, 0.14, 0.22, 0, mass=0.188))
+    grasp_object_blueprint.append(get_object_cylinder(0.155/2, 0.155, 0, mass = 0.261))
     # grasp_object_blueprint.append(get_object_parametrized_dipyramid_3(0.1, 0.132, 90))
     # grasp_object_blueprint.append(get_object_parametrized_trapezohedron(0.15, mass=0.467))
     # grasp_object_blueprint.append(get_object_ellipsoid(0.14, 0.14, 0.22, 0, mass=0.188))

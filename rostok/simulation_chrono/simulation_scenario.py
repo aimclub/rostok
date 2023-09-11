@@ -112,7 +112,7 @@ class SMCGrasp(ParametrizedSimulation):
         grav_n_shake = ShakeAndNullGravity(mass_object*gravity, 5, 5, 3, 2, start_time=float("inf"))
         # the object  positioning based on the AABB
         set_covering_ellipsoid_based_position(grasp_object,
-                                           reference_point=chrono.ChVectorD(0, 0.05, 0))
+                                           reference_point=chrono.ChVectorD(0, 0.1, 0))
 
         simulation.env_creator.add_object(grasp_object,
                                           read_data=True,
