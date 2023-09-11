@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     mcts = MCTS(env, hp.MCTS_C)
     name_directory = input("enter directory name: ")
-    mcts_manager = MCTSManager(mcts, name_directory,verbosity=2, use_date=False)
+    mcts_manager = MCTSManager(mcts, name_directory,verbosity=2, use_date=True)
     mcts_manager.save_information_about_search(hp, grasp_object_blueprint)
 
     for i in range(hp.FULL_LOOP_MCTS):

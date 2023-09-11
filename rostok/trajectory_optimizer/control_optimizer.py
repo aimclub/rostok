@@ -581,8 +581,8 @@ class ParralelOptimizerCombinationForce(TendonOptimizer):
         input_dates = [(np.array(put[0]), graph, put[1][0]) for put in all_simulations]
         np.random.shuffle(input_dates)
         
-        cpus = len(input_dates) if len(input_dates) < cpus else cpus
-        
+        cpus = len(input_dates) + 1 if len(input_dates) < cpus else cpus
+        print(f"Use CPUs processor: {cpus}")
         parallel_results = []
         with Pool(processes=cpus) as pool:
             for out in pool.imap_unordered(self._parallel_reward_with_parameters, input_dates):
