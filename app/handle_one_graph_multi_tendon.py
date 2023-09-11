@@ -1,5 +1,6 @@
 import hyperparameters as hp
 import matplotlib.pyplot as plt
+import pickle
 
 import numpy as np
 from mcts_run_setup import config_combination_force_tendon_multiobject
@@ -7,7 +8,7 @@ from mcts_run_setup import config_combination_force_tendon_multiobject
 import rostok.library.obj_grasp.objects as obj_grasp
 import rostok.library.rule_sets.simple_designs as des
 from rostok.simulation_chrono.basic_simulation import SimulationResult
-
+from rostok.graph_grammar.graph_utils import plot_graph
 object_blueprint = []
 # create blueprint for object to grasp
 object_blueprint.append(obj_grasp.get_object_parametrized_trapezohedron(0.15, mass=0.467))
@@ -35,8 +36,11 @@ graph = des.get_four_same_link_one_finger()
 graph = des.get_three_same_link_one_finger()
 graph = des.get_three_same_link_one_finger()
 graph = des.get_four_same_link_one_finger()
+with open('./bastard.pickle', 'rb') as f:
+    graph = pickle.load(f)
+plot_graph(graph)
 
-control = [[10]]
+control = [[10,10,10,10]]
 
 data = control_optimizer.optim_parameters2data_control(control, graph)[0]
 
@@ -45,7 +49,7 @@ vis = True
 full_reward = 0
 for sim_scen in simulation_manager:
     simulation_output: SimulationResult = sim_scen[0].run_simulation(
-        graph, data, [[-45.0, 0, 0, 0], [-45, 0], [-45, 0]], vis, True)
+        graph, data, [[-45.0, 0, 0, 0, 0, 0, 0], [-45.0, 0, 0, 0, 0, 0, 0], [-45.0, 0, 0, 0, 0, 0, 0], [-45.0, 0, 0, 0, 0, 0, 0]], vis, True)
     res = simulation_rewarder.calculate_reward(simulation_output)
     full_reward += res
     print('reward', res)

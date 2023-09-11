@@ -436,10 +436,17 @@ class TendonOptimizer(GraphRewardCalculator):
         return data_control
 
     def bound_parameters(self, graph: GraphGrammar):
-        n_branches = len(joint_root_paths(graph))
+        joint_paths = joint_root_paths(graph)
+        n_branches = len(joint_paths)
         print('n_branches:', n_branches)
         if n_branches == 0 or n_branches > 4:
             return []
+        else:
+            lengths = [len(x) for x in joint_paths]
+            if max(lengths)>4:
+                return []
+
+
         multi_bound = []
         for _ in range(n_branches):
             multi_bound.append(self.bounds)
@@ -589,7 +596,7 @@ class ParralelOptimizerCombinationForce(TendonOptimizer):
         print(f"Use CPUs processor: {cpus}, input dates: {len(input_dates)}")
         parallel_results = []
         try:
-            parallel_results = Parallel(cpus, backend = "multiprocessing", verbose=100, timeout=60*5)(delayed(self._parallel_reward_with_parameters)(i) for i in input_dates)
+            parallel_results = Parallel(cpus, backend = "multiprocessing", verbose=100, timeout=60)(delayed(self._parallel_reward_with_parameters)(i) for i in input_dates)
         except:
              print("TIMEOUT")
              return (0.01, [])
