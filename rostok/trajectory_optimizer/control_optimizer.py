@@ -442,7 +442,7 @@ class TendonOptimizer(GraphRewardCalculator):
             return []
         else:
             lengths = [len(x) for x in joint_paths]
-            if max(lengths)>4:
+            if max(lengths)>5:
                 return []
 
 

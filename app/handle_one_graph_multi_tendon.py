@@ -36,9 +36,13 @@ graph = des.get_four_same_link_one_finger()
 graph = des.get_three_same_link_one_finger()
 graph = des.get_three_same_link_one_finger()
 graph = des.get_four_same_link_one_finger()
-with open('./bastard.pickle', 'rb') as f:
-    graph = pickle.load(f)
-plot_graph(graph)
+
+graph = des.get_five_same_link_one_finger()
+graph = des.get_six_same_link_one_finger()
+graph = des.get_seven_same_link_one_finger()
+# with open('./bastard.pickle', 'rb') as f:
+#     graph = pickle.load(f)
+# plot_graph(graph)
 
 control = [[10,10,10,10]]
 
