@@ -59,7 +59,7 @@ class ConstTorqueGrasp(ParametrizedSimulation):
         # shake = YaxisShaker(1, 1, 0.5, float("inf"))
         shake = YaxisShaker(0, -mass_object*gravity, 0, 0)
         set_covering_sphere_based_position(grasp_object,
-                                           reference_point=chrono.ChVectorD(0, 0.05, 0))
+                                           reference_point=chrono.ChVectorD(0, 0.1, 0))
         simulation.add_object(grasp_object, read_data=True, force_torque_controller=shake)
         n_steps = int(self.simulation_length / self.step_length)
         env_data_dict = {

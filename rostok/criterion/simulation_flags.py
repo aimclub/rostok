@@ -276,8 +276,8 @@ class EventGrasp(SimulationSingleEvent):
                 if self.verbosity > 0:
                     print('Grasp event!', current_time)
                 if self.simulation_stop > 0:
-                    pass
-                    # input('press enter to continue')
+                    input('press enter to continue')
+                    # pass
 
                 return EventCommands.ACTIVATE
 

@@ -474,8 +474,11 @@ class TendonOptimizer(GraphRewardCalculator):
         """
         parameters, graph, simulator_scenario = input
         data = self._transform_parameters2data(parameters)
+        # print(f"Data: correct!, {data}")
         sim_output = self.simulate_with_control_parameters(data, graph, simulator_scenario)
+        # print(f"Sim: correct! {sim_output}")
         reward = self.rewarder.calculate_reward(sim_output)
+        # prints(f"Calculate: correct! {reward}")
         return parameters, simulator_scenario, reward
 
     def _transform_parameters2data(self, parameters, *args):
@@ -582,10 +585,10 @@ class ParralelOptimizerCombinationForce(TendonOptimizer):
         np.random.shuffle(input_dates)
         
         cpus = len(input_dates) + 1 if len(input_dates) < cpus else cpus
-        print(f"Use CPUs processor: {cpus}")
+        print(f"Use CPUs processor: {cpus}, input dates: {len(input_dates)}")
         parallel_results = []
         with Pool(processes=cpus) as pool:
-            for out in pool.imap_unordered(self._parallel_reward_with_parameters, input_dates):
+            for out in pool.imap(self._parallel_reward_with_parameters, input_dates, chunksize=3):
                 parallel_results.append(out)
                 
         result_group_object = {sim_scen[0].grasp_object_callback: [] for sim_scen in self.simulation_scenario}

@@ -21,9 +21,9 @@ from mcts_run_setup import config_combination_force_tendon_multiobject_parallel
 if __name__ == "__main__":
     rule_vocabulary = create_rules()
     grasp_object_blueprint = []
-    grasp_object_blueprint.append(get_object_parametrized_trapezohedron(0.15))
-    grasp_object_blueprint.append(get_object_box(0.14, 0.19, 0.28, 0, mass = 0.268))
+    grasp_object_blueprint.append(get_object_parametrized_trapezohedron(0.15, mass=0.467))
     grasp_object_blueprint.append(get_object_ellipsoid(0.14, 0.14, 0.22, 0, mass=0.188))
+    grasp_object_blueprint.append(get_object_box(0.14, 0.19, 0.28, 0, mass = 0.268))
     # create reward counter using run setup function
     control_optimizer = config_combination_force_tendon_multiobject_parallel(
         grasp_object_blueprint, [1.1, 1.2, 0.5])
@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     mcts = MCTS(env, hp.MCTS_C)
     name_directory = input("enter directory name: ")
-    mcts_manager = MCTSManager(mcts, name_directory,verbosity=2, use_date=True)
+    mcts_manager = MCTSManager(mcts, name_directory,verbosity=2, use_date=False)
     mcts_manager.save_information_about_search(hp, grasp_object_blueprint)
 
     for i in range(hp.FULL_LOOP_MCTS):

@@ -191,7 +191,7 @@ def get_object_parametrized_cuboctahedron(a) -> EnvironmentBodyBlueprint:
     return obj
 
 
-def get_object_parametrized_dipyramid_3(a, mass = 0.1, alpha=0) -> EnvironmentBodyBlueprint:
+def get_object_parametrized_dipyramid_3(a, mass = 0.177, alpha=0) -> EnvironmentBodyBlueprint:
     # edge is 2*a
     matich = DefaultChronoMaterialNSC()
     C0 = np.sqrt(3) / 3

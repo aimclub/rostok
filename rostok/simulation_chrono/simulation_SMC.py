@@ -257,15 +257,12 @@ class SingleRobotSimulation():
                     # print(i)
                 else:
                     frame_simulation += 1
-
             stop_flag = self.handle_single_events(event_container, current_time, i)
-
             if stop_flag:
                 break
 
         if visualize:
             self.vis_manager.vis.GetDevice().closeDevice()
-
         self.result.environment_final_ds = self.env_creator.data_storage
         self.result.robot_final_ds = self.robot.data_storage
         self.result.time = self.chrono_system.GetChTime()
