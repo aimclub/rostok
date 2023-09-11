@@ -437,7 +437,7 @@ class TendonOptimizer(GraphRewardCalculator):
     def bound_parameters(self, graph: GraphGrammar):
         n_branches = len(joint_root_paths(graph))
         print('n_branches:', n_branches)
-        if n_branches == 0 or n_branches > 5:
+        if n_branches == 0 or n_branches > 4:
             return []
         multi_bound = []
         for _ in range(n_branches):
