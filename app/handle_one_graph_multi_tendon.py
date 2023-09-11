@@ -11,10 +11,10 @@ from rostok.simulation_chrono.basic_simulation import SimulationResult
 from rostok.graph_grammar.graph_utils import plot_graph
 object_blueprint = []
 # create blueprint for object to grasp
-object_blueprint.append(obj_grasp.get_object_parametrized_trapezohedron(0.15, mass=0.467))
-object_blueprint.append(obj_grasp.get_object_cylinder(0.155/2, 0.155, 0, mass = 0.261))
-object_blueprint.append(obj_grasp.get_object_box(0.14, 0.19, 0.28, 0, mass = 0.268))
-object_blueprint.append(obj_grasp.get_object_parametrized_dipyramid_3(0.1, 90))
+# object_blueprint.append(obj_grasp.get_object_parametrized_trapezohedron(0.15, mass=0.467))
+# object_blueprint.append(obj_grasp.get_object_cylinder(0.155/2, 0.155, 0, mass = 0.261))
+# object_blueprint.append(obj_grasp.get_object_box(0.14, 0.19, 0.28, 0, mass = 0.268))
+object_blueprint.append(obj_grasp.get_object_parametrized_dipyramid_3(0.1, 0.13, 90))
 object_blueprint.append(obj_grasp.get_object_ellipsoid(0.14, 0.14, 0.22, 0, mass = 0.188))
 
 # create reward counter using run setup function
@@ -36,9 +36,6 @@ graph = des.get_four_same_link_one_finger()
 graph = des.get_three_same_link_one_finger()
 graph = des.get_three_same_link_one_finger()
 graph = des.get_four_same_link_one_finger()
-with open('./bastard.pickle', 'rb') as f:
-    graph = pickle.load(f)
-plot_graph(graph)
 
 control = [[10,10,10,10]]
 

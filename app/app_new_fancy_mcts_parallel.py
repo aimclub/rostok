@@ -21,12 +21,15 @@ from mcts_run_setup import config_combination_force_tendon_multiobject_parallel
 if __name__ == "__main__":
     rule_vocabulary = create_rules()
     grasp_object_blueprint = []
-    grasp_object_blueprint.append(get_object_parametrized_trapezohedron(0.15, mass=0.467))
-    grasp_object_blueprint.append(get_object_ellipsoid(0.14, 0.14, 0.22, 0, mass=0.188))
-    grasp_object_blueprint.append(get_object_box(0.14, 0.19, 0.28, 0, mass = 0.268))
+    grasp_object_blueprint.append(get_object_box(0.25, 0.146, 0.147, 0, mass=0.164))
+    # grasp_object_blueprint.append(get_object_ellipsoid(0.14, 0.14, 0.22, 0, mass=0.188))
+    # grasp_object_blueprint.append(get_object_cylinder(0.155/2, 0.155, 0, mass = 0.261))
+    # grasp_object_blueprint.append(get_object_parametrized_dipyramid_3(0.1, 0.132, 90))
+    # grasp_object_blueprint.append(get_object_parametrized_trapezohedron(0.15, mass=0.467))
+    # grasp_object_blueprint.append(get_object_ellipsoid(0.14, 0.14, 0.22, 0, mass=0.188))
     # create reward counter using run setup function
     control_optimizer = config_combination_force_tendon_multiobject_parallel(
-        grasp_object_blueprint, [1.1, 1.2, 0.5])
+        grasp_object_blueprint, [1, 1, 1])
 
     init_graph = GraphGrammar()
     env = SubStringDesignEnvironment(rule_vocabulary, control_optimizer, hp.MAX_NUMBER_RULES, init_graph, 0)
