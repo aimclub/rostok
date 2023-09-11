@@ -429,7 +429,7 @@ def config_combination_force_tendon_multiobject(grasp_object_blueprint, weights)
 
 
     control_optimizer = TendonOptimizerCombinationForce(simulation_managers,
-                                                       simulation_rewarder, data, hp.TENDON_DISCRETE_FORCES, starting_finger_angles=-45)
+                                                       simulation_rewarder, data, hp.TENDON_DISCRETE_FORCES, starting_finger_angles=-25)
 
     return control_optimizer
 
@@ -496,6 +496,6 @@ def config_combination_force_tendon_multiobject_parallel(grasp_object_blueprint,
 
 
     control_optimizer = ParralelOptimizerCombinationForce(simulation_managers,
-                                                       simulation_rewarder, data, hp.TENDON_DISCRETE_FORCES, starting_finger_angles=-45)
+                                                       simulation_rewarder, data, hp.TENDON_DISCRETE_FORCES, starting_finger_angles=-25)
 
     return control_optimizer
