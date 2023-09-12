@@ -10,6 +10,7 @@ import numpy as np
 import json
 import types
 from rostok.control_chrono.tendon_controller import TendonControllerParameters
+from rostok.criterion.simulation_flags import EventFlyingApart
 from rostok.graph_grammar.node_block_typing import get_joint_matrix_from_graph
 from scipy.optimize import direct, dual_annealing, shgo
 
@@ -467,6 +468,8 @@ class TendonOptimizer(GraphRewardCalculator):
         """
         data = self._transform_parameters2data(parameters)
         sim_output = self.simulate_with_control_parameters(data, graph, simulator_scenario)
+        if list(filter(lambda x: isinstance(x,EventFlyingApart), simulator_scenario.event_container))[0].state:
+            return 0.03
         reward = self.rewarder.calculate_reward(sim_output)
         return -reward
 
@@ -485,6 +488,8 @@ class TendonOptimizer(GraphRewardCalculator):
         data = self._transform_parameters2data(parameters)
         # print(f"Data: correct!, {data}")
         sim_output = self.simulate_with_control_parameters(data, graph, simulator_scenario)
+        if list(filter(lambda x: isinstance(x,EventFlyingApart), simulator_scenario.event_container))[0].state:
+            return 0.03
         # print(f"Sim: correct! {sim_output}")
         reward = self.rewarder.calculate_reward(sim_output)
         # prints(f"Calculate: correct! {reward}")
