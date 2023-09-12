@@ -209,7 +209,7 @@ class ShakeAndNullGravity(YaxisShaker):
         if time >= self.start_time:
             y_force += self.amp * sin(self.freq * (time - self.start_time)) + self.amp_offset
             if self.xz_amp > 0:
-                if self.counter % 50 == 0:
+                if self.counter % 20 == 0:
                     # self.x_force = np.random.uniform(-self.xz_amp, self.xz_amp)
                     # self.z_force = np.random.uniform(-self.xz_amp, self.xz_amp)
                     # self.x_force /= np.sqrt(self.x_force**2 + self.z_force**2)

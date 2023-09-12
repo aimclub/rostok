@@ -378,7 +378,7 @@ class TendonOptimizer(GraphRewardCalculator):
 
     def simulate_with_control_parameters(self, data, graph, simulation_scenario):
         starting_positions = self.build_starting_positions(graph)
-        return simulation_scenario.run_simulation(graph, data, starting_positions, vis=True, delay=False)
+        return simulation_scenario.run_simulation(graph, data, starting_positions, vis=False, delay=False)
 
     def calculate_reward(self, graph: GraphGrammar):
         """Constant moment optimization method using scenario simulation and rewarder for calculating objective function.

@@ -109,7 +109,7 @@ class SMCGrasp(ParametrizedSimulation):
         mass_object = grasp_object.body.GetMass()
         gravity = simulation.chrono_system.Get_G_acc().y
         # shake = YaxisShaker(1, 3, 0.5, float("inf"))
-        grav_n_shake = ShakeAndNullGravity(mass_object*gravity, 0.5, 5, 3, 2, start_time=float("inf"))
+        grav_n_shake = ShakeAndNullGravity(mass_object*gravity, 3, 5, 3, 2, start_time=float("inf"))
         # the object  positioning based on the AABB
         set_covering_ellipsoid_based_position(grasp_object,
                                            reference_point=chrono.ChVectorD(0, 0.1, 0))
