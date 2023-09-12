@@ -199,7 +199,7 @@ class ShakeAndNullGravity(YaxisShaker):
         # self.x_force = 0
         # self.z_force = 0
         self.xz_angle = 0
-        self.angle_step_xz = 30
+        self.angle_step_xz = np.pi/6
     
     def get_force_torque(self, time: float, data) -> ForceTorque:
         impact = ForceTorque()
