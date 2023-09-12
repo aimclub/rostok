@@ -106,6 +106,8 @@ class SMCGrasp(ParametrizedSimulation):
 
         # grasp_object = self.grasp_object_callback()
         grasp_object = creator.create_environment_body(self.grasp_object_callback)
+        grasp_object.body.SetNameString("Grasp_object")
+        #grasp_object.body.GetVisualShape(0).SetTexture("./YOBA.png")
         mass_object = grasp_object.body.GetMass()
         gravity = simulation.chrono_system.Get_G_acc().y
         # shake = YaxisShaker(1, 3, 0.5, float("inf"))

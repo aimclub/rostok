@@ -118,7 +118,7 @@ def get_three_link_one_finger(smc = False):
     graph = GraphGrammar()
     rules = ["Init",
         "AddFinger", "Terminal_Radial_Translate3",  "Phalanx", "Phalanx", "Remove_FG",
-        "Terminal_Link3", "Terminal_Link2", "Terminal_Link1","Terminal_Base_Joint_2", "Terminal_Joint_2", "Terminal_Joint_2",
+        "Terminal_Link3", "Terminal_Link2", "Terminal_Link1","Terminal_Base_Joint_2", "Terminal_Joint_1", "Terminal_Joint_2",
         "RemoveFinger_N",
         "RemoveFinger_R", 
         "RemoveFinger_RN", 
@@ -135,7 +135,7 @@ def get_three_same_link_one_finger(smc = False):
     graph = GraphGrammar()
     rules = ["Init",
         "AddFinger", "Terminal_Radial_Translate1", "Phalanx", "Phalanx", "Remove_FG",
-        "Terminal_Link2", "Terminal_Link2", "Terminal_Link2", "Terminal_Base_Joint_3", "Terminal_Joint_1", "Terminal_Joint_1",
+        "Terminal_Link1", "Terminal_Link1", "Terminal_Link1", "Terminal_Base_Joint_1", "Terminal_Joint_1", "Terminal_Joint_1",
         "RemoveFinger_N",
         "RemoveFinger_R", 
         "RemoveFinger_RN", 
@@ -152,7 +152,7 @@ def get_four_same_link_one_finger(smc = False):
     graph = GraphGrammar()
     rules = ["Init",
         "AddFinger", "Terminal_Radial_Translate1", "Phalanx", "Phalanx", "Phalanx","Remove_FG",
-        "Terminal_Link2", "Terminal_Link2", "Terminal_Link2","Terminal_Link2", "Terminal_Base_Joint_2", "Terminal_Joint_2", "Terminal_Joint_2",  "Terminal_Joint_2",
+        "Terminal_Link2", "Terminal_Link3", "Terminal_Link2","Terminal_Link2", "Terminal_Base_Joint_2", "Terminal_Joint_2", "Terminal_Joint_2",  "Terminal_Joint_2",
         "RemoveFinger_N",
         "RemoveFinger_R", 
         "RemoveFinger_RN", 

@@ -97,7 +97,7 @@ def create_rules(tendon=True, smc=False):
             lambda x, y: RevolveJointBlueprint(JointInputType.UNCONTROL,
                                                stiffness=x,
                                                damping=0.01,
-                                               offset=0.0085,
+                                               offset=0.008,
                                                material=def_mat,
                                                radius=joint_radius,
                                                length=joint_length,
@@ -105,7 +105,7 @@ def create_rules(tendon=True, smc=False):
                                                equilibrium_position=y), stiffness_values,
             preload_angle_values))
 
-    stiffness__values_base = [0.17, 0.095, 0.07]
+    stiffness__values_base = [0.19, 0.095, 0.07]
     preload_angle_values_base = [0, 0, 0]
     no_control_base = list(
         map(

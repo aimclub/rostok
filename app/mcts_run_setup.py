@@ -135,8 +135,8 @@ def config_with_tendon(grasp_object_blueprint):
         1: [Offset(-0.14, True), Offset(-0.005, False, True),
             Offset(0, True)]
     }
-    data.starting_point_parameters = [Offset(-1.5, True), Offset(5, True), Offset(0, True)]
-    data.tip_parameters = [Offset(-1, True), Offset(0.8, True), Offset(0, True)]
+    data.starting_point_parameters = [Offset(-1., True), Offset(5 , True), Offset(0, True)]
+    data.tip_parameters = [Offset(-0.3, True), Offset(-0.005, False, True), Offset(0, True)]
 
     control_optimizer = TendonOptimizerDirect(simulation_manager, simulation_rewarder, data, -45,
                                               hp.CONTROL_OPTIMIZATION_BOUNDS,
@@ -424,8 +424,8 @@ def config_combination_force_tendon_multiobject(grasp_object_blueprint, weights)
         1: [Offset(-0.14, True), Offset(-0.005, False, True),
             Offset(0, True)]
     }
-    data.starting_point_parameters = [Offset(-0.045, False), Offset(0.025, False), Offset(0, True)]
-    data.tip_parameters = [Offset(-1, True), Offset(1, True), Offset(0, True)]
+    data.starting_point_parameters = [Offset(-0.02, False), Offset(0.025, False), Offset(0, True)]
+    data.tip_parameters = [Offset(-0.3, True), Offset(-0.005, False, True), Offset(0, True)]
 
 
     control_optimizer = TendonOptimizerCombinationForce(simulation_managers,
@@ -491,8 +491,8 @@ def config_combination_force_tendon_multiobject_parallel(grasp_object_blueprint,
         1: [Offset(-0.14, True), Offset(-0.005, False, True),
             Offset(0, True)]
     }
-    data.starting_point_parameters = [Offset(-0.045, False), Offset(0.025, False), Offset(0, True)]
-    data.tip_parameters = [Offset(-1, True), Offset(1, True), Offset(0, True)]
+    data.starting_point_parameters = [Offset(-0.02, False), Offset(0.025, False), Offset(0, True)]
+    data.tip_parameters [Offset(-0.3, True), Offset(-0.005, False, True), Offset(0, True)]
 
 
     control_optimizer = ParralelOptimizerCombinationForce(simulation_managers,
