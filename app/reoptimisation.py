@@ -5,16 +5,21 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-from mcts_run_setup import config_with_standard_multiobject
+from mcts_run_setup import config_combination_force_tendon_multiobject, config_combination_force_tendon_multiobject_parallel
+
+from rostok.graph_generators.environments.design_environment import DesignEnvironment, SubDesignEnvironment, SubStringDesignEnvironment, prepare_state_for_optimal_simulation
+
 
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
-from rostok.graph_generators.mcts_helper import (MCTSSaveable, OptimizedGraphReport)
-from rostok.library.obj_grasp.objects import (get_obj_hard_mesh_piramida,
-                                              get_object_parametrized_sphere, get_object_cylinder,
-                                              get_object_box, get_object_ellipsoid)
-#from rostok.library.rule_sets.ruleset_old_style import create_rules
-from rostok.utils.pickle_save import load_saveable
+from rostok.library.obj_grasp.objects import (get_object_cylinder,get_object_box, get_object_ellipsoid)
+from rostok.library.rule_sets.ruleset_simple_fingers import create_rules
 
+from rostok.graph_generators.search_algorithms.mcts import MCTS
+from rostok.graph_generators.mcts_manager import MCTSManager
+
+RULE_VOCABULARY = create_rules()
+
+import hyperparameters as hp
 
 def reoptimize_nth_graph(n: int, objects_and_weights: Tuple[List[EnvironmentBodyBlueprint],List[int]]):
     root = Tk()
@@ -30,7 +35,7 @@ def reoptimize_nth_graph(n: int, objects_and_weights: Tuple[List[EnvironmentBody
     report_path = None
 
     def func_browse():
-        path = filedialog.askopenfilename()
+        path = filedialog.askdirectory()
         nonlocal entry_browse
         entry_browse.delete(first=0, last=END)
         entry_browse.insert(0, path)
@@ -47,38 +52,40 @@ def reoptimize_nth_graph(n: int, objects_and_weights: Tuple[List[EnvironmentBody
     btn_add.place(x=300, y=85)
 
     root.mainloop()
-    report = load_saveable(report_path)
-    graph_report = report.seen_graphs
-    control_optimizer = config_with_standard_multiobject(*objects_and_weights)
-    control_optimizer.limit = 8
-    control_optimizer.bounds = (6, 20)
+    control_optimizer = config_combination_force_tendon_multiobject_parallel(*objects_and_weights)
+    env = SubStringDesignEnvironment(RULE_VOCABULARY, control_optimizer, hp.MAX_NUMBER_RULES, verbosity=4)
+    mcts = MCTS(env)
+    # mcts_manager = MCTSManager(mcts, "reoptimization",verbosity=4, use_date=False)
+    mcts.load(report_path)
+    best_s = env.get_best_states(n)
     simulation_rewarder = control_optimizer.rewarder
     simulation_managers = control_optimizer.simulation_scenario
-    graph_list = graph_report.graph_list
+    for s in best_s:
+        full_reward = 0
+        G = env.state2graph[s]
+        reward, optim_parameters = control_optimizer.calculate_reward(G)
+        control = control_optimizer.optim_parameters2data_control(optim_parameters, G)
 
-    sorted_graph_list = sorted(graph_list, key=lambda x: -x.reward)
-    graph = sorted_graph_list[n]
-    G = graph.graph
-    reward = graph.reward
-    print(graph.control)
-    reward, optim_parameters = control_optimizer.calculate_reward(G)
-    control = control_optimizer.optim_parameters2data_control(optim_parameters, G)
-    print(control)
-    simulation_rewarder.verbosity = 1
-    i = 0
-    for simulation_scenario in simulation_managers:
+        simulation_rewarder.verbosity = 1
+        for sim_scen, ctrl in zip(simulation_managers, control):
+            simulation_output = env.control_optimizer.simulate_with_control_parameters(ctrl, G, sim_scen[0])
+            part_reward = simulation_rewarder.calculate_reward(simulation_output, True)
+            reward = simulation_rewarder.calculate_reward(simulation_output)
+            full_reward += reward*sim_scen[1]
+            print("=====================================")
+            print(f"Object: {sim_scen[0].grasp_object_callback}")
+            print(f"New control: {ctrl.forces}, old control: {env.terminal_states[s][1]}")
+            print(f"Partial reward: {part_reward}")
+            print(f"Reward: {reward}")
+            print("=====================================")
+        print(f"Full reward: {full_reward}, old reward: {env.terminal_states[s][0]}")
 
-        simulation_output = simulation_scenario[0].run_simulation(G, control[i], True, False)
-        res = simulation_rewarder.calculate_reward(simulation_output)
-        print(res)
-        print()
-        i += 1
 
 
 if __name__ == "__main__":
     grasp_object_blueprints = ([
-        get_object_box(0.8, 1, 0.4, 10),
-        get_object_cylinder(0.6, 0.9, 10),
-        get_object_parametrized_sphere(0.6)
+        get_object_box(0.25, 0.146, 0.147, 0, mass=0.164),
+        get_object_ellipsoid(0.14, 0.14, 0.22, 0, mass=0.188),
+        get_object_cylinder(0.155/2, 0.155, 0, mass = 0.261),
     ], [1, 1, 1])
-    reoptimize_nth_graph(2, grasp_object_blueprints)
+    reoptimize_nth_graph(1, grasp_object_blueprints)

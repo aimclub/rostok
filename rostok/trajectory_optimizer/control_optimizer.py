@@ -1,3 +1,4 @@
+from copy import deepcopy
 from multiprocessing import Pool, TimeoutError
 import multiprocessing
 import os
@@ -377,7 +378,7 @@ class TendonOptimizer(GraphRewardCalculator):
 
     def simulate_with_control_parameters(self, data, graph, simulation_scenario):
         starting_positions = self.build_starting_positions(graph)
-        return simulation_scenario.run_simulation(graph, data, starting_positions, vis=False, delay=False)
+        return simulation_scenario.run_simulation(graph, data, starting_positions, vis=True, delay=False)
 
     def calculate_reward(self, graph: GraphGrammar):
         """Constant moment optimization method using scenario simulation and rewarder for calculating objective function.
@@ -500,7 +501,7 @@ class TendonOptimizer(GraphRewardCalculator):
         """
         parameters = parameters.round(self.round_const)
         self.data.forces = list(parameters)
-        data = self.data
+        data = deepcopy(self.data)
         return data
 
     def _postprocessing_parameters(self, parameters):
@@ -596,7 +597,7 @@ class ParralelOptimizerCombinationForce(TendonOptimizer):
         print(f"Use CPUs processor: {cpus}, input dates: {len(input_dates)}")
         parallel_results = []
         try:
-            parallel_results = Parallel(cpus, backend = "multiprocessing", verbose=100, timeout=60)(delayed(self._parallel_reward_with_parameters)(i) for i in input_dates)
+            parallel_results = Parallel(cpus, backend = "multiprocessing", verbose=100, timeout=60*5)(delayed(self._parallel_reward_with_parameters)(i) for i in input_dates)
         except:
              print("TIMEOUT")
              return (0.01, [])
@@ -612,9 +613,11 @@ class ParralelOptimizerCombinationForce(TendonOptimizer):
         
         reward = 0
         control = []
-        for value in result_group_object.values():
+        for key, value in result_group_object.items():
             best_res = max(value, key=lambda i: i[1])
             reward += best_res[1]
+            print(f"Obj: {key}, reward: {best_res[1]}")
+            print(f"Ctrl: {best_res[0]}")
             control.append(best_res[0])
         
         return (reward, control)
