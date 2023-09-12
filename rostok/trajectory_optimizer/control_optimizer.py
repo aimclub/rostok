@@ -1,3 +1,4 @@
+from copy import deepcopy
 from multiprocessing import Pool, TimeoutError
 import multiprocessing
 import os
@@ -9,6 +10,7 @@ import numpy as np
 import json
 import types
 from rostok.control_chrono.tendon_controller import TendonControllerParameters
+from rostok.criterion.simulation_flags import EventFlyingApart
 from rostok.graph_grammar.node_block_typing import get_joint_matrix_from_graph
 from scipy.optimize import direct, dual_annealing, shgo
 
@@ -466,6 +468,8 @@ class TendonOptimizer(GraphRewardCalculator):
         """
         data = self._transform_parameters2data(parameters)
         sim_output = self.simulate_with_control_parameters(data, graph, simulator_scenario)
+        if list(filter(lambda x: isinstance(x,EventFlyingApart), simulator_scenario.event_container))[0].state:
+            return 0.03
         reward = self.rewarder.calculate_reward(sim_output)
         return -reward
 
@@ -484,6 +488,8 @@ class TendonOptimizer(GraphRewardCalculator):
         data = self._transform_parameters2data(parameters)
         # print(f"Data: correct!, {data}")
         sim_output = self.simulate_with_control_parameters(data, graph, simulator_scenario)
+        if list(filter(lambda x: isinstance(x,EventFlyingApart), simulator_scenario.event_container))[0].state:
+            return 0.03
         # print(f"Sim: correct! {sim_output}")
         reward = self.rewarder.calculate_reward(sim_output)
         # prints(f"Calculate: correct! {reward}")
@@ -500,7 +506,7 @@ class TendonOptimizer(GraphRewardCalculator):
         """
         parameters = parameters.round(self.round_const)
         self.data.forces = list(parameters)
-        data = self.data
+        data = deepcopy(self.data)
         return data
 
     def _postprocessing_parameters(self, parameters):
@@ -596,7 +602,7 @@ class ParralelOptimizerCombinationForce(TendonOptimizer):
         print(f"Use CPUs processor: {cpus}, input dates: {len(input_dates)}")
         parallel_results = []
         try:
-            parallel_results = Parallel(cpus, backend = "multiprocessing", verbose=100, timeout=60)(delayed(self._parallel_reward_with_parameters)(i) for i in input_dates)
+            parallel_results = Parallel(cpus, backend = "multiprocessing", verbose=100, timeout=60*5)(delayed(self._parallel_reward_with_parameters)(i) for i in input_dates)
         except:
              print("TIMEOUT")
              return (0.01, [])
@@ -612,9 +618,11 @@ class ParralelOptimizerCombinationForce(TendonOptimizer):
         
         reward = 0
         control = []
-        for value in result_group_object.values():
+        for key, value in result_group_object.items():
             best_res = max(value, key=lambda i: i[1])
             reward += best_res[1]
+            print(f"Obj: {key}, reward: {best_res[1]}")
+            print(f"Ctrl: {best_res[0]}")
             control.append(best_res[0])
         
         return (reward, control)

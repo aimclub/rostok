@@ -1,13 +1,9 @@
 from pathlib import Path
 from tkinter import *
 from tkinter import filedialog, ttk
-from typing import Any, Dict, List, Optional, Tuple
-
-import matplotlib.pyplot as plt
-import numpy as np
+from typing import Optional, Tuple
 
 
-from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
 
 from rostok.graph_generators.environments.design_environment import DesignEnvironment, SubDesignEnvironment, SubStringDesignEnvironment, prepare_state_for_optimal_simulation
 
@@ -17,11 +13,12 @@ from rostok.graph_generators.mcts_manager import MCTSManager
 
 # =============================================================================
 # from rostok.library.rule_sets.ruleset_old_style_smc import create_rules
-from rostok.library.rule_sets.ruleset_old_style_nsc import create_rules
-from mcts_run_setup import config_with_standard_graph, config_combination_force_tendon_multiobject, config_combination_force_tendon_multiobject_parallel
+from rostok.library.rule_sets.ruleset_simple_fingers import create_rules
+from mcts_run_setup import config_combination_force_tendon_multiobject, config_combination_force_tendon_multiobject_parallel
 
-from rostok.library.obj_grasp.objects import (get_object_parametrized_sphere,get_object_cylinder,get_object_box, get_object_ellipsoid)
+from rostok.library.obj_grasp.objects import (get_object_cylinder,get_object_box, get_object_ellipsoid)
 
+import hyperparameters as hp
 
 INIT_GRAPH = GraphGrammar()
 RULE_VOCABULARY = create_rules()
@@ -59,7 +56,7 @@ def vis_top_n_mechs(n: int, env: DesignEnvironment):
 
     root.mainloop()
     mcts = MCTS(env)
-    mcts_manager = MCTSManager(mcts, "last_seen_results",verbosity=4, use_date=False)
+    # mcts_manager = MCTSManager(mcts, "last_seen_results",verbosity=4, use_date=False)
     mcts.load(report_path)
     best_s = env.get_best_states(n)
 
@@ -78,6 +75,7 @@ def vis_top_n_mechs(n: int, env: DesignEnvironment):
             full_reward += reward*sim_scen[1]
             print("=====================================")
             print(f"Object: {sim_scen[0].grasp_object_callback}")
+            print(f"Force control: {d.forces}, control params: {env.terminal_states[s][1]}")
             print(f"Partial reward: {part_reward}")
             print(f"Reward: {reward}")
             print("=====================================")
@@ -88,13 +86,15 @@ if __name__ == "__main__":
     top = 3
     
     grasp_object_blueprint = []
-    grasp_object_blueprint.append(get_object_ellipsoid(0.10, 0.08, 0.14, 10))
-    grasp_object_blueprint.append(get_object_cylinder(0.07, 0.09, 0))
-    grasp_object_blueprint.append(get_object_box(0.12, 0.12, 0.1, 0))
+    grasp_object_blueprint.append(get_object_box(0.146, 0.147,0.25, 0, mass=0.164))
+    grasp_object_blueprint.append(get_object_ellipsoid(0.14, 0.14, 0.22, 0, mass=0.188))
+    grasp_object_blueprint.append(get_object_cylinder(0.155/2, 0.155, 0, mass = 0.261))
     
     # control_optimizer = config_combination_force_tendon_multiobject(grasp_object_blueprint, [1,1,1])
-    control_optimizer = config_combination_force_tendon_multiobject_parallel(grasp_object_blueprint, [1,1,1])
+    control_optimizer = config_combination_force_tendon_multiobject_parallel(
+        grasp_object_blueprint, [1, 1, 1])
 
-    env = SubStringDesignEnvironment(RULE_VOCABULARY, control_optimizer, 13, INIT_GRAPH, 4)
+    init_graph = GraphGrammar()
+    env = SubStringDesignEnvironment(RULE_VOCABULARY, control_optimizer, hp.MAX_NUMBER_RULES, init_graph, 4)
     
     vis_top_n_mechs(top, env)
