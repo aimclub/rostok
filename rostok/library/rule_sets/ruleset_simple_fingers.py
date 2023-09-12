@@ -85,7 +85,7 @@ def create_rules(tendon=True, smc=False):
     mass_joint = (10 / 3 + 0.51 * 2 + 0.64 + 1.3) * 1e-3  #0.012
     joint_radius_base = 0.015
     joint_radius = 0.015
-    joint_length = 0.03
+    joint_length = 0.025
     density_joint = (mass_joint / (0.03 * 3.14 * joint_radius**2))
 
     # stiffness is a coefficient that couples torque to angle of rotation
