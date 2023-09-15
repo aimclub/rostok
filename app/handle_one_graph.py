@@ -13,7 +13,7 @@ from rostok.library.rule_sets.simple_designs import (
 from rostok.simulation_chrono.basic_simulation import SimulationResult
 
 # create blueprint for object to grasp
-grasp_object_blueprint = get_object_sphere(0.05)
+grasp_object_blueprint = get_object_sphere(0.014)
 # grasp_object_blueprint = get_object_ellipsoid(0.14, 0.14, 0.22, 0, mass = 0.188)
 # grasp_object_blueprint = get_object_box(0.155, 0.127, 0.088*2, 0, mass = 0.176)
 # grasp_object_blueprint = get_object_box(0.146, 0.147,0.25, 0, mass=0.164)
@@ -42,15 +42,16 @@ graph = get_two_link_three_finger()
 graph = get_three_same_link_one_finger()
 # graph = get_two_link_three_finger_rotated()
 # graph = get_three_link_three_finger()
-control = [15, 15, 15]
+control = [32, 15, 15]
 
 data = control_optimizer.optim_parameters2data_control(control, graph)
 control_optimizer.data.create_pulley_data_file = True
-vis = True
+vis = False
 
 #simulation_output: SimulationResult = simulation_manager.run_simulation(graph, data, [[-45.0, 0.0],[-45,0],[-45,0]], vis, True)
 simulation_output: SimulationResult = simulation_manager.run_simulation(
-    graph, data, [[-25.0, 0, 0, 0], [-45, 0, 0], [-45, 0, 0]], vis, True)
+    graph, data, [[30.0, 55, 60, 0], [-45, 0, 0], [-45, 0, 0]], vis, True)
+    #graph, data, [[-25.0, 0, 0, 0], [-45, 0, 0], [-45, 0, 0]], vis, True)
 if not vis:
     fig = plt.figure(figsize=(12, 5))
     time_vector = simulation_output.time_vector
@@ -62,7 +63,8 @@ if not vis:
     force_data = simulation_output.environment_final_ds.get_data("forces")[0]
     force_data = [np.linalg.norm(x[0][1]) for x in force_data if len(x)!=0]
     
-    force_data = [x for x in force_data if x<20]
+    #force_data = [x for x in force_data if x<20]
+    force_data = force_data[200::]
     print(np.mean(force_data))
     #plt.plot(time_vector, velocity_data)
     plt.plot(force_data)

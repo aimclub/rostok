@@ -107,17 +107,21 @@ class SMCGrasp(ParametrizedSimulation):
         # grasp_object = self.grasp_object_callback()
         grasp_object = creator.create_environment_body(self.grasp_object_callback)
         grasp_object.body.SetNameString("Grasp_object")
+
         #grasp_object.body.GetVisualShape(0).SetTexture("./YOBA.png")
         mass_object = grasp_object.body.GetMass()
         gravity = simulation.chrono_system.Get_G_acc().y
         # shake = YaxisShaker(1, 3, 0.5, float("inf"))
         grav_n_shake = ShakeAndNullGravity(mass_object*gravity, 3, 5, 3, 2, start_time=float("inf"))
         # the object  positioning based on the AABB
-        set_covering_ellipsoid_based_position(grasp_object,
-                                           reference_point=chrono.ChVectorD(0, 0.1, 0))
+        # set_covering_ellipsoid_based_position(grasp_object,
+        #                                    reference_point=chrono.ChVectorD(-0.0, 0.06, 0))
+        # set_covering_ellipsoid_based_position(grasp_object,
+        #                                    reference_point=chrono.ChVectorD(-0.05, 0.06, 0.00))
 
         simulation.env_creator.add_object(grasp_object,
                                           read_data=True,
+                                          is_fixed = True,
                                           force_torque_controller=grav_n_shake)
         # add design and determine the outer force
         if self.tendon:

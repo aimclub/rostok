@@ -116,7 +116,7 @@ class ChronoVisManager():
         self.vis.SetWindowTitle('Grab demo')
         self.vis.Initialize()
         self.vis.AddSkyBox()
-        self.vis.AddCamera(chrono.ChVectorD(0.15, 0.30, -0.40))
+        self.vis.AddCamera(chrono.ChVectorD(-0.15, 0.30, 0.40))
         self.vis.AddTypicalLights()
         #self.vis.EnableCollisionShapeDrawing(True)
 
