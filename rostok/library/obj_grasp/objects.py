@@ -128,6 +128,24 @@ def get_object_ellipsoid(x, y, z, alpha, mass=0.1, smc=False):
                                    color=[215, 255, 0])
     return obj
 
+def get_object_ellipsoid_h(x, y, z, alpha, h = 1,mass=0.1, smc=False):
+    shape = easy_body_shapes.Ellipsoid()
+    shape.radius_x = x
+    shape.radius_y = y
+    shape.radius_z = z
+    if smc:
+        mat = DefaultChronoMaterialSMC()
+    else:
+        mat = DefaultChronoMaterialNSC()
+
+    density = mass / (4 / 3 * 3.14 * x * y * z)
+    obj = EnvironmentBodyBlueprint(shape=shape,
+                                   material=mat,
+                                   density=density,
+                                   pos=FrameTransform([0, h, 0], rotation_x(alpha)),
+                                   color=[215, 255, 0])
+    return obj
+
 
 # special objects
 def get_object_hard_mesh():
