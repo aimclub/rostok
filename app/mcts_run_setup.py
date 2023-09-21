@@ -101,7 +101,7 @@ def config_with_tendon(grasp_object_blueprint):
     event_grasp = EventGrasp(grasp_limit_time=hp.GRASP_TIME,
                              contact_event=event_contact,
                              verbosity=0,
-                             simulation_stop=1)
+                             simulation_stop=0)
     simulation_manager.add_event(event_grasp)
     event_stop_external_force = EventStopExternalForce(grasp_event=event_grasp,
                                                        force_test_time=hp.FORCE_TEST_TIME)

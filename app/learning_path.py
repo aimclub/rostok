@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mcts_run_setup import config_with_tendon
 from rostok.library.obj_grasp.objects import (get_object_ellipsoid_h)
+from rostok.graph_grammar.graph_utils import plot_graph
 
 grasp_object_blueprint = get_object_ellipsoid_h(0.001, 0.001, 0.001, 0, 10)
 control_optimizer = config_with_tendon(grasp_object_blueprint)
@@ -15,11 +16,10 @@ simulation_manager = control_optimizer.simulation_scenario
 
 # first generation
 
-def get_palm(smc = False):
+def get_free_palm(smc = False):
     graph = GraphGrammar()
     rules = [
-        "Init", "RemoveFinger", "RemoveFinger_N", "RemoveFinger_R", "RemoveFinger_RN",
-        "RemoveFinger_P", "RemoveFinger_RP"
+        "Init"
     ]
     rule_vocabul = create_rules(smc = smc)
     for rule in rules:
@@ -212,3 +212,9 @@ control = [10, 15, 15]
 angles = [[-25.0, 0, 0], [-25, 0, 0], [-25, 0, 0]]
 data = control_optimizer.optim_parameters2data_control(control, graph)
 simulation_output = simulation_manager.run_simulation(graph, data, angles, True, True)
+
+# uncomment for graphs, but dont forget to comment visualization  
+# plot_graph(get_free_palm())
+# plot_graph(mech_2())
+# plot_graph(mech_4())
+# plot_graph(mech_9())
