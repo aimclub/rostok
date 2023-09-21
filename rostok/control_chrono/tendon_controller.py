@@ -21,6 +21,7 @@ class ForceType(Enum):
     PULLEY = 0
     TIP = 1
     POINT = 2
+    TRAJECTORY_POINT = 3
 
 
 class PulleyForce(ForceControllerTemplate):
@@ -74,6 +75,17 @@ class TipForce(PulleyForce):
             with open(self.path, 'a') as file:
                 file.write(f'{self.name} {round(time, 5)} {round(point.x,5)} {round(point.y,5)} {round(point.z,5)} {round(force_v.x, 6)} {round(force_v.y,6)} {round(force_v.z,6)}\n')
         return impact
+    
+class TrajectoryPoint(PulleyForce):
+
+    def get_force_torque(self, time: float, data) -> ForceTorque:
+        impact = ForceTorque()
+        point = data[0]
+        impact.force = (0,0,0)
+        if self.path:
+            with open(self.path, 'a') as file:
+                file.write(f'{self.name} {round(time, 5)} {round(point.x,5)} {round(point.y,5)} {round(point.z,5)} {0} {0} {0}\n')
+        return impact
 
 
 @dataclass
@@ -82,6 +94,7 @@ class TendonControllerParameters:
     pulley_parameters_for_body: Dict[int, List[float]] = field(default_factory=dict)
     tip: bool = True
     tip_parameters: List[float] = field(default_factory=list)
+    trajectory_parameters: List[float] = field(default_factory=list)
     forces: List[float] = field(default_factory=list)
     starting_point_parameters: List[float] = field(default_factory=list)
     create_pulley_data_file:bool = False
@@ -123,6 +136,7 @@ def create_pulley_lines(graph: GraphGrammar, pulleys_in_phalanx=2, finger_base=T
         if finger_base:
             path.pop(0)
         line = []
+        trajectory_line = []
         for idx in path:
             if not NodeFeatures.is_body(graph.get_node_by_id(idx)):
                 continue
@@ -144,6 +158,12 @@ def create_pulley_lines(graph: GraphGrammar, pulleys_in_phalanx=2, finger_base=T
                                                         pulley_number=i + 1,
                                                         force_type=ForceType.TIP)
                     line.append([pulley_parameters, None])
+
+                    pulley_parameters = PulleyParameters(finger_id=finger_n,
+                                                        body_id=idx,
+                                                        pulley_number=i+2,
+                                                        force_type=ForceType.TRAJECTORY_POINT)
+                    trajectory_line.append([pulley_parameters, None])
                 else:
                     for i in range(pulleys_in_phalanx):
                         pulley_parameters = PulleyParameters(finger_id=finger_n,
@@ -151,11 +171,15 @@ def create_pulley_lines(graph: GraphGrammar, pulleys_in_phalanx=2, finger_base=T
                                                             pulley_number=i,
                                                             force_type=ForceType.PULLEY)
                         line.append([pulley_parameters, None])
+                    pulley_parameters = PulleyParameters(finger_id=finger_n,
+                                                        body_id=idx,
+                                                        pulley_number=i+2,
+                                                        force_type=ForceType.TRAJECTORY_POINT)
+                    trajectory_line.append([pulley_parameters, None])
 
-                
         if len(line)>0:
             pulley_lines.append(line)
-
+            pulley_lines.append(trajectory_line)
     return pulley_lines
 
 
@@ -187,6 +211,12 @@ class TendonController_2p(RobotControllerChrono):
                     pos_y = parameters[1].get_offset(0.5 * y)
                     pos_z = parameters[2].get_offset(0.5 * z)
                     force_point[0].position = [pos_x, pos_y, pos_z]
+                elif force_point[0].force_type == ForceType.TRAJECTORY_POINT:
+                    parameters = self.parameters.trajectory_parameters
+                    pos_x = parameters[0].get_offset(0.5 * x)
+                    pos_y = parameters[1].get_offset(-0.5 * y)
+                    pos_z = parameters[2].get_offset(0.5 * z)
+                    force_point[0].position = [pos_x, pos_y, pos_z]
                 else:
                     parameters = self.parameters.pulley_parameters_for_body[
                         force_point[0].pulley_number]
@@ -207,17 +237,23 @@ class TendonController_2p(RobotControllerChrono):
                 idx = force_point[0].body_id
                 body = self.built_graph.body_map_ordered[idx]
                 if force_point[0].force_type == ForceType.PULLEY:
-                    force_point[1] = PulleyForce(list(force_point[0].position), name = f'{idx}_p_{force_point[0].pulley_number}',path=path)
+                    force_point[1] = PulleyForce(list(force_point[0].position), name = f'{idx}_p_{force_point[0].pulley_number}')
                     force_point[1].bind_body(body.body)
                     force_point[1].add_visual_pulley()
                     force_point[1].force_maker_chrono.SetNameString(
                         f"Pulley_force {force_point[0].pulley_number}")
 
                 if force_point[0].force_type == ForceType.TIP:
-                    force_point[1] = TipForce(list(force_point[0].position), name = f'{idx}_t', path=path)
+                    force_point[1] = TipForce(list(force_point[0].position), name = f'{idx}_t')
                     force_point[1].bind_body(body.body)
                     force_point[1].add_visual_pulley()
                     force_point[1].force_maker_chrono.SetNameString("Tip_force")
+
+                if force_point[0].force_type == ForceType.TRAJECTORY_POINT:
+                    force_point[1] = TrajectoryPoint(list(force_point[0].position), name = f'{idx}_trj', path=path)
+                    force_point[1].bind_body(body.body)
+                    force_point[1].add_visual_pulley()
+                    force_point[1].force_maker_chrono.SetNameString("Trajectory_point")
 
                 if force_point[0].force_type == ForceType.POINT:
                     force_point[1] = TipForce(list(force_point[0].position))
@@ -243,3 +279,6 @@ class TendonController_2p(RobotControllerChrono):
                     pre_point = line[j - 1][1].force_maker_chrono.GetVpoint()
                     point = line[j][1].force_maker_chrono.GetVpoint()
                     line[j][1].update(time, [pre_point, point, tension])
+                elif line[j][0].force_type == ForceType.TRAJECTORY_POINT:
+                    point = line[j][1].force_maker_chrono.GetVpoint()
+                    line[j][1].update(time, [point, tension])
