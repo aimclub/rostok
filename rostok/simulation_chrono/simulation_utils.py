@@ -10,7 +10,7 @@ def calculate_covering_sphere(obj: ChronoEasyShapeObject):
     radius = ((v2 - v1).Length()) * 0.5
     visual = chrono.ChSphereShape(radius)
     visual.SetOpacity(0.3)
-    obj.body.AddVisualShape(visual, chrono.ChFrameD(local_center))
+    # obj.body.AddVisualShape(visual, chrono.ChFrameD(local_center))
     if isinstance(obj.body, chrono.ChBodyAuxRef):
         cog_center = obj.body.GetFrame_REF_to_COG().TransformPointLocalToParent(local_center)
     else:
@@ -28,7 +28,7 @@ def calculate_covering_ellipsoid(obj: ChronoEasyShapeObject):
     axis_z =  v2.z - v1.z
     visual = chrono.ChEllipsoidShape(axis_x, axis_y, axis_z)
     visual.SetOpacity(0.3)
-    obj.body.AddVisualShape(visual, chrono.ChFrameD(local_center))
+    # obj.body.AddVisualShape(visual, chrono.ChFrameD(local_center))
     if isinstance(obj.body, chrono.ChBodyAuxRef):
         cog_center = obj.body.GetFrame_REF_to_COG().TransformPointLocalToParent(local_center)
     else:

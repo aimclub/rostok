@@ -115,10 +115,18 @@ class ChronoVisManager():
         self.vis.SetWindowSize(1024, 768)
         self.vis.SetWindowTitle('Grab demo')
         self.vis.Initialize()
-        self.vis.AddSkyBox()
-        self.vis.AddCamera(chrono.ChVectorD(0.15, 0.30, -0.40))
-        self.vis.AddTypicalLights()
-        #self.vis.EnableCollisionShapeDrawing(True)
+        self.vis.AddCamera(chrono.ChVectorD(-0.15, 0.35, 0.40),chrono.ChVectorD(0.0, 0.1, 0))
+        # self.vis.AddCamera(chrono.ChVectorD(-0.01, 0.5, 0.01),chrono.ChVectorD(0.0, 0.1, 0))
+        self.vis.AddLight(chrono.ChVectorD(0.4,0.0,-0.4),0.28,chrono.ChColor(1,1,1))
+        self.vis.AddLight(chrono.ChVectorD(0.4,0.0,0.4),0.28,chrono.ChColor(1,1,1))
+        self.vis.AddLight(chrono.ChVectorD(-0.4,0.0,-0.4),0.28,chrono.ChColor(1,1,1))
+        self.vis.AddLight(chrono.ChVectorD(-0.4,0.0,0.4),0.28,chrono.ChColor(1,1,1))
+        self.vis.AddLight(chrono.ChVectorD(0.4,0.8,-0.4),0.28,chrono.ChColor(1,1,1))
+        self.vis.AddLight(chrono.ChVectorD(0.4,0.8,0.4),0.28,chrono.ChColor(1,1,1))
+        self.vis.AddLight(chrono.ChVectorD(-0.4,0.8,-0.4),0.28,chrono.ChColor(1,1,1))
+        self.vis.AddLight(chrono.ChVectorD(-0.4,0.8,0.4),0.28,chrono.ChColor(1,1,1))
+        # self.vis.AddTypicalLights()
+        # self.vis.EnableCollisionShapeDrawing(True)
 
 
 class SingleRobotSimulation():
@@ -260,7 +268,8 @@ class SingleRobotSimulation():
             stop_flag = self.handle_single_events(event_container, current_time, i)
             if stop_flag:
                 break
-
+            # if i == 2:
+            #     input("press enter to continue")
         if visualize:
             self.vis_manager.vis.GetDevice().closeDevice()
         self.result.environment_final_ds = self.env_creator.data_storage
