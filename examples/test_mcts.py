@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 
 from rostok.graph_generators.environments.design_environment import DesignEnvironment, SubDesignEnvironment
@@ -7,8 +8,8 @@ from rostok.graph_generators.search_algorithms.random_search import RandomSearch
 from rostok.library.rule_sets.ruleset_old_style import create_rules
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.library.obj_grasp.objects import get_object_parametrized_sphere
-import sys
-sys.path.append('d:\\lab_be2r\\rostok_09_01_2023\\rostok\\app')
+
+sys.path.append('app')
 from mcts_run_setup import config_with_standard, config_cable
 
 rule_vocabulary = create_rules()
@@ -26,7 +27,7 @@ trajectory = [state]
 while not env.is_terminal_state(state)[0]:
     for __ in range(10):
         mcts.search(state)
-    
+
     pi = mcts.get_policy(state)
     a = max(env.actions, key=lambda x: pi[x])
     state, reward, is_terminal_state, __ = env.next_state(state, a)
