@@ -98,6 +98,8 @@ class BuiltGraphChrono:
                         self.joint_map_ordered[idx] = created_blocks
                         name = label + "_" + str(idx)
                         created_blocks.name = name
+                        # at this point the block is created from the blueprint, but chains are not built yet.
+                        # So here we can change parameters of the blocks bypassing the blueprint
                         if self.starting_positions:
                             created_blocks.starting_angle = self.starting_positions[i][j]
                             j += 1
