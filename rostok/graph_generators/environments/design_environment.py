@@ -19,7 +19,7 @@ STATESTYPE = Union[int, str]
 StepType: TypeAlias = tuple[STATESTYPE, float, bool, bool]
 TransitionFunctionType: TypeAlias = dict[tuple[STATESTYPE, int], tuple[STATESTYPE, float, bool]]
 
-class Environment(ABC):
+class EnvironmentTerminalReward(ABC):
     def __init__(self, initial_state: STATESTYPE, actions: np.ndarray, verbosity=0):
         """Abstract class environment for defining design space of the problem.
 
@@ -193,11 +193,11 @@ class Environment(ABC):
 
 
 
-class DesignEnvironment(Environment):
+class DesignEnvironment(EnvironmentTerminalReward):
 
     def __init__(self,
                  rule_vocabulary: RuleVocabulary,
-                 control_optimizer: GraphRewardCalculator,
+                 reward_calculator: GraphRewardCalculator,
                  initial_graph: GraphGrammar = GraphGrammar(),
                  verbosity=0):
         """Environment for design space of mechanism. Create dictionary of rules and convert it to actions by sorted name of rules.
@@ -206,7 +206,7 @@ class DesignEnvironment(Environment):
 
         Args:
             rule_vocabulary (RuleVocabulary): Vocabulary of rules
-            control_optimizer (GraphRewardCalculator): Class for optimizate control of mechanism
+            reward_calculator (GraphRewardCalculator): Class for optimizate control of mechanism
             initial_graph (GraphGrammar, optional): Initial state of environment. Defaults to GraphGrammar().
             verbosity (int, optional): Information verbosity. Defaults to 0.
         """
@@ -224,7 +224,7 @@ class DesignEnvironment(Environment):
         initial_state = self.data2state(initial_graph)
         super().__init__(initial_state, actions, verbosity)
 
-        self.control_optimizer = control_optimizer
+        self.reward_calculator = reward_calculator
 
         self.state2graph: dict[STATESTYPE, GraphGrammar] = {
             self.initial_state: deepcopy(initial_graph)
@@ -323,7 +323,7 @@ class DesignEnvironment(Environment):
         return mask_terminal_actions
 
     def _calculate_reward(self, state: STATESTYPE) -> tuple[float, Any]:
-        """Calculate reward of state. Use control_optimizer to calculate reward.
+        """Calculate reward of state. Use reward_calculator to calculate reward.
         Don't use the method directly. Use get_reward instead.
 
         Args:
@@ -332,7 +332,7 @@ class DesignEnvironment(Environment):
         Returns:
             tuple[float, Any]: reward and data of state
         """
-        result_optimizer = self.control_optimizer.calculate_reward(self.state2graph[state])
+        result_optimizer = self.reward_calculator.calculate_reward(self.state2graph[state])
         reward = result_optimizer[0]
         movments_trajectory = result_optimizer[1]
         # movments_trajectory: list[float] = []
@@ -537,8 +537,8 @@ class DesignEnvironment(Environment):
 
 
 class StringDesignEnvironment(DesignEnvironment):
-    def __init__(self, rule_vocabulary: RuleVocabulary, control_optimizer: GraphRewardCalculator, initial_graph: GraphGrammar = GraphGrammar(), verbosity=0):
-        super().__init__(rule_vocabulary, control_optimizer, initial_graph, verbosity)
+    def __init__(self, rule_vocabulary: RuleVocabulary, reward_calculator: GraphRewardCalculator, initial_graph: GraphGrammar = GraphGrammar(), verbosity=0):
+        super().__init__(rule_vocabulary, reward_calculator, initial_graph, verbosity)
     
     def data2state(self, data: GraphGrammar) -> STATESTYPE:
         """Convert data to state. Convert graph to string of sorted id of nodes.
@@ -558,7 +558,7 @@ class SubDesignEnvironment(DesignEnvironment):
 
     def __init__(self,
                  rule_vocabulary: RuleVocabulary,
-                 control_optimizer: GraphRewardCalculator,
+                 reward_calculator: GraphRewardCalculator,
                  max_number_nonterminal_rules,
                  initial_graph: GraphGrammar = GraphGrammar(),
                  verbosity=0):
@@ -567,12 +567,12 @@ class SubDesignEnvironment(DesignEnvironment):
 
         Args:
             rule_vocabulary (RuleVocabulary): Vocabulary of rules
-            control_optimizer (GraphRewardCalculator): Class for optimizate control of mechanism
+            reward_calculator (GraphRewardCalculator): Class for optimizate control of mechanism
             max_number_nonterminal_rules (_type_): Max number of nonterminal rules
             initial_graph (GraphGrammar, optional): Initial state of environment. Defaults to GraphGrammar().
             verbosity (int, optional): Information verbosity. Defaults to 0.
         """
-        super().__init__(rule_vocabulary, control_optimizer, initial_graph, verbosity)
+        super().__init__(rule_vocabulary, reward_calculator, initial_graph, verbosity)
         self.max_number_nonterminal_rules = max_number_nonterminal_rules
         self.counter_nonterminal_rules: dict[STATESTYPE, int] = defaultdict(int)
         self.counter_nonterminal_rules[self.initial_state] = 0
@@ -742,8 +742,8 @@ class SubDesignEnvironment(DesignEnvironment):
         
         
 class SubStringDesignEnvironment(SubDesignEnvironment):
-    def __init__(self, rule_vocabulary: RuleVocabulary, control_optimizer: GraphRewardCalculator, max_number_nonterminal_rules, initial_graph: GraphGrammar = GraphGrammar(), verbosity=0):
-        super().__init__(rule_vocabulary, control_optimizer, max_number_nonterminal_rules, initial_graph, verbosity)
+    def __init__(self, rule_vocabulary: RuleVocabulary, reward_calculator: GraphRewardCalculator, max_number_nonterminal_rules, initial_graph: GraphGrammar = GraphGrammar(), verbosity=0):
+        super().__init__(rule_vocabulary, reward_calculator, max_number_nonterminal_rules, initial_graph, verbosity)
     
     def data2state(self, data: GraphGrammar) -> STATESTYPE:
         """Convert data to state. Convert graph to string of sorted id of nodes.
@@ -771,5 +771,5 @@ def prepare_state_for_optimal_simulation(state: STATESTYPE, env: DesignEnvironme
     """
     graph = env.state2graph[state]
     control = env.terminal_states[state][1]
-    data = env.control_optimizer.optim_parameters2data_control(control, graph)
+    data = env.reward_calculator.optim_parameters2data_control(control, graph)
     return (data, graph)

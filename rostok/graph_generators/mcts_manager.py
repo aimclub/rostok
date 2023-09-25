@@ -150,7 +150,7 @@ class MCTSManager:
                 hyperparameters: The hyperparameters of the MCTS algorithm.
                 grasp_object (EnvironmentBodyBlueprint): The object to grasp.
         """
-        ctrl_optim = self.mcts_algorithm.environment.control_optimizer
+        ctrl_optim = self.mcts_algorithm.environment.reward_calculator
         dict_hp = {
             item: getattr(hyperparameters, item)
             for item in dir(hyperparameters)
