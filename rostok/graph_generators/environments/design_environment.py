@@ -516,24 +516,6 @@ class DesignEnvironment(EnvironmentTerminalReward):
         self.terminal_states.update(s_t)
         self.transition_function.update(p_sa)
         self.state2graph.update(s2g)
-    
-    def plot_metrics(self, save, path, name):
-        """Plot metrics of environment.
-
-        Args:
-            save (bool): Save plot
-            path (str): Path to save plot
-            name (str): Name of plot
-        """
-
-        plt.figure(figsize=(10, 5))
-        plt.plot(metrics)
-        plt.title(name)
-        plt.xlabel("Iteration")
-        plt.ylabel("Reward")
-        if save:
-            plt.savefig(os.path.join(path, name))
-        plt.show()
 
 
 class StringDesignEnvironment(DesignEnvironment):
