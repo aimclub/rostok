@@ -73,9 +73,9 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
         multi_bound = self.bound_parameters(graph)
 
         if not multi_bound:
-            return (0, [])
+            return (0.01, [])
         if isinstance(self.simulation_scenario, list):
-            reward = 0
+            reward = 0.01
             optim_parameters = np.array([])
             for sim_scene in self.simulation_scenario:
                 result = self.run_optimization(self._reward_with_parameters,
