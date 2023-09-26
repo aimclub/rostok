@@ -2,7 +2,7 @@ import random
 from copy import deepcopy
 from random import choice
 from typing import Any, Dict, Iterable, Optional
-
+from golem.core.dag.graph_node import GraphNode
 import networkx as nx
 import numpy as np
 from golem.core.adapter.nx_adapter import BaseNetworkxAdapter
@@ -43,7 +43,15 @@ class GraphGrammarAdapter(BaseNetworkxAdapter):
         adaptee_copy = deepcopy(adaptee)
         adaptee_copy = adaptee_copy.reverse(copy=False)
         return super()._adapt(adaptee_copy)
-
+    
+    def _node_restore(self, node: GraphNode) -> Dict:
+        """Transforms GraphNode to dict of NetworkX node attributes.
+        Override for custom behavior."""
+        if hasattr(node, 'content'):
+            return deepcopy(node.content)
+        else:
+            return {}
+    
     def _restore(self,
                  opt_graph: OptGraph,
                  metadata: Optional[Dict[str, Any]] = None) -> GraphGrammar:

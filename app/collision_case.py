@@ -13,7 +13,7 @@ from rostok.simulation_chrono.basic_simulation import SimulationResult
 rules, torque_dict = ruleset_old_style_graph.create_rules()
 
 grasp_object_blueprint = get_object_parametrized_sphere(0.5)
-grasp_object_blueprint = get_object_box(1, 0.5, 0.8, 0)
+grasp_object_blueprint = get_object_box(1.2, 0.5, 0.8, 0)
 
 # create reward counter using run setup function
 control_optimizer = config_with_standard_graph(grasp_object_blueprint, torque_dict)
@@ -35,7 +35,7 @@ controll_parameters = control_optimizer.build_control_from_graph(graph)
  
 
 controll_parameters = {"initial_value": controll_parameters}
-controll_parameters = {"initial_value": [300, 100, 0, 0, 0, 0]}
+controll_parameters = {"initial_value": [300, 100, 300, 100, 300, 100]}
 vis = True
 #simulation_output: SimulationResult = simulation_manager.run_simulation(graph, data, [[-45.0, 0.0],[-45,0],[-45,0]], vis, True)
 simulation_output: SimulationResult = simulation_manager.run_simulation(

@@ -85,7 +85,7 @@ def get_object_parametrized_sphere(r) -> EnvironmentBodyBlueprint:
     shape = easy_body_shapes.Sphere(r)
     obj = EnvironmentBodyBlueprint(shape=shape,
                                    material=matich,
-                                   pos=FrameTransform([0.9, 1.06, 0], [1, 0, 0, 0]), color=[215, 255, 0])
+                                   pos=FrameTransform([0, 0, 0], [1, 0, 0, 0]), color=[215, 255, 0])
 
     return obj
 
