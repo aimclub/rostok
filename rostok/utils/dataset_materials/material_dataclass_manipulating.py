@@ -28,7 +28,6 @@ class DefaultChronoMaterialNSC(Material):
         return hash(("DefaultChronoMaterialNSC", self.Friction, self.Restitution, self.Compliance, self.ComplianceT, self.DampingF))
 
 class DefaultChronoMaterialSMC(Material):
-    
     name: str = "default_SMC"
     type_class: str = "ChMaterialSurfaceSMC"
     Friction:float = 0.5
