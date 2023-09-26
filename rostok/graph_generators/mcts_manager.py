@@ -2,13 +2,27 @@ import sys
 import os
 import time
 import pickle
+from typing import Optional
 
 import numpy as np
 import matplotlib.pyplot as plt
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
 
-from rostok.graph_generators.search_algorithms.mcts import MCTS
+from rostok.graph_generators.search_algorithms.mcts import MCTS, STATESTYPE
 
+def load_last_state(path_checkpoint: str):
+    """Load the last state of the MCTS algorithm from the checkpoint.
+
+    Args:
+        path_checkpoint (str): The path to the checkpoint.
+
+    Returns:
+        STATETYPE: The last state of the MCTS algorithm.
+    """
+    path_to_state = os.path.join(path_checkpoint, "state.p")
+    with open(path_to_state, "rb") as file:
+        state = pickle.load(file)
+    return state
 
 class MCTSManager:
 
@@ -56,7 +70,8 @@ class MCTSManager:
                    max_iteration_mcts: int,
                    max_simulation: int,
                    iteration_checkpoint: int = 0,
-                   num_test: int = 0):
+                   num_test: int = 0,
+                   state: Optional[STATESTYPE] = None):
         """Run the MCTS algorithm for a given number of iterations. Max simulation is the number of simulations in one iteration.
         The search stores the trajectory of the states and actions.
 
@@ -66,9 +81,11 @@ class MCTSManager:
             max_simulation (int): max number of simulations in one iteration.
             iteration_checkpoint (int, optional): The number of iterations after which the checkpoint will be saved. Defaults to 0.
             num_test (int, optional): The number of tests after which the mean and std of the reward will be calculated. Defaults to 0.
+            state (STATESTYPE): The root state for search algorithm. Defaults to None. If None, the initial state of the environment will be used.
         """
         env = self.mcts_algorithm.environment
-        state = env.initial_state
+        if state is None:
+            state = env.initial_state
 
         trajectory = []
         is_terminal_state = env.is_terminal_state(state)[0]
@@ -142,6 +159,9 @@ class MCTSManager:
             sys.stdout = original_stdout
 
         self.mcts_algorithm.save("checkpoint", self.path, rewrite=True, use_date=False)
+        path_to_state = os.path.join(self.path, "checkpoint", "state.p")
+        with open(path_to_state, "wb") as file:
+            pickle.dump(state, file)
 
     def save_information_about_search(self, hyperparameters, grasp_object: EnvironmentBodyBlueprint | list[EnvironmentBodyBlueprint]):
         """Save the information about the search to the file.
