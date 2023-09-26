@@ -84,11 +84,11 @@ def create_rules():
     node_vocab.create_node(label="J3", is_terminal=True, block_blueprint=revolve)
     node_vocab.create_node(label="J4", is_terminal=True, block_blueprint=revolve)
     node_vocab.create_node(label="J5", is_terminal=True, block_blueprint=revolve)
-    node_vocab.create_node(label="J6", is_terminal=True, block_blueprint=revolve)
-    node_vocab.create_node(label="J7", is_terminal=True, block_blueprint=revolve)
-    node_vocab.create_node(label="J8", is_terminal=True, block_blueprint=revolve)
-    node_vocab.create_node(label="J9", is_terminal=True, block_blueprint=revolve)
-    node_vocab.create_node(label="J10", is_terminal=True, block_blueprint=revolve)
+    # node_vocab.create_node(label="J6", is_terminal=True, block_blueprint=revolve)
+    # node_vocab.create_node(label="J7", is_terminal=True, block_blueprint=revolve)
+    # node_vocab.create_node(label="J8", is_terminal=True, block_blueprint=revolve)
+    # node_vocab.create_node(label="J9", is_terminal=True, block_blueprint=revolve)
+    # node_vocab.create_node(label="J10", is_terminal=True, block_blueprint=revolve)
 
     rule_vocab = rule_vocabulary.RuleVocabulary(node_vocab)
     rule_vocab.create_rule("Init", ["ROOT"], ["FT", "F", "RF", "PF", "NF", "RPF", "RNF"], 0, 0,
@@ -135,27 +135,27 @@ def create_rules():
     rule_vocab.create_rule("Terminal_Joint3", ["J"], ["J3"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Joint4", ["J"], ["J4"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Joint5", ["J"], ["J5"], 0, 0, [])
-    rule_vocab.create_rule("Terminal_Joint6", ["J"], ["J6"], 0, 0, [])
-    rule_vocab.create_rule("Terminal_Joint7", ["J"], ["J7"], 0, 0, [])
-    rule_vocab.create_rule("Terminal_Joint8", ["J"], ["J8"], 0, 0, [])
-    rule_vocab.create_rule("Terminal_Joint9", ["J"], ["J9"], 0, 0, [])
-    rule_vocab.create_rule("Terminal_Joint10", ["J"], ["J10"], 0, 0, [])
+    # rule_vocab.create_rule("Terminal_Joint6", ["J"], ["J6"], 0, 0, [])
+    # rule_vocab.create_rule("Terminal_Joint7", ["J"], ["J7"], 0, 0, [])
+    # rule_vocab.create_rule("Terminal_Joint8", ["J"], ["J8"], 0, 0, [])
+    # rule_vocab.create_rule("Terminal_Joint9", ["J"], ["J9"], 0, 0, [])
+    # rule_vocab.create_rule("Terminal_Joint10", ["J"], ["J10"], 0, 0, [])
 
     rule_vocab.create_rule("Terminal_Positive_Translate1", ["TP"], ["TP1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Positive_Translate2", ["TP"], ["TP2"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Negative_Translate1", ["TN"], ["TN1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Negative_Translate2", ["TN"], ["TN2"], 0, 0, [])
     torque_dict = {
-        node_vocab.get_node("J1"): 6,
-        node_vocab.get_node("J2"): 7,
-        node_vocab.get_node("J3"): 8,
-        node_vocab.get_node("J4"): 9,
-        node_vocab.get_node("J5"): 10,
-        node_vocab.get_node("J6"): 11,
-        node_vocab.get_node("J7"): 12,
-        node_vocab.get_node("J8"): 13,
-        node_vocab.get_node("J9"): 14,
-        node_vocab.get_node("J10"): 15
+        node_vocab.get_node("J1"): 100,
+        node_vocab.get_node("J2"): 150,
+        node_vocab.get_node("J3"): 200,
+        node_vocab.get_node("J4"): 250,
+        node_vocab.get_node("J5"): 300,
+        # node_vocab.get_node("J6"): 11,
+        # node_vocab.get_node("J7"): 12,
+        # node_vocab.get_node("J8"): 13,
+        # node_vocab.get_node("J9"): 14,
+        # node_vocab.get_node("J10"): 15
     }
     return rule_vocab, torque_dict
 

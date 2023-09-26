@@ -155,6 +155,8 @@ class Sensor:
     def get_amount_contacts(self):
         output = {}
         contacts = self.contact_reporter.get_outer_contacts()
+        if len(contacts) > 1:
+            pass
         for idx in self.body_map_ordered:
             contacts_idx = contacts[idx]
             output[idx] = len(contacts_idx)

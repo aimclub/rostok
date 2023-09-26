@@ -19,14 +19,14 @@ def get_two_link_three_finger():
     graph = GraphGrammar()
     rules = ["Init",
         "AddFinger", "Terminal_Radial_Translate1", "Phalanx", "Phalanx", "Remove_FG",
-        "Terminal_Link3", "Terminal_Joint1", "Terminal_Joint6", "Terminal_Link1", 
+        "Terminal_Link3", "Terminal_Joint5", "Terminal_Joint5", "Terminal_Link2", 
         "RemoveFinger_N",
         "RemoveFinger_R", 
         "AddFinger_RNT", "Terminal_Radial_Translate1", "Phalanx", "Phalanx",
-        "Remove_FG", "Terminal_Joint2", "Terminal_Link1", "Terminal_Joint6", "Terminal_Link1",
+        "Remove_FG", "Terminal_Joint5", "Terminal_Link1", "Terminal_Joint1", "Terminal_Link1",
         "RemoveFinger_P", 
         "AddFinger_RPT", "Terminal_Radial_Translate1", "Phalanx", "Phalanx",
-        "Remove_FG", "Terminal_Joint2", "Terminal_Link1", "Terminal_Joint6", "Terminal_Link1"
+        "Remove_FG", "Terminal_Joint5", "Terminal_Link1", "Terminal_Joint3", "Terminal_Link1"
     ]
     rule_vocabul, _ = create_rules()
     for rule in rules:

@@ -395,24 +395,22 @@ class RobotSimulationWithForceTest(RobotSimulationChrono):
 
         stop_flag = False
         self.result.time_vector = [0]
-        FPS = 30
-        frame_simulation = 0
+ 
         for i in range(number_of_steps):
             current_time = self.chrono_system.GetChTime()
             self.simulate_step(step_length, current_time, i)
             self.result.time_vector.append(self.chrono_system.GetChTime())
             if vis:
                 vis.Run()
-                if frame_simulation > 1/FPS/step_length:
-                    frame_simulation = 0
-                    vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
-                    vis.Render()
-                    vis.EndScene()
-                    # just to slow down the simulation
-                    if self.delay_flag:
-                        time.sleep(0.0000001)
-                else:
-                    frame_simulation +=1
+   
+ 
+                vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
+                vis.Render()
+                vis.EndScene()
+                # just to slow down the simulation
+                if self.delay_flag:
+                    time.sleep(0.0000001)
+ 
 
             stop_flag = self.handle_single_events(event_container, current_time, i)
 
