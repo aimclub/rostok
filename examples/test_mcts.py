@@ -26,14 +26,14 @@ env = SubStringDesignEnvironment(rule_vocabulary, control_optimizer, 5, init_gra
 
 mcts = MCTS(env)
 
-path = "D:\\Work_be2r_lab\\rostok\\results\\MCTS\\test_checkpoint\\checkpoint"
+
 mcts_manager = MCTSManager(mcts, "test_checkpoint", verbosity=2, use_date=False)
 # mcts_manager.save_information_about_search(hp, grasp_object_blueprint)
-mcts.load(path)
-state = load_last_state(path)
+# mcts.load(path)
+# state = load_last_state(path)
 
 for i in range(1):
-    mcts_manager.run_search(5, 1, 1, 2, state = state)
+    mcts_manager.run_search(5, 1, 1, 2)
     mcts_manager.save_results()
 
 # state = env.initial_state
