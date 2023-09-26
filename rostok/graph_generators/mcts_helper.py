@@ -20,7 +20,6 @@ from rostok.trajectory_optimizer.control_optimizer import GraphRewardCalculator
 from rostok.utils.pickle_save import Saveable, load_saveable
 from rostok.utils.states import (MCTSOptimizedState, OptimizedGraph, OptimizedState, RobotState)
 
-
 def convert_control_to_list(control):
     """Turn control parameters into list.
 
@@ -556,7 +555,10 @@ class CheckpointMCTS():
             
             checkpointer = cls(last_mcts_state.helper.report, folder_with_checkpoint, checkpoint_iter, rewrite = True)
         else:
-            print("Couldn't find dirictory with previous checkpoint")
+            print("Couldn't find dirctinary with previous checkpoint")
             return None
         
         return checkpointer, last_mcts_state
+    
+
+        

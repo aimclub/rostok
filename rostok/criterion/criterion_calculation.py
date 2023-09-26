@@ -302,6 +302,9 @@ class SimulationReward:
             print([round(x, 3) for x in partial_rewards])
 
         total_reward = sum([a * b for a, b in zip(partial_rewards, self.weights)])
+        
+        if np.isclose(total_reward, 0, atol=1e-3):
+            total_reward = 0.02
         return round(total_reward, 3)
 
     def __repr__(self) -> str:
