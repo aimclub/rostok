@@ -1,6 +1,5 @@
 from collections import namedtuple
 from enum import Enum
-from dataclasses import dataclass
 
 FrameTransform = namedtuple('FrameTransform', ["position", "rotation"])
 
@@ -12,9 +11,3 @@ class JointInputType(Enum):
     VELOCITY = "Speed"
     POSITION = "Angle"
     UNCONTROL = "Uncontrol"
-
-
-@dataclass
-class Material:
-    Friction = 0.5
-    DampingF = 0.1
