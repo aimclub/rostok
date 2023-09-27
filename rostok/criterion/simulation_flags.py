@@ -122,7 +122,13 @@ class EventFlyingApart(SimulationSingleEvent):
         Returns:
             EventCommands: return a command for simulation
         """
+        CRINGE_CONST = 1000*1000
         trajectory_points = robot_data.get_body_trajectory_point()
+        all_force = 0
+        for force in env_data.get_forces()[0]:
+            all_force += np.linalg.norm(force[1])
+        if all_force > CRINGE_CONST:
+            return EventCommands.STOP
         # It takes the position of the first block in the list, that should be the base body
         base_position = trajectory_points[next(iter(trajectory_points))]
         for block in trajectory_points.values():
