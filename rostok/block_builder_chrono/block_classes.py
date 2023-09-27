@@ -15,7 +15,8 @@ from rostok.block_builder_chrono.blocks_utils import (
     SpringTorque, frame_transform_to_chcoordsys, rotation_z_q)
 from rostok.block_builder_chrono.mesh import o3d_to_chrono_trianglemesh
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
-    DefaultChronoMaterial, struct_material2object_material)
+    DefaultChronoMaterialNSC, DefaultChronoMaterialSMC,
+    struct_material2object_material)
 
 
 class BuildingBody(BlockBody):
@@ -78,8 +79,8 @@ class BuildingBody(BlockBody):
         self.transformed_frame_out = transformed_out_marker
 
         # set the parameters of body collision model
-        self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
-        self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
+        self.body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.0001)
+        self.body.GetCollisionModel().SetDefaultSuggestedMargin(0.00005)
         self.body.SetCollide(is_collide)
         # Normal Forces
         # set a color for the body, default is random
@@ -193,15 +194,16 @@ class ChronoRevolveJoint(BlockBridge):
 
     def __init__(self,
                  type_of_input: JointInputTypeChrono = JointInputTypeChrono.TORQUE,
-                 radius=0.07,
-                 length=0.4,
-                 material=DefaultChronoMaterial(),
+                 radius=0.007,
+                 length=0.031,
+                 material=DefaultChronoMaterialNSC(),
                  density=100.0,
-                 starting_angle=0,
+                 starting_angle=0.,
                  stiffness: float = 0.,
                  damping: float = 0.,
                  equilibrium_position: float = 0.,
-                 with_collision=True):
+                 offset = 0.0,
+                 with_collision=True, name = 'unnamed'):
         super().__init__()
         self.joint: Optional[Union[chrono.ChLinkMotorRotationTorque,
                                    chrono.ChLinkMotorRotationSpeed, chrono.ChLinkMotorRotationAngle,
@@ -221,10 +223,12 @@ class ChronoRevolveJoint(BlockBridge):
         self.damping = damping
         self.equilibrium_position = equilibrium_position
         self.with_collision = with_collision
+        self.name = name
+        self.offset = offset
 
     def set_prev_body_frame(self, prev_block: BuildingBody, system: chrono.ChSystem):
         # additional transform is just a translation along y axis to the radius of the joint
-        additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(0, self.radius, 0),
+        additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(self.offset, self.radius, 0),
                                                   chrono.ChQuaternionD(1, 0, 0, 0))
         additional_transform *= chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0),
                                                    rotation_z_q(self.starting_angle))
@@ -233,7 +237,7 @@ class ChronoRevolveJoint(BlockBridge):
         system.Update()
 
     def set_next_body_frame(self, next_block: BuildingBody, system: chrono.ChSystem):
-        additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(0, -self.radius, 0),
+        additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(self.offset, -self.radius, 0),
                                                   chrono.ChQuaternionD(1, 0, 0, 0))
         transform = next_block.transformed_frame_input.GetCoord()
         next_block.transformed_frame_input.SetCoord(transform * additional_transform)
@@ -251,27 +255,32 @@ class ChronoRevolveJoint(BlockBridge):
         system.Update()
 
         self.joint = self.input_type.motor()
-        self.joint.Initialize(out_block.body, in_block.body, chrono.ChFrameD(in_block.transformed_frame_out.GetAbsCoord()))
+        self.joint.SetNameString(self.name)
+        joint_transform = in_block.transformed_frame_out.GetAbsCoord()
+        self.joint.Initialize(out_block.body, in_block.body, chrono.ChFrameD(joint_transform))
         system.AddLink(self.joint)
         if (self.stiffness != 0) or (self.damping != 0):
             self._add_spring_damper(in_block, out_block, system)
 
         if (self.with_collision):
-            eps = 0.002
-            cylinder = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, self.radius - eps, self.length, self.density, True,
+            eps = 0.005
+            cylinder = chrono.ChBodyEasyCylinder(chrono.ChAxis_Z, self.radius - eps, self.length, self.density, True,
                                                  True, self.material)
-            turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROTATE_Y_TO_Z)
-            reversed_turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROTATE_Z_TO_Y)
+            # turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROTATE_Y_TO_Z)
+            # reversed_turn = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_ROTATE_Z_TO_Y)
 
-            cylinder.SetCoord(in_block.transformed_frame_out.GetAbsCoord() * turn)
+            #cylinder.SetCoord(in_block.transformed_frame_out.GetAbsCoord() * turn)
+            cylinder.SetCoord(joint_transform)
+            cylinder.SetNameString(self.name)
             system.Add(cylinder)
             marker = chrono.ChMarker()
-            marker.SetMotionType(chrono.ChMarker.M_MOTION_KEYFRAMED)
-            marker.SetCoord(reversed_turn)
-            cylinder.AddMarker(marker)
+            # marker.SetMotionType(chrono.ChMarker.M_MOTION_KEYFRAMED)
+            # marker.SetCoord(reversed_turn)
+            # cylinder.AddMarker(marker)
             system.Update()
             fix_joint = chrono.ChLinkMateFix()
-            fix_joint.Initialize(cylinder, in_block.body, chrono.ChFrameD(in_block.transformed_frame_out.GetAbsCoord()))
+            #fix_joint.Initialize(cylinder, in_block.body, chrono.ChFrameD(in_block.transformed_frame_out.GetAbsCoord()))
+            fix_joint.Initialize(cylinder, in_block.body, chrono.ChFrameD(joint_transform))
             system.Add(fix_joint)
         else:
             # Add cylinder visual only
@@ -312,7 +321,7 @@ class PrimitiveBody(BuildingBody):
     def __init__(self,
                  shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box(),
                  density: float = 100.0,
-                 material=DefaultChronoMaterial(),
+                 material=DefaultChronoMaterialNSC(),
                  is_collide: bool = True,
                  color: Optional[list[int]] = None):
 
@@ -366,17 +375,17 @@ class ChronoEasyShapeObject():
     def __init__(self,
                  shape=easy_body_shapes.Box(),
                  density: float = 100.0,
-                 material=DefaultChronoMaterial(),
+                 material=DefaultChronoMaterialNSC(),
                  is_collide: bool = True,
                  color: Optional[list[int]] = None,
                  pos: FrameTransform = DefaultFrame):
         # It's real magic. This code fix bug with set Envelope and Margin
-        # On python version Chrono we can't set envelop and margin localy for 
-        # each body independet by standart API. 
+        # On python version Chrono we can't set envelop and margin localy for
+        # each body independet by standart API.
         fake_body = chrono.ChBody()
         fake_body.SetCollide(True)
-        fake_body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
-        fake_body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
+        fake_body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.0001)
+        fake_body.GetCollisionModel().SetDefaultSuggestedMargin(0.00005)
 
         # Create body
         material = struct_material2object_material(material)
@@ -406,12 +415,17 @@ class ChronoEasyShapeObject():
                 True,  # collide?
                 material,  # contact material
             )
+        elif isinstance(shape, easy_body_shapes.ConvexHull):
+            points_shape = chrono.vector_ChVectorD()
+            for p_i in shape.points:
+                points_shape.append(chrono.ChVectorD(*p_i))
+            body = chrono.ChBodyEasyConvexHull(points_shape, density, True, True, material)
         else:
             raise Exception("Unknown shape for ChronoBodyEnv object")
 
         body.SetCoord(frame_transform_to_chcoordsys(pos))
-        body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.001)
-        body.GetCollisionModel().SetDefaultSuggestedMargin(0.0005)
+        body.GetCollisionModel().SetDefaultSuggestedEnvelope(0.0001)
+        body.GetCollisionModel().SetDefaultSuggestedMargin(0.00005)
         body.SetCollide(is_collide)
         self.body = body
         if color is None:

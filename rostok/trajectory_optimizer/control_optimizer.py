@@ -1,16 +1,18 @@
-from abc import abstractmethod, ABC
-import numpy as np
 import json
 import types
+from abc import ABC, abstractmethod
+from enum import Enum
 
+import numpy as np
 from scipy.optimize import direct, dual_annealing, shgo
 
 from rostok.criterion.criterion_calculation import SimulationReward
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
-from enum import Enum
 from rostok.simulation_chrono.simulation_scenario import ParametrizedSimulation
-from rostok.trajectory_optimizer.trajectory_generator import cable_length_linear_control, linear_control, joint_root_paths, tendon_like_control
+from rostok.trajectory_optimizer.trajectory_generator import (
+    cable_length_linear_control, joint_root_paths, linear_control,
+    tendon_like_control)
 from rostok.utils.json_encoder import RostokJSONEncoder
 
 
@@ -71,9 +73,9 @@ class CalculatorWithConstTorqueOptimization(GraphRewardCalculator):
         multi_bound = self.bound_parameters(graph)
 
         if not multi_bound:
-            return (0, [])
+            return (0.01, [])
         if isinstance(self.simulation_scenario, list):
-            reward = 0
+            reward = 0.01
             optim_parameters = np.array([])
             for sim_scene in self.simulation_scenario:
                 result = self.run_optimization(self._reward_with_parameters,
