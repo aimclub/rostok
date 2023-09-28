@@ -43,9 +43,12 @@ class ChronoSystems():
 
 class ChronoVisManager():
 
-    def __init__(self, delay: bool = False):
+    def __init__(self, fps = 100, delay: bool = False):
         self.vis = chronoirr.ChVisualSystemIrrlicht()
         self.delay_flag = delay
+        self.fps = fps
+        self.step_counter = 0
+
 
     def initialize_vis(self, chrono_system):
         self.vis.AttachSystem(chrono_system)
@@ -58,18 +61,36 @@ class ChronoVisManager():
 
     def enable_collision_shape(self):
         self.vis.EnableCollisionShapeDrawing(True)
+    
+    def visualization_step(self, step_length):
+        if self.step_counter > 1 / self.fps / step_length:
+            self.step_counter = 0
+            self.vis.Run()
+            self.vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
+            self.vis.Render()
+            self.vis.EndScene()
+            # just to slow down the simulation
+            if self.delay_flag:
+                time.sleep(0.00001)
+
+        else:
+            self.step_counter  += 1
+
 
 
 class EnvCreator():
+    """Setup environment for robot simulation.
 
+        Add external all objects to the simulation."""
     def __init__(self, object_list: List[Tuple[ChronoEasyShapeObject, bool]] = []):
         self.objects: List[ChronoEasyShapeObject] = []
         self.active_body_counter = 0
         self.active_objects_ordered: Dict[int, ChronoEasyShapeObject] = {}
         self.force_torque_container = ForceTorqueContainer()
         self.env_data_dict = {}
+        # add all predefined objects to the system. 
         for obj in object_list:
-            self.add_object(obj[0], obj[1])
+            self.add_object(obj = obj[0], read_data = obj[1])
 
     def add_env_data_type_dict(self, data_dict):
         self.env_data_dict = data_dict
@@ -145,8 +166,6 @@ class SingleRobotPreview():
             vis.Render()
             vis.EndScene()
         vis.GetDevice().closeDevice()
-        # self.chrono_system.Update()
-        # self.chrono_system.DoStepDynamics(1e-4)
 
 
 class SingleRobotSimulation():
@@ -256,35 +275,19 @@ class SingleRobotSimulation():
                 flag_container: container of flags that controls simulation
                 visualize (bool): determine if run the visualization """
         self.initialize(number_of_steps)
-
         if visualize:
             self.vis_manager.initialize_vis(self.chrono_system)
 
+        self.vis_manager.fps = fps
         stop_flag = False
         self.result.time_vector = [0]
-        frame_simulation = 0
         for i in range(number_of_steps):
             current_time = self.chrono_system.GetChTime()
             self.simulate_step(step_length, current_time, i)
             self.result.time_vector.append(self.chrono_system.GetChTime())
             if visualize:
-                if frame_simulation > 1 / fps / step_length:
-                    frame_simulation = 0
-                    self.vis_manager.vis.Run()
-                    self.vis_manager.vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
-                    self.vis_manager.vis.Render()
-                    self.vis_manager.vis.EndScene()
-                    # just to slow down the simulation
-                    if self.vis_manager.delay_flag:
-                        time.sleep(0.000001)
-                else:
-                    frame_simulation += 1
-            else:
-                if frame_simulation > 1 / fps / step_length:
-                    frame_simulation = 0
-                    # print(i)
-                else:
-                    frame_simulation += 1
+                self.vis_manager.visualization_step(step_length)
+
             stop_flag = self.handle_single_events(event_container, current_time, i)
             if stop_flag:
                 break

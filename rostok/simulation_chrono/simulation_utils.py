@@ -91,7 +91,7 @@ class SimulationResult:
                 key_storage = storage[key]
                 for key_2 in key_storage:
                     value = key_storage[key_2]
-                    new_value = value[:step_n + 2:]
+                    new_value = value[:step_n + 2]
                     key_storage[key_2] = new_value
 
         if self.environment_final_ds:
@@ -110,7 +110,8 @@ class SimulationResult:
                 key_storage = storage[key]
                 for key_2 in key_storage:
                     value = key_storage[key_2]
-                    new_value = [x for x in value if np.logical_not(np.isnan(x).all())]
+                    #new_value = [x for x in value if np.logical_not(np.isnan(x).all())]
+                    new_value = list(value[~np.isnan(value)])
                     key_storage[key_2] = new_value
 
         if self.environment_final_ds:
