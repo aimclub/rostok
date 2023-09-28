@@ -6,11 +6,10 @@ from example_vocabulary import (get_terminal_graph_no_joints, get_terminal_graph
 from rostok.block_builder_api.block_parameters import FrameTransform
 from rostok.block_builder_chrono.block_builder_chrono_api import \
     ChronoBlockCreatorInterface as creator
-from rostok.library.obj_grasp.objects import (get_obj_hard_mesh_piramida, get_object_easy_box,
-                                              get_object_parametrized_box,
+from rostok.library.obj_grasp.objects import (get_obj_hard_mesh_piramida,
                                               get_object_parametrized_sphere)
 from rostok.library.rule_sets.simple_designs import (get_palm, get_two_link_one_finger)
-from rostok.simulation_chrono.basic_simulation import SystemPreviewChrono
+from rostok.simulation_chrono.simulation import SingleRobotPreview
 from rostok.simulation_chrono.simulation_utils import \
     set_covering_sphere_based_position
 
@@ -21,7 +20,7 @@ def rotation_x(alpha):
 
 
 graph = get_terminal_graph_three_finger()
-sim = SystemPreviewChrono()
+sim = SingleRobotPreview()
 sim.add_design(graph, FrameTransform([0, 0, 0], rotation_x(0)))
 obj_bp = get_obj_hard_mesh_piramida()
 
