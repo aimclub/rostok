@@ -24,8 +24,8 @@ from evaluate_graph import mock_with_build_mech
 from mcts_run_setup import config_with_standard_graph
 from rostok.library.obj_grasp.objects import get_object_box, get_object_ellipsoid
 from rostok.library.rule_sets import ruleset_old_style_graph
-
-boxer = get_object_ellipsoid(1.3, 0.9, 0.8, 0)
+fun_obj = get_object_ellipsoid
+boxer = fun_obj(1.3, 0.9, 0.8, 0)
 rules, torque_dict = ruleset_old_style_graph.create_rules()
 optic = config_with_standard_graph(boxer, torque_dict)
 
@@ -39,7 +39,7 @@ CACHED_POPULATION = True
 TIMEOUT_MINUTES = 60 * 2
 
 # Define objective
-name_objective = get_object_box.__name__
+name_objective = fun_obj.__name__
 objective = Objective({name_objective: fun})
 objective_eval = ObjectiveEvaluate(objective)
 
