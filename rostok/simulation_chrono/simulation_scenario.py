@@ -9,7 +9,7 @@ from rostok.graph_grammar.node import GraphGrammar
 from rostok.simulation_chrono.basic_simulation import RobotSimulationChrono, RobotSimulationWithForceTest
 from rostok.virtual_experiment.sensors import (SensorCalls, SensorObjectClassification)
 from rostok.simulation_chrono.simulation_utils import set_covering_sphere_based_position
-from rostok.control_chrono.controller import ConstController, SinControllerChrono, YaxisShaker
+from rostok.control_chrono.controller import ConstController, SinControllerChrono, YZaxisShaker, YaxisShaker
 from rostok.utils.json_encoder import RostokJSONEncoder
 
 
@@ -51,7 +51,7 @@ class ConstTorqueGrasp(ParametrizedSimulation):
         simulation = RobotSimulationWithForceTest(delay, [])
         simulation.add_design(graph, data)
         grasp_object = self.grasp_object_callback()
-        shake = YaxisShaker(1000, 1000, 1.5, float("inf"))
+        shake = YZaxisShaker(1000, 1000, 1.5, float("inf"))
         set_covering_sphere_based_position(grasp_object,
                                            reference_point=chrono.ChVectorD(0, 0.05, 0))
         simulation.add_object(grasp_object, read_data=True, force_torque_controller=shake)

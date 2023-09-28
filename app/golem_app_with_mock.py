@@ -3,7 +3,7 @@ import pickle
 import time
 from golem.core.dag.verification_rules import DEFAULT_DAG_RULES
 from golem.core.optimisers.genetic.gp_optimizer import EvoGraphOptimizer
-from golem.core.optimisers.genetic.gp_params import GPAlgorithmParameters, MutationAgentTypeEnum
+from golem.core.optimisers.genetic.gp_params import GPAlgorithmParameters, MutationAgentTypeEnum, ElitismTypesEnum, SelectionTypesEnum
 from golem.core.optimisers.genetic.operators.inheritance import \
     GeneticSchemeTypesEnum
 from golem.core.optimisers.genetic.operators.base_mutations import (MutationStrengthEnum,
@@ -39,7 +39,7 @@ CACHED_POPULATION = True
 TIMEOUT_MINUTES = 60 * 2
 
 # Define objective
-name_objective = mock_with_build_mech.__name__
+name_objective = get_object_box.__name__
 objective = Objective({name_objective: fun})
 objective_eval = ObjectiveEvaluate(objective)
 
@@ -81,10 +81,14 @@ optimizer_parameters = GPAlgorithmParameters(
     adaptive_mutation_type = MutationAgentTypeEnum.default, 
     genetic_scheme_type=GeneticSchemeTypesEnum.parameter_free,
     mutation_types=[custom_mutation_del_body, custom_mutation_del_j, custom_mutation_del_tr,  
-                    custom_mutation_add_body, custom_mutation_add_j, custom_mutation_add_tr],
+                    custom_mutation_add_body, custom_mutation_add_j, custom_mutation_add_tr,
+                    tree_growth],
     crossover_types=[subtree_crossover],
     regularization_type=RegularizationTypesEnum.none,
-    mutation_strength=MutationStrengthEnum.mean)
+    mutation_strength=MutationStrengthEnum.strong,
+    elitism_type= ElitismTypesEnum.keep_n_best,
+    offspring_rate = 0.35,
+    selection_types=(SelectionTypesEnum.tournament,))
 
 optimizer = EvoGraphOptimizer(objective=objective,
                               initial_graphs=adapted_initial_population,

@@ -176,6 +176,24 @@ class YaxisShaker(ForceControllerTemplate):
             y_force = self.amp * sin(self.freq * (time - self.start_time)) + self.amp_offset
         impact.force = (0, y_force, 0)
         return impact
+    
+    
+class YZaxisShaker(ForceControllerTemplate):
+
+    def __init__(self, amp: float = 5, amp_offset: float = 1, freq: float = 5, start_time: float = 0.0) -> None:
+        super().__init__()
+        self.amp = amp
+        self.amp_offset = amp_offset
+        self.freq = freq
+        self.start_time = start_time
+
+    def get_force_torque(self, time: float, data) -> ForceTorque:
+        impact = ForceTorque()
+        y_force = 0
+        if time >= self.start_time:
+            y_force = self.amp * sin(self.freq * (time - self.start_time)) + self.amp_offset
+        impact.force = (0, y_force, 0.5*y_force)
+        return impact
 
 
 @dataclass
