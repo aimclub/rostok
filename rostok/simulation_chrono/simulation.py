@@ -20,31 +20,22 @@ from rostok.virtual_experiment.sensors import DataStorage, Sensor
 
 
 class ChronoSystems():
-
     @staticmethod
-    def chrono_SMC_system(gravity_list=[0, 0, 0]):
+    def chrono_SMC_system(solver_iterations = 100, force_tolerance = 1e-4, use_mat_properties=False, gravity_list=[0, 0, 0]):
         system = chrono.ChSystemSMC()
-        system.UseMaterialProperties(False)
-        system.SetSolverMaxIterations(1000)
-        system.SetSolverForceTolerance(1e-4)
+        system.UseMaterialProperties(use_mat_properties)
+        system.SetSolverMaxIterations(solver_iterations)
+        system.SetSolverForceTolerance(force_tolerance)
         system.Set_G_acc(chrono.ChVectorD(gravity_list[0], gravity_list[1], gravity_list[2]))
-        # time_stepper = chrono.ChTimestepperHHT()
-        # time_stepper.SetMaxiters(4)
-        # time_stepper.SetMinStepSize(1e-4)
-        # system.SetTimestepper(time_stepper)
-        # stepper = system.GetTimestepper()
-        #system.SetTimestepperType(chrono.ChTimestepper.Type_HHT)
-        # stepper = system.GetTimestepper()
-        # stepper = chrono.ChTimestepperHHT(stepper)
         system.SetContactForceModel(0)
         return system
 
     @staticmethod
-    def chrono_NSC_system(gravity_list=[0, 0, 0]):
+    def chrono_NSC_system(solver_iterations = 100, force_tolerance = 1e-4, gravity_list=[0, 0, 0]):
         system = chrono.ChSystemNSC()
         system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
-        system.SetSolverMaxIterations(100)
-        system.SetSolverForceTolerance(1e-6)
+        system.SetSolverMaxIterations(solver_iterations)
+        system.SetSolverForceTolerance(force_tolerance)
         system.SetTimestepperType(chrono.ChTimestepper.Type_EULER_IMPLICIT_LINEARIZED)
         system.Set_G_acc(chrono.ChVectorD(gravity_list[0], gravity_list[1], gravity_list[2]))
         return system
