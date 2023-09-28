@@ -68,18 +68,6 @@ def set_covering_ellipsoid_based_position(obj: ChronoEasyShapeObject,
     obj.body.SetPos(current_cog_pos + shift)
 
 
-def set_covering_ellipsoid_based_position(obj: ChronoEasyShapeObject,
-                                          reference_point: chrono.ChVectorD = chrono.ChVectorD(
-                                              0, 0, 0),
-                                          direction: chrono.ChVectorD = chrono.ChVectorD(0, 1, 0)):
-    center, axis = calculate_covering_ellipsoid(obj)
-    direction.Normalize()
-    desired_position = reference_point + direction * axis[1] / 2
-    shift = desired_position - obj.body.GetCoord().TransformPointLocalToParent(center)
-    current_cog_pos = obj.body.GetPos()
-    obj.body.SetPos(current_cog_pos + shift)
-
-
 @dataclass
 class SimulationResult:
     """Data class to aggregate the output of the simulation.
