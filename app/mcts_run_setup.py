@@ -194,7 +194,7 @@ def config_with_standard_graph(grasp_object_blueprint, torque_dict):
     simulation_manager.add_event(event_stop_external_force)
 
     #create criterion manager
-    simulation_rewarder = SimulationReward(verbosity=0)
+    simulation_rewarder = SimulationReward(verbosity=0, flag_cringe = event_flying_apart)
     #create criterions and add them to manager
     simulation_rewarder.add_criterion(TimeCriterion(hp.TIME_SIMULATION, event_timeout, event_grasp),
                                       hp.TIME_CRITERION_WEIGHT)

@@ -8,7 +8,7 @@ import pychrono.core as chrono
 from scipy.spatial import distance
 
 from rostok.simulation_chrono.basic_simulation import SimulationResult
-from rostok.criterion.simulation_flags import SimulationSingleEvent, EventContactTimeOut, EventGrasp, EventSlipOut
+from rostok.criterion.simulation_flags import EventFlyingApart, SimulationSingleEvent, EventContactTimeOut, EventGrasp, EventSlipOut
 from rostok.utils.json_encoder import RostokJSONEncoder
 
 
@@ -267,10 +267,11 @@ class SimulationReward:
             verbosity (int): parameter to control console output
     """
 
-    def __init__(self, verbosity=0) -> None:
+    def __init__(self, verbosity=0, flag_cringe: EventFlyingApart = None) -> None:
         self.criteria: List[Criterion] = []
         self.weights: List[float] = []
         self.verbosity = verbosity
+        self.flag_cringe = flag_cringe
 
     def add_criterion(self, citerion: Criterion, weight: float):
         """Add criterion and weight to the lists.
@@ -291,6 +292,8 @@ class SimulationReward:
         Returns:
             float: total reward
         """
+        if self.flag_cringe and self.flag_cringe.state:
+            return 0
         partial_rewards = []
         for criterion in self.criteria:
             reward = criterion.calculate_reward(simulation_output)

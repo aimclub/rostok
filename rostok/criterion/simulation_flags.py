@@ -127,7 +127,9 @@ class EventFlyingApart(SimulationSingleEvent):
         all_force = 0
         for force in env_data.get_forces()[0]:
             all_force += np.linalg.norm(force[1])
+            
         if all_force > CRINGE_CONST:
+            self.state = True
             return EventCommands.STOP
         # It takes the position of the first block in the list, that should be the base body
         base_position = trajectory_points[next(iter(trajectory_points))]

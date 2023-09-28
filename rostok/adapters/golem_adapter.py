@@ -20,8 +20,8 @@ class GraphGrammarFactory(DefaultOptNodeFactory):
         super().__init__(available_node_types, num_node_types)
 
     def get_node(self, **kwargs) -> OptNode:
-        chosen_node_type = choice(self._available_nodes) \
-            if self._available_nodes \
+        chosen_node_type = choice(self.available_nodes) \
+            if self.available_nodes \
             else random.randint(0, self._num_node_types)
 
         return OptNode(content={"Node": chosen_node_type, "name": chosen_node_type.label})

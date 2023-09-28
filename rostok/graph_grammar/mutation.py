@@ -127,7 +127,7 @@ def available_for_add_bodies_edges(graph) -> list[Union[tuple[int, int], tuple[
 
 def get_random_node(nodes_list: list[Node],
                     type_distribution: tuple[float, float, float] = (1, 1, 1)):
-    node_types = [NodeFeatures.is_body, NodeFeatures.is_joint, NodeFeatures.is_transform]
+    node_types = [NodeFeatures.is_body, NodeFeatures.is_transform,  NodeFeatures.is_joint]
     curren_type = choices(node_types, type_distribution)[0]
     avalable_node = list(filter(curren_type, nodes_list))
     current_node = choice(avalable_node)

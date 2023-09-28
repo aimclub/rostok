@@ -49,7 +49,7 @@ def plot_median_reward(history: OptHistory, prefix: str):
  
 obj = get_object_box(1.2, 0.5, 0.8, 0)
 rules, torque_dict = ruleset_old_style_graph.create_rules()
-name = "1695740607mock_with_build_mech-11_221"
+name = "1695833214mock_with_build_mech-9_368"
 history : OptHistory = pickle.load( open( name, "rb" ) )
 adapter_local = GraphGrammarAdapter()
 optic = config_with_standard_graph(obj, torque_dict)
@@ -63,6 +63,8 @@ plot_median_reward(history, name)
 for i in ebaca_restored:
     controll_parameters = optic.build_control_from_graph(i)
     controll_parameters = {"initial_value": controll_parameters}
-    scena.run_simulation(i, controll_parameters, vis=True)
+    data = scena.run_simulation(i, controll_parameters, vis=True)
+    print(optic.calculate_reward(i))
+
  
  
