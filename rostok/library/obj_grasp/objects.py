@@ -4,8 +4,8 @@ from scipy.spatial.transform import Rotation
 
 from rostok.block_builder_api import easy_body_shapes
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
-from rostok.block_builder_chrono.block_classes import (DefaultChronoMaterialNSC,
-                                                       FrameTransform)
+from rostok.block_builder_chrono.block_classes import (
+    DefaultChronoMaterialNSC, DefaultChronoMaterialSMC, FrameTransform)
 
 
 # rotation around axis with angle argument in degrees
@@ -22,6 +22,22 @@ def rotation_z(alpha):
 def rotation_y(alpha):
     quat_y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))
     return [quat_y_ang_alpha.e0, quat_y_ang_alpha.e1, quat_y_ang_alpha.e2, quat_y_ang_alpha.e3]
+
+def get_object_sphere(r, mass=100, smc=False) -> EnvironmentBodyBlueprint:
+    """Medium task"""
+    if smc:
+        mat = DefaultChronoMaterialSMC()
+    else:
+        mat = DefaultChronoMaterialNSC()
+    density = mass / (4 / 3 * 3.14 * r**3)
+    shape = easy_body_shapes.Sphere(r)
+    obj = EnvironmentBodyBlueprint(shape=shape,
+                                   material=mat,
+                                   density=density,
+                                   pos=FrameTransform([0, 0, 0], [1, 0, 0, 0]),
+                                   color=[215, 255, 0])
+
+    return obj
 
 
 # object functions return a blueprint of an object

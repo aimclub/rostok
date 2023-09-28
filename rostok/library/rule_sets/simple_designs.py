@@ -15,6 +15,40 @@ def get_palm():
     return graph
 
 
+def get_three_link_one_finger(smc = False):
+    graph = GraphGrammar()
+    rules = ["Init",
+        "AddFinger", "Terminal_Radial_Translate3",  "Phalanx", "Phalanx", "Remove_FG",
+        "Terminal_Link3", "Terminal_Link2", "Terminal_Link1","Terminal_Base_Joint_2", "Terminal_Joint_1", "Terminal_Joint_2",
+        "RemoveFinger_N",
+        "RemoveFinger_R", 
+        "RemoveFinger_RN", 
+        "RemoveFinger_P", 
+        "RemoveFinger_RP"
+    ]
+    rule_vocabul = create_rules(smc = smc)
+    for rule in rules:
+        graph.apply_rule(rule_vocabul.get_rule(rule))
+
+    return graph
+
+def get_three_link_one_finger_independent(smc = False):
+    graph = GraphGrammar()
+    rules = ["Init",
+        "AddFinger", "Terminal_Radial_Translate3",  "Phalanx", "Phalanx", "Remove_FG",
+        "Terminal_Link3", "Terminal_Link2", "Terminal_Link1",
+        "RemoveFinger_N",
+        "RemoveFinger_R", 
+        "RemoveFinger_RN", 
+        "RemoveFinger_P", 
+        "RemoveFinger_RP"
+    ]
+    rule_vocabul = create_rules(smc = smc, tendon=False)
+    for rule in rules:
+        graph.apply_rule(rule_vocabul.get_rule(rule))
+
+    return graph
+
 def get_two_link_three_finger():
     graph = GraphGrammar()
     rules = ["Init",

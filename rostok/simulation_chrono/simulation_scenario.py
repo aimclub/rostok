@@ -53,17 +53,15 @@ class GraspScenario(ParametrizedSimulation):
         for event in self.event_container:
             event.reset()
 
-    def setup_and_add_force_to_object(self, grasp_object):
-
     def run_simulation(self, graph: GraphGrammar, data, starting_positions = None, vis=False, delay=False):
         # events should be reset before every simulation
         self.reset_events()
         # build simulation from the subclasses
         
         if self.smc:
-            system = ChronoSystems.chrono_SMC_system([0, -10, 0])
+            system = ChronoSystems.chrono_SMC_system(gravity_list=[0, 0, 0])
         else:
-            system = ChronoSystems.chrono_NSC_system([0, -10, 0])
+            system = ChronoSystems.chrono_NSC_system(gravity_list=[0, 0, 0])
         # setup the auxiliary  
         env_creator = EnvCreator([])
         vis_manager = ChronoVisManager(delay)

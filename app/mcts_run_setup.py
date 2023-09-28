@@ -21,9 +21,10 @@ from rostok.trajectory_optimizer.control_optimizer import (CalculatorWithGraphOp
 
 def config_independent_torque(grasp_object_blueprint):
     # configurate the simulation manager
-    simulation_manager = GraspScenario(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION)
-    simulation_manager.grasp_object_callback = lambda: creator.create_environment_body(
-        grasp_object_blueprint)
+    simulation_manager = GraspScenario(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION, tendon = False)
+    # simulation_manager.grasp_object_callback = lambda: creator.create_environment_body(
+    #     grasp_object_blueprint)
+    simulation_manager.grasp_object_callback = grasp_object_blueprint
     event_contact = EventContact()
     simulation_manager.add_event(event_contact)
     event_timeout = EventContactTimeOut(hp.FLAG_TIME_NO_CONTACT, event_contact)
