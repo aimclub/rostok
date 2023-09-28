@@ -4,7 +4,7 @@ from scipy.spatial.transform import Rotation
 
 from rostok.block_builder_api import easy_body_shapes
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
-from rostok.block_builder_chrono.block_classes import (DefaultChronoMaterial,
+from rostok.block_builder_chrono.block_classes import (DefaultChronoMaterialNSC,
                                                        FrameTransform)
 
 
@@ -26,7 +26,7 @@ def rotation_y(alpha):
 
 # object functions return a blueprint of an object
 def get_object_box(x, y, z, alpha):
-    matich = DefaultChronoMaterial()
+    matich = DefaultChronoMaterialNSC()
     matich.Friction = 0.65
     matich.DampingF = 0.65
     shape_box = easy_body_shapes.Box(x, y, z)
@@ -41,7 +41,7 @@ def get_object_box_rotation(x,y,z, yaw=0, pitch=0, roll=0):
     quat = Rotation.from_euler('xyz', [yaw, pitch, roll], degrees=True).as_quat()
     shape_box = easy_body_shapes.Box(x, y, z)
 
-    mat = DefaultChronoMaterial()
+    mat = DefaultChronoMaterialNSC()
     mat.Friction = 0.30
     mat.DampingF = 0.8
     obj = EnvironmentBodyBlueprint(shape=shape_box,
@@ -51,7 +51,7 @@ def get_object_box_rotation(x,y,z, yaw=0, pitch=0, roll=0):
 
 
 def get_object_cylinder(radius, length, alpha):
-    matich = DefaultChronoMaterial()
+    matich = DefaultChronoMaterialNSC()
     matich.Friction = 0.2
     matich.DampingF = 0.65
     shape = easy_body_shapes.Cylinder(radius, length)
@@ -67,7 +67,7 @@ def get_object_cylinder_rotation(radius, length, yaw=0, pitch=0, roll=0):
     shape_box = easy_body_shapes.Cylinder()
     shape_box.height_y = length
     shape_box.radius = radius
-    mat = DefaultChronoMaterial()
+    mat = DefaultChronoMaterialNSC()
     mat.Friction = 0.30
     mat.DampingF = 0.8
     obj = EnvironmentBodyBlueprint(shape=shape_box,
@@ -79,7 +79,7 @@ def get_object_cylinder_rotation(radius, length, yaw=0, pitch=0, roll=0):
 
 def get_object_parametrized_sphere(r) -> EnvironmentBodyBlueprint:
     """Medium task"""
-    matich = DefaultChronoMaterial()
+    matich = DefaultChronoMaterialNSC()
     matich.Friction = 0.65
     matich.DampingF = 0.65
     shape = easy_body_shapes.Sphere(r)
@@ -96,7 +96,7 @@ def get_object_ellipsoid(x, y, z, alpha):
     shape.radius_y = y
     shape.radius_z = z
 
-    mat = DefaultChronoMaterial()
+    mat = DefaultChronoMaterialNSC()
     mat.Friction = 0.30
     mat.DampingF = 0.5
     mat.Compliance = 0.0001
@@ -110,7 +110,7 @@ def get_object_ellipsoid(x, y, z, alpha):
 def get_object_hard_mesh():
     # Create object to grasp
     shape = easy_body_shapes.FromMesh("rostok\library\obj_grasp\Ocpocmaqs_scaled.obj")
-    mat = DefaultChronoMaterial()
+    mat = DefaultChronoMaterialNSC()
     mat.Friction = 0.2
     mat.DampingF = 0.2
     obj = EnvironmentBodyBlueprint(shape=shape,
@@ -124,7 +124,7 @@ def get_obj_hard_mesh_bukvg():
     # Create object to grasp
     quat = Rotation.from_euler('xyz', [90, 0, 0], degrees=True).as_quat()
     shape = easy_body_shapes.FromMesh("rostok\library\obj_grasp\G_BUKV_VERY2.obj")
-    mat = DefaultChronoMaterial()
+    mat = DefaultChronoMaterialNSC()
     mat.Friction = 0.2
     mat.DampingF = 0.2
     obj = EnvironmentBodyBlueprint(shape=shape, material=mat, pos=FrameTransform([0, 1, 0], quat), color=[215, 255, 0])
@@ -135,7 +135,7 @@ def get_obj_hard_mesh_mikki():
     # Create object to grasp
     quat = Rotation.from_euler('xyz', [90, 0, 0], degrees=True).as_quat()
     shape = easy_body_shapes.FromMesh("rostok\library\obj_grasp\MIKKI.obj")
-    mat = DefaultChronoMaterial()
+    mat = DefaultChronoMaterialNSC()
     mat.Friction = 0.2
     mat.DampingF = 0.2
     obj = EnvironmentBodyBlueprint(shape=shape, material=mat, pos=FrameTransform([0, 1, 0], quat), color=[215, 255, 0])
@@ -146,7 +146,7 @@ def get_obj_hard_mesh_zateynik():
     # Create object to grasp
     quat = Rotation.from_euler('xyz', [90, 0, 0], degrees=True).as_quat()
     shape = easy_body_shapes.FromMesh("rostok\library\obj_grasp\ZATEYNIK.obj")
-    mat = DefaultChronoMaterial()
+    mat = DefaultChronoMaterialNSC()
     mat.Friction = 0.2
     mat.DampingF = 0.2
     obj = EnvironmentBodyBlueprint(shape=shape, material=mat, pos=FrameTransform([0, 1, 0], quat), color=[215, 255, 0])
@@ -157,7 +157,7 @@ def get_obj_hard_mesh_piramida():
     # Create object to grasp
     quat = Rotation.from_euler('xyz', [90, 0, 0], degrees=True).as_quat()
     shape = easy_body_shapes.FromMesh("rostok\library\obj_grasp\PIRAMIDA12.obj")
-    mat = DefaultChronoMaterial()
+    mat = DefaultChronoMaterialNSC()
     mat.Friction = 0.2
     mat.DampingF = 0.2
     obj = EnvironmentBodyBlueprint(shape=shape, material=mat, pos=FrameTransform([-2, 1, 5], quat), color=[215, 255, 0])
