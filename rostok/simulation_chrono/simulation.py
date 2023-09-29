@@ -56,8 +56,15 @@ class ChronoVisManager():
         self.vis.SetWindowTitle('Grab demo')
         self.vis.Initialize()
         self.vis.AddSkyBox()
-        self.vis.AddCamera(chrono.ChVectorD(0.15, 0.30, -0.40))
-        self.vis.AddTypicalLights()
+        self.vis.AddCamera(chrono.ChVectorD(-0.15, 0.35, 0.40),chrono.ChVectorD(0.0, 0.1, 0))
+        self.vis.AddLight(chrono.ChVectorD(0.4,0.0,-0.4),0.28,chrono.ChColor(1,1,1))
+        self.vis.AddLight(chrono.ChVectorD(0.4,0.0,0.4),0.28,chrono.ChColor(1,1,1))
+        self.vis.AddLight(chrono.ChVectorD(-0.4,0.0,-0.4),0.28,chrono.ChColor(1,1,1))
+        self.vis.AddLight(chrono.ChVectorD(-0.4,0.0,0.4),0.28,chrono.ChColor(1,1,1))
+        self.vis.AddLight(chrono.ChVectorD(0.4,0.8,-0.4),0.28,chrono.ChColor(1,1,1))
+        self.vis.AddLight(chrono.ChVectorD(0.4,0.8,0.4),0.28,chrono.ChColor(1,1,1))
+        self.vis.AddLight(chrono.ChVectorD(-0.4,0.8,-0.4),0.28,chrono.ChColor(1,1,1))
+        self.vis.AddLight(chrono.ChVectorD(-0.4,0.8,0.4),0.28,chrono.ChColor(1,1,1))
 
     def enable_collision_shape(self):
         self.vis.EnableCollisionShapeDrawing(True)
