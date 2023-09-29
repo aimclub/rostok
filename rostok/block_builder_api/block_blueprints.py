@@ -6,10 +6,11 @@ from typing import Any, Generic, Optional, Type, Union
 from traitlets import Bool
 
 import rostok.block_builder_api.easy_body_shapes as easy_body_shapes
+from rostok.utils.dataset_materials.material_dataclass_manipulating import DefaultChronoMaterialNSC, Material
 from rostok.block_builder_api.block_parameters import (DefaultFrame,
                                                        FrameTransform,
                                                        JointInputType,
-                                                       Material)
+                                                       )
 
 
 @dataclass
@@ -42,22 +43,23 @@ class TransformBlueprint(TransformBlueprintType):
 @dataclass
 class RevolveJointBlueprint(JointBlueprintType):
     type_of_input: JointInputType = JointInputType.TORQUE
-    radius: float = 0.07
-    length: float = 0.4
-    material: Material = Material()
+    radius: float = 0.015
+    length: float = 0.03
+    material: Material = DefaultChronoMaterialNSC()
+    density: float= 400
     starting_angle: float = 0.
-    density: float = 1000.0
     stiffness: float = 0.
     damping: float = 0.
-    equilibrium_position: float = 0
+    offset: float = 0.
+    equilibrium_position:float = 0.
     with_collision: bool = True
 
 
 @dataclass
 class PrimitiveBodyBlueprint(BodyBlueprintType):
     shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
-    density: float = 1000.0
-    material: Material = Material()
+    density: float = 400
+    material: Material = DefaultChronoMaterialNSC()
     is_collide: bool = True
     color: Optional[list[int]] = None
 
@@ -65,11 +67,15 @@ class PrimitiveBodyBlueprint(BodyBlueprintType):
 @dataclass
 class EnvironmentBodyBlueprint(BodyBlueprintType):
     shape: easy_body_shapes.ShapeTypes = easy_body_shapes.Box()
-    density: float = 100.0
-    material: Material = Material()
+    density: float = 100
+    material: Material = DefaultChronoMaterialNSC()
     is_collide: bool = True
     color: Optional[list[int]] = None
     pos: FrameTransform = DefaultFrame
+    
+    def __hash__(self) -> int:
+        atrb = [self.shape, self.density, self.material, self.is_collide, self.pos]
+        return hash(("EnvironmentBodyBlueprint".join([str(i) for i in atrb])))
 
 
 ALL_BLUEPRINT = Union[TransformBlueprint, RevolveJointBlueprint, PrimitiveBodyBlueprint,

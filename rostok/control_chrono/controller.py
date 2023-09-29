@@ -9,7 +9,7 @@ from typing import Callable, List
 from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, JointInputTypeChrono)
 
 from rostok.virtual_experiment.sensors import Sensor
-
+from rostok.virtual_experiment.built_graph_chrono import BuiltGraphChrono
 
 class RobotControllerChrono:
     """General controller. Any controller should be subclass of this class.
@@ -21,9 +21,11 @@ class RobotControllerChrono:
             functions: list of functions currently attached to joints
     """
 
-    def __init__(self, joint_map_ordered, parameters: Dict[str, Any]):
+    def __init__(self, built_graph: BuiltGraphChrono, parameters: Dict[str, Any]):
         """Initialize class fields and call the initialize_functions() to set starting state"""
-        self.joint_map_ordered: Dict[int, ChronoRevolveJoint] = joint_map_ordered
+        self.built_graph = built_graph
+        self.graph = built_graph.graph
+        self.joint_map_ordered: Dict[int, ChronoRevolveJoint] = built_graph.joint_map_ordered
         self.parameters = parameters
         self.functions: List[chrono.ChFunction_Const] = []
         self.chrono_joint_setters: Dict[JointInputTypeChrono, str] = {}

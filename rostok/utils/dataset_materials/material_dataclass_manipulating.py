@@ -13,13 +13,33 @@ class Material:
 
 
 @dataclass
-class DefaultChronoMaterial(Material):
+class DefaultChronoMaterialNSC(Material):
     """Dataclass of default materials for chrono bodies
     """
-    name: str = "default"
+    name: str = "default_NSC"
     type_class: str = "ChMaterialSurfaceNSC"
-    Friction = 0.5
-    DampingF = 0.1
+    Friction:float = 0.5
+    Restitution:float = 0.15
+    Compliance: float = 1e-6
+    ComplianceT: float = 1e-6
+    DampingF:float = 1e6
+    
+    def __hash__(self) -> int:
+        return hash(("DefaultChronoMaterialNSC", self.Friction, self.Restitution, self.Compliance, self.ComplianceT, self.DampingF))
+
+class DefaultChronoMaterialSMC(Material):
+    name: str = "default_SMC"
+    type_class: str = "ChMaterialSurfaceSMC"
+    Friction:float = 0.5
+    Kn:float = 10000
+    Kt:float = 10000
+    Gn:float = 10000
+    Gt:float = 10000
+    Restitution:float = 0
+    YoungModulus:float = 0
+    
+    def __hash__(self) -> int:
+        return hash(("DefaultChronoMaterialSMC", self.Friction, self.Kn, self.Kt, self.Gn, self.Gt, self.Restitution, self.YoungModulus))
 
 
 def struct_material2object_material(struct_material: Material, prefix_setter: str = "Set"):

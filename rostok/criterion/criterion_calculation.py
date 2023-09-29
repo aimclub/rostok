@@ -7,7 +7,7 @@ import numpy as np
 import pychrono.core as chrono
 from scipy.spatial import distance
 
-from rostok.simulation_chrono.basic_simulation import SimulationResult
+from rostok.simulation_chrono.simulation_utils import SimulationResult
 from rostok.criterion.simulation_flags import SimulationSingleEvent, EventContactTimeOut, EventGrasp, EventSlipOut
 from rostok.utils.json_encoder import RostokJSONEncoder
 
