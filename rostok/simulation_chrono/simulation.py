@@ -96,8 +96,8 @@ class EnvCreator():
         self.force_torque_container = ForceTorqueContainer()
         self.env_data_dict = {}
         # add all predefined objects to the system. 
-        for obj in object_list:
-            self.add_object(obj = obj[0], read_data = obj[1])
+        for obj, read_data in object_list:
+            self.add_object(obj = obj, read_data = read_data)
 
     def add_env_data_type_dict(self, data_dict):
         self.env_data_dict = data_dict
