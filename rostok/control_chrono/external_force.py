@@ -30,6 +30,7 @@ class ForceControllerTemplate():
                  pos: list[float] = [0, 0, 0]) -> None:
         self.pos = pos
         self.name = name
+        self.path = None
 
         self.x_force_chrono = chrono.ChFunction_Const(0)
         self.y_force_chrono = chrono.ChFunction_Const(0)
@@ -100,6 +101,11 @@ class ForceControllerTemplate():
     @property
     def body(self):
         return self.__body
+
+    def enable_data_dump(self, path):
+        self.path = path
+        with open(path, 'w') as file:
+            file.write('Data for external action:',self.name)
 
 
 class ForceControllerOnCallback(ForceControllerTemplate):
