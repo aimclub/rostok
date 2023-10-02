@@ -186,18 +186,18 @@ class TendonController_2p(RobotControllerChrono):
                     force_point[1] = PulleyForce(pos=list(force_point[0].position),
                                                  name=f'{idx}_p_{force_point[0].pulley_number}')
                     force_point[1].bind_body(body.body)
-                    force_point[1].add_visual_pulley()
+                    force_point[1].visualize_application_point()
 
                 if force_point[0].force_type == ForceType.TIP:
                     force_point[1] = TipForce(pos=list(force_point[0].position),
                                               name=f'{idx}_t')
                     force_point[1].bind_body(body.body)
-                    force_point[1].add_visual_pulley()
+                    force_point[1].visualize_application_point()
 
                 if force_point[0].force_type == ForceType.POINT:
                     force_point[1] = TipForce(pos=list(force_point[0].position))
                     force_point[1].bind_body(body.body)
-                    force_point[1].add_visual_pulley()
+                    force_point[1].visualize_application_point()
 
     def create_force_points(self):
         self.pulley_lines = create_pulley_lines_2p(self.graph)

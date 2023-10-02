@@ -105,7 +105,7 @@ class ForceControllerTemplate():
     def enable_data_dump(self, path):
         self.path = path
         with open(path, 'w') as file:
-            file.write('Data for external action:',self.name)
+            file.write('Data for external action:', self.name)
 
 
 class ForceControllerOnCallback(ForceControllerTemplate):

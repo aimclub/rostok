@@ -4,24 +4,25 @@ from typing import Dict, List, Optional, Tuple, Union
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 
-from rostok.block_builder_api.block_parameters import (DefaultFrame,
-                                                       FrameTransform)
+from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform)
 from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject
-from rostok.control_chrono.controller import (ConstController,
-                                              ForceControllerTemplate,
-                                              ForceTorqueContainer,
-                                              YaxisShaker)
-from rostok.criterion.simulation_flags import (EventCommands,
-                                               SimulationSingleEvent)
+from rostok.control_chrono.control_utils import ForceTorqueContainer
+from rostok.control_chrono.controller import ConstController
+from rostok.criterion.simulation_flags import (EventCommands, SimulationSingleEvent)
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.simulation_chrono.simulation_utils import SimulationResult
 from rostok.virtual_experiment.robot_new import BuiltGraphChrono, RobotChrono
 from rostok.virtual_experiment.sensors import DataStorage, Sensor
+from rostok.control_chrono.external_force import ForceControllerTemplate
 
 
 class ChronoSystems():
+
     @staticmethod
-    def chrono_SMC_system(solver_iterations = 100, force_tolerance = 1e-4, use_mat_properties=False, gravity_list=[0, 0, 0]):
+    def chrono_SMC_system(solver_iterations=100,
+                          force_tolerance=1e-4,
+                          use_mat_properties=False,
+                          gravity_list=[0, 0, 0]):
         system = chrono.ChSystemSMC()
         system.UseMaterialProperties(use_mat_properties)
         system.SetSolverMaxIterations(solver_iterations)
@@ -31,7 +32,7 @@ class ChronoSystems():
         return system
 
     @staticmethod
-    def chrono_NSC_system(solver_iterations = 100, force_tolerance = 1e-4, gravity_list=[0, 0, 0]):
+    def chrono_NSC_system(solver_iterations=100, force_tolerance=1e-4, gravity_list=[0, 0, 0]):
         system = chrono.ChSystemNSC()
         system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
         system.SetSolverMaxIterations(solver_iterations)
@@ -43,12 +44,11 @@ class ChronoSystems():
 
 class ChronoVisManager():
 
-    def __init__(self, fps = 100, delay: bool = False):
+    def __init__(self, fps=100, delay: bool = False):
         self.vis = chronoirr.ChVisualSystemIrrlicht()
         self.delay_flag = delay
         self.fps = fps
         self.step_counter = 0
-
 
     def initialize_vis(self, chrono_system):
         self.vis.AttachSystem(chrono_system)
@@ -56,19 +56,19 @@ class ChronoVisManager():
         self.vis.SetWindowTitle('Grab demo')
         self.vis.Initialize()
         self.vis.AddSkyBox()
-        self.vis.AddCamera(chrono.ChVectorD(-0.15, 0.35, 0.40),chrono.ChVectorD(0.0, 0.1, 0))
-        self.vis.AddLight(chrono.ChVectorD(0.4,0.0,-0.4),0.28,chrono.ChColor(1,1,1))
-        self.vis.AddLight(chrono.ChVectorD(0.4,0.0,0.4),0.28,chrono.ChColor(1,1,1))
-        self.vis.AddLight(chrono.ChVectorD(-0.4,0.0,-0.4),0.28,chrono.ChColor(1,1,1))
-        self.vis.AddLight(chrono.ChVectorD(-0.4,0.0,0.4),0.28,chrono.ChColor(1,1,1))
-        self.vis.AddLight(chrono.ChVectorD(0.4,0.8,-0.4),0.28,chrono.ChColor(1,1,1))
-        self.vis.AddLight(chrono.ChVectorD(0.4,0.8,0.4),0.28,chrono.ChColor(1,1,1))
-        self.vis.AddLight(chrono.ChVectorD(-0.4,0.8,-0.4),0.28,chrono.ChColor(1,1,1))
-        self.vis.AddLight(chrono.ChVectorD(-0.4,0.8,0.4),0.28,chrono.ChColor(1,1,1))
+        self.vis.AddCamera(chrono.ChVectorD(-0.15, 0.35, 0.40), chrono.ChVectorD(0.0, 0.1, 0))
+        self.vis.AddLight(chrono.ChVectorD(0.4, 0.0, -0.4), 0.28, chrono.ChColor(1, 1, 1))
+        self.vis.AddLight(chrono.ChVectorD(0.4, 0.0, 0.4), 0.28, chrono.ChColor(1, 1, 1))
+        self.vis.AddLight(chrono.ChVectorD(-0.4, 0.0, -0.4), 0.28, chrono.ChColor(1, 1, 1))
+        self.vis.AddLight(chrono.ChVectorD(-0.4, 0.0, 0.4), 0.28, chrono.ChColor(1, 1, 1))
+        self.vis.AddLight(chrono.ChVectorD(0.4, 0.8, -0.4), 0.28, chrono.ChColor(1, 1, 1))
+        self.vis.AddLight(chrono.ChVectorD(0.4, 0.8, 0.4), 0.28, chrono.ChColor(1, 1, 1))
+        self.vis.AddLight(chrono.ChVectorD(-0.4, 0.8, -0.4), 0.28, chrono.ChColor(1, 1, 1))
+        self.vis.AddLight(chrono.ChVectorD(-0.4, 0.8, 0.4), 0.28, chrono.ChColor(1, 1, 1))
 
     def enable_collision_shape(self):
         self.vis.EnableCollisionShapeDrawing(True)
-    
+
     def visualization_step(self, step_length):
         if self.step_counter > 1 / self.fps / step_length:
             self.step_counter = 0
@@ -81,23 +81,23 @@ class ChronoVisManager():
                 time.sleep(0.00001)
 
         else:
-            self.step_counter  += 1
-
+            self.step_counter += 1
 
 
 class EnvCreator():
     """Setup environment for robot simulation.
 
         Add external all objects to the simulation."""
+
     def __init__(self, object_list: List[Tuple[ChronoEasyShapeObject, bool]] = []):
         self.objects: List[ChronoEasyShapeObject] = []
         self.active_body_counter = 0
         self.active_objects_ordered: Dict[int, ChronoEasyShapeObject] = {}
         self.force_torque_container = ForceTorqueContainer()
         self.env_data_dict = {}
-        # add all predefined objects to the system. 
+        # add all predefined objects to the system.
         for obj, read_data in object_list:
-            self.add_object(obj = obj, read_data = read_data)
+            self.add_object(obj=obj, read_data=read_data)
 
     def add_env_data_type_dict(self, data_dict):
         self.env_data_dict = data_dict

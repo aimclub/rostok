@@ -5,7 +5,7 @@ import numpy as np
 import pychrono as chrono
 
 from rostok.control_chrono.controller import (ConstController,
-                                              SinControllerChrono, YaxisShaker)
+                                              SinControllerChrono)
 from rostok.criterion.simulation_flags import SimulationSingleEvent
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.simulation_chrono.simulation import (ChronoSystems, EnvCreator,
@@ -17,7 +17,7 @@ from rostok.virtual_experiment.sensors import (SensorCalls,
                                                SensorObjectClassification)
 from rostok.block_builder_chrono.block_builder_chrono_api import \
     ChronoBlockCreatorInterface as creator
-#from rostok.control_chrono.tendon_controller import TendonController_2p
+from rostok.control_chrono.tendon_controller import TendonController_2p
 
 class ParametrizedSimulation:
 

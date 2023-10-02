@@ -1,10 +1,10 @@
-from rostok.block_builder_api.block_blueprints import (BodyBlueprintType,
-                                                       JointBlueprintType,
+from rostok.block_builder_api.block_blueprints import (BodyBlueprintType, JointBlueprintType,
                                                        TransformBlueprintType)
 from rostok.graph_grammar.node import GraphGrammar, Node
 
 
 class NodeFeatures:
+
     @staticmethod
     def is_joint(node: Node):
         return issubclass(type(node.block_blueprint), JointBlueprintType)
@@ -17,7 +17,8 @@ class NodeFeatures:
     def is_transform(node: Node):
         return issubclass(type(node.block_blueprint), TransformBlueprintType)
 
-def get_joint_vector_from_graph(graph:GraphGrammar):
+
+def get_joint_vector_from_graph(graph: GraphGrammar):
     joint_vector = []
     paths = graph.get_sorted_root_based_paths()
     for path in paths:
@@ -28,3 +29,14 @@ def get_joint_vector_from_graph(graph:GraphGrammar):
                 if NodeFeatures.is_joint(graph.get_node_by_id(idx)):
                     joint_vector.append(idx)
     return joint_vector
+
+
+def get_joint_matrix_from_graph(graph: GraphGrammar):
+    joint_matrix = []
+    paths = graph.get_sorted_root_based_paths()
+    for path in paths:
+        joint_matrix.append([])
+        for idx in path:
+            if NodeFeatures.is_joint(graph.get_node_by_id(idx)):
+                joint_matrix[-1].append(idx)
+    return joint_matrix
