@@ -43,15 +43,12 @@ class YaxisShaker(ForceControllerTemplate):
         self.amp_offset = amp_offset
         self.freq = freq
         self.start_time = start_time
-
-    def get_force_torque(self, time: float, data) -> ForceTorque:
-        impact = ForceTorque()
+    
+    def calculate_impact(self, time, *args) -> tuple[float, float, float]:
         y_force = 0
         if time >= self.start_time:
-            y_force = self.amp * np.sin(self.freq * (time - self.start_time)) + self.amp_offset
-        impact.force = (0, y_force, 0)
-        return impact
-    
+            y_force = self.amp * np.sin(self.freq * (time - self.start_time)) + self.amp_offset 
+        return 0, y_force, 0
 
 class NullGravity(ForceControllerTemplate):
     def __init__(self, gravitry_force, start_time: float = 0.0) -> None:
@@ -59,15 +56,13 @@ class NullGravity(ForceControllerTemplate):
         self.gravity = gravitry_force
         self.start_time = start_time
     
-    def get_force_torque(self, time: float, data) -> ForceTorque:
-        impact = ForceTorque()
+    def calculate_impact(self, time: float, data) -> ForceTorque:
         y_force = 0
         x_force = 0
         z_force = 0
         if time >= self.start_time:
             y_force = -self.gravity
-        impact.force = (x_force, y_force, z_force)
-        return impact
+        return x_force, y_force, z_force
 
 class RandomShaker(ForceControllerTemplate):
     def __init__(self, amp: float, start_time: float = 0.0, width_step: int = 20, *args) -> None:
@@ -81,8 +76,7 @@ class RandomShaker(ForceControllerTemplate):
         self.z_force = 0
         self.args = args
     
-    def get_force_torque(self, time: float, data) -> ForceTorque:
-        impact = ForceTorque()
+    def get_force_torque(self, time: float, data) -> tuple[float, float, float]:
         if time >= self.start_time:
                 if self.counter % self.width_step == 0:
                     if self.args and self.args[0] == '2d':
@@ -91,8 +85,7 @@ class RandomShaker(ForceControllerTemplate):
                         self.x_force, self.y_force, self.z_force = random_3d_vector(self.amp)
                     self.x_force, self.y_force, self.z_force = random_3d_vector(self.amp)
                 self.counter += 1
-        impact.force = (self.x_force, self.y_force, self.z_force)
-        return impact
+        return self.x_force, self.y_force, self.z_force
 
 class ClockXZShaker(ForceControllerTemplate):
     def __init__(self, amp: float, angle_step: float = np.pi/6,  start_time: float = 0.0,  width_step: int = 20) -> None:
@@ -104,8 +97,7 @@ class ClockXZShaker(ForceControllerTemplate):
         self.angle = 0
         self.angle_step = angle_step
     
-    def get_force_torque(self, time: float, data) -> ForceTorque:
-        impact = ForceTorque()
+    def get_force_torque(self, time: float, data) -> tuple[float, float, float]:
         y_force = 0
         x_force = 0
         z_force = 0
@@ -115,5 +107,25 @@ class ClockXZShaker(ForceControllerTemplate):
                 self.counter += 1
             x_force = np.cos(self.angle_step)*self.amp
             z_force = np.sin(self.angle_step)*self.amp
-        impact.force = (x_force, y_force, z_force)
-        return impact
+        return x_force, y_force, z_force
+    
+class ExternalForces(ForceControllerTemplate):
+    def __init__(self, force_controller: ForceControllerTemplate | List[ForceControllerTemplate]) -> None:
+        self.force_controller = force_controller
+        
+    def add_force(self, force: ForceControllerTemplate):
+        if isinstance(self.force_controller, list):
+            self.force_controller.append(force)
+        else:
+            self.force_controller = [self.force_controller, force]
+        
+    def get_force_torque(self, time: float, data) -> ForceTorque:
+        if isinstance(self.force_controller, list):
+            v_forces = np.zeros(3)
+            for controller in self.force_controller:
+                v_forces += np.array(controller.calculate_impact(time, data))
+            impact = ForceTorque()
+            impact.force = v_forces
+            return impact
+        else:
+            return self.force_controller.get_force_torque(time, data)

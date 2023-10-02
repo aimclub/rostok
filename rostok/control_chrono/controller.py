@@ -120,8 +120,14 @@ class ForceControllerTemplate():
         self.setup_makers()
 
     @abstractmethod
-    def get_force_torque(self, time: float, data) -> ForceTorque:
+    def calculate_impact(self, time, *args) -> tuple[float, float, float]:
         pass
+    
+    
+    def get_force_torque(self, time: float, data, *args) -> ForceTorque:
+        impact = ForceTorque()
+        impact.force = self.calculate_impact(time, *args)
+        return impact
 
     def update(self, time: float, data=None):
         force_torque = self.get_force_torque(time, data)
