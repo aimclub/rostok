@@ -1,12 +1,11 @@
-from collections import namedtuple
 from enum import Enum
+from math import exp
 
 import numpy as np
 import pychrono.core as chrono
 
+from rostok.block_builder_api.block_parameters import FrameTransform
 from rostok.block_builder_chrono.block_types import BlockBody
-from rostok.block_builder_api.block_parameters import  FrameTransform
-
 
 
 def frame_transform_to_chcoordsys(transform: FrameTransform):
@@ -73,8 +72,12 @@ class SpringTorque(chrono.TorqueFunctor):
             torque: torque, that is created by spring
         """
         torque = 0
-        if self.spring_coef > 10**-3:
-            torque = -self.spring_coef * (angle - rest_angle) - self.damping_coef * vel
+
+        if self.spring_coef > 10**-5:
+            if angle <= 0:
+                torque = -self.spring_coef * (angle - rest_angle) - self.damping_coef * vel
+            else:
+                torque = -self.damping_coef * vel - (exp((angle) * 20) - 1)
         else:
             torque = -self.damping_coef * vel
         return torque

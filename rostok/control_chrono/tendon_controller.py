@@ -6,8 +6,10 @@ from typing import Dict, List
 import pychrono as chrono
 
 from rostok.control_chrono.controller import RobotControllerChrono
-from rostok.control_chrono.external_force import (ForceControllerTemplate, ForceTorque)
-from rostok.graph_grammar.graph_comprehension import (get_tip_ids, is_star_topology)
+from rostok.control_chrono.external_force import (ForceControllerTemplate,
+                                                  ForceTorque)
+from rostok.graph_grammar.graph_comprehension import (get_tip_ids,
+                                                      is_star_topology)
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.virtual_experiment.built_graph_chrono import BuiltGraphChrono

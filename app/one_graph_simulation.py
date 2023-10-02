@@ -1,8 +1,8 @@
 from mcts_run_setup import config_independent_torque, config_with_tendon
 
 from rostok.library.obj_grasp.objects import get_object_sphere
-from rostok.library.rule_sets.simple_designs import \
-    get_three_link_one_finger_independent, get_three_link_one_finger
+from rostok.library.rule_sets.simple_designs import (
+    get_three_link_one_finger, get_three_link_one_finger_independent)
 from rostok.simulation_chrono.simulation_utils import SimulationResult
 
 # create blueprint for object to grasp

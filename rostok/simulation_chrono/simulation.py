@@ -4,16 +4,18 @@ from typing import Dict, List, Optional, Tuple, Union
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
 
-from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform)
+from rostok.block_builder_api.block_parameters import (DefaultFrame,
+                                                       FrameTransform)
 from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject
 from rostok.control_chrono.control_utils import ForceTorqueContainer
 from rostok.control_chrono.controller import ConstController
-from rostok.criterion.simulation_flags import (EventCommands, SimulationSingleEvent)
+from rostok.control_chrono.external_force import ForceControllerTemplate
+from rostok.criterion.simulation_flags import (EventCommands,
+                                               SimulationSingleEvent)
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.simulation_chrono.simulation_utils import SimulationResult
 from rostok.virtual_experiment.robot_new import BuiltGraphChrono, RobotChrono
 from rostok.virtual_experiment.sensors import DataStorage, Sensor
-from rostok.control_chrono.external_force import ForceControllerTemplate
 
 
 class ChronoSystems():
