@@ -17,6 +17,7 @@ from rostok.virtual_experiment.sensors import (SensorCalls,
                                                SensorObjectClassification)
 from rostok.block_builder_chrono.block_builder_chrono_api import \
     ChronoBlockCreatorInterface as creator
+from rostok.control_chrono.controller import ForceControllerTemplate
 #from rostok.control_chrono.tendon_controller import TendonController_2p
 
 class ParametrizedSimulation:
@@ -39,12 +40,13 @@ class ParametrizedSimulation:
 
 class GraspScenario(ParametrizedSimulation):
 
-    def __init__(self, step_length, simulation_length, tendon = True, smc = False) -> None:
+    def __init__(self, step_length, simulation_length, tendon = True, smc = False, obj_external_forces: Optional[ForceControllerTemplate] = None) -> None:
         super().__init__(step_length, simulation_length)
         self.grasp_object_callback = None
         self.event_container: List[SimulationSingleEvent] = []
         self.tendon = tendon
         self.smc = smc
+        self.obj_external_forces = obj_external_forces
 
     def add_event(self, event):
         self.event_container.append(event)
@@ -73,7 +75,7 @@ class GraspScenario(ParametrizedSimulation):
                                            reference_point=chrono.ChVectorD(0, 0.1, 0))
         simulation.env_creator.add_object(grasp_object,
                                           read_data=True,
-                                          force_torque_controller=None)
+                                          force_torque_controller=self.obj_external_forces)
         
         # add design and determine the outer force
         if self.tendon:
