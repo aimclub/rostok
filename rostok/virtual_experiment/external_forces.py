@@ -9,6 +9,14 @@ from matplotlib.pyplot import cla
 from rostok.control_chrono.controller import ForceTorque, ForceControllerTemplate
 
 def random_3d_vector(amp):
+    """Calculate random 3d vector with given amplitude (uniform distribution on sphere)
+
+    Args:
+        amp (float): amplitude of vector
+
+    Returns:
+        tuple: x, y, z components of vector
+    """
     phi = np.random.uniform(0, 2*np.pi)
     cos_theta = np.random.uniform(-1, 1)
     sin_theta = np.sqrt(1 - cos_theta**2)
@@ -18,6 +26,15 @@ def random_3d_vector(amp):
     return x_force, y_force, z_force
 
 def random_2d_vector(amp, angle: float = 0):
+    """Calculate random 2d vector with given amplitude (uniform distribution on circle)
+
+    Args:
+        amp (float): amplitude of vector
+        angle (float, optional): angle along axis z of vector. Defaults to 0.
+
+    Returns:
+        tuple: x, y, z components of vector
+    """
     angle = np.random.uniform(0, 2*np.pi)
     
     el1 = np.cos(angle)*amp
@@ -31,13 +48,21 @@ def random_2d_vector(amp, angle: float = 0):
     return v1.x, v1.y, v1.z
 
 
-class YaxisShaker(ForceControllerTemplate):
+class YaxisSin(ForceControllerTemplate):
 
     def __init__(self,
                  amp: float = 5,
                  amp_offset: float = 1,
                  freq: float = 5,
                  start_time: float = 0.0) -> None:
+        """Shake by sin along y axis
+
+        Args:
+            amp (float, optional): Amplitude of sin. Defaults to 5.
+            amp_offset (float, optional): Amplitude offset of force. Defaults to 1.
+            freq (float, optional): Frequency of sin. Defaults to 5.
+            start_time (float, optional): Start time of force application. Defaults to 0.0.
+        """
         super().__init__()
         self.amp = amp
         self.amp_offset = amp_offset
@@ -52,6 +77,12 @@ class YaxisShaker(ForceControllerTemplate):
 
 class NullGravity(ForceControllerTemplate):
     def __init__(self, gravitry_force, start_time: float = 0.0) -> None:
+        """Apply force to compensate gravity
+
+        Args:
+            gravitry_force (float): gravity force of object
+            start_time (float, optional): start time of force application. Defaults to 0.0.
+        """
         super().__init__()
         self.gravity = gravitry_force
         self.start_time = start_time
@@ -64,8 +95,15 @@ class NullGravity(ForceControllerTemplate):
             y_force = -self.gravity
         return x_force, y_force, z_force
 
-class RandomShaker(ForceControllerTemplate):
+class RandomForces(ForceControllerTemplate):
     def __init__(self, amp: float, start_time: float = 0.0, width_step: int = 20, *args) -> None:
+        """Apply force with random direction and given amplitude
+
+        Args:
+            amp (float): amplitude of force
+            start_time (float, optional): Start time of force application. Defaults to 0.0.
+            width_step (int, optional): Number of steps between changes of force direction. Defaults to 20.
+        """
         super().__init__()
         self.start_time = start_time
         self.width_step = width_step
@@ -87,8 +125,16 @@ class RandomShaker(ForceControllerTemplate):
                 self.counter += 1
         return self.x_force, self.y_force, self.z_force
 
-class ClockXZShaker(ForceControllerTemplate):
+class ClockXZForces(ForceControllerTemplate):
     def __init__(self, amp: float, angle_step: float = np.pi/6,  start_time: float = 0.0,  width_step: int = 20) -> None:
+        """Apply force with given amplitude in xz plane and rotate it with given angle step
+
+        Args:
+            amp (float): amplitude of force
+            angle_step (float, optional): Size of angle for changing force direction. Defaults to np.pi/6.
+            start_time (float, optional): Start time of force application. Defaults to 0.0.
+            width_step (int, optional): _description_. Defaults to 20.
+        """
         super().__init__()
         self.amp = amp
         self.start_time = start_time
@@ -111,6 +157,11 @@ class ClockXZShaker(ForceControllerTemplate):
     
 class ExternalForces(ForceControllerTemplate):
     def __init__(self, force_controller: ForceControllerTemplate | List[ForceControllerTemplate]) -> None:
+        """Class for combining several external forces
+
+        Args:
+            force_controller (ForceControllerTemplate | List[ForceControllerTemplate]): Forces or list of forces
+        """
         self.force_controller = force_controller
         
     def add_force(self, force: ForceControllerTemplate):
