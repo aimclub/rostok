@@ -1,3 +1,4 @@
+from copy import deepcopy
 import json
 from typing import Dict, List, Optional, Tuple
 
@@ -84,7 +85,7 @@ class GraspScenario(ParametrizedSimulation):
                                               reference_point=chrono.ChVectorD(0, 0.1, 0))
         simulation.env_creator.add_object(grasp_object,
                                           read_data=True,
-                                          force_torque_controller=self.obj_external_forces)
+                                          force_torque_controller=deepcopy(self.obj_external_forces))
 
         # add design and determine the outer force
         if self.tendon:
