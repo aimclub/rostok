@@ -1,4 +1,5 @@
-from rostok.block_builder_api.block_blueprints import (BodyBlueprintType, JointBlueprintType,
+from rostok.block_builder_api.block_blueprints import (BodyBlueprintType,
+                                                       JointBlueprintType,
                                                        TransformBlueprintType)
 from rostok.graph_grammar.node import GraphGrammar, Node
 
