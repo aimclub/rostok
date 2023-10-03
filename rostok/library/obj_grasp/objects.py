@@ -42,12 +42,12 @@ def get_object_sphere(r, mass=100, smc=False) -> EnvironmentBodyBlueprint:
 
 # object functions return a blueprint of an object
 def get_object_box(x, y, z, alpha):
-    matich = DefaultChronoMaterialNSC()
-    matich.Friction = 0.65
-    matich.DampingF = 0.65
+    material = DefaultChronoMaterialNSC()
+    material.Friction = 0.65
+    material.DampingF = 0.65
     shape_box = easy_body_shapes.Box(x, y, z)
     object_blueprint = EnvironmentBodyBlueprint(shape=shape_box,
-                                                material=matich,
+                                                material=material,
                                                 pos=FrameTransform([0, 0, 0],
                                                                    rotation_x(alpha)), color=[215, 255, 0])
 
@@ -67,12 +67,12 @@ def get_object_box_rotation(x,y,z, yaw=0, pitch=0, roll=0):
 
 
 def get_object_cylinder(radius, length, alpha):
-    matich = DefaultChronoMaterialNSC()
-    matich.Friction = 0.2
-    matich.DampingF = 0.65
+    material = DefaultChronoMaterialNSC()
+    material.Friction = 0.2
+    material.DampingF = 0.65
     shape = easy_body_shapes.Cylinder(radius, length)
     obj = EnvironmentBodyBlueprint(shape=shape,
-                                   material=matich,
+                                   material=material,
                                    pos=FrameTransform([0, 0, 0], rotation_x(alpha)), color=[215, 255, 0])
 
     return obj
@@ -95,12 +95,12 @@ def get_object_cylinder_rotation(radius, length, yaw=0, pitch=0, roll=0):
 
 def get_object_parametrized_sphere(r) -> EnvironmentBodyBlueprint:
     """Medium task"""
-    matich = DefaultChronoMaterialNSC()
-    matich.Friction = 0.65
-    matich.DampingF = 0.65
+    material = DefaultChronoMaterialNSC()
+    material.Friction = 0.65
+    material.DampingF = 0.65
     shape = easy_body_shapes.Sphere(r)
     obj = EnvironmentBodyBlueprint(shape=shape,
-                                   material=matich,
+                                   material=material,
                                    pos=FrameTransform([0, 0, 0], [1, 0, 0, 0]), color=[215, 255, 0])
 
     return obj
@@ -181,7 +181,7 @@ def get_obj_hard_mesh_piramida():
 
 def get_object_parametrized_cuboctahedron(a) -> EnvironmentBodyBlueprint:
     """Medium task"""
-    matich = DefaultChronoMaterialNSC()
+    material = DefaultChronoMaterialNSC()
     points = [(a, a, 0),
               (-a, a, 0),
               (a, -a, 0),
@@ -198,7 +198,7 @@ def get_object_parametrized_cuboctahedron(a) -> EnvironmentBodyBlueprint:
               (0, -a, -a)]
     shape = easy_body_shapes.ConvexHull(points)
     obj = EnvironmentBodyBlueprint(shape=shape,
-                                   material=matich,
+                                   material=material,
                                    pos=FrameTransform([0, 0, 0], [1, 0, 0, 0]))
     return obj
 
@@ -206,7 +206,7 @@ def get_object_parametrized_cuboctahedron(a) -> EnvironmentBodyBlueprint:
 
 def get_object_parametrized_dipyramid_3(a) -> EnvironmentBodyBlueprint:
     """Medium task"""
-    matich = DefaultChronoMaterialNSC()
+    material = DefaultChronoMaterialNSC()
     C0 = np.sqrt(3) / 3
     C1 = 2 / 3
     C2 = 2 * np.sqrt(3) / 3
@@ -219,13 +219,13 @@ def get_object_parametrized_dipyramid_3(a) -> EnvironmentBodyBlueprint:
     points = [V0 ,V1, V2, V3, V4]
     shape = easy_body_shapes.ConvexHull(points)
     obj = EnvironmentBodyBlueprint(shape=shape,
-                                   material=matich,
+                                   material=material,
                                    pos=FrameTransform([0, 0, 0], [1, 0, 0, 0]))
     return obj
 
 
 def get_object_parametrized_trapezohedron(a) -> EnvironmentBodyBlueprint:
-    matich = DefaultChronoMaterialNSC()
+    material = DefaultChronoMaterialNSC()
     C0 =  np.sqrt(2 * (3 * np.sqrt(2) - 4)) / 4
     C1 =   np.sqrt(2) / 2
     C2 =  np.sqrt(2 * (4 + 3 * np.sqrt(2))) / 4
@@ -244,6 +244,6 @@ def get_object_parametrized_trapezohedron(a) -> EnvironmentBodyBlueprint:
     points = [V0 ,V1, V2, V3, V4, V5, V6, V7, V8, V9]
     shape = easy_body_shapes.ConvexHull(points)
     obj = EnvironmentBodyBlueprint(shape=shape,
-                                   material=matich,
+                                   material=material,
                                    pos=FrameTransform([0, 0, 0], [1, 0, 0, 0]))
     return obj
