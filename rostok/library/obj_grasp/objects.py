@@ -179,3 +179,71 @@ def get_obj_hard_mesh_piramida():
     obj = EnvironmentBodyBlueprint(shape=shape, material=mat, pos=FrameTransform([-2, 1, 5], quat), color=[215, 255, 0])
     return obj
 
+def get_object_parametrized_cuboctahedron(a) -> EnvironmentBodyBlueprint:
+    """Medium task"""
+    matich = DefaultChronoMaterialNSC()
+    points = [(a, a, 0),
+              (-a, a, 0),
+              (a, -a, 0),
+              (-a, -a, 0),
+
+              (a, 0, a),
+              (-a, 0 , a),
+              (-a, 0, -a),
+              (a, 0, -a),
+
+              (0, a, a),
+              (0, -a, a),
+              (0, a, -a),
+              (0, -a, -a)]
+    shape = easy_body_shapes.ConvexHull(points)
+    obj = EnvironmentBodyBlueprint(shape=shape,
+                                   material=matich,
+                                   pos=FrameTransform([0, 0, 0], [1, 0, 0, 0]))
+    return obj
+
+
+
+def get_object_parametrized_dipyramid_3(a) -> EnvironmentBodyBlueprint:
+    """Medium task"""
+    matich = DefaultChronoMaterialNSC()
+    C0 = np.sqrt(3) / 3
+    C1 = 2 / 3
+    C2 = 2 * np.sqrt(3) / 3
+
+    V0 = (0.0, 0.0, a * C1)
+    V1 = (0.0, 0.0, -C1*a)
+    V2 = (1.0*a, a*C0, 0.0)
+    V3 = (-1.0*a, a*C0, 0.0)
+    V4 = (0.0, -C2*a, 0.0)
+    points = [V0 ,V1, V2, V3, V4]
+    shape = easy_body_shapes.ConvexHull(points)
+    obj = EnvironmentBodyBlueprint(shape=shape,
+                                   material=matich,
+                                   pos=FrameTransform([0, 0, 0], [1, 0, 0, 0]))
+    return obj
+
+
+def get_object_parametrized_trapezohedron(a) -> EnvironmentBodyBlueprint:
+    matich = DefaultChronoMaterialNSC()
+    C0 =  np.sqrt(2 * (3 * np.sqrt(2) - 4)) / 4
+    C1 =   np.sqrt(2) / 2
+    C2 =  np.sqrt(2 * (4 + 3 * np.sqrt(2))) / 4
+
+    V0 = ( 0.0,  0.0,  C2*a)
+    V1 = ( 0.0,  0.0, -C2*a)
+    V2 = (  C1*a,  0.0,  C0*a)
+    V3 = ( -C1*a,  0.0,  C0*a)
+    V4 = ( 0.0,   C1*a,  C0*a)
+    V5 = ( 0.0,  -C1*a,  C0*a)
+    V6 = ( 0.5*a,  0.5*a, -C0*a)
+    V7 = ( 0.5*a, -0.5*a, -C0*a)
+    V8 = (-0.5*a,  0.5*a, -C0*a)
+    V9 = (-0.5*a, -0.5*a, -C0*a)
+    
+    points = [V0 ,V1, V2, V3, V4, V5, V6, V7, V8, V9]
+    shape = easy_body_shapes.ConvexHull(points)
+    obj = EnvironmentBodyBlueprint(shape=shape,
+                                   material=matich,
+                                   pos=FrameTransform([0, 0, 0], [1, 0, 0, 0]))
+    return obj
