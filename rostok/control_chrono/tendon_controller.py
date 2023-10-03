@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List,  Union
 
 import pychrono as chrono
 
@@ -19,7 +19,7 @@ from rostok.virtual_experiment.sensors import Sensor
 class ForceType(Enum):
     PULLEY = 0
     TIP = 1
-    POINT = 2
+    BASE_CONNECTION = 2
 
 
 class PulleyForce(ForceControllerTemplate):
@@ -84,7 +84,7 @@ class PulleyParameters():
     body_id: int = 0
     pulley_number: int = 0
     position: List[float] = field(default_factory=list)
-    force_type: ForceType = ForceType.POINT
+    force_type: ForceType = ForceType.BASE_CONNECTION
 
 
 def create_pulley_lines_2p(graph: GraphGrammar, pulleys_in_phalanx=2, finger_base=True):
@@ -94,13 +94,6 @@ def create_pulley_lines_2p(graph: GraphGrammar, pulleys_in_phalanx=2, finger_bas
     tip_ids = get_tip_ids(graph)
     branches = graph.get_sorted_root_based_paths()
     is_joint_id = lambda id: NodeFeatures.is_joint(graph.get_node_by_id(id))
-    # filter the branches that actually have joints
-    branches2 = []
-    for branch in branches:
-        is_add = any(map(is_joint_id, branch))
-        if is_add:
-            branches2.append(branch)
-    branches = branches2
 
     pulley_lines = []
     for finger_n, path in enumerate(branches):
@@ -147,7 +140,7 @@ class TendonController_2p(RobotControllerChrono):
 
     def __init__(self, graph: BuiltGraphChrono, control_parameters: TendonControllerParameters):
         super().__init__(graph, control_parameters)
-        self.pulley_lines = []
+        self.pulley_lines:List[List[PulleyParameters,Union[PulleyForce,TipForce]]]  = []
         self.create_force_points()
 
     def set_pulley_positions(self, tendon_lines):
@@ -158,7 +151,7 @@ class TendonController_2p(RobotControllerChrono):
                 x = node.block_blueprint.shape.width_x
                 y = node.block_blueprint.shape.length_y
                 z = node.block_blueprint.shape.height_z
-                if force_point[0].force_type == ForceType.POINT:
+                if force_point[0].force_type == ForceType.BASE_CONNECTION:
                     parameters = self.parameters.starting_point_parameters
                     pos_x = parameters[0].get_offset(0.5 * x)
                     pos_y = parameters[1].get_offset(0.5 * y)
@@ -190,19 +183,19 @@ class TendonController_2p(RobotControllerChrono):
                     force_point[1].bind_body(body.body)
                     force_point[1].visualize_application_point()
 
-                if force_point[0].force_type == ForceType.TIP:
+                elif force_point[0].force_type == ForceType.TIP:
                     force_point[1] = TipForce(pos=list(force_point[0].position),
                                               name=f'{idx}_t')
                     force_point[1].bind_body(body.body)
                     force_point[1].visualize_application_point()
 
-                if force_point[0].force_type == ForceType.POINT:
+                elif force_point[0].force_type == ForceType.BASE_CONNECTION:
                     force_point[1] = TipForce(pos=list(force_point[0].position))
                     force_point[1].bind_body(body.body)
                     force_point[1].visualize_application_point()
 
     def create_force_points(self):
-        self.pulley_lines = create_pulley_lines_2p(self.graph)
+        self.pulley_lines:List[List[PulleyParameters,Union[PulleyForce,TipForce]]] = create_pulley_lines_2p(self.graph)
         self.set_pulley_positions(self.pulley_lines)
         self.set_forces_to_pulley_line(self.pulley_lines)
 
