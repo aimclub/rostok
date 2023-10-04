@@ -1,18 +1,11 @@
 import json
-import multiprocessing
-import os
-import time
-import types
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
-from enum import Enum
 from itertools import product
-from multiprocessing import Pool, TimeoutError
 
 import numpy as np
-from joblib import Parallel, delayed
-from scipy.optimize import direct, dual_annealing, shgo
+from scipy.optimize import direct, dual_annealing
 
 from rostok.control_chrono.tendon_controller import TendonControllerParameters
 from rostok.criterion.criterion_calculation import SimulationReward
@@ -20,10 +13,8 @@ from rostok.criterion.simulation_flags import EventFlyingApart
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_block_typing import (
     get_joint_matrix_from_graph, get_joint_vector_from_graph)
-from rostok.simulation_chrono.simulation_scenario import ParametrizedSimulation
 from rostok.trajectory_optimizer.trajectory_generator import (
-    cable_length_linear_control, joint_root_paths, linear_control,
-    tendon_like_control)
+    joint_root_paths)
 from rostok.utils.json_encoder import RostokJSONEncoder
 
 

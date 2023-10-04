@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Union
 
@@ -34,6 +34,13 @@ class Ellipsoid:
 class FromMesh:
     path: Path
 
+@dataclass
+class ConvexHull:
+    points: list[tuple[float, float, float]] = field(default_factory=list)
+
+    def __hash__(self) -> int:    
+        return hash(("ConvexHull", self.points))
+
 
 # All types of shape
-ShapeTypes = Union[Box, Cylinder, Sphere, Ellipsoid, FromMesh]
+ShapeTypes = Union[Box, Cylinder, Sphere, Ellipsoid, FromMesh, ConvexHull]

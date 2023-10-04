@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import hyperparameters as hp
 
 from rostok.control_chrono.tendon_controller import TendonControllerParameters
@@ -14,6 +16,8 @@ from rostok.simulation_chrono.simulation_scenario import GraspScenario
 from rostok.trajectory_optimizer.control_optimizer import (
     CalculatorWithOptimizationDirect, TendonOptimizerCombinationForce)
 from rostok.utils.numeric_utils import Offset
+from rostok.trajectory_optimizer.control_optimizer import (CalculatorWithGraphOptimization,
+                                                           CalculatorWithOptimizationDirect)
 
 
 def config_independent_torque(grasp_object_blueprint):
