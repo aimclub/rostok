@@ -195,9 +195,7 @@ class TendonController_2p(RobotControllerChrono):
                     force_point[1].visualize_application_point()
 
     def create_force_points(self):
-        self.pulley_lines: List[List[PulleyParameters,
-                                     Union[PulleyForce,
-                                           TipForce]]] = create_pulley_lines_2p(self.graph)
+        self.pulley_lines: PULLEY_LINES_TYPE = create_pulley_lines_2p(self.graph)
         self.set_pulley_positions(self.pulley_lines)
         self.set_forces_to_pulley_line(self.pulley_lines)
 
