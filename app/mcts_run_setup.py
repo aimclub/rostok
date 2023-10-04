@@ -17,10 +17,7 @@ from rostok.trajectory_optimizer.control_optimizer import (
     CalculatorWithOptimizationDirect, TendonOptimizerCombinationForce)
 from rostok.utils.numeric_utils import Offset
 from rostok.trajectory_optimizer.control_optimizer import (CalculatorWithGraphOptimization,
-                                                           CalculatorWithOptimizationDirect,
-                                                           LinearCableControlOptimization,
-                                                           TendonLikeControlOptimization,
-                                                           LinearControlOptimizationDirect)
+                                                           CalculatorWithOptimizationDirect)
 
 
 def config_independent_torque(grasp_object_blueprint):
