@@ -1,14 +1,12 @@
 from math import sin
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 from abc import abstractmethod
 from dataclasses import dataclass, field
-from matplotlib.pyplot import cla
 
 import pychrono.core as chrono
 from typing import Callable, List
 from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint, JointInputTypeChrono)
 
-from rostok.virtual_experiment.sensors import Sensor
 from rostok.virtual_experiment.built_graph_chrono import BuiltGraphChrono
 
 class RobotControllerChrono:

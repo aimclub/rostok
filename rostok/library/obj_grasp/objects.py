@@ -6,6 +6,8 @@ from rostok.block_builder_api import easy_body_shapes
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
 from rostok.block_builder_chrono.block_classes import (
     DefaultChronoMaterialNSC, DefaultChronoMaterialSMC, FrameTransform)
+from rostok.block_builder_chrono.block_comprehension import calc_volume_body
+
 
 
 # rotation around axis with angle argument in degrees
@@ -179,7 +181,7 @@ def get_obj_hard_mesh_piramida():
     obj = EnvironmentBodyBlueprint(shape=shape, material=mat, pos=FrameTransform([-2, 1, 5], quat), color=[215, 255, 0])
     return obj
 
-def get_object_parametrized_cuboctahedron(a) -> EnvironmentBodyBlueprint:
+def get_object_parametrized_cuboctahedron(a, mass = 0.100) -> EnvironmentBodyBlueprint:
     """Medium task"""
     material = DefaultChronoMaterialNSC()
     points = [(a, a, 0),
@@ -200,11 +202,14 @@ def get_object_parametrized_cuboctahedron(a) -> EnvironmentBodyBlueprint:
     obj = EnvironmentBodyBlueprint(shape=shape,
                                    material=material,
                                    pos=FrameTransform([0, 0, 0], [1, 0, 0, 0]))
+    volume = calc_volume_body(obj)
+    obj.density  = mass / volume
+    
     return obj
 
 
 
-def get_object_parametrized_dipyramid_3(a) -> EnvironmentBodyBlueprint:
+def get_object_parametrized_dipyramid_3(a, mass = 100) -> EnvironmentBodyBlueprint:
     """Medium task"""
     material = DefaultChronoMaterialNSC()
     C0 = np.sqrt(3) / 3
@@ -221,10 +226,12 @@ def get_object_parametrized_dipyramid_3(a) -> EnvironmentBodyBlueprint:
     obj = EnvironmentBodyBlueprint(shape=shape,
                                    material=material,
                                    pos=FrameTransform([0, 0, 0], [1, 0, 0, 0]))
+    volume = calc_volume_body(obj)
+    obj.density  = mass / volume
     return obj
 
 
-def get_object_parametrized_trapezohedron(a) -> EnvironmentBodyBlueprint:
+def get_object_parametrized_trapezohedron(a, mass = 100) -> EnvironmentBodyBlueprint:
     material = DefaultChronoMaterialNSC()
     C0 =  np.sqrt(2 * (3 * np.sqrt(2) - 4)) / 4
     C1 =   np.sqrt(2) / 2
@@ -246,4 +253,6 @@ def get_object_parametrized_trapezohedron(a) -> EnvironmentBodyBlueprint:
     obj = EnvironmentBodyBlueprint(shape=shape,
                                    material=material,
                                    pos=FrameTransform([0, 0, 0], [1, 0, 0, 0]))
+    volume = calc_volume_body(obj)
+    obj.density  = mass / volume
     return obj
