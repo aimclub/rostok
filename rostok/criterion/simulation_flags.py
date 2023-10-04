@@ -62,14 +62,20 @@ class SimulationSingleEvent(ABC):
 class EventContact(SimulationSingleEvent):
     """Event of contact between robot and object
 
+        Attributes:
+        from_body (bool): flag determines the source of contact information.
     """
-    def __init__(self, take_from_body = False):
+    def __init__(self, take_from_body:bool = False):
         super().__init__()
         self.from_body = take_from_body
+
     def event_check(self, current_time: float, step_n: int, robot_data: Sensor, env_data: Sensor):
         if self.state:
+            if __debug__:
+                raise Exception("The EventContact.event_check is called after occurrence in simulation.")
             return EventCommands.CONTINUE
-        if self.from_body:
+
+        if not self.from_body:
             # the contact information from the object
             if env_data.get_amount_contacts()[0] > 0:
                 self.state = True
@@ -112,6 +118,11 @@ class EventContactTimeOut(SimulationSingleEvent):
         Returns:
             EventCommands: return a command for simulation
         """
+        if self.state:
+            if __debug__:
+                raise Exception("The EventContactTimeOut.event_check is called after occurrence in simulation.")
+            return EventCommands.STOP
+
         # if the contact has already occurred in simulation, return CONTINUE
         if self.contact_event.state:
             return EventCommands.CONTINUE
@@ -141,11 +152,15 @@ class EventFlyingApart(SimulationSingleEvent):
         Returns:
             EventCommands: return a command for simulation
         """
+        if self.state:
+            if __debug__:
+                raise Exception("The EventFlyingApart.event_check is called after occurrence in simulation.")
+            return EventCommands.STOP
+
         trajectory_points = robot_data.get_body_trajectory_point()
         # It takes the position of the first block in the list, that should be the base body
         base_position = trajectory_points[next(iter(trajectory_points))]
-        for block in trajectory_points.values():
-            position = block
+        for position in trajectory_points.values():
             if np.linalg.norm(np.array(base_position) - np.array(position)) > self.max_distance:
                 self.state = True
                 self.step_n = step_n
@@ -177,7 +192,11 @@ class EventSlipOut(SimulationSingleEvent):
         Returns:
             EventCommands: return a command for simulation
         """
-        # Old variant: contact = env_data.get_amount_contacts()[0] > 0
+        if self.state:
+            if __debug__:
+                raise Exception("The EventSlipOut.event_check is called after occurrence in simulation.")
+            return EventCommands.STOP
+
         robot_contacts = robot_data.get_amount_contacts()
         # it works only with current rule set, where the palm/flat always has the smallest index among the bodies
         flat_idx_ = list(robot_contacts.keys())[0]
@@ -192,7 +211,7 @@ class EventSlipOut(SimulationSingleEvent):
             self.time_last_contact = current_time
             return EventCommands.CONTINUE
 
-        if (not self.time_last_contact is None):
+        if not (self.time_last_contact is None):
             if current_time - self.time_last_contact > self.reference_time:
                 self.step_n = step_n
                 self.state = True
@@ -260,6 +279,8 @@ class EventGrasp(SimulationSingleEvent):
         """
 
         if self.state:
+            if __debug__:
+                raise Exception("The EventGrasp.event_check is called after occurrence in simulation.")
             return EventCommands.CONTINUE
 
         if self.check_grasp_timeout(current_time):
@@ -276,7 +297,6 @@ class EventGrasp(SimulationSingleEvent):
                     print('Grasp event!', current_time)
                 if self.simulation_stop > 0:
                     input('press enter to continue')
-                    # pass
 
                 return EventCommands.ACTIVATE
 
