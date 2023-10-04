@@ -135,16 +135,16 @@ def create_pulley_lines_2p(graph: GraphGrammar, pulleys_in_phalanx=2, finger_bas
 
     return pulley_lines
 
+PULLEY_LINES_TYPE = list[list[list[PulleyParameters, Union[PulleyForce, TipForce]]]]
 
 class TendonController_2p(RobotControllerChrono):
 
     def __init__(self, graph: BuiltGraphChrono, control_parameters: TendonControllerParameters):
         super().__init__(graph, control_parameters)
-        self.pulley_lines: List[List[PulleyParameters, Union[PulleyForce, TipForce]]] = []
+        self.pulley_lines: PULLEY_LINES_TYPE = []
         self.create_force_points()
 
-    def set_pulley_positions(self, tendon_lines: List[List[PulleyParameters, Union[PulleyForce,
-                                                                                   TipForce]]]):
+    def set_pulley_positions(self, tendon_lines: PULLEY_LINES_TYPE):
         for line in tendon_lines:
             for force_point in line:
                 idx = force_point[0].body_id
@@ -173,8 +173,7 @@ class TendonController_2p(RobotControllerChrono):
                     pos_z = parameters[2].get_offset(0.5 * z)
                     force_point[0].position = [pos_x, pos_y, pos_z]
 
-    def set_forces_to_pulley_line(self, tendon_lines: List[List[PulleyParameters,
-                                                                Union[PulleyForce, TipForce]]]):
+    def set_forces_to_pulley_line(self, tendon_lines: PULLEY_LINES_TYPE):
         for line in tendon_lines:
             for force_point in line:
                 idx = force_point[0].body_id
