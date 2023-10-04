@@ -4,10 +4,12 @@ from typing import Dict, List, Tuple
 import pychrono.core as chrono
 from pychrono.core import ChQuaternionD, ChVectorD
 
-from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform)
+from rostok.block_builder_api.block_parameters import (DefaultFrame,
+                                                       FrameTransform)
 from rostok.block_builder_chrono.block_builder_chrono_api import \
     ChronoBlockCreatorInterface as creator
-from rostok.block_builder_chrono.block_classes import (BLOCK_CLASS_TYPES, ChronoRevolveJoint,
+from rostok.block_builder_chrono.block_classes import (BLOCK_CLASS_TYPES,
+                                                       ChronoRevolveJoint,
                                                        PrimitiveBody)
 from rostok.block_builder_chrono.block_connect import place_and_connect
 from rostok.graph_grammar.node import GraphGrammar
