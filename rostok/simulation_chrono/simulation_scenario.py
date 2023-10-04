@@ -5,7 +5,7 @@ import numpy as np
 import pychrono as chrono
 
 from rostok.control_chrono.controller import (ConstController,
-                                              SinControllerChrono, YaxisShaker)
+                                              SinControllerChrono)
 from rostok.criterion.simulation_flags import SimulationSingleEvent
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.simulation_chrono.simulation import (ChronoSystems, EnvCreator,
@@ -17,7 +17,7 @@ from rostok.virtual_experiment.sensors import (SensorCalls,
                                                SensorObjectClassification)
 from rostok.block_builder_chrono.block_builder_chrono_api import \
     ChronoBlockCreatorInterface as creator
-#from rostok.control_chrono.tendon_controller import TendonController_2p
+from rostok.control_chrono.tendon_controller import TendonController_2p
 
 class ParametrizedSimulation:
 
@@ -57,24 +57,25 @@ class GraspScenario(ParametrizedSimulation):
         # events should be reset before every simulation
         self.reset_events()
         # build simulation from the subclasses
-        
+
         if self.smc:
             system = ChronoSystems.chrono_SMC_system(gravity_list=[0, 0, 0])
         else:
-            system = ChronoSystems.chrono_NSC_system(gravity_list=[0, 0, 0])
-        # setup the auxiliary  
+            system = ChronoSystems.chrono_NSC_system(gravity_list=[0, -10, 0])
+        # setup the auxiliary
         env_creator = EnvCreator([])
         vis_manager = ChronoVisManager(delay)
         simulation = SingleRobotSimulation(system, env_creator, vis_manager)
-        
+
         grasp_object = creator.create_environment_body(self.grasp_object_callback)
         grasp_object.body.SetNameString("Grasp_object")
         set_covering_ellipsoid_based_position(grasp_object,
                                            reference_point=chrono.ChVectorD(0, 0.1, 0))
+
         simulation.env_creator.add_object(grasp_object,
                                           read_data=True,
                                           force_torque_controller=None)
-        
+
         # add design and determine the outer force
         if self.tendon:
             simulation.add_design(graph, data, TendonController_2p, starting_positions=starting_positions)
