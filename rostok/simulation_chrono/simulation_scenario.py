@@ -5,8 +5,8 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pychrono as chrono
 
-from rostok.control_chrono.controller import (ConstController,
-                                              SinControllerChrono)
+from rostok.control_chrono.controller import (ConstController, SinControllerChrono)
+from rostok.control_chrono.external_force import ForceChronoWrapper, ForceTemplate
 from rostok.criterion.simulation_flags import SimulationSingleEvent
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.simulation_chrono.simulation import (ChronoSystems, EnvCreator, SingleRobotSimulation,
@@ -18,6 +18,7 @@ from rostok.virtual_experiment.sensors import (SensorCalls, SensorObjectClassifi
 from rostok.block_builder_chrono.block_builder_chrono_api import \
     ChronoBlockCreatorInterface as creator
 from rostok.control_chrono.tendon_controller import TendonController_2p
+
 
 class ParametrizedSimulation:
 
@@ -44,7 +45,7 @@ class GraspScenario(ParametrizedSimulation):
                  simulation_length,
                  tendon=True,
                  smc=False,
-                 obj_external_forces: Optional[ForceControllerTemplate] = None) -> None:
+                 obj_external_forces: Optional[ForceTemplate] = None) -> None:
         super().__init__(step_length, simulation_length)
         self.grasp_object_callback = None
         self.event_container: List[SimulationSingleEvent] = []
@@ -81,11 +82,14 @@ class GraspScenario(ParametrizedSimulation):
         grasp_object = creator.create_environment_body(self.grasp_object_callback)
         grasp_object.body.SetNameString("Grasp_object")
         set_covering_ellipsoid_based_position(grasp_object,
-                                           reference_point=chrono.ChVectorD(0, 0.1, 0))
-
+                                              reference_point=chrono.ChVectorD(0, 0.1, 0))
+        if self.obj_external_forces:
+            chrono_forces = ForceChronoWrapper(deepcopy(self.obj_external_forces))
+        else:
+            chrono_forces = None
         simulation.env_creator.add_object(grasp_object,
                                           read_data=True,
-                                          force_torque_controller=None)
+                                          force_torque_controller=chrono_forces)
 
         # add design and determine the outer force
         if self.tendon:

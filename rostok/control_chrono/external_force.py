@@ -1,9 +1,10 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import numpy as np
 from typing import Any, Callable, List
 
 import pychrono.core as chrono
+
 
 def random_3d_vector(amp):
     """Calculate random 3d vector with given amplitude (uniform distribution on sphere)
@@ -14,13 +15,14 @@ def random_3d_vector(amp):
     Returns:
         tuple: x, y, z components of vector
     """
-    phi = np.random.uniform(0, 2*np.pi)
+    phi = np.random.uniform(0, 2 * np.pi)
     cos_theta = np.random.uniform(-1, 1)
     sin_theta = np.sqrt(1 - cos_theta**2)
-    z_force = amp*cos_theta
-    y_force = amp*sin_theta*np.sin(phi)
-    x_force = amp*sin_theta*np.cos(phi)
+    z_force = amp * cos_theta
+    y_force = amp * sin_theta * np.sin(phi)
+    x_force = amp * sin_theta * np.cos(phi)
     return x_force, y_force, z_force
+
 
 def random_2d_vector(amp, angle: float = 0):
     """Calculate random 2d vector with given amplitude (uniform distribution on circle)
@@ -32,17 +34,18 @@ def random_2d_vector(amp, angle: float = 0):
     Returns:
         tuple: x, y, z components of vector
     """
-    angle = np.random.uniform(0, 2*np.pi)
-    
-    el1 = np.cos(angle)*amp
-    el2 = np.sin(angle)*amp
-    
+    angle = np.random.uniform(0, 2 * np.pi)
+
+    el1 = np.cos(angle) * amp
+    el2 = np.sin(angle) * amp
+
     v1 = chrono.ChVectorD(el1, el2, 0)
-    
+
     q1 = chrono.Q_from_AngZ(angle)
     v1 = q1.Rotate(v1)
-    
+
     return v1.x, v1.y, v1.z
+
 
 @dataclass
 class ForceTorque:
@@ -55,20 +58,38 @@ class ForceTorque:
 CALLBACK_TYPE = Callable[[float, Any], ForceTorque]
 
 
-class ForceControllerTemplate():
+class ForceTemplate(ABC):
+
+    def __init__(self,
+                 name: str = "unnamed_force",
+                 start_time: float = 0.0,
+                 pos: np.ndarray = np.zeros(3)) -> None:
+        self.path = None
+        self.name = name
+        self.pos = pos
+        self.start_time = start_time
+
+    @abstractmethod
+    def calculate_spatial_force(self, time, data) -> np.ndarray:
+        return np.zeros(6)
+
+    def enable_data_dump(self, path):
+        self.path = path
+        with open(path, 'w') as file:
+            file.write('Data for external action:')
+            file.write(self.__dict__)
+
+
+class ForceChronoWrapper():
     """Base class for creating force and moment actions.
 
     To use it, you need to implement the get_force_torque method, 
     which determines the force and torque at time t.
     """
 
-    def __init__(self,
-                 is_local: bool = False,
-                 name: str = "unnamed_force",
-                 pos: list[float] = [0, 0, 0]) -> None:
-        self.pos = pos
-        self.name = name
+    def __init__(self, force: ForceTemplate, is_local: bool = False) -> None:
         self.path = None
+        self.force = force
 
         self.x_force_chrono = chrono.ChFunction_Const(0)
         self.y_force_chrono = chrono.ChFunction_Const(0)
@@ -83,6 +104,8 @@ class ForceControllerTemplate():
             self.x_torque_chrono, self.y_torque_chrono, self.z_torque_chrono
         ]
         self.force_maker_chrono = chrono.ChForce()
+
+        name = force.name.split("_")[0]
         self.force_maker_chrono.SetNameString(name + "_force")
         self.torque_maker_chrono = chrono.ChForce()
         self.torque_maker_chrono.SetNameString(name + "_torque")
@@ -90,15 +113,12 @@ class ForceControllerTemplate():
         self.is_local = is_local
         self.setup_makers()
 
-    
     def get_force_torque(self, time: float, data) -> ForceTorque:
         impact = ForceTorque()
-        impact.force = self.calculate_impact(time, data)
+        spatial_force = self.force.calculate_spatial_force(time, data)
+        impact.force = tuple(spatial_force[3:])
+        impact.torque = tuple(spatial_force[:3])
         return impact
-    
-    @abstractmethod
-    def calculate_impact(self, time: float, data) -> tuple[float, float, float]:
-        pass
 
     def update(self, time: float, data=None):
         force_torque = self.get_force_torque(time, data)
@@ -128,8 +148,8 @@ class ForceControllerTemplate():
         body.AddForce(self.force_maker_chrono)
         body.AddForce(self.torque_maker_chrono)
         self.__body = body
-        self.force_maker_chrono.SetVrelpoint(chrono.ChVectorD(*self.pos))
-        self.torque_maker_chrono.SetVrelpoint(chrono.ChVectorD(*self.pos))
+        self.force_maker_chrono.SetVrelpoint(chrono.ChVectorD(*self.force.pos.tolist()))
+        self.torque_maker_chrono.SetVrelpoint(chrono.ChVectorD(*self.force.pos.tolist()))
         self.is_bound = True
 
     def visualize_application_point(self,
@@ -138,7 +158,8 @@ class ForceControllerTemplate():
                                     body_opacity=0.6):
         sph_1 = chrono.ChSphereShape(size)
         sph_1.SetColor(color)
-        self.__body.AddVisualShape(sph_1, chrono.ChFrameD(chrono.ChVectorD(*self.pos)))
+        self.__body.AddVisualShape(sph_1,
+                                   chrono.ChFrameD(chrono.ChVectorD(*self.force.pos.tolist())))
 
         self.__body.GetVisualShape(0).SetOpacity(body_opacity)
 
@@ -149,26 +170,31 @@ class ForceControllerTemplate():
     def enable_data_dump(self, path):
         self.path = path
         with open(path, 'w') as file:
-            file.write('Data for external action:', self.name)
+            file.write('Data for external action:', self.force.name)
 
 
-class ForceControllerOnCallback(ForceControllerTemplate):
+class ForceControllerOnCallback(ForceTemplate):
 
-    def __init__(self, callback: CALLBACK_TYPE) -> None:
-        super().__init__(name="callback_force")
+    def __init__(self,
+                 callback: CALLBACK_TYPE,
+                 name: str = "callback_force",
+                 start_time: float = 0.0,
+                 pos: np.ndarray = np.zeros(3)) -> None:
+        super().__init__(name, start_time, pos)
         self.callback = callback
 
-    def get_force_torque(self, time: float, data) -> ForceTorque:
+    def calculate_spatial_force(self, time, data) -> np.ndarray:
         return self.callback(time, data)
 
 
-class YaxisSin(ForceControllerTemplate):
+class YaxisSin(ForceTemplate):
 
     def __init__(self,
                  amp: float = 5,
                  amp_offset: float = 1,
                  freq: float = 5,
-                 start_time: float = 0.0) -> None:
+                 start_time: float = 0.0,
+                 pos: np.ndarray = np.zeros(3)) -> None:
         """Shake by sin along y axis
 
         Args:
@@ -177,19 +203,21 @@ class YaxisSin(ForceControllerTemplate):
             freq (float, optional): Frequency of sin. Defaults to 5.
             start_time (float, optional): Start time of force application. Defaults to 0.0.
         """
-        super().__init__(name="y_sin_force")
+        super().__init__("y_sin_force", start_time, pos)
         self.amp = amp
         self.amp_offset = amp_offset
         self.freq = freq
-        self.start_time = start_time
-    
-    def calculate_impact(self, time, data) -> tuple[float, float, float]:
-        y_force = 0
-        if time >= self.start_time:
-            y_force = self.amp * np.sin(self.freq * (time - self.start_time)) + self.amp_offset 
-        return 0, y_force, 0
 
-class NullGravity(ForceControllerTemplate):
+    def calculate_spatial_force(self, time, data) -> np.ndarray:
+        spatial_force = np.zeros(6)
+        if time >= self.start_time:
+            spatial_force[4] = self.amp * np.sin(self.freq *
+                                                 (time - self.start_time)) + self.amp_offset
+        return spatial_force
+
+
+class NullGravity(ForceTemplate):
+
     def __init__(self, start_time: float = 0.0) -> None:
         """Apply force to compensate gravity
 
@@ -197,19 +225,26 @@ class NullGravity(ForceControllerTemplate):
             gravitry_force (float): gravity force of object
             start_time (float, optional): start time of force application. Defaults to 0.0.
         """
-        super().__init__(name="null_gravity_force")
-        self.start_time = start_time
-    
-    def calculate_impact(self, time: float, data) -> tuple[float, float, float]:
-        force_g = np.zeros(3)
+        super().__init__(name="null_gravity_force", start_time=start_time, pos=np.zeros(3))
+
+    def calculate_spatial_force(self, time: float, data) -> np.ndarray:
+        spatial_force = np.zeros(6)
         if time >= self.start_time:
             mass = data.body_map_ordered[0].body.GetMass()
             g = data.grav_acc
-            force_g = -mass*g
-        return force_g[0], force_g[1], force_g[2]
+            spatial_force[3:] = -mass * g
+        return spatial_force
 
-class RandomForces(ForceControllerTemplate):
-    def __init__(self, amp: float, start_time: float = 0.0, width_step: int = 20, *args) -> None:
+
+class RandomForces(ForceTemplate):
+
+    def __init__(self,
+                 amp: float,
+                 width_step: int = 20,
+                 start_time: float = 0.0,
+                 pos: np.ndarray = np.zeros(3),
+                 dimension="3d",
+                 angle=0.0) -> None:
         """Apply force with random direction and given amplitude
 
         Args:
@@ -217,29 +252,35 @@ class RandomForces(ForceControllerTemplate):
             start_time (float, optional): Start time of force application. Defaults to 0.0.
             width_step (int, optional): Number of steps between changes of force direction. Defaults to 20.
         """
-        super().__init__(name="random_force")
-        self.start_time = start_time
+        super().__init__(name="random_force", start_time=start_time, pos=pos)
         self.width_step = width_step
         self.amp = amp
-        self.counter = 0
-        self.y_force = 0
-        self.x_force = 0
-        self.z_force = 0
-        self.args = args
-    
-    def calculate_impact(self, time: float, data) -> tuple[float, float, float]:
-        if time >= self.start_time:
-                if self.counter % self.width_step == 0:
-                    if self.args and self.args[0] == '2d':
-                        self.x_force, self.y_force, self.z_force = random_2d_vector(self.amp, self.args[1])
-                    else:
-                        self.x_force, self.y_force, self.z_force = random_3d_vector(self.amp)
-                    self.x_force, self.y_force, self.z_force = random_3d_vector(self.amp)
-                self.counter += 1
-        return self.x_force, self.y_force, self.z_force
+        self.dim = dimension
+        self.angle = angle
 
-class ClockXZForces(ForceControllerTemplate):
-    def __init__(self, amp: float, angle_step: float = np.pi/6,  start_time: float = 0.0,  width_step: int = 20) -> None:
+        self.counter = 0
+        self.spatial_force = np.zeros(6)
+
+    def calculate_spatial_force(self, time: float, data) -> np.ndarray:
+
+        if time >= self.start_time:
+            if self.counter % self.width_step == 0:
+                if self.dim == '2d':
+                    self.spatial_force[3:] = random_2d_vector(self.amp, self.angle)
+                else:
+                    self.spatial_force[3:] = random_3d_vector(self.amp)
+            self.counter += 1
+        return self.spatial_force
+
+
+class ClockXZForces(ForceTemplate):
+
+    def __init__(self,
+                 amp: float,
+                 angle_step: float = np.pi / 6,
+                 width_step: int = 20,
+                 start_time: float = 0.0,
+                 pos: np.ndarray = np.zeros(3)) -> None:
         """Apply force with given amplitude in xz plane and rotate it with given angle step
 
         Args:
@@ -248,49 +289,56 @@ class ClockXZForces(ForceControllerTemplate):
             start_time (float, optional): Start time of force application. Defaults to 0.0.
             width_step (int, optional): _description_. Defaults to 20.
         """
-        super().__init__(name="clock_xz_force")
+        super().__init__(name="clock_xz_force", start_time=start_time, pos=pos)
         self.amp = amp
-        self.start_time = start_time
         self.width_step = width_step
         self.counter: int = 0
         self.angle: float = 0.0
         self.angle_step: float = angle_step
-    
-    def calculate_impact(self, time: float, data) -> tuple[float, float, float]:
-        y_force = 0
-        x_force = 0
-        z_force = 0
+
+    def calculate_spatial_force(self, time: float, data) -> np.ndarray:
+        spatial_force = np.zeros(6)
         if time >= self.start_time:
             if self.counter % self.width_step == 0:
                 self.angle += self.angle_step
             self.counter += 1
-            x_force = np.cos(self.angle_step)*self.amp
-            z_force = np.sin(self.angle_step)*self.amp
-        return x_force, y_force, z_force
-    
-class ExternalForces(ForceControllerTemplate):
-    def __init__(self, force_controller: ForceControllerTemplate | List[ForceControllerTemplate]) -> None:
+            spatial_force[3] = np.cos(self.angle_step) * self.amp
+            spatial_force[4] = np.sin(self.angle_step) * self.amp
+        return spatial_force
+
+
+class ExternalForces(ForceTemplate):
+
+    def __init__(self, force_controller: ForceTemplate | List[ForceTemplate]) -> None:
         """Class for combining several external forces
 
         Args:
-            force_controller (ForceControllerTemplate | List[ForceControllerTemplate]): Forces or list of forces
+            force_controller (ForceTemplate | List[ForceTemplate]): Forces or list of forces
         """
-        super().__init__(name="external_forces")
+
+        if isinstance(force_controller, list):
+            start_times = np.array([i.start_time for i in force_controller])
+            positions = np.array([i.pos for i in force_controller])
+            if np.all(start_times != start_times[0]) or np.all(positions != positions[0]):
+                raise Exception("All forces should have the same start time and position")
+
+        super().__init__(name="external_forces", start_time=0.0, pos=np.zeros(3))
         self.force_controller = force_controller
-        
-    def add_force(self, force: ForceControllerTemplate):
+
+    def add_force(self, force: ForceTemplate):
         if isinstance(self.force_controller, list):
             self.force_controller.append(force)
         else:
             self.force_controller = [self.force_controller, force]
-        
-    def get_force_torque(self, time: float, data) -> ForceTorque:
+
+    def calculate_spatial_force(self, time: float, data) -> ForceTorque:
         if isinstance(self.force_controller, list):
             v_forces = np.zeros(3)
             for controller in self.force_controller:
-                v_forces += np.array(controller.calculate_impact(time, data))
+                v_forces += np.array(controller.calculate_spatial_force(time, data))
             impact = ForceTorque()
-            impact.force = tuple(v_forces)
+            impact.force = tuple(v_forces[3:])
+            impact.torque = tuple(v_forces[:3])
             return impact
         else:
-            return self.force_controller.get_force_torque(time, data)
+            return self.force_controller.calculate_spatial_force(time, data)
