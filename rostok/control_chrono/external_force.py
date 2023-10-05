@@ -317,10 +317,9 @@ class ExternalForces(ForceTemplate):
         """
 
         if isinstance(force_controller, list):
-            start_times = np.array([i.start_time for i in force_controller])
             positions = np.array([i.pos for i in force_controller])
-            if np.all(start_times != start_times[0]) or np.all(positions != positions[0]):
-                raise Exception("All forces should have the same start time and position")
+            if np.all(positions != positions[0]):
+                raise Exception("All forces should have the same position")
 
         super().__init__(name="external_forces", start_time=0.0, pos=np.zeros(3))
         self.force_controller = force_controller
