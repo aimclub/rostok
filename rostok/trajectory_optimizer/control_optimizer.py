@@ -448,9 +448,14 @@ class TendonOptimizerCombinationForce(TendonOptimizer):
             return (0, [])
         
         all_variants_control = list(product(self.tendon_forces, repeat=len(joint_root_paths(graph))))
-        object_weight = {sim_scen[0].grasp_object_callback: sim_scen[1] for sim_scen in self.simulation_scenario}
-        all_simulations = list(product(all_variants_control, self.simulation_scenario))
-        input_dates = [(np.array(put[0]), graph, put[1][0]) for put in all_simulations]
+        if isinstance(self.simulation_scenario, list):
+            object_weight = {sim_scen[0].grasp_object_callback: sim_scen[1] for sim_scen in self.simulation_scenario}
+            all_simulations = list(product(all_variants_control, self.simulation_scenario))
+            input_dates = [(np.array(put[0]), graph, put[1][0]) for put in all_simulations]
+        else:
+            object_weight = {self.simulation_scenario.grasp_object_callback: 1}
+            all_simulations = list(product(all_variants_control, [self.simulation_scenario]))
+            input_dates = [(np.array(put[0]), graph, put[1]) for put in all_simulations]
         np.random.shuffle(input_dates)
         
         cpus = len(input_dates) + 1 if len(input_dates) < self.num_cpu_workers else self.num_cpu_workers
