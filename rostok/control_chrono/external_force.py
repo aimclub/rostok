@@ -34,12 +34,12 @@ def random_2d_vector(amp, angle: float = 0):
     Returns:
         tuple: x, y, z components of vector
     """
-    angle = np.random.uniform(0, 2 * np.pi)
+    phi = np.random.uniform(0, 2 * np.pi)
 
-    el1 = np.cos(angle) * amp
-    el2 = np.sin(angle) * amp
+    el1 = np.cos(phi) * amp
+    el2 = np.sin(phi) * amp
 
-    v1 = chrono.ChVectorD(el1, el2, 0)
+    v1 = chrono.ChVectorD(el1, 0, el2)
 
     q1 = chrono.Q_from_AngZ(angle)
     v1 = q1.Rotate(v1)
