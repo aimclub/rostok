@@ -24,7 +24,7 @@ def random_3d_vector(amp):
     return x_force, y_force, z_force
 
 
-def random_2d_vector(amp, phi: float = 0, theta: float = 0):
+def random_plane_vector(amp, phi: float = 0, theta: float = 0):
     """Sample random 2d vector with given amplitude (uniform distribution on circle) in xz plane.
     Phi is angle along axis z, theta is angle along axis y. First rotate vector along z axis by phi, then along y axis by theta
 
