@@ -7,7 +7,7 @@ import pychrono.core as chrono
 
 
 def random_3d_vector(amp):
-    """Calculate random 3d vector with given amplitude (uniform distribution on sphere)
+    """Sample random 3d vector with given amplitude (uniform distribution on sphere)
 
     Args:
         amp (float): amplitude of vector
@@ -25,7 +25,7 @@ def random_3d_vector(amp):
 
 
 def random_2d_vector(amp, angle: float = 0):
-    """Calculate random 2d vector with given amplitude (uniform distribution on circle)
+    """Sample random 2d vector with given amplitude (uniform distribution on circle)
 
     Args:
         amp (float): amplitude of vector
