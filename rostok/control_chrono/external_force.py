@@ -249,7 +249,7 @@ class RandomForces(ForceTemplate):
                  start_time: float = 0.0,
                  pos: np.ndarray = np.zeros(3),
                  dimension="3d",
-                 angle=0.0) -> None:
+                 angle=(0.0, 0.0)) -> None:
         """Apply force with random direction and given amplitude
 
         Args:
@@ -271,9 +271,11 @@ class RandomForces(ForceTemplate):
         if time >= self.start_time:
             if self.counter % self.width_step == 0:
                 if self.dim == '2d':
-                    self.spatial_force[3:] = random_2d_vector(self.amp, self.angle)
-                else:
+                    self.spatial_force[3:] = random_plane_vector(self.amp, *self.angle)
+                elif self.dim == '3d':
                     self.spatial_force[3:] = random_3d_vector(self.amp)
+                else:
+                    raise Exception("Wrong name of dimension. Should be 2d or 3d")
             self.counter += 1
         return self.spatial_force
 
@@ -337,12 +339,9 @@ class ExternalForces(ForceTemplate):
 
     def calculate_spatial_force(self, time: float, data) -> ForceTorque:
         if isinstance(self.force_controller, list):
-            v_forces = np.zeros(3)
+            v_forces = np.zeros(6)
             for controller in self.force_controller:
                 v_forces += np.array(controller.calculate_spatial_force(time, data))
-            impact = ForceTorque()
-            impact.force = tuple(v_forces[3:])
-            impact.torque = tuple(v_forces[:3])
-            return impact
+            return v_forces
         else:
             return self.force_controller.calculate_spatial_force(time, data)

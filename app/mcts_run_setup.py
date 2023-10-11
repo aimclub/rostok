@@ -75,9 +75,10 @@ def config_with_tendon(grasp_object_blueprint):
     # configurate the simulation manager
 
     obj_forces = []
-    obj_forces.append(f_ext.NullGravity(1))
+    obj_forces.append(f_ext.NullGravity(0))
+    obj_forces.append(f_ext.RandomForces(1e6, 100, 0))
     obj_forces = f_ext.ExternalForces(obj_forces)
-    simulation_manager = GraspScenario(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION, obj_external_forces=f_ext.NullGravity(0))
+    simulation_manager = GraspScenario(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION, obj_external_forces=obj_forces)
     simulation_manager.grasp_object_callback = grasp_object_blueprint #lambda: creator.create_environment_body(
         #grasp_object_blueprint)
     event_contact = EventContact()
