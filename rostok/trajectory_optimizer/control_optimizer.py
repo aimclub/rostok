@@ -3,8 +3,10 @@ from abc import abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
 from itertools import product
+import os
 
 from joblib import Parallel, delayed
+from joblib.parallel import TimeoutError
 import numpy as np
 from scipy.optimize import direct, dual_annealing
 
@@ -398,7 +400,19 @@ class TendonOptimizerCombinationForce(TendonOptimizer):
                  tendon_forces: list[float],
                  starting_finger_angles=45,
                  num_cpu_workers=1,
-                 chunksize=1):
+                 chunksize=1,
+                 timeout_parallel = 60*5):
+        """Brute force optimization of tendon forces for controlling the mechanism. In subclass, it have to override method: bound_parameter, _transform_parameter2data and run_optimization. Number of cpu workers define number of parallel processes.
+
+        Args:
+            simulation_scenario (_type_): Scenario of simulation for virtual experiment
+            rewarder (SimulationReward): Instance of the class on which the objective function will be calculated
+            data (TendonControllerParameters): Parameters of control class
+            tendon_forces (list[float]): List of tendon force for brute force optimization.
+            starting_finger_angles (int, optional): Initial angle of fingers. Defaults to 45.
+            num_cpu_workers (int, optional): Number of parallel process. When set to "auto", the algorithm selects the number of workers by itself. Defaults to 1.
+            chunksize (int, optional): _description_. Defaults to 1.
+        """
         mock_optimization_bounds = (0, 15)
         mock_optimization_limit = 10
         self.tendon_forces = tendon_forces
@@ -406,6 +420,10 @@ class TendonOptimizerCombinationForce(TendonOptimizer):
                          mock_optimization_bounds, mock_optimization_limit)
         self.num_cpu_workers = num_cpu_workers
         self.chunksize = chunksize
+        self.timeout_parallel = timeout_parallel
+
+        if self.num_cpu_workers == "auto":
+            self.num_cpu_workers = os.cpu_count() - 2
 
     def run_optimization(self, callback, multi_bound, args):
         graph = args[0]
@@ -462,10 +480,10 @@ class TendonOptimizerCombinationForce(TendonOptimizer):
         print(f"Use CPUs processor: {cpus}, input dates: {len(input_dates)}")
         parallel_results = []
         try:
-            parallel_results = Parallel(cpus, backend = "multiprocessing", verbose=100, timeout=60*5,  batch_size = self.chunksize)(delayed(self._parallel_reward_with_parameters)(i) for i in input_dates)
-        except:
+            parallel_results = Parallel(cpus, backend = "multiprocessing", verbose=100, timeout=self.timeout_parallel,  batch_size = self.chunksize)(delayed(self._parallel_reward_with_parameters)(i) for i in input_dates)
+        except TimeoutError:
              print("TIMEOUT")
-             return (0.01, [])    
+             return (0.01, []) 
         result_group_object = {sim_scen[0].grasp_object_callback: [] for sim_scen in self.simulation_scenario}
         for results in parallel_results:
             obj = results[1].grasp_object_callback
