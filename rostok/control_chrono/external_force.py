@@ -24,27 +24,32 @@ def random_3d_vector(amp):
     return x_force, y_force, z_force
 
 
-def random_2d_vector(amp, angle: float = 0):
-    """Sample random 2d vector with given amplitude (uniform distribution on circle)
+def random_2d_vector(amp, phi: float = 0, theta: float = 0):
+    """Sample random 2d vector with given amplitude (uniform distribution on circle) in xz plane.
+    Phi is angle along axis z, theta is angle along axis y. First rotate vector along z axis by phi, then along y axis by theta
 
     Args:
         amp (float): amplitude of vector
-        angle (float, optional): angle along axis z of vector. Defaults to 0.
+        phi (float, optional): angle along axis z of vector. Defaults to 0.
+        theta (float, optional): angle along axis y of vector. Defaults to 0.
 
     Returns:
         tuple: x, y, z components of vector
     """
-    phi = np.random.uniform(0, 2 * np.pi)
+    angle = np.random.uniform(0, 2 * np.pi)
 
-    el1 = np.cos(phi) * amp
-    el2 = np.sin(phi) * amp
+    el1 = np.cos(angle) * amp
+    el2 = np.sin(angle) * amp
 
     v1 = chrono.ChVectorD(el1, 0, el2)
 
-    q1 = chrono.Q_from_AngZ(angle)
+    q1 = chrono.Q_from_AngZ(phi)
     v1 = q1.Rotate(v1)
+    
+    q2 = chrono.Q_from_AngY(theta)
+    v2 = q2.Rotate(v1)
 
-    return v1.x, v1.y, v1.z
+    return v2.x, v2.y, v2.z
 
 
 @dataclass
