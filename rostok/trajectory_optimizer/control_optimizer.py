@@ -411,7 +411,7 @@ class TendonOptimizerCombinationForce(TendonOptimizer):
             tendon_forces (list[float]): List of tendon force for brute force optimization.
             starting_finger_angles (int, optional): Initial angle of fingers. Defaults to 45.
             num_cpu_workers (int, optional): Number of parallel process. When set to "auto", the algorithm selects the number of workers by itself. Defaults to 1.
-            chunksize (int, optional): _description_. Defaults to 1.
+            chunksize (int, optional): Number of batch for one cpu worker. When set to "auto", the algorithm selects the number of workers by itself. Defaults to 1.
         """
         mock_optimization_bounds = (0, 15)
         mock_optimization_limit = 10
