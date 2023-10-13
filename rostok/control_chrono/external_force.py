@@ -63,7 +63,7 @@ class ForceTorque:
 CALLBACK_TYPE = Callable[[float, Any], ForceTorque]
 
 
-class ForceTemplate(ABC):
+class ABCForceCalculator(ABC):
 
     def __init__(self,
                  name: str = "unnamed_force",
@@ -92,7 +92,7 @@ class ForceChronoWrapper():
     which determines the force and torque at time t.
     """
 
-    def __init__(self, force: ForceTemplate, is_local: bool = False) -> None:
+    def __init__(self, force: ABCForceCalculator, is_local: bool = False) -> None:
         self.path = None
         self.force = force
 
@@ -178,7 +178,7 @@ class ForceChronoWrapper():
             file.write('Data for external action:', self.force.name)
 
 
-class ForceControllerOnCallback(ForceTemplate):
+class ForceControllerOnCallback(ABCForceCalculator):
 
     def __init__(self,
                  callback: CALLBACK_TYPE,
@@ -192,7 +192,7 @@ class ForceControllerOnCallback(ForceTemplate):
         return self.callback(time, data)
 
 
-class YaxisSin(ForceTemplate):
+class YaxisSin(ABCForceCalculator):
 
     def __init__(self,
                  amp: float = 5,
@@ -221,7 +221,7 @@ class YaxisSin(ForceTemplate):
         return spatial_force
 
 
-class NullGravity(ForceTemplate):
+class NullGravity(ABCForceCalculator):
 
     def __init__(self, start_time: float = 0.0) -> None:
         """Apply force to compensate gravity
@@ -241,7 +241,7 @@ class NullGravity(ForceTemplate):
         return spatial_force
 
 
-class RandomForces(ForceTemplate):
+class RandomForces(ABCForceCalculator):
 
     def __init__(self,
                  amp: float,
@@ -280,7 +280,7 @@ class RandomForces(ForceTemplate):
         return self.spatial_force
 
 
-class ClockXZForces(ForceTemplate):
+class ClockXZForces(ABCForceCalculator):
 
     def __init__(self,
                  amp: float,
@@ -314,15 +314,15 @@ class ClockXZForces(ForceTemplate):
         return spatial_force
 
 
-class ExternalForces(ForceTemplate):
+class ExternalForces(ABCForceCalculator):
 
-    def __init__(self, force_controller: ForceTemplate | List[ForceTemplate]) -> None:
+    def __init__(self, force_controller: ABCForceCalculator | List[ABCForceCalculator]) -> None:
         """Class for combining several external forces
 
         Args:
             force_controller (ForceTemplate | List[ForceTemplate]): Forces or list of forces
         """
-
+        self.data_forces = []
         if isinstance(force_controller, list):
             positions = np.array([i.pos for i in force_controller])
             if np.all(positions != positions[0]):
@@ -331,7 +331,7 @@ class ExternalForces(ForceTemplate):
         super().__init__(name="external_forces", start_time=0.0, pos=np.zeros(3))
         self.force_controller = force_controller
 
-    def add_force(self, force: ForceTemplate):
+    def add_force(self, force: ABCForceCalculator):
         if isinstance(self.force_controller, list):
             self.force_controller.append(force)
         else:
@@ -342,6 +342,7 @@ class ExternalForces(ForceTemplate):
             v_forces = np.zeros(6)
             for controller in self.force_controller:
                 v_forces += np.array(controller.calculate_spatial_force(time, data))
+                self.data_forces.append(v_forces)
             return v_forces
         else:
             return self.force_controller.calculate_spatial_force(time, data)

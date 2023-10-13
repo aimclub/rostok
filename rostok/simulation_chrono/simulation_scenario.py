@@ -6,7 +6,7 @@ import numpy as np
 import pychrono as chrono
 
 from rostok.control_chrono.controller import (ConstController, SinControllerChrono)
-from rostok.control_chrono.external_force import ForceChronoWrapper, ForceTemplate
+from rostok.control_chrono.external_force import ForceChronoWrapper, ABCForceCalculator
 from rostok.criterion.simulation_flags import SimulationSingleEvent
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.simulation_chrono.simulation import (ChronoSystems, EnvCreator, SingleRobotSimulation,
@@ -45,7 +45,7 @@ class GraspScenario(ParametrizedSimulation):
                  simulation_length,
                  tendon=True,
                  smc=False,
-                 obj_external_forces: Optional[ForceTemplate] = None) -> None:
+                 obj_external_forces: Optional[ABCForceCalculator] = None) -> None:
         super().__init__(step_length, simulation_length)
         self.grasp_object_callback = None
         self.event_container: List[SimulationSingleEvent] = []

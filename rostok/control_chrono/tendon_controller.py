@@ -8,7 +8,7 @@ import numpy as np
 import pychrono as chrono
 
 from rostok.control_chrono.controller import RobotControllerChrono
-from rostok.control_chrono.external_force import (ForceTemplate, ForceChronoWrapper)
+from rostok.control_chrono.external_force import (ABCForceCalculator, ForceChronoWrapper)
 from rostok.graph_grammar.graph_comprehension import (get_tip_ids, is_star_topology)
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_block_typing import NodeFeatures
@@ -22,7 +22,7 @@ class ForceType(Enum):
     BASE_CONNECTION = 2
 
 
-class PulleyForce(ForceTemplate):
+class PulleyForce(ABCForceCalculator):
 
     def calculate_spatial_force(self, time: float, data) -> np.ndarray:
         spatial_force = np.zeros(6)
@@ -41,7 +41,7 @@ class PulleyForce(ForceTemplate):
         return spatial_force
 
 
-class TipForce(ForceTemplate):
+class TipForce(ABCForceCalculator):
 
     def calculate_spatial_force(self, time: float, data) -> np.ndarray:
         spatial_force = np.zeros(6)
