@@ -304,7 +304,7 @@ class EventGrasp(SimulationSingleEvent):
 
 
 class EventStopExternalForce(SimulationSingleEvent):
-
+    """Event that controls external force and stops simulation after reference time has passed."""
     def __init__(self, grasp_event: EventGrasp, force_test_time: float):
         super().__init__()
         self.grasp_event = grasp_event
