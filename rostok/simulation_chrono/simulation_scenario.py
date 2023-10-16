@@ -1,21 +1,22 @@
+from copy import deepcopy
 import json
 from typing import List
 
 import pychrono as chrono
 
-from rostok.block_builder_chrono.block_builder_chrono_api import \
-    ChronoBlockCreatorInterface as creator
-from rostok.control_chrono.tendon_controller import TendonController_2p
+from rostok.control_chrono.controller import (ConstController, SinControllerChrono)
+from rostok.control_chrono.external_force import ForceChronoWrapper, ABCForceCalculator
 from rostok.criterion.simulation_flags import SimulationSingleEvent
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.simulation_chrono.simulation import (ChronoSystems,
-                                                 ChronoVisManager, EnvCreator,
-                                                 SingleRobotSimulation)
+from rostok.simulation_chrono.simulation import (ChronoSystems, EnvCreator, SingleRobotSimulation,
+                                                 ChronoVisManager)
 from rostok.simulation_chrono.simulation_utils import \
     set_covering_ellipsoid_based_position
 from rostok.utils.json_encoder import RostokJSONEncoder
-from rostok.virtual_experiment.sensors import (SensorCalls,
-                                               SensorObjectClassification)
+from rostok.virtual_experiment.sensors import (SensorCalls, SensorObjectClassification)
+from rostok.block_builder_chrono.block_builder_chrono_api import \
+    ChronoBlockCreatorInterface as creator
+from rostok.control_chrono.tendon_controller import TendonController_2p
 
 
 class ParametrizedSimulation:
@@ -38,12 +39,18 @@ class ParametrizedSimulation:
 
 class GraspScenario(ParametrizedSimulation):
 
-    def __init__(self, step_length, simulation_length, tendon = True, smc = False) -> None:
+    def __init__(self,
+                 step_length,
+                 simulation_length,
+                 tendon=True,
+                 smc=False,
+                 obj_external_forces: Optional[ABCForceCalculator] = None) -> None:
         super().__init__(step_length, simulation_length)
         self.grasp_object_callback = None
         self.event_container: List[SimulationSingleEvent] = []
         self.tendon = tendon
         self.smc = smc
+        self.obj_external_forces = obj_external_forces
 
     def add_event(self, event):
         self.event_container.append(event)
@@ -52,7 +59,12 @@ class GraspScenario(ParametrizedSimulation):
         for event in self.event_container:
             event.reset()
 
-    def run_simulation(self, graph: GraphGrammar, data, starting_positions = None, vis=False, delay=False):
+    def run_simulation(self,
+                       graph: GraphGrammar,
+                       data,
+                       starting_positions=None,
+                       vis=False,
+                       delay=False):
         # events should be reset before every simulation
         self.reset_events()
         # build simulation from the subclasses
@@ -69,15 +81,21 @@ class GraspScenario(ParametrizedSimulation):
         grasp_object = creator.create_environment_body(self.grasp_object_callback)
         grasp_object.body.SetNameString("Grasp_object")
         set_covering_ellipsoid_based_position(grasp_object,
-                                           reference_point=chrono.ChVectorD(0, 0.1, 0))
-
+                                              reference_point=chrono.ChVectorD(0, 0.1, 0))
+        if self.obj_external_forces:
+            chrono_forces = ForceChronoWrapper(deepcopy(self.obj_external_forces))
+        else:
+            chrono_forces = None
         simulation.env_creator.add_object(grasp_object,
                                           read_data=True,
-                                          force_torque_controller=None)
+                                          force_torque_controller=chrono_forces)
 
         # add design and determine the outer force
         if self.tendon:
-            simulation.add_design(graph, data, TendonController_2p, starting_positions=starting_positions)
+            simulation.add_design(graph,
+                                  data,
+                                  TendonController_2p,
+                                  starting_positions=starting_positions)
         else:
             simulation.add_design(graph, data, starting_positions=starting_positions)
         # setup parameters for the data store

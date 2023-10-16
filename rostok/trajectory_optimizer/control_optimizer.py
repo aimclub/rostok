@@ -1,18 +1,14 @@
 import json
-import multiprocessing
-import os
-import time
-import types
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
-from enum import Enum
 from itertools import product
-from multiprocessing import Pool, TimeoutError
+import os
 
-import numpy as np
 from joblib import Parallel, delayed
-from scipy.optimize import direct, dual_annealing, shgo
+from joblib.parallel import TimeoutError
+import numpy as np
+from scipy.optimize import direct, dual_annealing
 
 from rostok.control_chrono.tendon_controller import TendonControllerParameters
 from rostok.criterion.criterion_calculation import SimulationReward
@@ -20,10 +16,8 @@ from rostok.criterion.simulation_flags import EventFlyingApart
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_block_typing import (
     get_joint_matrix_from_graph, get_joint_vector_from_graph)
-from rostok.simulation_chrono.simulation_scenario import ParametrizedSimulation
 from rostok.trajectory_optimizer.trajectory_generator import (
-    cable_length_linear_control, joint_root_paths, linear_control,
-    tendon_like_control)
+    joint_root_paths)
 from rostok.utils.json_encoder import RostokJSONEncoder
 
 
@@ -261,7 +255,7 @@ class TendonOptimizer(GraphRewardCalculator):
                                                   starting_positions,
                                                   vis=False,
                                                   delay=False)
-
+    
     def calculate_reward(self, graph: GraphGrammar):
         """Constant moment optimization method using scenario simulation and rewarder for calculating objective function.
 
@@ -355,30 +349,6 @@ class TendonOptimizer(GraphRewardCalculator):
         reward = self.rewarder.calculate_reward(sim_output)
         return -reward
 
-    def _parallel_reward_with_parameters(self, input):
-        """Objective function to be optimized
-
-        Args:
-            parameters (np.ndarray): Array variables of objective function
-            graph (GraphGrammar): Graph of mechanism for which the optimization do
-            simulator_scenario (ParamtrizedAimulation): Simulation scenario in which data is collected for calcule the objective function
-
-        Returns:
-            float: Value of objective function
-        """
-        parameters, graph, simulator_scenario = input
-        data = self._transform_parameters2data(parameters)
-        # print(f"Data: correct!, {data}")
-        sim_output = self.simulate_with_control_parameters(data, graph, simulator_scenario)
-        if list(
-                filter(lambda x: isinstance(x, EventFlyingApart),
-                       simulator_scenario.event_container))[0].state:
-            return 0.03
-        # print(f"Sim: correct! {sim_output}")
-        reward = self.rewarder.calculate_reward(sim_output)
-        # prints(f"Calculate: correct! {reward}")
-        return parameters, simulator_scenario, reward
-
     def _transform_parameters2data(self, parameters, *args):
         """Method define transofrm algorigm parameters to data control
 
@@ -428,12 +398,32 @@ class TendonOptimizerCombinationForce(TendonOptimizer):
                  rewarder: SimulationReward,
                  data: TendonControllerParameters,
                  tendon_forces: list[float],
-                 starting_finger_angles=45):
+                 starting_finger_angles=45,
+                 num_cpu_workers=1,
+                 chunksize=1,
+                 timeout_parallel = 60*5):
+        """Brute force optimization of tendon forces for controlling the mechanism. In subclass, it have to override method: bound_parameter, _transform_parameter2data and run_optimization. Number of cpu workers define number of parallel processes.
+
+        Args:
+            simulation_scenario (_type_): Scenario of simulation for virtual experiment
+            rewarder (SimulationReward): Instance of the class on which the objective function will be calculated
+            data (TendonControllerParameters): Parameters of control class
+            tendon_forces (list[float]): List of tendon force for brute force optimization.
+            starting_finger_angles (int, optional): Initial angle of fingers. Defaults to 45.
+            num_cpu_workers (int, optional): Number of parallel process. When set to "auto", the algorithm selects the number of workers by itself. Defaults to 1.
+            chunksize (int, optional): Number of batch for one cpu worker. When set to "auto", the algorithm selects the number of workers by itself. Defaults to 1.
+        """
         mock_optimization_bounds = (0, 15)
         mock_optimization_limit = 10
         self.tendon_forces = tendon_forces
         super().__init__(simulation_scenario, rewarder, data, starting_finger_angles,
                          mock_optimization_bounds, mock_optimization_limit)
+        self.num_cpu_workers = num_cpu_workers
+        self.chunksize = chunksize
+        self.timeout_parallel = timeout_parallel
+
+        if self.num_cpu_workers == "auto":
+            self.num_cpu_workers = os.cpu_count() - 2
 
     def run_optimization(self, callback, multi_bound, args):
         graph = args[0]
@@ -446,3 +436,69 @@ class TendonOptimizerCombinationForce(TendonOptimizer):
             results.append(res_comp)
         result = min(results, key=lambda i: i.fun)
         return result
+
+    def _parallel_reward_with_parameters(self, input):
+        """Objective function to be optimized
+
+        Args:
+            parameters (np.ndarray): Array variables of objective function
+            graph (GraphGrammar): Graph of mechanism for which the optimization do
+            simulator_scenario (ParamtrizedAimulation): Simulation scenario in which data is collected for calcule the objective function
+
+        Returns:
+            float: Value of objective function
+        """
+        parameters, graph, simulator_scenario = input
+        data = self._transform_parameters2data(parameters)
+        # print(f"Data: correct!, {data}")
+        sim_output = self.simulate_with_control_parameters(data, graph, simulator_scenario)
+        if list(
+                filter(lambda x: isinstance(x, EventFlyingApart),
+                       simulator_scenario.event_container))[0].state:
+            return parameters, simulator_scenario, 0.03
+        reward = self.rewarder.calculate_reward(sim_output)
+        return parameters, simulator_scenario, reward
+
+    def __parallel_calculate_reward(self, graph: GraphGrammar):
+        multi_bound = self.bound_parameters(graph)
+
+        if not multi_bound:
+            return (0, [])
+        
+        all_variants_control = list(product(self.tendon_forces, repeat=len(joint_root_paths(graph))))
+        if isinstance(self.simulation_scenario, list):
+            object_weight = {sim_scen[0].grasp_object_callback: sim_scen[1] for sim_scen in self.simulation_scenario}
+            all_simulations = list(product(all_variants_control, self.simulation_scenario))
+            input_dates = [(np.array(put[0]), graph, put[1][0]) for put in all_simulations]
+        else:
+            object_weight = {self.simulation_scenario.grasp_object_callback: 1}
+            all_simulations = list(product(all_variants_control, [self.simulation_scenario]))
+            input_dates = [(np.array(put[0]), graph, put[1]) for put in all_simulations]
+        np.random.shuffle(input_dates)
+        
+        cpus = len(input_dates) + 1 if len(input_dates) < self.num_cpu_workers else self.num_cpu_workers
+        print(f"Use CPUs processor: {cpus}, input dates: {len(input_dates)}")
+        parallel_results = []
+        try:
+            parallel_results = Parallel(cpus, backend = "multiprocessing", verbose=100, timeout=self.timeout_parallel,  batch_size = self.chunksize)(delayed(self._parallel_reward_with_parameters)(i) for i in input_dates)
+        except TimeoutError:
+             print("TIMEOUT")
+             return (0.01, []) 
+        result_group_object = {sim_scen[0].grasp_object_callback: [] for sim_scen in self.simulation_scenario}
+        for results in parallel_results:
+            obj = results[1].grasp_object_callback
+            result_group_object[obj].append((results[0], results[2]*object_weight[obj]))
+        
+        reward = 0
+        control = []
+        for value in result_group_object.values():
+            best_res = max(value, key=lambda i: i[1])
+            reward += best_res[1]
+            control.append(best_res[0])
+
+        return (reward, control)
+
+    def calculate_reward(self, graph: GraphGrammar):
+        if self.num_cpu_workers > 1:
+            return self.__parallel_calculate_reward(graph)
+        return super().calculate_reward(graph)

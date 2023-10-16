@@ -97,9 +97,11 @@ class Sensor:
         self.contact_reporter.set_body_map(body_map_ordered)
         self.body_map_ordered: Dict[int, Any] = body_map_ordered
         self.joint_map_ordered: Dict[int, Any] = joint_map_ordered
+        self.grav_acc: np.ndarray = np.array([0, -9.8, 0])
 
     def update_current_contact_info(self, system: chrono.ChSystem):
         system.GetContactContainer().ReportAllContacts(self.contact_reporter)
+        self.grav_acc = np.array([getattr(system.Get_G_acc(), axis) for axis in ['x', 'y', 'z']])
 
     def get_body_trajectory_point(self):
         output = {}

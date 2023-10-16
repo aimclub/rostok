@@ -3,13 +3,13 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Union
 
+import numpy as np
+
 import pychrono as chrono
 
 from rostok.control_chrono.controller import RobotControllerChrono
-from rostok.control_chrono.external_force import (ForceControllerTemplate,
-                                                  ForceTorque)
-from rostok.graph_grammar.graph_comprehension import (get_tip_ids,
-                                                      is_star_topology)
+from rostok.control_chrono.external_force import (ABCForceCalculator, ForceChronoWrapper)
+from rostok.graph_grammar.graph_comprehension import (get_tip_ids, is_star_topology)
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_block_typing import NodeFeatures
 from rostok.virtual_experiment.built_graph_chrono import BuiltGraphChrono
@@ -22,40 +22,40 @@ class ForceType(Enum):
     BASE_CONNECTION = 2
 
 
-class PulleyForce(ForceControllerTemplate):
+class PulleyForce(ABCForceCalculator):
 
-    def get_force_torque(self, time: float, data) -> ForceTorque:
-        impact = ForceTorque()
+    def calculate_spatial_force(self, time: float, data) -> np.ndarray:
+        spatial_force = np.zeros(6)
         pre_point = data[0]
         point = data[1]
         post_point = data[2]
         tension = data[3]
         force_v = ((post_point - point).GetNormalized() +
                    (pre_point - point).GetNormalized()) * tension
-        impact.force = (force_v.x, force_v.y, force_v.z)
+        spatial_force[3:] = np.array([force_v.x, force_v.y, force_v.z])
         if self.path:
             with open(self.path, 'a') as file:
                 file.write(
                     f'{self.name} {round(time, 5)} {round(point.x,5)} {round(point.y,5)} {round(point.z,5)} {round(force_v.x, 6)} {round(force_v.y,6)} {round(force_v.z,6)}\n'
                 )
-        return impact
+        return spatial_force
 
 
-class TipForce(ForceControllerTemplate):
+class TipForce(ABCForceCalculator):
 
-    def get_force_torque(self, time: float, data) -> ForceTorque:
-        impact = ForceTorque()
+    def calculate_spatial_force(self, time: float, data) -> np.ndarray:
+        spatial_force = np.zeros(6)
         pre_point = data[0]
         point = data[1]
         tension = data[2]
         force_v = (pre_point - point).GetNormalized() * tension
-        impact.force = (force_v.x, force_v.y, force_v.z)
+        spatial_force[3:] = np.array([force_v.x, force_v.y, force_v.z])
         if self.path:
             with open(self.path, 'a') as file:
                 file.write(
                     f'{self.name} {round(time, 5)} {round(point.x,5)} {round(point.y,5)} {round(point.z,5)} {round(force_v.x, 6)} {round(force_v.y,6)} {round(force_v.z,6)}\n'
                 )
-        return impact
+        return spatial_force
 
 
 @dataclass
@@ -135,7 +135,9 @@ def create_pulley_lines_2p(graph: GraphGrammar, pulleys_in_phalanx=2, finger_bas
 
     return pulley_lines
 
+
 PULLEY_LINES_TYPE = list[list[list[PulleyParameters, Union[PulleyForce, TipForce]]]]
+
 
 class TendonController_2p(RobotControllerChrono):
 
@@ -179,18 +181,21 @@ class TendonController_2p(RobotControllerChrono):
                 idx = force_point[0].body_id
                 body = self.built_graph.body_map_ordered[idx]
                 if force_point[0].force_type == ForceType.PULLEY:
-                    force_point[1] = PulleyForce(pos=list(force_point[0].position),
-                                                 name=f'{idx}_p_{force_point[0].pulley_number}')
+                    pulley_force = PulleyForce(pos=np.array(force_point[0].position),
+                                               name=f'{idx}_p_{force_point[0].pulley_number}')
+                    force_point[1] = ForceChronoWrapper(pulley_force)
                     force_point[1].bind_body(body.body)
                     force_point[1].visualize_application_point()
 
                 elif force_point[0].force_type == ForceType.TIP:
-                    force_point[1] = TipForce(pos=list(force_point[0].position), name=f'{idx}_t')
+                    tip_force = TipForce(pos=np.array(force_point[0].position), name=f'{idx}_t')
+                    force_point[1] = ForceChronoWrapper(tip_force)
                     force_point[1].bind_body(body.body)
                     force_point[1].visualize_application_point()
 
                 elif force_point[0].force_type == ForceType.BASE_CONNECTION:
-                    force_point[1] = TipForce(pos=list(force_point[0].position))
+                    tip_force = TipForce(pos=np.array(force_point[0].position))
+                    force_point[1] = ForceChronoWrapper(tip_force)
                     force_point[1].bind_body(body.body)
                     force_point[1].visualize_application_point()
 
