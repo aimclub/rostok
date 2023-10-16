@@ -1,8 +1,7 @@
 from copy import deepcopy
 import json
-from typing import Dict, List, Optional, Tuple
+from typing import List
 
-import numpy as np
 import pychrono as chrono
 
 from rostok.control_chrono.controller import (ConstController, SinControllerChrono)
@@ -12,7 +11,7 @@ from rostok.graph_grammar.node import GraphGrammar
 from rostok.simulation_chrono.simulation import (ChronoSystems, EnvCreator, SingleRobotSimulation,
                                                  ChronoVisManager)
 from rostok.simulation_chrono.simulation_utils import \
-    set_covering_sphere_based_position, set_covering_ellipsoid_based_position
+    set_covering_ellipsoid_based_position
 from rostok.utils.json_encoder import RostokJSONEncoder
 from rostok.virtual_experiment.sensors import (SensorCalls, SensorObjectClassification)
 from rostok.block_builder_chrono.block_builder_chrono_api import \

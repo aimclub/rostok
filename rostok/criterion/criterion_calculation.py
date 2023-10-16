@@ -1,14 +1,13 @@
-from abc import ABC
 import json
-from bisect import bisect_left
-from typing import Dict, List, Optional, Tuple, Union
+from abc import ABC
+from typing import List
 
 import numpy as np
-import pychrono.core as chrono
 from scipy.spatial import distance
 
+from rostok.criterion.simulation_flags import (EventContactTimeOut, EventGrasp,
+                                               EventSlipOut)
 from rostok.simulation_chrono.simulation_utils import SimulationResult
-from rostok.criterion.simulation_flags import SimulationSingleEvent, EventContactTimeOut, EventGrasp, EventSlipOut
 from rostok.utils.json_encoder import RostokJSONEncoder
 
 
@@ -131,7 +130,7 @@ class InstantObjectCOGCriterion(Criterion):
             body_outer_force_center = env_data.get_data("force_center")[0][self.grasp_event.step_n +
                                                                            1]
             if body_outer_force_center is np.nan:
-                print(body_COG, body_outer_force_center)
+                return 0
             dist = distance.euclidean(body_COG, body_outer_force_center)
             return 1 / (1 + dist)
         else:
@@ -294,7 +293,7 @@ class SimulationReward:
         partial_rewards = []
         for criterion in self.criteria:
             reward = criterion.calculate_reward(simulation_output)
-            partial_rewards.append(round(reward,3))
+            partial_rewards.append(round(reward, 3))
 
         if partial:
             return partial_rewards
@@ -302,7 +301,7 @@ class SimulationReward:
             print([round(x, 3) for x in partial_rewards])
 
         total_reward = sum([a * b for a, b in zip(partial_rewards, self.weights)])
-        
+
         if np.isclose(total_reward, 0, atol=1e-3):
             total_reward = 0.02
         return round(total_reward, 3)

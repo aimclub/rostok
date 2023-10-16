@@ -9,11 +9,11 @@ from rostok.virtual_experiment.sensors import DataStorage
 
 
 def calculate_covering_sphere(obj: ChronoEasyShapeObject):
-    v1 = chrono.ChVectorD(0, 0, 0)
-    v2 = chrono.ChVectorD(0, 0, 0)
-    obj.body.GetTotalAABB(bbmin=v1, bbmax=v2)
-    local_center = (v1 + v2) * 0.5
-    radius = ((v2 - v1).Length()) * 0.5
+    v_1 = chrono.ChVectorD(0, 0, 0)
+    v_2 = chrono.ChVectorD(0, 0, 0)
+    obj.body.GetTotalAABB(bbmin=v_1, bbmax=v_2)
+    local_center = (v_1 + v_2) * 0.5
+    radius = ((v_2 - v_1).Length()) * 0.5
     visual = chrono.ChSphereShape(radius)
     visual.SetOpacity(0.3)
     obj.body.AddVisualShape(visual, chrono.ChFrameD(local_center))

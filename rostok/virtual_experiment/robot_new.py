@@ -1,6 +1,7 @@
 import pychrono.core as chrono
 
-from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform)
+from rostok.block_builder_api.block_parameters import (DefaultFrame,
+                                                       FrameTransform)
 from rostok.control_chrono.controller import ConstController
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.virtual_experiment.built_graph_chrono import BuiltGraphChrono

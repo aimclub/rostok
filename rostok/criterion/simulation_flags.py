@@ -1,13 +1,12 @@
-from abc import ABC, abstractmethod
 import json
-from typing import Dict, List, Optional, Tuple, Union
+from abc import ABC, abstractmethod
 from enum import Enum
-import types
-import numpy as np
-import pychrono.core as chrono
-from rostok.utils.json_encoder import RostokJSONEncoder
+from typing import Optional
 
-from rostok.virtual_experiment.sensors import DataStorage, Sensor
+import numpy as np
+
+from rostok.utils.json_encoder import RostokJSONEncoder
+from rostok.virtual_experiment.sensors import Sensor
 
 
 class EventCommands(Enum):
@@ -41,7 +40,7 @@ class SimulationSingleEvent(ABC):
         self.step_n = None
 
     @abstractmethod
-    def event_check(self, current_time: float, step_n: int, robot_data, env_data):
+    def event_check(self, current_time: float, step_n: int, robot_data: Sensor, env_data: Sensor):
         """Simulation calls that method each step to check if the event occurred.
 
         Args:
@@ -63,13 +62,38 @@ class SimulationSingleEvent(ABC):
 class EventContact(SimulationSingleEvent):
     """Event of contact between robot and object
 
+        Attributes:
+        from_body (bool): flag determines the source of contact information.
     """
+    def __init__(self, take_from_body:bool = False):
+        super().__init__()
+        self.from_body = take_from_body
 
-    def event_check(self, current_time: float, step_n: int, robot_data, env_data):
-        if env_data.get_amount_contacts()[0] > 0:
-            self.state = True
-            self.step_n = step_n
+    def event_check(self, current_time: float, step_n: int, robot_data: Sensor, env_data: Sensor):
+        if self.state:
+            if __debug__:
+                raise Exception("The EventContact.event_check is called after occurrence in simulation.")
             return EventCommands.CONTINUE
+
+        if not self.from_body:
+            # the contact information from the object
+            if env_data.get_amount_contacts()[0] > 0:
+                self.state = True
+                self.step_n = step_n
+        else:
+            # the contact information from the robot
+            robot_contacts = robot_data.get_amount_contacts()
+            # it works only with current rule set, where the palm/flat always has the smallest index among the bodies
+            flat_idx_ = list(robot_contacts.keys())[0]
+            contacts = 0
+            # we calculate only the amount of unique keys, therefore the amount of unique contacting bodies
+            for key, value in robot_contacts.items():
+                if key != flat_idx_ and value > 0:
+                    contacts += 1
+
+            if contacts > 0:
+                self.state = True
+                self.step_n = step_n
 
         return EventCommands.CONTINUE
 
@@ -94,6 +118,12 @@ class EventContactTimeOut(SimulationSingleEvent):
         Returns:
             EventCommands: return a command for simulation
         """
+        if self.state:
+            if __debug__:
+                raise Exception("The EventContactTimeOut.event_check is called after occurrence in simulation.")
+            return EventCommands.STOP
+
+        # if the contact has already occurred in simulation, return CONTINUE
         if self.contact_event.state:
             return EventCommands.CONTINUE
 
@@ -122,11 +152,15 @@ class EventFlyingApart(SimulationSingleEvent):
         Returns:
             EventCommands: return a command for simulation
         """
+        if self.state:
+            if __debug__:
+                raise Exception("The EventFlyingApart.event_check is called after occurrence in simulation.")
+            return EventCommands.STOP
+
         trajectory_points = robot_data.get_body_trajectory_point()
         # It takes the position of the first block in the list, that should be the base body
         base_position = trajectory_points[next(iter(trajectory_points))]
-        for block in trajectory_points.values():
-            position = block
+        for position in trajectory_points.values():
             if np.linalg.norm(np.array(base_position) - np.array(position)) > self.max_distance:
                 self.state = True
                 self.step_n = step_n
@@ -158,19 +192,26 @@ class EventSlipOut(SimulationSingleEvent):
         Returns:
             EventCommands: return a command for simulation
         """
-        # Old variant: contact = env_data.get_amount_contacts()[0] > 0
+        if self.state:
+            if __debug__:
+                raise Exception("The EventSlipOut.event_check is called after occurrence in simulation.")
+            return EventCommands.STOP
+
         robot_contacts = robot_data.get_amount_contacts()
-        flat_idx_= list(robot_contacts.keys())[0]
+        # it works only with current rule set, where the palm/flat always has the smallest index among the bodies
+        flat_idx_ = list(robot_contacts.keys())[0]
         contacts = 0
+        # we calculate only the amount of unique keys, therefore the amount of unique contacting bodies
         for key, value in robot_contacts.items():
-            if key != flat_idx_:
-                contacts += value
+            if key != flat_idx_ and value > 0:
+                contacts += 1
+
         contact = contacts > 0
         if contact:
             self.time_last_contact = current_time
             return EventCommands.CONTINUE
 
-        if (not self.time_last_contact is None):
+        if not (self.time_last_contact is None):
             if current_time - self.time_last_contact > self.reference_time:
                 self.step_n = step_n
                 self.state = True
@@ -191,7 +232,11 @@ class EventGrasp(SimulationSingleEvent):
         force_test_time (float): the time period of the force test of the grasp
     """
 
-    def __init__(self, grasp_limit_time: float, contact_event: EventContact, verbosity: int = 0, simulation_stop = False):
+    def __init__(self,
+                 grasp_limit_time: float,
+                 contact_event: EventContact,
+                 verbosity: int = 0,
+                 simulation_stop:bool = False):
         super().__init__(verbosity=verbosity)
         self.grasp_steps: int = 0
         self.grasp_time: Optional[float] = None
@@ -207,12 +252,20 @@ class EventGrasp(SimulationSingleEvent):
     def check_grasp_timeout(self, current_time):
         if current_time > self.grasp_limit_time:
             return True
-        else:
-            return False
+        return False
 
-    def check_grasp_current_step(self, env_data: Sensor):
+    def check_grasp_current_step(self, env_data: Sensor, robot_data: Sensor):
         obj_velocity = np.linalg.norm(np.array(env_data.get_velocity()[0]))
-        if obj_velocity <= 0.01 and env_data.get_amount_contacts()[0] >= 2:
+        robot_contacts = robot_data.get_amount_contacts()
+        # it works only with current rule set, where the palm/flat always has the smallest index among the bodies
+        flat_idx_ = list(robot_contacts.keys())[0]
+        contacts = 0
+        # we calculate only the amount of unique keys, therefore the amount of unique contacting bodies
+        for key, value in robot_contacts.items():
+            if key != flat_idx_ and value > 0:
+                contacts += 1
+
+        if obj_velocity <= 0.01 and contacts >= 2:
             self.grasp_steps += 1
         else:
             self.grasp_steps = 0
@@ -220,17 +273,21 @@ class EventGrasp(SimulationSingleEvent):
     def event_check(self, current_time: float, step_n: int, robot_data: Sensor, env_data: Sensor):
         """Return ACTIVATE if the body was in contact with the robot and after that at some 
         point doesn't move for at least 10 steps. Return STOP if the grasp didn't occur during grasp_limit_time. 
-        
 
         Returns:
             EventCommands: return a command for simulation
         """
 
+        if self.state:
+            if __debug__:
+                raise Exception("The EventGrasp.event_check is called after occurrence in simulation.")
+            return EventCommands.CONTINUE
+
         if self.check_grasp_timeout(current_time):
             return EventCommands.STOP
 
         if self.contact_event.state:
-            self.check_grasp_current_step(env_data)
+            self.check_grasp_current_step(env_data, robot_data)
 
             if self.grasp_steps == 10:
                 self.state = True
@@ -247,7 +304,7 @@ class EventGrasp(SimulationSingleEvent):
 
 
 class EventStopExternalForce(SimulationSingleEvent):
-
+    """Event that controls external force and stops simulation after reference time has passed."""
     def __init__(self, grasp_event: EventGrasp, force_test_time: float):
         super().__init__()
         self.grasp_event = grasp_event

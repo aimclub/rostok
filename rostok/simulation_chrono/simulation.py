@@ -1,5 +1,5 @@
 import time
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 import pychrono as chrono
 import pychrono.irrlicht as chronoirr
