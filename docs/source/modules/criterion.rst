@@ -5,11 +5,11 @@ Criterion
 Criterion calculation
 =====================
 
-.. automodule:: rostok.criterion.criterion_calc
+.. automodule:: rostok.criterion.criterion_calculation
     :members:
 
 Flag stop simulation
 ====================
 
-.. automodule:: rostok.criterion.flags_simualtions
+.. automodule:: rostok.criterion.simulation_flag
     :members:

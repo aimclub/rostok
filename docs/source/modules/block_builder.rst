@@ -2,22 +2,23 @@
 Block builder
 =============
 
-Block render
+Block blueprints
 ============
 
-.. automodule:: rostok.block_builder.node_render
+.. automodule:: rostok.block_builder_api.block_blueprint
     :members:
+    :undoc-members:
 
-Control
+Block parameters
 =======
 
-.. automodule:: rostok.block_builder.control
+.. automodule:: rostok.block_builder_api.block_parameter
     :members:
     :undoc-members:
 
 Shapes
 ======
 
-.. automodule:: rostok.block_builder.envbody_shapes
+.. automodule:: rostok.block_builder_api.easy_body_shapes
     :members:
     :undoc-members:

@@ -2,9 +2,25 @@
 Graph generation
 ================
 
-Graph environments
+Design environment
 ==================
 
-.. automodule:: rostok.graph_generators.graph_environment
+.. automodule:: rostok.graph_generators.environment.design_environment
     :members:
     :undoc-members:
+
+MCTS
+==================
+
+.. audomodule:: rostok.graph_generators.search_algorithms.mcts
+    :members:
+    :undoc-members:
+
+
+MCTS Manager
+==================
+
+.. automodule:: rostok.graph_generators.mcts_manager
+    :members:
+    :undoc-members:
+    
