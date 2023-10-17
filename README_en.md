@@ -46,7 +46,7 @@ More detailed description of the [algorithms and methods](https://rostok.readthe
 To modify the modules of the Rostok framework a user should install it in development mode:  
 
 * Create the environment using `conda env create -f environment.yml`
-* Activate the environment `rostok`  
+* Activate the environment `conda activate rostok`  
 * Install the package in development mode `pip3 install -e .`  
 
 ### Known issues

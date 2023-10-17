@@ -13,8 +13,9 @@ import os
 from pathlib import Path
 
 sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, str(Path(__file__).parent / '../../'))
-sys.path.insert(0, str(Path(__file__).parent / '../../rostok'))
+sys.path.insert(0, os.path.abspath('../../'))
+sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath('../../rostok'))
 
 #The master toctree document
 master_doc = 'index'
