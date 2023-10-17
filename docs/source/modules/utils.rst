@@ -3,7 +3,7 @@ Utils
 =====
 
 Pickle save
-=================
+===========
 
 .. automodule:: rostok.utils.pickle_save
     :members:

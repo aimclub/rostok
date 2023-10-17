@@ -18,7 +18,7 @@ MCTS
 
 
 MCTS Manager
-==================
+============
 
 .. automodule:: rostok.graph_generators.mcts_manager
     :members:

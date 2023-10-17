@@ -8,9 +8,19 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-import sys
+import sys, mock
+import os
 from pathlib import Path
 
+devdir=''
+try:
+    if os.environ['DEVDIR']:
+        devdir = os.environ['DEVDIR'] 
+except KeyError:
+    print 'Unable to obtain $DEVDIR from the environment.'
+    exit(-1)
+
+sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, str(Path(__file__).parent / '../../'))
 sys.path.insert(0, str(Path(__file__).parent / '../../rostok'))
 
@@ -30,6 +40,7 @@ release = '1.0.0'
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon','sphinx.ext.githubpages']
 
+autodoc_member_order = 'groupwise'
 
 napoleon_google_docstring = False
 napoleon_use_param = False

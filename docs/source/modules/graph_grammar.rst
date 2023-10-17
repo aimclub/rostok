@@ -9,7 +9,7 @@ Node
     :members:
 
 Graph-grammar explorer
-==============
+======================
 
 .. automodule:: rostok.graph_grammar.graphgrammar_explorer
     :members:

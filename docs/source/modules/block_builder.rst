@@ -3,14 +3,14 @@ Block builder
 =============
 
 Block blueprints
-============
+================
 
 .. automodule:: rostok.block_builder_api.block_blueprints
     :members:
     :undoc-members:
 
 Block parameters
-=======
+================
 
 .. automodule:: rostok.block_builder_api.block_parameters
     :members:
