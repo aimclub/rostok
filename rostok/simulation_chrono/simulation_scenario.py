@@ -1,6 +1,6 @@
 from copy import deepcopy
 import json
-from typing import List
+from typing import List, Optional
 
 import pychrono as chrono
 
@@ -38,7 +38,17 @@ class ParametrizedSimulation:
 
 
 class GraspScenario(ParametrizedSimulation):
+    """
+    
 
+
+
+
+    PROKINUT CONTROLL CLS
+
+    Args:
+        ParametrizedSimulation (_type_): _description_
+    """
     def __init__(self,
                  step_length,
                  simulation_length,
