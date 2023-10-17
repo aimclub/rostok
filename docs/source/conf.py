@@ -13,9 +13,9 @@ import os
 from pathlib import Path
 
 sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('../../'))
 sys.path.insert(0, os.path.abspath('../'))
-sys.path.insert(0, os.path.abspath('../../rostok'))
+sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath('../rostok'))
 
 #The master toctree document
 master_doc = 'index'
@@ -52,4 +52,4 @@ templates_path = ['_templates']
 
 html_theme = 'alabaster'
 html_static_path = ['_static']
-html_logo = '../images/logo_rostok.jpg'
+html_logo = 'images/logo_rostok.jpg'
