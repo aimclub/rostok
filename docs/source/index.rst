@@ -32,6 +32,8 @@ Content
    :template: custom-module-template.rst
    :recursive:
 
+   rostok
+
 Indices and tables
 ==================
 
