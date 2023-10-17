@@ -12,7 +12,7 @@ Design environment
 MCTS
 ==================
 
-.. audomodule:: rostok.graph_generators.search_algorithms.mcts
+.. automodule:: rostok.graph_generators.search_algorithms.mcts
     :members:
     :undoc-members:
 

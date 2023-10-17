@@ -3,7 +3,7 @@ Simulation in ProjectChrono
 ===========================
 
 Simulation scenario
-==================
+===================
 
 .. automodule:: rostok.simulation_chrono.simulation_scenario
     :members:

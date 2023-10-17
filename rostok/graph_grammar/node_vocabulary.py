@@ -6,6 +6,7 @@ from rostok.graph_grammar.node import ROOT, Node
 
 class NodeVocabulary:
     """The class contains dictionary of nodes and methods to manipulate with it.
+
     This is a class to manage a dictionary of nodes. The keys are labels of the nodes and
     the values are Node objects. User can create or add nodes to vocabulary, get individual
     nodes or list of nodes.
@@ -23,7 +24,8 @@ class NodeVocabulary:
         self.nonterminal_node_dict = {}
 
     def add_node(self, node: Node):
-        """Add an already created node to the vocabulary.
+        """
+        Add an already created node to the vocabulary.
 
         Args:
             node (Node): node to be added to vocabulary.
@@ -48,7 +50,8 @@ class NodeVocabulary:
         is_terminal: bool = False,
         block_blueprint: Optional[ALL_BLUEPRINT] = None,
     ):
-        """Create a node and add it to the vocabulary.
+        """
+        Create a node and add it to the vocabulary.
 
         Args:
             label (str): the label of the new node.
@@ -74,7 +77,8 @@ class NodeVocabulary:
             self.nonterminal_node_dict[label] = node
 
     def get_node(self, label: str) -> Node:
-        """Return a node corresponding to the label.
+        """
+        Return a node corresponding to the label.
 
         Args:
             label(str): the label of the node that should be returned.
@@ -93,7 +97,8 @@ class NodeVocabulary:
         return node
 
     def check_node(self, label: str) -> bool:
-        """Check if the label is in the vocabulary.
+        """
+        Check if the label is in the vocabulary.
 
         Args:
             label(str): the label of the node that should be checked.
@@ -113,7 +118,8 @@ class NodeVocabulary:
         return str(self.node_dict.keys())
 
     def get_list_of_nodes(self, nodes: list[str]) -> list[Node]:
-        """Returns list of Node objects corresponding to list of labels.
+        """
+        Returns list of Node objects corresponding to list of labels.
 
         Args:
             nodes (list[str]): list of labels to construct a list of Node objects.

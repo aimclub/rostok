@@ -7,7 +7,9 @@ from rostok.graph_grammar.node_vocabulary import NodeVocabulary
 
 
 class RuleVocabulary:
-    """The class that contains the rules for building the :py:class:`rostok.graph_grammar.node.GraphGrammar` object.
+    """
+    The class that contains the rules for building the :py:class:`rostok.graph_grammar.node.GraphGrammar` object.
+
     All rules for mechanism generation should be created with an instance of :py:class:`rostok.graph_grammar.rule_vocabulary.RuleVocabulary`.
     This class provides utility methods for the rules.
 
@@ -28,6 +30,7 @@ class RuleVocabulary:
 
     def __init__(self, node_vocab: NodeVocabulary = NodeVocabulary()):
         """Create a new empty vocabulary object.
+
         Args:
             node_vocab (NodeVocabulary, optional): the node vocabulary for the rules. Default is an
                 empty node vocabulary.
@@ -51,9 +54,10 @@ class RuleVocabulary:
         new_edges: list[tuple[int, int]] = [],
         current_links: list[tuple[int, int]] = [],
     ):
-        """Create a rule and add it to the dictionary.
-        The method checks the created rule. There is no method to add already created rule to
-        the vocabulary.
+        """
+        Create a rule and add it to the dictionary.
+
+        The method checks the created rule. There is no method to add already created rule to the vocabulary.
 
         Args:
             name (str): name of the new rule.
@@ -141,7 +145,9 @@ class RuleVocabulary:
             self.rules_nonterminal_node_set.update(set(new_nodes))
 
     def __str__(self):
-        """Print the rules from the dictionary of rules."""
+        """
+        Print the rules from the dictionary of rules.
+        """
         result = ""
         for rule_tule in self.rule_dict.items():
             rule_graph = rule_tule[1].graph_insert
@@ -162,7 +168,9 @@ class RuleVocabulary:
 
     # Check set of rules itself, without any graph
     def check_rules(self):
-        """Check set of rules itself, without any graph.
+        """
+        Check set of rules itself, without any graph.
+
         Check the rules for having at least one terminal rule for every node that appears in the end graph of a nonterminal rule.
         """
         # Check if all nonterminal nodes from vocab are in the rules. If not print a warning
@@ -192,8 +200,10 @@ class RuleVocabulary:
 
     def get_list_of_applicable_rules(self, grammar: GraphGrammar):
         """Return the total list of applicable rules for the current graph.
+
         Args:
             grammar (GraphGrammar): a :py:class:`rostok.graph_grammar.node.GraphGrammar` object analyze.
+
         Returns:
             list of rule names for rules that can be applied for the graph.
         """
@@ -211,7 +221,8 @@ class RuleVocabulary:
         return list(set(list_of_applicable_rules))
 
     def get_list_of_applicable_nonterminal_rules(self, grammar: GraphGrammar):
-        """Return the list of non-terminal applicable rules for the current graph.
+        """
+        Return the list of non-terminal applicable rules for the current graph.
 
         Args:
             grammar (GraphGrammar): a :py:class:`rostok.graph_grammar.node.GraphGrammar` object analyze.
@@ -233,7 +244,8 @@ class RuleVocabulary:
         return list(set(list_of_applicable_rules))
 
     def get_list_of_applicable_terminal_rules(self, grammar: GraphGrammar):
-        """Return the list of terminal applicable rules for the current graph.
+        """
+        Return the list of terminal applicable rules for the current graph.
 
         Args:
             grammar (GraphGrammar): a :py:class:`rostok.graph_grammar.node.GraphGrammar` object analyze.
@@ -255,7 +267,8 @@ class RuleVocabulary:
         return list(set(list_of_applicable_rules))
 
     def terminal_rules_for_node(self, node_name: str):
-        """Return a list of the terminal rules for the node
+        """
+        Return a list of the terminal rules for the node
 
         Args:
             node_name (str): a node label for which function returns the list of the terminal rules.
@@ -271,7 +284,8 @@ class RuleVocabulary:
         return rule_list
 
     def make_graph_terminal(self, grammar: GraphGrammar):
-        """Converts a graph into a graph with only terminal nodes.
+        """
+        Converts a graph into a graph with only terminal nodes.
 
         For each non-terminal node the function apply a random rule that make it terminal.
 
@@ -288,7 +302,8 @@ class RuleVocabulary:
             grammar.apply_rule(rule)
 
     def rule_vis(self, name: str):
-        """Visualize the rule.
+        """
+        Visualize the rule.
 
         Args:
             name (str): name of the rule to visualize
