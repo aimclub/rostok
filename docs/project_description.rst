@@ -18,7 +18,7 @@ There are four main blocks:
 * Trajectory Optimization -- finds suboptimal joint trajectories needed to efficiently perform the desired motion
 * Search Algorithm -- looks for optimal graph to represent mechanism topology
 
-.. image:: ../images/Algorithm_shceme.jpg
-.. image:: ../images/general_scheme.jpg
+.. image:: images/Algorithm_shceme.jpg
+.. image:: images/general_scheme.jpg
 
 More detailed description of the :ref:`algorithm`.

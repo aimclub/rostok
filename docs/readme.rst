@@ -3,5 +3,5 @@ Read Me
 =======
 
 
-.. mdinclude:: ../../README_en.md
+.. mdinclude:: ../README_en.md
     :literal:
