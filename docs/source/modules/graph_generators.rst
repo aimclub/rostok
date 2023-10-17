@@ -5,7 +5,7 @@ Graph generation
 Design environment
 ==================
 
-.. automodule:: rostok.graph_generators.environment.design_environment
+.. automodule:: rostok.graph_generators.environments.design_environment
     :members:
     :undoc-members:
 
