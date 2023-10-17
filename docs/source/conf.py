@@ -23,7 +23,7 @@ master_doc = 'index'
 project = 'rostok'
 copyright = '2022, BE2R Lab, ITMO'
 author = 'Ivan Borisov, Kirill Zharkov, Yefim Osipov, Dmitriy Ivolga, Kirill Nasonov, Sergey Kolyubin'
-release = '0.0.1'
+release = '1.0.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
