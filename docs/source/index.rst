@@ -27,6 +27,11 @@ Content
    modules/index
    contact_us
 
+.. autosummary::
+   :toctree: _autosummary
+   :template: custom-module-template.rst
+   :recursive:
+
 Indices and tables
 ==================
 
