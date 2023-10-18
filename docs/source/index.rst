@@ -25,14 +25,8 @@ Content
    introduction/tutorials
    advanced_usage/algorithm
    modules/index
+   api
    contact_us
-
-.. autosummary::
-   :toctree: _autosummary
-   :template: custom-module-template.rst
-   :recursive:
-
-   rostok
 
 Indices and tables
 ==================
