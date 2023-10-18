@@ -51,4 +51,4 @@ templates_path = ['_templates']
 
 html_theme = 'alabaster'
 html_static_path = ['_static']
-html_logo = 'images/logo_rostok.jpg'
+html_logo = '../images/logo_rostok.jpg'
