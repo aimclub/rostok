@@ -37,7 +37,11 @@ extensions = ['sphinx.ext.autodoc',
 
 autosummary_generate = True
 
-autodoc_modules  = {'rostok': True}
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.txt': 'markdown',
+    '.md': 'markdown',
+}
 autodoc_member_order = 'groupwise'
 
 napoleon_google_docstring = False
