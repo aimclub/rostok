@@ -8,10 +8,10 @@ Node
 .. automodule:: rostok.graph_grammar.node
     :members:
 
-Nodes division
-==============
+Graph-grammar explorer
+======================
 
-.. automodule:: rostok.graph_grammar.nodes_division
+.. automodule:: rostok.graph_grammar.graphgrammar_explorer
     :members:
 
 Node Vocabulary
@@ -26,11 +26,6 @@ Rule Vocabulary
 .. automodule:: rostok.graph_grammar.rule_vocabulary
     :members:
 
-Graph grammar explorer
-======================
-
-.. automodule:: rostok.graph_grammar.graphgrammar_explorer
-    :members:
 
 Random graph
 ============

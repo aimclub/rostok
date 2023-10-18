@@ -3,12 +3,15 @@ channels:
   - intel
   - conda-forge
 dependencies:
-  - python==3.9.15
+  - python=3.10.8
+  - projectchrono::pychrono=8.*
+  - irrlicht=1.8.5
   - numpy
   - yapf
   - mypy
   - pylint
-  - tk==8.6.12
+  - tk
+  - pygraphviz
   - pip
   - pip:
     - networkx==2.8.6
@@ -16,5 +19,9 @@ dependencies:
     - scipy
     - mcts==1.0.4
     - pytest
-  - projectchrono::pychrono=7
-  - irrlicht=1.8.5
+    - open3d
+    - thegolem==0.3.1
+    - more-itertools
+    - sphinx-autoapi
+    - sphinx-autopackagesummary
+    - sphinx-rtd-theme

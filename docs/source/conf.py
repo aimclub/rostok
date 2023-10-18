@@ -9,10 +9,12 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 import sys
+import os
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent / '../../'))
-sys.path.insert(0, str(Path(__file__).parent / '../../rostok'))
+sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath('../../'))
+sys.path.insert(0, os.path.abspath('../../rostok'))
 
 #The master toctree document
 master_doc = 'index'
@@ -23,13 +25,24 @@ master_doc = 'index'
 project = 'rostok'
 copyright = '2022, BE2R Lab, ITMO'
 author = 'Ivan Borisov, Kirill Zharkov, Yefim Osipov, Dmitriy Ivolga, Kirill Nasonov, Sergey Kolyubin'
-release = '0.0.1'
+release = '1.0.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon','sphinx.ext.githubpages']
+extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.napoleon',
+              'sphinx.ext.githubpages',
+              'sphinx.ext.autosummary']
 
+autosummary_generate = True
+
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.txt': 'markdown',
+    '.md': 'markdown',
+}
+autodoc_member_order = 'groupwise'
 
 napoleon_google_docstring = False
 napoleon_use_param = False
@@ -40,6 +53,6 @@ templates_path = ['_templates']
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 html_logo = '../images/logo_rostok.jpg'

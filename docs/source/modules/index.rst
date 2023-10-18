@@ -12,6 +12,7 @@ That is about modules into rostok
    graph_generators
    criterion
    trajectory_optimizer
+   simulation_chrono
    virtual_experiment
    utils
 

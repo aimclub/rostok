@@ -1,6 +1,6 @@
 from copy import deepcopy
 import json
-from typing import List
+from typing import List, Optional
 
 import pychrono as chrono
 

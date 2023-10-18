@@ -89,7 +89,7 @@ class NotImplementedErrorCreatorInterface(NotImplementedError):
         super().__init__('Need implementation for method in child class')
 
 
-class BlockCreatorInterface():
+class BlockCreatorInterface:
     """ To use it, you need to implement functions for creating from blueprints.
 
     Raises:
