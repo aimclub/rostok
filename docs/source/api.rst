@@ -3,9 +3,7 @@ API
 ===
 
 .. autosummary::
-   :toctree: _autosummary
-   :template: custom-module-template.rst
+   :toctree: generated
    :recursive:
-   :maxdepth: 3
 
    rostok
