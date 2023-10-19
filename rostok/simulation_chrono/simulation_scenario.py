@@ -17,7 +17,7 @@ from rostok.virtual_experiment.sensors import (SensorCalls, SensorObjectClassifi
 from rostok.block_builder_chrono.block_builder_chrono_api import \
     ChronoBlockCreatorInterface as creator
 from rostok.control_chrono.tendon_controller import TendonController_2p
-
+from abc import abstractmethod
 
 class ParametrizedSimulation:
 
@@ -25,7 +25,12 @@ class ParametrizedSimulation:
         self.step_length = step_length
         self.simulation_length = simulation_length
 
-    def run_simulation(self, graph: GraphGrammar, data):
+    def run_simulation(self,
+                       graph: GraphGrammar,
+                       controller_data,
+                       starting_positions=None,
+                       vis=False,
+                       delay=False):
         pass
 
     def __repr__(self) -> str:
@@ -35,30 +40,23 @@ class ParametrizedSimulation:
     def __str__(self) -> str:
         json_data = json.dumps(self, indent=4, cls=RostokJSONEncoder)
         return json_data
+    
+    @abstractmethod
+    def get_scenario_name(self):
+        return self.__str__
 
 
 class GraspScenario(ParametrizedSimulation):
-    """
-    
-
-
-
-
-    PROKINUT CONTROLL CLS
-
-    Args:
-        ParametrizedSimulation (_type_): _description_
-    """
     def __init__(self,
                  step_length,
                  simulation_length,
-                 tendon=True,
+                 controller_cls = ConstController,
                  smc=False,
                  obj_external_forces: Optional[ABCForceCalculator] = None) -> None:
         super().__init__(step_length, simulation_length)
         self.grasp_object_callback = None
         self.event_container: List[SimulationSingleEvent] = []
-        self.tendon = tendon
+        self.controller_cls = controller_cls
         self.smc = smc
         self.obj_external_forces = obj_external_forces
 
@@ -71,7 +69,7 @@ class GraspScenario(ParametrizedSimulation):
 
     def run_simulation(self,
                        graph: GraphGrammar,
-                       data,
+                       controller_data,
                        starting_positions=None,
                        vis=False,
                        delay=False):
@@ -101,13 +99,12 @@ class GraspScenario(ParametrizedSimulation):
                                           force_torque_controller=chrono_forces)
 
         # add design and determine the outer force
-        if self.tendon:
-            simulation.add_design(graph,
-                                  data,
-                                  TendonController_2p,
-                                  starting_positions=starting_positions)
-        else:
-            simulation.add_design(graph, data, starting_positions=starting_positions)
+
+        simulation.add_design(graph,
+                                controller_data,
+                                self.controller_cls,
+                                starting_positions=starting_positions)
+         
         # setup parameters for the data store
 
         n_steps = int(self.simulation_length / self.step_length)
@@ -128,3 +125,6 @@ class GraspScenario(ParametrizedSimulation):
         }
         simulation.add_robot_data_type_dict(robot_data_dict)
         return simulation.simulate(n_steps, self.step_length, 10000, self.event_container, vis)
+    
+    def get_scenario_name(self):
+        return str(self.grasp_object_callback)

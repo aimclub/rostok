@@ -2,7 +2,7 @@ from copy import deepcopy
 
 import hyperparameters as hp
 
-from rostok.control_chrono.tendon_controller import TendonControllerParameters
+from rostok.control_chrono.tendon_controller import TendonController_2p, TendonControllerParameters
 from rostok.criterion.criterion_calculation import (
     FinalPositionCriterion, GraspTimeCriterion, InstantContactingLinkCriterion,
     InstantForceCriterion, InstantObjectCOGCriterion, SimulationReward,
@@ -23,7 +23,7 @@ import rostok.control_chrono.external_force as f_ext
 
 def config_independent_torque(grasp_object_blueprint):
     # configurate the simulation manager
-    simulation_manager = GraspScenario(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION, tendon = False)
+    simulation_manager = GraspScenario(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION)
     # simulation_manager.grasp_object_callback = lambda: creator.create_environment_body(
     #     grasp_object_blueprint)
     simulation_manager.grasp_object_callback = grasp_object_blueprint
@@ -78,7 +78,7 @@ def config_with_tendon(grasp_object_blueprint):
     obj_forces.append(f_ext.NullGravity(0))
     obj_forces.append(f_ext.RandomForces(1e6, 100, 0))
     obj_forces = f_ext.ExternalForces(obj_forces)
-    simulation_manager = GraspScenario(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION, obj_external_forces=obj_forces)
+    simulation_manager = GraspScenario(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION, TendonController_2p, obj_external_forces=obj_forces)
     simulation_manager.grasp_object_callback = grasp_object_blueprint #lambda: creator.create_environment_body(
         #grasp_object_blueprint)
     event_contact = EventContact()
@@ -140,7 +140,7 @@ def config_with_tendon(grasp_object_blueprint):
 
 def config_combination_force_tendon_multiobject_parallel(grasp_object_blueprint, weights):
     # configurate the simulation manager
-    simulation_manager = GraspScenario(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION, True)
+    simulation_manager = GraspScenario(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION, TendonController_2p)
     object_callback = grasp_object_blueprint
     #[
     #    (lambda obj=obj: creator.create_environment_body(obj)) for obj in grasp_object_blueprint
