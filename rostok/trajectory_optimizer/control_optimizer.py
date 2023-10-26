@@ -2,23 +2,20 @@ from functools import partial
 import json
 from abc import abstractmethod
 from copy import deepcopy
-from dataclasses import dataclass, field
 from itertools import product
-import os
 from typing import Any, Type
 from collections.abc import Iterable
 from joblib import Parallel, delayed
 import numpy as np
-from scipy.optimize import direct, dual_annealing
+from scipy.optimize import direct
 from rostok.control_chrono.controller import ConstController, RobotControllerChrono
 
 from rostok.control_chrono.tendon_controller import TendonController_2p, TendonControllerParameters
 from rostok.criterion.criterion_calculation import SimulationReward
-from rostok.criterion.simulation_flags import EventFlyingApart
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.node_block_typing import (get_joint_matrix_from_graph,
                                                     get_joint_vector_from_graph)
-from rostok.simulation_chrono.simulation_scenario import GraspScenario, ParametrizedSimulation
+from rostok.simulation_chrono.simulation_scenario import ParametrizedSimulation
 from rostok.trajectory_optimizer.trajectory_generator import (joint_root_paths)
 from rostok.utils.json_encoder import RostokJSONEncoder
 
@@ -29,6 +26,15 @@ def is_valid_graph(graph: GraphGrammar):
 
 
 def build_equal_starting_positions(graph: GraphGrammar, starting_finger_angles):
+    """Move first joint in finger on starting_finger_angles angle
+
+    Args:
+        graph (GraphGrammar): 
+        starting_finger_angles (flaot): angle in deg
+
+    Returns:
+        list[list[float]]: 
+    """
     joint_matrix = get_joint_matrix_from_graph(graph)
     for i in range(len(joint_matrix)):
         for j in range(len(joint_matrix[i])):
@@ -40,6 +46,15 @@ def build_equal_starting_positions(graph: GraphGrammar, starting_finger_angles):
 
 
 def build_control_graph_from_joint(graph: GraphGrammar, joint_dict: dict):
+    """Build control parametrs based on joint_dict and graph structure
+
+    Args:
+        graph (GraphGrammar): _description_
+        joint_dict (dict): maps joint to value
+
+    Returns:
+        _type_: _description_
+    """
     joints = get_joint_vector_from_graph(graph)
     control_sequence = []
     for idx in joints:
@@ -49,6 +64,8 @@ def build_control_graph_from_joint(graph: GraphGrammar, joint_dict: dict):
 
 
 class GraphRewardCalculator:
+    """Base class for calculate reward from graph
+    """
 
     def __init__(self):
         pass
@@ -70,6 +87,9 @@ class GraphRewardCalculator:
 
 
 class BasePrepareOptiVar():
+    """Base class for link
+    optimise parametrs / control_class / reward     
+    """
 
     def __init__(self,
                  each_control_params: Any,
@@ -84,22 +104,44 @@ class BasePrepareOptiVar():
 
     @abstractmethod
     def x_to_control_params(self, graph: GraphGrammar, x: list):
+        """Convert vector values to control params
+
+        Args:
+            graph (GraphGrammar): 
+            x (list): vector
+        """
         pass
 
     def build_starting_positions(self, graph: GraphGrammar):
+        """Deafault method for generate start position
+
+        Args:
+            graph (GraphGrammar):  
+
+        Returns:
+            _type_: _description_
+        """
         return None
 
     def is_vis_decision(self, graph: GraphGrammar):
-        return True
+        """If self.is_vis = True, can visualise experemnt
 
-    def bound_parameters(self, graph: GraphGrammar, bounds: tuple[float, float]):
-        """A method for determining the relationship between boundaries and mechanism.
-        Default implementation
         Args:
             graph (GraphGrammar): _description_
 
         Returns:
             _type_: _description_
+        """
+        return True
+
+    def bound_parameters(self, graph: GraphGrammar, bounds: tuple[float, float]):
+        """A method for determining the relationship between boundaries and mechanism.
+        Default implementation. Uses for calculate dimension.
+        Args:
+            graph (GraphGrammar):  
+
+        Returns:
+            list[tuple[float, float]]:  
         """
         n_joints = len(get_joint_vector_from_graph(graph))
         print('n_joints:', n_joints)
@@ -110,6 +152,16 @@ class BasePrepareOptiVar():
         return multi_bound
 
     def reward_one_sim_scenario(self, x: list, graph: GraphGrammar, sim: ParametrizedSimulation):
+        """Calculate one reward. Main function for GraphRewardCalculator clases.
+
+        Args:
+            x (list): optimise vector
+            graph (GraphGrammar): _description_
+            sim (ParametrizedSimulation): _description_
+
+        Returns:
+            _type_: reward, vector, simulator
+        """
         control_data = self.x_to_control_params(graph, x)
         start_pos = self.build_starting_positions(graph)  # pylint: disable=assignment-from-none
         is_vis = self.is_vis_decision(graph) and self.is_vis
@@ -117,6 +169,7 @@ class BasePrepareOptiVar():
         rew = self.rewarder.calculate_reward(simout)
         print('x:', x)
         return rew, x, sim
+
 
 class TendonForceOptiVar(BasePrepareOptiVar):
 
@@ -127,14 +180,6 @@ class TendonForceOptiVar(BasePrepareOptiVar):
         super().__init__(each_control_params, TendonController_2p, rewarder, params_start_pos)
 
     def x_to_control_params(self, graph: GraphGrammar, x: list):
-        """Method define transofrm algorigm parameters to data control
-
-        Args:
-            parameters (list): Parameter list for optimizing
-
-        Returns:
-            dict: Dictionary of data control
-        """
         np_array_x = np.array(x)
         parameters = np_array_x.round(3)
         self.each_control_params.forces = list(parameters)
@@ -147,10 +192,11 @@ class TendonForceOptiVar(BasePrepareOptiVar):
         return None
 
     def bound_parameters(self, graph: GraphGrammar, bounds: tuple[float, float]):
-        """A method for determining the relationship between boundaries and mechanism.
-        Default implementation
+        """Bounded by number of finger
+
         Args:
             graph (GraphGrammar): _description_
+            bounds (tuple[float, float]): _description_
 
         Returns:
             _type_: _description_
@@ -165,6 +211,11 @@ class TendonForceOptiVar(BasePrepareOptiVar):
 
 
 class BruteForceOptimisation1D(GraphRewardCalculator):
+    """
+    Find best reward by brute force all combinations of control
+    Args:
+        GraphRewardCalculator (_type_): _description_
+    """
 
     def __init__(self,
                  variants: list,
@@ -186,6 +237,16 @@ class BruteForceOptimisation1D(GraphRewardCalculator):
         return all_variants_control
 
     def calculate_reward(self, graph: GraphGrammar):
+        """Calc reward by sum from best reword from each simulation scenario.
+        For each simulation scenario try all combination from self.variants. Combination calculates by 
+        generate_all_combine method.
+
+        Args:
+            graph (GraphGrammar): _description_
+
+        Returns:
+            _type_: _description_
+        """
         if not is_valid_graph(graph):
             return (0.01, [])
 
@@ -239,6 +300,12 @@ class BruteForceOptimisation1D(GraphRewardCalculator):
 
 
 class GlobalOptimisationEachSim(GraphRewardCalculator):
+    """Class helps use global optimisation for find best control.
+    Use BasePrepareOptiVar.
+
+    Args:
+        GraphRewardCalculator (_type_): _description_
+    """
 
     def __init__(self,
                  simulation_scenario: list[ParametrizedSimulation],
@@ -279,14 +346,6 @@ class ConstTorqueOptiVar(BasePrepareOptiVar):
         super().__init__([], ConstController, rewarder, params_start_pos)
 
     def x_to_control_params(self, graph: GraphGrammar, x: list):
-        """Method define transofrm algorigm parameters to data control
-
-        Args:
-            parameters (list): Parameter list for optimizing
-
-        Returns:
-            dict: Dictionary of data control
-        """
         np_array_x = np.array(x)
         parameters = np_array_x.round(3)
         data = {"initial_value": parameters}
@@ -298,14 +357,6 @@ class ConstTorqueOptiVar(BasePrepareOptiVar):
         return None
 
     def bound_parameters(self, graph: GraphGrammar, bounds: tuple[float, float]):
-        """A method for determining the relationship between boundaries and mechanism 
-
-        Args:
-            graph (GraphGrammar): _description_
-
-        Returns:
-            _type_: _description_
-        """
         n_joints = len(get_joint_vector_from_graph(graph))
         print('n_joints:', n_joints)
         multi_bound = []
