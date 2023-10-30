@@ -3,64 +3,24 @@ import json
 from abc import abstractmethod
 from copy import deepcopy
 from itertools import product
+import multiprocessing
 from typing import Any, Type
 from collections.abc import Iterable
 from joblib import Parallel, delayed
 import numpy as np
 from scipy.optimize import direct
+from rostok.control_chrono.control_utils import build_control_graph_from_joint
 from rostok.control_chrono.controller import ConstController, RobotControllerChrono
 
 from rostok.control_chrono.tendon_controller import TendonController_2p, TendonControllerParameters
 from rostok.criterion.criterion_calculation import SimulationReward
+from rostok.graph_grammar.graph_comprehension import is_valid_graph
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.graph_grammar.node_block_typing import (get_joint_matrix_from_graph,
-                                                    get_joint_vector_from_graph)
+from rostok.graph_grammar.node_block_typing import (get_joint_vector_from_graph)
 from rostok.simulation_chrono.simulation_scenario import ParametrizedSimulation
 from rostok.trajectory_optimizer.trajectory_generator import (joint_root_paths)
 from rostok.utils.json_encoder import RostokJSONEncoder
-
-
-def is_valid_graph(graph: GraphGrammar):
-    n_joints = len(get_joint_vector_from_graph(graph))
-    return n_joints > 0
-
-
-def build_equal_starting_positions(graph: GraphGrammar, starting_finger_angles):
-    """Move first joint in finger on starting_finger_angles angle
-
-    Args:
-        graph (GraphGrammar): 
-        starting_finger_angles (flaot): angle in deg
-
-    Returns:
-        list[list[float]]: 
-    """
-    joint_matrix = get_joint_matrix_from_graph(graph)
-    for i in range(len(joint_matrix)):
-        for j in range(len(joint_matrix[i])):
-            if j == 0:
-                joint_matrix[i][j] = starting_finger_angles
-            else:
-                joint_matrix[i][j] = 0
-    return joint_matrix
-
-
-def build_control_graph_from_joint(graph: GraphGrammar, joint_dict: dict):
-    """Build control parametrs based on joint_dict and graph structure
-
-    Args:
-        graph (GraphGrammar): _description_
-        joint_dict (dict): maps joint to value
-
-    Returns:
-        _type_: _description_
-    """
-    joints = get_joint_vector_from_graph(graph)
-    control_sequence = []
-    for idx in joints:
-        node = graph.get_node_by_id(idx)
-        control_sequence.append(joint_dict[node])
-    return control_sequence
+from rostok.virtual_experiment.built_graph_chrono import build_equal_starting_positions
 
 
 class GraphRewardCalculator:
@@ -124,8 +84,9 @@ class BasePrepareOptiVar():
         return None
 
     def is_vis_decision(self, graph: GraphGrammar):
-        """If self.is_vis = True, can visualise experemnt
-
+        """If self.is_vis = True, can visualise experemnt. 
+        It's default method. You can redefine this in child class.
+        For example you can show only 1% of all graphs.
         Args:
             graph (GraphGrammar): _description_
 
@@ -134,20 +95,20 @@ class BasePrepareOptiVar():
         """
         return True
 
-    def bound_parameters(self, graph: GraphGrammar, bounds: tuple[float, float]):
+    def bound_parameters(self, graph: GraphGrammar, bound_1d: tuple[float, float]):
         """A method for determining the relationship between boundaries and mechanism.
         Default implementation. Uses for calculate dimension.
         Args:
             graph (GraphGrammar):  
 
         Returns:
-            list[tuple[float, float]]:  
+            list[tuple[float, float]]:  list consists of bound_1d
         """
         n_joints = len(get_joint_vector_from_graph(graph))
-        print('n_joints:', n_joints)
+        #print('n_joints:', n_joints)
         multi_bound = []
         for _ in range(n_joints):
-            multi_bound.append(bounds)
+            multi_bound.append(bound_1d)
 
         return multi_bound
 
@@ -167,7 +128,6 @@ class BasePrepareOptiVar():
         is_vis = self.is_vis_decision(graph) and self.is_vis
         simout = sim.run_simulation(graph, control_data, start_pos, is_vis)
         rew = self.rewarder.calculate_reward(simout)
-        print('x:', x)
         return rew, x, sim
 
 
@@ -213,28 +173,54 @@ class TendonForceOptiVar(BasePrepareOptiVar):
 class BruteForceOptimisation1D(GraphRewardCalculator):
     """
     Find best reward by brute force all combinations of control
-    Args:
-        GraphRewardCalculator (_type_): _description_
     """
 
     def __init__(self,
                  variants: list,
                  simulation_scenario: list[ParametrizedSimulation],
                  prepare_reward: BasePrepareOptiVar,
+                 weights: None | list[float] = None,
                  num_cpu_workers=1,
                  chunksize=1,
                  timeout_parallel=60 * 5):
+        """
+        Args:
+            variants (list): Variants for cartesian product. Details in generate_all_combine.
+            simulation_scenario (list[ParametrizedSimulation]): Scenarios of simulation for virtual experiment.
+            prepare_reward (BasePrepareOptiVar): object for create reward function.
+            weights: None | list[float] Weight of rewards. Same orded with simulation_scenario.
+            num_cpu_workers (int, optional): Number of parallel process. When set to "auto", the algorithm selects the number of workers by itself. Defaults to 1.
+            chunksize (int, optional): Number of batch for one cpu worker. When set to "auto", the algorithm selects the number of workers by itself. Defaults to 1.
+            timeout_parallel (_type_, optional): _description_. Defaults to 60*5.
+        """
         self.variants = variants
         self.simulation_scenario = simulation_scenario
         self.prepare_reward = prepare_reward
+        self.weights = weights
         self.num_cpu_workers = num_cpu_workers
         self.chunksize = chunksize
         self.timeout_parallel = timeout_parallel
+        self.weight_dict = self.prepare_weight_dict()
 
     def generate_all_combine(self, graph: GraphGrammar):
         number_control_varibales = len(self.prepare_reward.bound_parameters(graph, (0, 1)))
         all_variants_control = list(product(self.variants, repeat=number_control_varibales))
         return all_variants_control
+
+    def prepare_weight_dict(self):
+        if not isinstance(self.simulation_scenario, Iterable):
+            raise Exception("Shoud be iterable. If one, just add [sim]")
+        keys = [sim.get_scenario_name() for sim in self.simulation_scenario]
+        # Set all weights to 1
+        if not self.weights:
+            final_dict = {k: 1 for k in keys}
+        elif len(self.weights) != len(keys):
+            raise Exception("Weights and simulation_scenario should be same size")
+        else:
+            final_dict = dict(zip(keys, self.weights))
+
+        return final_dict
+
 
     def calculate_reward(self, graph: GraphGrammar):
         """Calc reward by sum from best reword from each simulation scenario.
@@ -273,8 +259,8 @@ class BruteForceOptimisation1D(GraphRewardCalculator):
                     batch_size=self.chunksize)(
                         delayed(self.prepare_reward.reward_one_sim_scenario)(i[0], i[1], i[2])
                         for i in input_dates)
-            except TimeoutError:
-                print("TIMEOUT")
+            except multiprocessing.context.TimeoutError:
+                print("Faild evaluate graph, TimeoutError")
                 return (0.01, [])
 
         else:
@@ -291,9 +277,9 @@ class BruteForceOptimisation1D(GraphRewardCalculator):
 
         reward = 0
         control = []
-        for value in result_group_object.values():
+        for key_i, value in result_group_object.items():
             best_res = max(value, key=lambda i: i[1])
-            reward += best_res[1]
+            reward += best_res[1] * self.weight_dict[key_i]
             control.append(best_res[0])
 
         return (reward, control)

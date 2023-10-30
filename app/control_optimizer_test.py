@@ -5,7 +5,7 @@ from rostok.criterion.criterion_calculation import SimulationReward, TimeCriteri
 from rostok.graph_grammar.graphgrammar_explorer import random_search_mechs_n_branch
 from rostok.library.rule_sets.simple_designs import get_three_link_one_finger, get_two_link_three_finger
 from rostok.simulation_chrono.simulation_scenario import GraspScenario
-from rostok.trajectory_optimizer.control_optimizer import ConstTorqueOptiVar, GlobalOptimisationEachSim, MockOptiVar, BruteForceOptimisation1D, TendonForceOptiVar
+from rostok.trajectory_optimizer.control_optimizer import ConstTorqueOptiVar, GlobalOptimisationEachSim, BruteForceOptimisation1D, TendonForceOptiVar
 from rostok.library.obj_grasp import objects
 from rostok.utils.numeric_utils import Offset
 from rostok.library.rule_sets.rulset_simple_fingers import create_rules
@@ -41,10 +41,10 @@ if __name__ == '__main__':
     gpesk_tendon2 = GraspScenario(0.002, 1, TendonController_2p)
     gpesk_tendon2.grasp_object_callback = objects.get_object_box(0.1, 0.1, 0.1, 1)
 
-    gpesk_const1 = GraspScenario(0.002, 1, ConstController)
+    gpesk_const1 = GraspScenario(0.001, 1, ConstController)
     gpesk_const1.grasp_object_callback = objects.get_object_box(0.1, 0.1, 0.1, 0)
 
-    gpesk_const2 = GraspScenario(0.002, 1, ConstController)
+    gpesk_const2 = GraspScenario(0.001, 1, ConstController)
     gpesk_const2.grasp_object_callback = objects.get_object_box(0.1, 0.1, 0.1, 1)
 
     simulation_rewarder = SimulationReward(verbosity=0)
@@ -63,9 +63,11 @@ if __name__ == '__main__':
                                              direct_args)
     res = global_const.calculate_reward(graph_finger)
 
-    brute_const = BruteForceOptimisation1D([0, 10], [gpesk_const1],
+    brute_const = BruteForceOptimisation1D([0, 10, 15, 20], [gpesk_const1, gpesk_const2],
                                            const_optivar,
-                                           num_cpu_workers=1)
+                                           #weights = [2, 3],
+                                           num_cpu_workers=4,
+                                           timeout_parallel=7)
     res = brute_const.calculate_reward(graph_finger)
 
     brute_tendon = BruteForceOptimisation1D([0, 10], [gpesk_tendon1, gpesk_tendon2],
