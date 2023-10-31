@@ -13,7 +13,7 @@ from rostok.block_builder_chrono.block_classes import (BLOCK_CLASS_TYPES,
                                                        PrimitiveBody)
 from rostok.block_builder_chrono.block_connect import place_and_connect
 from rostok.graph_grammar.node import GraphGrammar
-from rostok.graph_grammar.node_block_typing import NodeFeatures
+from rostok.graph_grammar.node_block_typing import NodeFeatures, get_joint_matrix_from_graph
 
 
 class BuiltGraphChrono:
@@ -137,3 +137,23 @@ class BuiltGraphChrono:
     @property
     def graph(self):
         return self.__graph
+
+
+def build_equal_starting_positions(graph: GraphGrammar, starting_finger_angles):
+    """Move first joint in finger on starting_finger_angles angle
+
+    Args:
+        graph (GraphGrammar): 
+        starting_finger_angles (flaot): angle in deg
+
+    Returns:
+        list[list[float]]: 
+    """
+    joint_matrix = get_joint_matrix_from_graph(graph)
+    for i in range(len(joint_matrix)):
+        for j in range(len(joint_matrix[i])):
+            if j == 0:
+                joint_matrix[i][j] = starting_finger_angles
+            else:
+                joint_matrix[i][j] = 0
+    return joint_matrix

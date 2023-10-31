@@ -2,7 +2,7 @@ import networkx as nx
 
 from rostok.graph_grammar.node import GraphGrammar
 from typing import Any, NamedTuple, Optional, TypedDict, Union
-from rostok.graph_grammar.node_block_typing import NodeFeatures
+from rostok.graph_grammar.node_block_typing import NodeFeatures, get_joint_vector_from_graph
 
 
 def is_star_topology(graph: nx.DiGraph):
@@ -57,3 +57,8 @@ def get_tip_ids(graph: GraphGrammar) -> list[int]:
         if not tip:
             raise Exception('Attempt to find a tip on a path without bodies')
     return tip_bodies
+
+
+def is_valid_graph(graph: GraphGrammar):
+    n_joints = len(get_joint_vector_from_graph(graph))
+    return n_joints > 0
