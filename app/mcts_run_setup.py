@@ -492,7 +492,7 @@ def config_combination_force_tendon_multiobject_parallel(grasp_object_blueprint,
             Offset(0, True)]
     }
     data.starting_point_parameters = [Offset(-0.02, False), Offset(0.025, False), Offset(0, True)]
-    data.tip_parameters [Offset(-0.3, True), Offset(-0.005, False, True), Offset(0, True)]
+    data.tip_parameters =  [Offset(-0.3, True), Offset(-0.005, False, True), Offset(0, True)]
 
 
     control_optimizer = ParralelOptimizerCombinationForce(simulation_managers,
