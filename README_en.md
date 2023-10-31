@@ -20,7 +20,7 @@
 * `app\hyperparameters.py` -- contains a set of hyperparameters
 
 # How to change grasp objects
-Modify object `grasp_object_blueprint` in `python app\app_new_fancy_mcts_parallel.py`. Use predefined function from `rostok\library\obj_grasp\objects.py`.
+Modify object `grasp_object_blueprint` in `python app\app_new_mcts_parallel.py`. Use predefined function from `rostok\library\obj_grasp\objects.py`.
 
 # Rostok
 
