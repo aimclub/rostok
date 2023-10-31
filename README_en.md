@@ -12,7 +12,7 @@
 # Run article tendon gripper generate
 * install env (see Installation in development mode)
 * activate rostok env by enter `conda activate rostok`
-* run pipline `python app\app_new_fancy_mcts_parallel.py` 
+* run pipline `python app\app_new_mcts_parallel.py` 
 
 # Structure tendon gripper pipiline 
 * `rostok\library\rule_sets\ruleset_simple_fingers.py` -- contains a set of rules
