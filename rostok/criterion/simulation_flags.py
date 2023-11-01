@@ -127,10 +127,10 @@ class EventContactBuilder(EventBuilder):
     def build_event(self, event_list) -> EventContact:
         event = self.find_event(event_list=event_list)
         if event is None:
-            return EventContact(take_from_body=self.from_body)
+            return event_list.append(EventContact(take_from_body=self.from_body))
         else:
             raise Exception(
-                'Attempt to create two same events for a simulation')
+                'Attempt to create two same events for a simulation: EventContact')
 
 
 class EventContactTimeOut(SimulationSingleEvent):
@@ -192,7 +192,7 @@ class EventContactTimeOutBuilder(EventBuilder):
         if contact_event is None:
             raise Exception(
                 'Event requires another event prebuilt: EventContactTimeOut <- EventContact')
-        return EventContactTimeOut(ref_time=self.reference_time, contact_event=contact_event)
+        return event_list.append(EventContactTimeOut(ref_time=self.reference_time, contact_event=contact_event))
 
 
 class EventFlyingApart(SimulationSingleEvent):
@@ -245,7 +245,7 @@ class EventFlyingApartBuilder(EventBuilder):
     def build_event(self, event_list) -> EventFlyingApart:
         event = self.find_event(event_list=event_list)
         if event is None:
-            return EventFlyingApart(max_distance=self.max_distance)
+            return event_list.append(EventFlyingApart(max_distance=self.max_distance))
         else:
             raise Exception(
                 'Attempt to create two same events for a simulation: EventFlyingApart')
@@ -317,7 +317,7 @@ class EventSlipOutBuilder(EventBuilder):
     def build_event(self, event_list) -> EventSlipOut:
         event = self.find_event(event_list=event_list)
         if event is None:
-            return EventSlipOut(ref_time=self.reference_time)
+            return event_list.append(EventSlipOut(ref_time=self.reference_time))
         else:
             raise Exception(
                 'Attempt to create two same events for a simulation: EventSlipOut')
@@ -438,7 +438,7 @@ class EventGraspBuilder(EventBuilder):
         if contact_event is None:
             raise Exception(
                 'Event requires another event prebuilt: EventGrasp <- EventContact')
-        return EventGrasp(verbosity=self.verbosity, grasp_limit_time=self.grasp_limit_time, simulation_stop=self.simulation_stop, contact_event=contact_event)
+        return event_list.append(EventGrasp(verbosity=self.verbosity, grasp_limit_time=self.grasp_limit_time, simulation_stop=self.simulation_stop, contact_event=contact_event))
 
 
 class EventStopExternalForce(SimulationSingleEvent):
@@ -481,4 +481,4 @@ class EventStopExternalForceBuilder(EventBuilder):
         if grasp_event is None:
             raise Exception(
                 'Event requires another event prebuilt: EventStopExternalForce <- EventGrasp')
-        return EventStopExternalForce(force_test_time=self.force_test_time, grasp_event=grasp_event)
+        return event_list.append(EventStopExternalForce(force_test_time=self.force_test_time, grasp_event=grasp_event))

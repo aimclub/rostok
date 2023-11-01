@@ -67,6 +67,7 @@ class GraspScenario(ParametrizedSimulation):
         event_list=[]
         for event_builder in self.event_builder_container:
             event_builder.build_event(event_list)
+        return event_list
 
     def run_simulation(self,
                        graph: GraphGrammar,
