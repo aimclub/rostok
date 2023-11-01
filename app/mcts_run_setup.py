@@ -91,8 +91,11 @@ def config_independent_torque(grasp_object_blueprint):
 
 
 def config_tendon(grasp_object_blueprint):
-
-    simulation_manager = GraspScenario(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION, TendonController_2p)
+    obj_forces = []
+    obj_forces.append(f_ext.RandomForces(1e6, 100, 20))
+    obj_forces.append(f_ext.NullGravity(0))
+    obj_forces = f_ext.ExternalForces(obj_forces)
+    simulation_manager = GraspScenario(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION, TendonController_2p, obj_external_forces=obj_forces)
 
     simulation_manager.grasp_object_callback = grasp_object_blueprint
     event_contact_builder = EventContactBuilder()
@@ -136,7 +139,7 @@ def config_tendon(grasp_object_blueprint):
         hp.FINAL_POSITION_CRITERION_WEIGHT)
     tendon_controller_cfg = get_tendon_cfg()
     tendon_optivar = TendonForceOptiVar(tendon_controller_cfg, simulation_rewarder, -45)
-    tendon_optivar.is_vis = False
+    tendon_optivar.is_vis = True
     brute_tendon = BruteForceOptimisation1D(hp.TENDON_DISCRETE_FORCES, [simulation_manager],
                                             tendon_optivar,
                                             num_cpu_workers=1)
