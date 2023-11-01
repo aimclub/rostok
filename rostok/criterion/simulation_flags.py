@@ -465,7 +465,7 @@ class EventStopExternalForce(SimulationSingleEvent):
         return EventCommands.CONTINUE
 
 
-class EventStopExternalForceBuilder():
+class EventStopExternalForceBuilder(EventBuilder):
     def __init__(self, force_test_time: float, event_grasp_builder: EventGraspBuilder):
         super().__init__(event_class=EventStopExternalForce)
         self.event_grasp_builder = event_grasp_builder
