@@ -249,7 +249,8 @@ class SingleRobotSimulation():
                                                            self.env_creator.data_storage.sensor)
 
     def activate(self, current_time):
-        self.env_creator.force_torque_container.controller_list[0].start_time = current_time
+        if self.env_creator.force_torque_container.controller_list:
+            self.env_creator.force_torque_container.controller_list[0].start_time = current_time
 
     def handle_single_events(self, event_container, current_time, step_n):
         if event_container is None:
