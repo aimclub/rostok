@@ -136,7 +136,7 @@ def config_tendon(grasp_object_blueprint):
         hp.FINAL_POSITION_CRITERION_WEIGHT)
     tendon_controller_cfg = get_tendon_cfg()
     tendon_optivar = TendonForceOptiVar(tendon_controller_cfg, simulation_rewarder, -45)
-    tendon_optivar.is_vis = True
+    tendon_optivar.is_vis = False
     brute_tendon = BruteForceOptimisation1D(hp.TENDON_DISCRETE_FORCES, [simulation_manager],
                                             tendon_optivar,
                                             num_cpu_workers=1)
