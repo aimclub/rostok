@@ -9,7 +9,7 @@ from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject
 from rostok.control_chrono.control_utils import ForceTorqueContainer
 from rostok.control_chrono.controller import ConstController
 from rostok.control_chrono.external_force import ABCForceCalculator, ForceChronoWrapper
-from rostok.criterion.simulation_flags import (EventCommands, SimulationSingleEvent)
+from rostok.criterion.simulation_flags import (EventCommands)
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.simulation_chrono.simulation_utils import SimulationResult
 from rostok.virtual_experiment.robot_new import BuiltGraphChrono, RobotChrono
@@ -305,6 +305,7 @@ class SingleRobotSimulation():
         self.result.environment_final_ds = self.env_creator.data_storage
         self.result.robot_final_ds = self.robot.data_storage
         self.result.time = self.chrono_system.GetChTime()
+        self.result.event_container = event_container
         self.n_steps = number_of_steps
         self.result.reduce_ending(i)
         return self.result

@@ -7,11 +7,11 @@ from rostok.criterion.criterion_calculation import (
     FinalPositionCriterion, GraspTimeCriterion, InstantContactingLinkCriterion,
     InstantForceCriterion, InstantObjectCOGCriterion, SimulationReward,
     TimeCriterion)
-from rostok.criterion.simulation_flags import (EventContact,
-                                               EventContactTimeOut,
-                                               EventFlyingApart, EventGrasp,
-                                               EventSlipOut,
-                                               EventStopExternalForce)
+from rostok.criterion.simulation_flags import (EventContactBuilder,
+                                               EventContactTimeOutBuilder,
+                                               EventFlyingApartBuilder, EventGraspBuilder,
+                                               EventSlipOutBuilder,
+                                               EventStopExternalForceBuilder)
 from rostok.simulation_chrono.simulation_scenario import GraspScenario
 from rostok.trajectory_optimizer.control_optimizer import (
     CalculatorWithOptimizationDirect, TendonOptimizerCombinationForce)
@@ -27,42 +27,42 @@ def config_independent_torque(grasp_object_blueprint):
     # simulation_manager.grasp_object_callback = lambda: creator.create_environment_body(
     #     grasp_object_blueprint)
     simulation_manager.grasp_object_callback = grasp_object_blueprint
-    event_contact = EventContact()
-    simulation_manager.add_event(event_contact)
-    event_timeout = EventContactTimeOut(hp.FLAG_TIME_NO_CONTACT, event_contact)
-    simulation_manager.add_event(event_timeout)
-    event_flying_apart = EventFlyingApart(hp.FLAG_FLYING_APART)
-    simulation_manager.add_event(event_flying_apart)
-    event_slipout = EventSlipOut(hp.FLAG_TIME_SLIPOUT)
-    simulation_manager.add_event(event_slipout)
-    event_grasp = EventGrasp(
+    event_contact_builder = EventContactBuilder()
+    simulation_manager.add_event_builder(event_contact_builder)
+    event_timeout_builder  = EventContactTimeOutBuilder(hp.FLAG_TIME_NO_CONTACT, event_contact_builder)
+    simulation_manager.add_event_builder(event_timeout_builder)
+    event_flying_apart_builder = EventFlyingApartBuilder(hp.FLAG_FLYING_APART)
+    simulation_manager.add_event_builder(event_flying_apart_builder)
+    event_slipout_builder = EventSlipOutBuilder(hp.FLAG_TIME_SLIPOUT)
+    simulation_manager.add_event_builder(event_slipout_builder)
+    event_grasp_builder = EventGraspBuilder(
         grasp_limit_time=hp.GRASP_TIME,
-        contact_event=event_contact,
+        contact_event_builder=event_contact_builder,
         verbosity=0,
     )
-    simulation_manager.add_event(event_grasp)
-    event_stop_external_force = EventStopExternalForce(grasp_event=event_grasp,
+    simulation_manager.add_event_builder(event_grasp_builder)
+    event_stop_external_force = EventStopExternalForceBuilder(grasp_event_builder=event_grasp_builder,
                                                        force_test_time=hp.FORCE_TEST_TIME)
-    simulation_manager.add_event(event_stop_external_force)
+    simulation_manager.add_event_builder(event_stop_external_force)
 
     #create criterion manager
     simulation_rewarder = SimulationReward(verbosity=0)
     #create criterions and add them to manager
-    simulation_rewarder.add_criterion(TimeCriterion(hp.GRASP_TIME, event_timeout, event_grasp),
+    simulation_rewarder.add_criterion(TimeCriterion(hp.GRASP_TIME, event_timeout_builder, event_grasp_builder),
                                       hp.TIME_CRITERION_WEIGHT)
     #simulation_rewarder.add_criterion(ForceCriterion(event_timeout), hp.FORCE_CRITERION_WEIGHT)
-    simulation_rewarder.add_criterion(InstantContactingLinkCriterion(event_grasp),
+    simulation_rewarder.add_criterion(InstantContactingLinkCriterion(event_grasp_builder),
                                       hp.INSTANT_CONTACTING_LINK_CRITERION_WEIGHT)
-    simulation_rewarder.add_criterion(InstantForceCriterion(event_grasp),
+    simulation_rewarder.add_criterion(InstantForceCriterion(event_grasp_builder),
                                       hp.INSTANT_FORCE_CRITERION_WEIGHT)
-    simulation_rewarder.add_criterion(InstantObjectCOGCriterion(event_grasp),
+    simulation_rewarder.add_criterion(InstantObjectCOGCriterion(event_grasp_builder),
                                       hp.OBJECT_COG_CRITERION_WEIGHT)
     n_steps = int(hp.GRASP_TIME / hp.TIME_STEP_SIMULATION)
     print(n_steps)
-    simulation_rewarder.add_criterion(GraspTimeCriterion(event_grasp, n_steps),
+    simulation_rewarder.add_criterion(GraspTimeCriterion(event_grasp_builder, n_steps),
                                       hp.GRASP_TIME_CRITERION_WEIGHT)
     simulation_rewarder.add_criterion(
-        FinalPositionCriterion(hp.REFERENCE_DISTANCE, event_grasp, event_slipout),
+        FinalPositionCriterion(hp.REFERENCE_DISTANCE, event_grasp_builder, event_slipout_builder),
         hp.FINAL_POSITION_CRITERION_WEIGHT)
 
     control_optimizer = CalculatorWithOptimizationDirect(simulation_manager, simulation_rewarder,

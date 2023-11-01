@@ -106,6 +106,33 @@ class EventContact(SimulationSingleEvent):
         return EventCommands.CONTINUE
 
 
+class EventBuilder():
+    def __init__(self, event_class):
+        self.even_class = event_class
+
+    def find_event(self, event_list: list[SimulationSingleEvent]):
+        for event in event_list:
+            if isinstance(event, self.even_class):
+                return event
+        return None
+    @abstractmethod
+    def build_event(self, event_list):
+        pass
+
+class EventContactBuilder(EventBuilder):
+    def __init__(self, take_from_body: bool = False) -> None:
+        super().__init__(event_class=EventContact)
+        self.from_body = take_from_body
+
+    def build_event(self, event_list) -> EventContact:
+        event = self.find_event(event_list=event_list)
+        if event is None:
+            return EventContact(take_from_body=self.from_body)
+        else:
+            raise Exception(
+                'Attempt to create two same events for a simulation')
+
+
 class EventContactTimeOut(SimulationSingleEvent):
     """
     Event that occurs if the robot doesn't contact with body during the reference time from the start of the simulation.
@@ -149,6 +176,25 @@ class EventContactTimeOut(SimulationSingleEvent):
         return EventCommands.CONTINUE
 
 
+class EventContactTimeOutBuilder(EventBuilder):
+    def __init__(self, reference_time, event_contact_builder: EventContactBuilder) -> None:
+        super().__init__(event_class=EventContactTimeOut)
+        self.reference_time = reference_time
+        self.event_contact_builder = event_contact_builder
+
+    def build_event(self, event_list) -> EventContactTimeOut:
+        event = self.find_event(event_list=event_list)
+        if event:
+            raise Exception(
+                'Attempt to create two same events for a simulation: EventContactTimeOut')
+        contact_event = self.event_contact_builder.find_event(
+            event_list=event_list)
+        if contact_event is None:
+            raise Exception(
+                'Event requires another event prebuilt: EventContactTimeOut <- EventContact')
+        return EventContactTimeOut(ref_time=self.reference_time, contact_event=contact_event)
+
+
 class EventFlyingApart(SimulationSingleEvent):
     """
     The event that stops simulation if the robot parts have flown apart.
@@ -189,6 +235,20 @@ class EventFlyingApart(SimulationSingleEvent):
                 return EventCommands.STOP
 
         return EventCommands.CONTINUE
+
+
+class EventFlyingApartBuilder(EventBuilder):
+    def __init__(self, max_distance) -> None:
+        super().__init__(event_class=EventFlyingApart)
+        self.max_distance = max_distance
+
+    def build_event(self, event_list) -> EventFlyingApart:
+        event = self.find_event(event_list=event_list)
+        if event is None:
+            return EventFlyingApart(max_distance=self.max_distance)
+        else:
+            raise Exception(
+                'Attempt to create two same events for a simulation: EventFlyingApart')
 
 
 class EventSlipOut(SimulationSingleEvent):
@@ -246,6 +306,21 @@ class EventSlipOut(SimulationSingleEvent):
                 return EventCommands.STOP
 
         return EventCommands.CONTINUE
+
+
+class EventSlipOutBuilder(EventBuilder):
+
+    def __init__(self, ref_time):
+        super().__init__(event_class=EventSlipOut)
+        self.reference_time = ref_time
+
+    def build_event(self, event_list) -> EventSlipOut:
+        event = self.find_event(event_list=event_list)
+        if event is None:
+            return EventSlipOut(ref_time=self.reference_time)
+        else:
+            raise Exception(
+                'Attempt to create two same events for a simulation: EventSlipOut')
 
 
 class EventGrasp(SimulationSingleEvent):
@@ -339,6 +414,33 @@ class EventGrasp(SimulationSingleEvent):
         return EventCommands.CONTINUE
 
 
+class EventGraspBuilder(EventBuilder):
+    def __init__(
+        self,
+        event_contact_builder: EventContactBuilder,
+        grasp_limit_time: float,
+        verbosity: int = 0,
+        simulation_stop: bool = False,
+    ):
+        super().__init__(event_class=EventGrasp)
+        self.event_contact_builder = event_contact_builder
+        self.verbosity = verbosity
+        self.grasp_limit_time = grasp_limit_time
+        self.simulation_stop = simulation_stop
+
+    def build_event(self, event_list) -> EventGrasp:
+        event = self.find_event(event_list=event_list)
+        if event:
+            raise Exception(
+                'Attempt to create two same events for a simulation: EventGrasp')
+        contact_event = self.event_contact_builder.find_event(
+            event_list=event_list)
+        if contact_event is None:
+            raise Exception(
+                'Event requires another event prebuilt: EventGrasp <- EventContact')
+        return EventGrasp(verbosity=self.verbosity, grasp_limit_time=self.grasp_limit_time, simulation_stop=self.simulation_stop, contact_event=contact_event)
+
+
 class EventStopExternalForce(SimulationSingleEvent):
     """
     Event that controls external force and stops simulation after reference time has passed.
@@ -361,3 +463,22 @@ class EventStopExternalForce(SimulationSingleEvent):
                 return EventCommands.STOP
 
         return EventCommands.CONTINUE
+
+
+class EventStopExternalForceBuilder():
+    def __init__(self, force_test_time: float, event_grasp_builder: EventGraspBuilder):
+        super().__init__(event_class=EventStopExternalForce)
+        self.event_grasp_builder = event_grasp_builder
+        self.force_test_time = force_test_time
+
+    def build_event(self, event_list) -> EventStopExternalForce:
+        event = self.find_event(event_list=event_list)
+        if event:
+            raise Exception(
+                'Attempt to create two same events for a simulation: EventStopExternalForce')
+        grasp_event = self.event_grasp_builder.find_event(
+            event_list=event_list)
+        if grasp_event is None:
+            raise Exception(
+                'Event requires another event prebuilt: EventStopExternalForce <- EventGrasp')
+        return EventStopExternalForce(force_test_time=self.force_test_time, grasp_event=grasp_event)

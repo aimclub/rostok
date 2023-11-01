@@ -6,7 +6,7 @@ import pychrono as chrono
 
 from rostok.control_chrono.controller import (ConstController, SinControllerChrono)
 from rostok.control_chrono.external_force import ForceChronoWrapper, ABCForceCalculator
-from rostok.criterion.simulation_flags import SimulationSingleEvent
+from rostok.criterion.simulation_flags import EventBuilder
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.simulation_chrono.simulation import (ChronoSystems, EnvCreator, SingleRobotSimulation,
                                                  ChronoVisManager)
@@ -55,17 +55,18 @@ class GraspScenario(ParametrizedSimulation):
                  obj_external_forces: Optional[ABCForceCalculator] = None) -> None:
         super().__init__(step_length, simulation_length)
         self.grasp_object_callback = None
-        self.event_container: List[SimulationSingleEvent] = []
+        self.event_builder_container: List[EventBuilder] = []
         self.controller_cls = controller_cls
         self.smc = smc
         self.obj_external_forces = obj_external_forces
 
-    def add_event(self, event):
-        self.event_container.append(event)
+    def add_event_builder(self, event_builder):
+        self.event_builder_container.append(event_builder)
 
-    def reset_events(self):
-        for event in self.event_container:
-            event.reset()
+    def build_events(self):
+        event_list=[]
+        for event_builder in self.event_builder_container:
+            event_builder.build_event(event_list)
 
     def run_simulation(self,
                        graph: GraphGrammar,
@@ -74,7 +75,7 @@ class GraspScenario(ParametrizedSimulation):
                        vis=False,
                        delay=False):
         # events should be reset before every simulation
-        self.reset_events()
+        event_list = self.build_events()
         # build simulation from the subclasses
 
         if self.smc:
@@ -124,7 +125,7 @@ class GraspScenario(ParametrizedSimulation):
             "n_contacts": (SensorCalls.AMOUNT_FORCE, SensorObjectClassification.BODY)
         }
         simulation.add_robot_data_type_dict(robot_data_dict)
-        return simulation.simulate(n_steps, self.step_length, 10000, self.event_container, vis)
+        return simulation.simulate(n_steps, self.step_length, 10000, event_list, vis)
     
     def get_scenario_name(self):
         return str(self.grasp_object_callback)
