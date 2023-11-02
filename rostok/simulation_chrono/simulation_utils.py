@@ -6,6 +6,7 @@ import pychrono as chrono
 
 from rostok.block_builder_chrono.block_classes import ChronoEasyShapeObject
 from rostok.virtual_experiment.sensors import DataStorage
+from rostok.criterion.simulation_flags import SimulationSingleEvent
 
 
 def calculate_covering_sphere(obj: ChronoEasyShapeObject):
@@ -83,6 +84,7 @@ class SimulationResult:
     n_steps = 0
     robot_final_ds: Optional[DataStorage] = None
     environment_final_ds: Optional[DataStorage] = None
+    event_container: List[SimulationSingleEvent] = field(default_factory=list)
 
     def reduce_ending(self, step_n):
         if self.robot_final_ds:

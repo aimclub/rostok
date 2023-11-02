@@ -5,8 +5,8 @@ from typing import List
 import numpy as np
 from scipy.spatial import distance
 
-from rostok.criterion.simulation_flags import (EventContactTimeOut, EventGrasp,
-                                               EventSlipOut)
+from rostok.criterion.simulation_flags import (EventContactTimeOutBuilder, EventGraspBuilder,
+                                               EventSlipOutBuilder)
 from rostok.simulation_chrono.simulation_utils import SimulationResult
 from rostok.utils.json_encoder import RostokJSONEncoder
 
@@ -40,10 +40,10 @@ class TimeCriterion(Criterion):
             event_grasp (EventGrasp): event of object grasping 
     """
 
-    def __init__(self, time: float, event_timeout: EventContactTimeOut, event_grasp: EventGrasp):
+    def __init__(self, time: float, event_timeout_builder: EventContactTimeOutBuilder, event_grasp_builder: EventGraspBuilder):
         self.max_simulation_time = time
-        self.event_timeout = event_timeout
-        self.event_grasp = event_grasp
+        self.event_timeout_builder = event_timeout_builder
+        self.event_grasp_builder = event_grasp_builder
 
     def calculate_reward(self, simulation_output: SimulationResult):
         """Return 1 for all robots that can grasp the object. 
@@ -53,10 +53,12 @@ class TimeCriterion(Criterion):
         Returns:
             float: reward of the criterion
         """
-        if self.event_grasp.state:
+        event_container = simulation_output.event_container
+        event_grasp = self.event_grasp_builder.find_event(event_list=event_container)
+        if event_grasp.state:
             return 1
-
-        if self.event_timeout.state:
+        event_timeout=self.event_timeout_builder.find_event(event_list=event_container)
+        if event_timeout.state:
             return 0
         else:
             time = simulation_output.time
@@ -73,8 +75,8 @@ class ForceCriterion(Criterion):
             event_timeout (EventContactTimeOut): event of contact time out
     """
 
-    def __init__(self, event_timeout: EventContactTimeOut):
-        self.event_timeout = event_timeout
+    def __init__(self, event_timeout_builder: EventContactTimeOutBuilder):
+        self.event_timeout_builder = event_timeout_builder
 
     def calculate_reward(self, simulation_output: SimulationResult) -> float:
         """Return 0 if there is no contact. For every step where object is in contact with robot
@@ -84,8 +86,8 @@ class ForceCriterion(Criterion):
         Returns:
             float: reward of the criterion
         """
-
-        if self.event_timeout.state:
+        event_timeout=self.event_timeout_builder.find_event(event_list=simulation_output.event_container)
+        if event_timeout.state:
             return 0
         else:
             env_data = simulation_output.environment_final_ds
@@ -115,8 +117,8 @@ class InstantObjectCOGCriterion(Criterion):
             event_grasp (EventGrasp): event of object grasping 
     """
 
-    def __init__(self, grasp_event: EventGrasp):
-        self.grasp_event = grasp_event
+    def __init__(self, grasp_event_builder: EventGraspBuilder):
+        self.grasp_event_builder = grasp_event_builder
 
     def calculate_reward(self, simulation_output: SimulationResult):
         """Calculate the reward based on distance between object COG and force centroid in the moment of grasp.
@@ -124,10 +126,11 @@ class InstantObjectCOGCriterion(Criterion):
         Returns:
             float: reward of the criterion
         """
-        if self.grasp_event.state:
+        grasp_event = self.grasp_event_builder.find_event(event_list=simulation_output.event_container)
+        if grasp_event.state:
             env_data = simulation_output.environment_final_ds
-            body_COG = env_data.get_data("COG")[0][self.grasp_event.step_n + 1]
-            body_outer_force_center = env_data.get_data("force_center")[0][self.grasp_event.step_n +
+            body_COG = env_data.get_data("COG")[0][grasp_event.step_n + 1]
+            body_outer_force_center = env_data.get_data("force_center")[0][grasp_event.step_n +
                                                                            1]
             if body_outer_force_center is np.nan:
                 return 0
@@ -144,8 +147,8 @@ class InstantForceCriterion(Criterion):
             event_grasp (EventGrasp): event of object grasping 
     """
 
-    def __init__(self, grasp_event: EventGrasp):
-        self.grasp_event = grasp_event
+    def __init__(self, grasp_event_builder: EventGraspBuilder):
+        self.grasp_event_builder = grasp_event_builder
 
     def calculate_reward(self, simulation_output: SimulationResult):
         """Calculate std of force modules in the grasp moment and calculate reward using it. 
@@ -153,9 +156,10 @@ class InstantForceCriterion(Criterion):
         Returns:
             float: reward of the criterion
         """
-        if self.grasp_event.state:
+        grasp_event = self.grasp_event_builder.find_event(event_list=simulation_output.event_container)
+        if grasp_event.state:
             env_data = simulation_output.environment_final_ds
-            body_contacts: np.ndarray = env_data.get_data("forces")[0][self.grasp_event.step_n + 1]
+            body_contacts: np.ndarray = env_data.get_data("forces")[0][grasp_event.step_n + 1]
             if len(body_contacts) > 0:
                 forces = []
                 for force in body_contacts:
@@ -175,8 +179,8 @@ class InstantContactingLinkCriterion(Criterion):
             event_grasp (EventGrasp): event of object grasping 
     """
 
-    def __init__(self, grasp_event: EventGrasp):
-        self.grasp_event = grasp_event
+    def __init__(self, grasp_event_builder: EventGraspBuilder):
+        self.grasp_event_builder = grasp_event_builder
 
     def calculate_reward(self, simulation_output: SimulationResult):
         """The reward is the fraction of the links that contacts with object in the grasp moment. 
@@ -184,13 +188,14 @@ class InstantContactingLinkCriterion(Criterion):
         Returns:
             float: reward of the criterion
         """
-        if self.grasp_event.state:
+        grasp_event = self.grasp_event_builder.find_event(event_list=simulation_output.event_container)
+        if grasp_event.state:
             robot_data = simulation_output.robot_final_ds
             robot_contacts = robot_data.get_data("n_contacts")
             n_bodies = len(robot_contacts.keys())
             contacting_bodies = 0
             for _, contacts in robot_contacts.items():
-                if contacts[self.grasp_event.step_n + 1] > 0:
+                if contacts[grasp_event.step_n + 1] > 0:
                     contacting_bodies += 1
 
             return contacting_bodies / n_bodies
@@ -206,8 +211,8 @@ class GraspTimeCriterion(Criterion):
             total_steps (total_steps): the amount of the possible steps
     """
 
-    def __init__(self, grasp_event: EventGrasp, total_steps: int):
-        self.grasp_event = grasp_event
+    def __init__(self, grasp_event_builder: EventGraspBuilder, total_steps: int):
+        self.grasp_event_builder = grasp_event_builder
         self.total_steps = total_steps
 
     def calculate_reward(self, simulation_output: SimulationResult):
@@ -216,8 +221,9 @@ class GraspTimeCriterion(Criterion):
         Returns:
             float: reward of the criterion
         """
-        if self.grasp_event.state:
-            return (self.total_steps - self.grasp_event.step_n) / self.total_steps
+        grasp_event = self.grasp_event_builder.find_event(event_list=simulation_output.event_container)
+        if grasp_event.state:
+            return (self.total_steps - grasp_event.step_n) / self.total_steps
         else:
             return 0
 
@@ -231,11 +237,11 @@ class FinalPositionCriterion(Criterion):
             slipout_event (EventSlipOut): event of object slip out
     """
 
-    def __init__(self, reference_distance: float, grasp_event: EventGrasp,
-                 slipout_event: EventSlipOut):
+    def __init__(self, reference_distance: float, grasp_event_builder: EventGraspBuilder,
+                 slipout_event_builder: EventSlipOutBuilder):
         self.reference_distance = reference_distance
-        self.grasp_event = grasp_event
-        self.slipout_event = slipout_event
+        self.grasp_event_builder = grasp_event_builder
+        self.slipout_event_builder = slipout_event_builder
 
     def calculate_reward(self, simulation_output: SimulationResult):
         """The reward is 1 - dist(position in the grasp moment, position in the final moment)/(reference distance)
@@ -243,9 +249,11 @@ class FinalPositionCriterion(Criterion):
         Returns:
             float: reward of the criterion
         """
-        if self.grasp_event.state and not self.slipout_event.state:
+        grasp_event = self.grasp_event_builder.find_event(event_list=simulation_output.event_container)
+        slipout_event = self.slipout_event_builder.find_event(event_list=simulation_output.event_container)
+        if grasp_event.state and not slipout_event.state:
             env_data = simulation_output.environment_final_ds
-            grasp_pos = env_data.get_data("COG")[0][self.grasp_event.step_n + 1]
+            grasp_pos = env_data.get_data("COG")[0][grasp_event.step_n + 1]
             final_pos = env_data.get_data("COG")[0][-1]
             dist = distance.euclidean(grasp_pos, final_pos)
             if dist <= self.reference_distance:
