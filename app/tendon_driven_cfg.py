@@ -38,6 +38,8 @@ def get_default_tendon_params():
 
 rand_null_force = get_random_force_with_null_grav(10)
 default_simulation_config = SimulationConfig(0.0005, 4.5, GraspScenario, rand_null_force)
+fast_mock_simulation_config = SimulationConfig(0.001, 0.1, GraspScenario, rand_null_force)
+
 default_grasp_objective = GraspObjective(
     # Objects setup
     HARD_OBJECT_SET,
@@ -57,3 +59,4 @@ default_grasp_objective = GraspObjective(
 brute_force_opti_default_cfg = BruteForceRewardCfg([10, 15, 20])
 
 hyperparams_mcts_default = MCTSCfg()
+hyperparams_mcts_default_max_r15 = MCTSCfg(max_number_rules = 15)
