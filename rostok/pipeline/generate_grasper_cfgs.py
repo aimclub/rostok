@@ -102,6 +102,15 @@ def add_grasp_events_from_cfg(sim: GraspScenario, cfg: GraspObjective):
 
 
 def create_sim_list(base_sim: GraspScenario, object_list: list[EnvironmentBodyBlueprint]):
+    """Create simulation for each object in object_list
+
+    Args:
+        base_sim (GraspScenario): _description_
+        object_list (list[EnvironmentBodyBlueprint]): _description_
+
+    Returns:
+        _type_: simulation list
+    """
     sim_list = []
     for obj_i in object_list:
         sim_i = deepcopy(base_sim)
@@ -112,7 +121,16 @@ def create_sim_list(base_sim: GraspScenario, object_list: list[EnvironmentBodyBl
 
 def prepare_simulation_scenario_list(contoller_cls, sim_cfg: SimulationConfig,
                                      grasp_objective_cfg: GraspObjective):
+    """Combine  create_sim_list and create_base_sim for construct from highlevel configs
 
+    Args:
+        contoller_cls (_type_): _description_
+        sim_cfg (SimulationConfig): _description_
+        grasp_objective_cfg (GraspObjective): _description_
+
+    Returns:
+        _type_: _description_
+    """
     base_simulation = create_base_sim(contoller_cls, sim_cfg)
     # event_contact, event_timeout, event_flying_apart, event_slipout, event_stop_external_force, event_grasp = add_grasp_events_from_cfg(
     #     base_simulation, grasp_objective_cfg)
@@ -123,6 +141,18 @@ def prepare_simulation_scenario_list(contoller_cls, sim_cfg: SimulationConfig,
 
 def create_rewarder(grasp_objective_cfg: GraspObjective, sim_cfg: SimulationConfig, event_timeout,
                     event_grasp, event_slipout):
+    """Create rewarder for BasePrepareOptiVar childs  
+
+    Args:
+        grasp_objective_cfg (GraspObjective): _description_
+        sim_cfg (SimulationConfig): _description_
+        event_timeout (_type_): _description_
+        event_grasp (_type_): _description_
+        event_slipout (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     simulation_rewarder = SimulationReward(verbosity=0)
 
     simulation_rewarder.add_criterion(
@@ -148,6 +178,16 @@ def create_rewarder(grasp_objective_cfg: GraspObjective, sim_cfg: SimulationConf
 
 def create_global_optimisation(sim_list: list[GraspScenario], preapare_reward: BasePrepareOptiVar,
                                glop_cfg: GlobalOptimisationRewardCfg):
+    """For create GlobalOptimisationEachSim
+
+    Args:
+        sim_list (list[GraspScenario]): _description_
+        preapare_reward (BasePrepareOptiVar): _description_
+        glop_cfg (GlobalOptimisationRewardCfg): _description_
+
+    Returns:
+        _type_: _description_
+    """
     rew = GlobalOptimisationEachSim(sim_list, preapare_reward, glop_cfg.bound,
                                     glop_cfg.args_for_optimiser, glop_cfg.optimisation_tool)
 
@@ -157,6 +197,17 @@ def create_global_optimisation(sim_list: list[GraspScenario], preapare_reward: B
 def create_bruteforce_optimisation(sim_list: list[GraspScenario],
                                    preapare_reward: BasePrepareOptiVar,
                                    grasp_objective: GraspObjective, brute_cfg: BruteForceRewardCfg):
+    """For create BruteForceOptimisation1D
+
+    Args:
+        sim_list (list[GraspScenario]): _description_
+        preapare_reward (BasePrepareOptiVar): _description_
+        grasp_objective (GraspObjective): _description_
+        brute_cfg (BruteForceRewardCfg): _description_
+
+    Returns:
+        _type_: _description_
+    """
     rew = BruteForceOptimisation1D(brute_cfg.variants, sim_list, preapare_reward,
                                    grasp_objective.weight_list, brute_cfg.num_cpu_workers,
                                    brute_cfg.chunksize, brute_cfg.timeout_parallel)
