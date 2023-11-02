@@ -1,5 +1,5 @@
 from rostok.control_chrono.tendon_controller import TendonControllerParameters
-from rostok.library.obj_grasp.objects import get_object_parametrized_cuboctahedron, get_object_parametrized_dipyramid_3
+from rostok.library.obj_grasp.objects import get_object_box, get_object_ellipsoid, get_object_parametrized_cuboctahedron, get_object_parametrized_dipyramid_3, get_object_parametrized_trapezohedron
 from rostok.pipeline.generate_grasper_cfgs import MCTSCfg, SimulationConfig, GraspObjective, BruteForceRewardCfg
 from rostok.simulation_chrono.simulation_scenario import GraspScenario
 import rostok.control_chrono.external_force as f_ext
@@ -12,6 +12,14 @@ HARD_OBJECT_SET = [
     get_object_parametrized_dipyramid_3(0.05, mass=0.200)
 ]
 HARD_OBJECT_SET_W = [1.0, 1.0]
+
+
+NORMAL_OBJECT_SET = [
+    get_object_box(0.14, 0.19, 0.28, 0, mass = 0.268),
+    get_object_parametrized_trapezohedron(0.15, mass = 0.2),
+    get_object_ellipsoid(0.14, 0.14, 0.22, 0, mass=0.188)
+]
+NORMAL_OBJECT_SET_W = [1.0, 1.0, 1.0]
 
 
 def get_random_force_with_null_grav(amp):
@@ -42,8 +50,8 @@ fast_mock_simulation_config = SimulationConfig(0.001, 0.1, GraspScenario, rand_n
 
 default_grasp_objective = GraspObjective(
     # Objects setup
-    HARD_OBJECT_SET,
-    HARD_OBJECT_SET_W,
+    NORMAL_OBJECT_SET,
+    NORMAL_OBJECT_SET_W,
     # Event setup
     event_time_no_contact_param=0.5,
     event_flying_apart_time_param=10,

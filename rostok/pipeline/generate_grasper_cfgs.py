@@ -6,8 +6,8 @@ from pyparsing import Any
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
 from rostok.control_chrono.controller import ConstController, RobotControllerChrono
 from rostok.criterion.criterion_calculation import FinalPositionCriterion, GraspTimeCriterion, InstantContactingLinkCriterion, InstantForceCriterion, InstantObjectCOGCriterion, SimulationReward, TimeCriterion
-from rostok.criterion.simulation_flags import EventContact, EventContactTimeOut, EventFlyingApart, EventSlipOut, \
-EventGrasp, EventStopExternalForce
+from rostok.criterion.simulation_flags import EventContactBuilder, EventContactTimeOutBuilder, EventFlyingApartBuilder, EventSlipOutBuilder, \
+EventGraspBuilder, EventStopExternalForceBuilder
 from rostok.simulation_chrono.simulation_scenario import GraspScenario, ParametrizedSimulation
 import rostok.control_chrono.external_force as f_ext
 from rostok.trajectory_optimizer.control_optimizer import BasePrepareOptiVar, BruteForceOptimisation1D, ConstTorqueOptiVar, GlobalOptimisationEachSim
@@ -82,22 +82,22 @@ def create_base_sim(contoller_cls, sim_cfg: SimulationConfig):
 
 
 def add_grasp_events_from_cfg(sim: GraspScenario, cfg: GraspObjective):
-    event_contact = EventContact()
-    sim.add_event(event_contact)
-    event_timeout = EventContactTimeOut(cfg.event_time_no_contact_param, event_contact)
-    sim.add_event(event_timeout)
-    event_flying_apart = EventFlyingApart(cfg.event_flying_apart_time_param)
-    sim.add_event(event_flying_apart)
-    event_slipout = EventSlipOut(cfg.event_slipout_time_param)
-    sim.add_event(event_slipout)
-    event_grasp = EventGrasp(grasp_limit_time=cfg.event_grasp_time_param,
-                             contact_event=event_contact,
-                             verbosity=0,
-                             simulation_stop=False)
-    sim.add_event(event_grasp)
-    event_stop_external_force = EventStopExternalForce(
-        grasp_event=event_grasp, force_test_time=cfg.event_force_test_time_param)
-    sim.add_event(event_stop_external_force)
+    event_contact = EventContactBuilder()
+    sim.add_event_builder(event_contact)
+    event_timeout = EventContactTimeOutBuilder(cfg.event_time_no_contact_param, event_contact)
+    sim.add_event_builder(event_timeout)
+    event_flying_apart = EventFlyingApartBuilder(cfg.event_flying_apart_time_param)
+    sim.add_event_builder(event_flying_apart)
+    event_slipout = EventSlipOutBuilder(cfg.event_slipout_time_param)
+    sim.add_event_builder(event_slipout)
+    event_grasp = EventGraspBuilder(grasp_limit_time=cfg.event_grasp_time_param,
+                                    event_contact_builder=event_contact,
+                                    verbosity=0,
+                                    simulation_stop=False)
+    sim.add_event_builder(event_grasp)
+    event_stop_external_force = EventStopExternalForceBuilder(
+        event_grasp_builder=event_grasp, force_test_time=cfg.event_force_test_time_param)
+    sim.add_event_builder(event_stop_external_force)
     return event_contact, event_timeout, event_flying_apart, event_slipout, event_stop_external_force, event_grasp
 
 
@@ -136,7 +136,7 @@ def create_rewarder(grasp_objective_cfg: GraspObjective, sim_cfg: SimulationConf
     simulation_rewarder.add_criterion(InstantObjectCOGCriterion(event_grasp),
                                       grasp_objective_cfg.instant_cog_criterion_weight)
     n_steps = int(grasp_objective_cfg.event_grasp_time_param / sim_cfg.time_step)
- 
+
     simulation_rewarder.add_criterion(GraspTimeCriterion(event_grasp, n_steps),
                                       grasp_objective_cfg.grasp_time_criterion_weight)
     simulation_rewarder.add_criterion(
@@ -190,4 +190,3 @@ def create_reward_calulator(sim_config: SimulationConfig, grasp_objective: Grasp
                                               optimisation_control_cgf)
     else:
         raise Exception("Wrong type of optimisation_control_cgf")
-

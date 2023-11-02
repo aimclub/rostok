@@ -14,7 +14,7 @@ if __name__ == "__main__":
     rule_vocabulary = create_rules()
 
     init_graph = GraphGrammar()
-    env = SubStringDesignEnvironment(rule_vocabulary, evaluator_tendon_fast_debug,
+    env = SubStringDesignEnvironment(rule_vocabulary, evaluator_tendon_standart,
                                      mcts_hyper_default.max_number_rules, init_graph, 0)
 
     mcts = MCTS(env, mcts_hyper_default.C)
