@@ -93,7 +93,7 @@ def add_grasp_events_from_cfg(sim: GraspScenario, cfg: GraspObjective):
     event_grasp = EventGrasp(grasp_limit_time=cfg.event_grasp_time_param,
                              contact_event=event_contact,
                              verbosity=0,
-                             simulation_stop=True)
+                             simulation_stop=False)
     sim.add_event(event_grasp)
     event_stop_external_force = EventStopExternalForce(
         grasp_event=event_grasp, force_test_time=cfg.event_force_test_time_param)
@@ -136,7 +136,7 @@ def create_rewarder(grasp_objective_cfg: GraspObjective, sim_cfg: SimulationConf
     simulation_rewarder.add_criterion(InstantObjectCOGCriterion(event_grasp),
                                       grasp_objective_cfg.instant_cog_criterion_weight)
     n_steps = int(grasp_objective_cfg.event_grasp_time_param / sim_cfg.time_step)
-    print(n_steps)
+ 
     simulation_rewarder.add_criterion(GraspTimeCriterion(event_grasp, n_steps),
                                       grasp_objective_cfg.grasp_time_criterion_weight)
     simulation_rewarder.add_criterion(
