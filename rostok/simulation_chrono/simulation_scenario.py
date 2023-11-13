@@ -93,7 +93,7 @@ class GraspScenario(ParametrizedSimulation):
         set_covering_ellipsoid_based_position(grasp_object,
                                               reference_point=chrono.ChVectorD(0, 0.1, 0))
         if self.obj_external_forces:
-            chrono_forces = ForceChronoWrapper(deepcopy(self.obj_external_forces))
+            chrono_forces = ForceChronoWrapper(deepcopy(self.obj_external_forces), event_list)
         else:
             chrono_forces = None
         simulation.env_creator.add_object(grasp_object,

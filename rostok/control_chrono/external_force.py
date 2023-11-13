@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import numpy as np
-from typing import Any, Callable, List
+from typing import Any, Callable, List, Optional
 
 import pychrono.core as chrono
+
+from rostok.criterion.simulation_flags import SimulationSingleEvent
 
 
 def random_3d_vector(amp):
@@ -73,10 +75,24 @@ class ABCForceCalculator(ABC):
         self.name = name
         self.pos = pos
         self.start_time = start_time
+        self.start_event = None
 
     @abstractmethod
-    def calculate_spatial_force(self, time, data) -> np.ndarray:
+    def calculate_spatial_force(self, time, data, events) -> np.ndarray:
         return np.zeros(6)
+    
+    def set_activation_by_event(self, event: type[SimulationSingleEvent], use_time: bool = False):
+        self.start_event = event
+        self.start_time = self.start_time if use_time else np.inf
+        
+    def check_activation_force(self, time, events) -> bool:
+        time_activation = time >= self.start_time
+        event_activation = False
+        for ev in events:
+            if self.start_event is not None and isinstance(ev, self.start_event):
+                event_activation = ev.state
+        
+        return time_activation or event_activation
 
     def enable_data_dump(self, path):
         self.path = path
@@ -92,7 +108,7 @@ class ForceChronoWrapper():
     which determines the force and torque at time t.
     """
 
-    def __init__(self, force: ABCForceCalculator, is_local: bool = False) -> None:
+    def __init__(self, force: ABCForceCalculator, events: Optional[list[SimulationSingleEvent]] = None, is_local: bool = False) -> None:
         self.path = None
         self.force = force
 
@@ -116,11 +132,12 @@ class ForceChronoWrapper():
         self.torque_maker_chrono.SetNameString(name + "_torque")
         self.is_bound = False
         self.is_local = is_local
+        self.events = events
         self.setup_makers()
 
     def get_force_torque(self, time: float, data) -> ForceTorque:
         impact = ForceTorque()
-        spatial_force = self.force.calculate_spatial_force(time, data)
+        spatial_force = self.force.calculate_spatial_force(time, data, self.events)
         impact.force = tuple(spatial_force[3:])
         impact.torque = tuple(spatial_force[:3])
         return impact
@@ -188,7 +205,7 @@ class ForceControllerOnCallback(ABCForceCalculator):
         super().__init__(name, start_time, pos)
         self.callback = callback
 
-    def calculate_spatial_force(self, time, data) -> np.ndarray:
+    def calculate_spatial_force(self, time, data, events) -> np.ndarray:
         return self.callback(time, data)
 
 
@@ -213,9 +230,9 @@ class YaxisSin(ABCForceCalculator):
         self.amp_offset = amp_offset
         self.freq = freq
 
-    def calculate_spatial_force(self, time, data) -> np.ndarray:
+    def calculate_spatial_force(self, time, data, events) -> np.ndarray:
         spatial_force = np.zeros(6)
-        if time >= self.start_time:
+        if self.check_activation_force(time, events):
             spatial_force[4] = self.amp * np.sin(self.freq *
                                                  (time - self.start_time)) + self.amp_offset
         return spatial_force
@@ -232,9 +249,9 @@ class NullGravity(ABCForceCalculator):
         """
         super().__init__(name="null_gravity_force", start_time=start_time, pos=np.zeros(3))
 
-    def calculate_spatial_force(self, time: float, data) -> np.ndarray:
+    def calculate_spatial_force(self, time: float, data, events) -> np.ndarray:
         spatial_force = np.zeros(6)
-        if time >= self.start_time:
+        if self.check_activation_force(time, events):
             mass = data.body_map_ordered[0].body.GetMass()
             g = data.grav_acc
             spatial_force[3:] = -mass * g
@@ -266,9 +283,9 @@ class RandomForces(ABCForceCalculator):
         self.counter = 0
         self.spatial_force = np.zeros(6)
 
-    def calculate_spatial_force(self, time: float, data) -> np.ndarray:
+    def calculate_spatial_force(self, time: float, data, events) -> np.ndarray:
 
-        if time >= self.start_time:
+        if self.check_activation_force(time, events):
             if self.counter % self.width_step == 0:
                 if self.dim == '2d':
                     self.spatial_force[3:] = random_plane_vector(self.amp, *self.angle)
@@ -303,9 +320,9 @@ class ClockXZForces(ABCForceCalculator):
         self.angle: float = 0.0
         self.angle_step: float = angle_step
 
-    def calculate_spatial_force(self, time: float, data) -> np.ndarray:
+    def calculate_spatial_force(self, time: float, data, events) -> np.ndarray:
         spatial_force = np.zeros(6)
-        if time >= self.start_time:
+        if self.check_activation_force(time, events):
             if self.counter % self.width_step == 0:
                 self.angle += self.angle_step
             self.counter += 1
@@ -337,12 +354,12 @@ class ExternalForces(ABCForceCalculator):
         else:
             self.force_controller = [self.force_controller, force]
 
-    def calculate_spatial_force(self, time: float, data) -> ForceTorque:
+    def calculate_spatial_force(self, time: float, data, events) -> ForceTorque:
         if isinstance(self.force_controller, list):
             v_forces = np.zeros(6)
             for controller in self.force_controller:
-                v_forces += np.array(controller.calculate_spatial_force(time, data))
+                v_forces += np.array(controller.calculate_spatial_force(time, data, events))
                 self.data_forces.append(v_forces)
             return v_forces
         else:
-            return self.force_controller.calculate_spatial_force(time, data)
+            return self.force_controller.calculate_spatial_force(time, data, events)

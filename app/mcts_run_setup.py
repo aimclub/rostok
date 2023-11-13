@@ -11,6 +11,7 @@ from rostok.criterion.criterion_calculation import (FinalPositionCriterion, Gras
 from rostok.criterion.simulation_flags import (EventContactBuilder, EventContactTimeOutBuilder,
                                                EventFlyingApartBuilder, EventGraspBuilder,
                                                EventSlipOutBuilder, EventStopExternalForceBuilder)
+from rostok.criterion.simulation_flags import EventContact
 from rostok.simulation_chrono.simulation_scenario import GraspScenario
 from rostok.trajectory_optimizer.control_optimizer import BruteForceOptimisation1D, ConstTorqueOptiVar, GlobalOptimisationEachSim, TendonForceOptiVar
 from rostok.utils.numeric_utils import Offset
@@ -92,7 +93,8 @@ def config_independent_torque(grasp_object_blueprint):
 
 def config_tendon(grasp_object_blueprint):
     obj_forces = []
-    obj_forces.append(f_ext.RandomForces(1e6, 100, 20))
+    obj_forces.append(f_ext.RandomForces(1e6, 100, 0))
+    obj_forces[-1].set_activation_by_event(EventContact)
     obj_forces.append(f_ext.NullGravity(0))
     obj_forces = f_ext.ExternalForces(obj_forces)
     simulation_manager = GraspScenario(hp.TIME_STEP_SIMULATION, hp.TIME_SIMULATION, TendonController_2p, obj_external_forces=obj_forces)
