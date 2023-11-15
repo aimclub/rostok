@@ -63,6 +63,9 @@ class MCTSCfg():
     full_loop: int = 10
     base_iteration: int = 10
     max_number_rules: int = 13
+    max_number_sim_per_step: int = 1
+    iteration_checkpoint: int = 1
+    num_test: int = 2
 
 
 def create_base_sim(contoller_cls, sim_cfg: SimulationConfig):
@@ -81,7 +84,16 @@ def create_base_sim(contoller_cls, sim_cfg: SimulationConfig):
                                 obj_external_forces=sim_cfg.obj_disturbance_forces)
 
 
-def add_grasp_events_from_cfg(sim: GraspScenario, cfg: GraspObjective):
+def add_default_events(sim: GraspScenario, cfg: GraspObjective):
+    """Add events to sim and return list of added events
+
+    Args:
+        sim (GraspScenario): _description_
+        cfg (GraspObjective): _description_
+
+    Returns:
+        list: _description_
+    """
     event_contact = EventContactBuilder()
     sim.add_event_builder(event_contact)
     event_timeout = EventContactTimeOutBuilder(cfg.event_time_no_contact_param, event_contact)
@@ -109,7 +121,7 @@ def create_sim_list(base_sim: GraspScenario, object_list: list[EnvironmentBodyBl
         object_list (list[EnvironmentBodyBlueprint]): _description_
 
     Returns:
-        _type_: simulation list
+        list[GraspScenario]: simulation list
     """
     sim_list = []
     for obj_i in object_list:
@@ -129,7 +141,7 @@ def prepare_simulation_scenario_list(contoller_cls, sim_cfg: SimulationConfig,
         grasp_objective_cfg (GraspObjective): _description_
 
     Returns:
-        _type_: _description_
+        list[GraspScenario]: _description_
     """
     base_simulation = create_base_sim(contoller_cls, sim_cfg)
     # event_contact, event_timeout, event_flying_apart, event_slipout, event_stop_external_force, event_grasp = add_grasp_events_from_cfg(
@@ -151,7 +163,7 @@ def create_rewarder(grasp_objective_cfg: GraspObjective, sim_cfg: SimulationConf
         event_slipout (_type_): _description_
 
     Returns:
-        _type_: _description_
+        SimulationReward: _description_
     """
     simulation_rewarder = SimulationReward(verbosity=0)
 
@@ -226,7 +238,7 @@ def create_reward_calulator(sim_config: SimulationConfig, grasp_objective: Grasp
     event_timeout = event_grasp = event_slipout = None
 
     for sim_i in simlist:
-        _, event_timeout, _, event_slipout, _, event_grasp = add_grasp_events_from_cfg(
+        _, event_timeout, _, event_slipout, _, event_grasp = add_default_events(
             sim_i, grasp_objective)
 
     rewarder = create_rewarder(grasp_objective, sim_config, event_timeout, event_grasp,

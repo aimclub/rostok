@@ -26,5 +26,6 @@ def run_mcts(rule_vocabulary: RuleVocabulary, graph_evaluate_object: GraphReward
                                                graph_evaluate_object.simulation_scenario)
 
     for i in range(mcts_hyper.full_loop):
-        mcts_manager.run_search(mcts_hyper.base_iteration, 1, 1, 2)
+        mcts_manager.run_search(mcts_hyper.base_iteration, mcts_hyper.max_number_sim_per_step, 
+                                mcts_hyper.iteration_checkpoint, mcts_hyper.num_test)
         mcts_manager.save_results()
