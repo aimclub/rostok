@@ -43,7 +43,7 @@ def get_object_sphere(r, mass=100, smc=False) -> EnvironmentBodyBlueprint:
 
 
 # object functions return a blueprint of an object
-def get_object_box(x, y, z, alpha):
+def get_object_box(x, y, z, alpha, mass):
     material = DefaultChronoMaterialNSC()
     material.Friction = 0.65
     material.DampingF = 0.65
@@ -53,6 +53,8 @@ def get_object_box(x, y, z, alpha):
                                                 pos=FrameTransform([0, 0, 0],
                                                                    rotation_x(alpha)), color=[215, 255, 0])
 
+    volume = calc_volume_body(object_blueprint)
+    object_blueprint.density  = mass / volume
     return object_blueprint
 
 def get_object_box_rotation(x,y,z, yaw=0, pitch=0, roll=0):
@@ -108,7 +110,7 @@ def get_object_parametrized_sphere(r) -> EnvironmentBodyBlueprint:
     return obj
 
 
-def get_object_ellipsoid(x, y, z, alpha):
+def get_object_ellipsoid(x, y, z, alpha, mass):
     shape = easy_body_shapes.Ellipsoid()
     shape.radius_x = x
     shape.radius_y = y
@@ -122,6 +124,8 @@ def get_object_ellipsoid(x, y, z, alpha):
                                    material=mat,
                                    pos=FrameTransform([0, 0, 0], rotation_x(alpha)),
                                    color=[215, 255, 0])
+    volume = calc_volume_body(obj)
+    obj.density  = mass / volume
     return obj
 
 # special objects
