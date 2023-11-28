@@ -54,7 +54,7 @@ class BasePrepareOptiVar():
     def __init__(self,
                  each_control_params: Any,
                  control_class: Type[RobotControllerChrono],
-                 rewarder: SimulationReward,
+                 rewarder: SimulationReward | None,
                  params_start_pos=None):
         self.each_control_params = each_control_params
         self.control_class = control_class
@@ -127,15 +127,23 @@ class BasePrepareOptiVar():
         start_pos = self.build_starting_positions(graph)  # pylint: disable=assignment-from-none
         is_vis = self.is_vis_decision(graph) and self.is_vis
         simout = sim.run_simulation(graph, control_data, start_pos, is_vis)
-        rew = self.rewarder.calculate_reward(simout)
+        rew = self.rewarder.calculate_reward(simout) 
         return rew, x, sim
+    
+    def set_reward_fun(self, rewarder: SimulationReward):
+        """Set reward function.
+
+        Args:
+            rewarder (SimulationReward): _description_
+        """
+        self.rewarder = rewarder
 
 
 class TendonForceOptiVar(BasePrepareOptiVar):
 
     def __init__(self,
                  each_control_params: TendonControllerParameters,
-                 rewarder: SimulationReward,
+                 rewarder: SimulationReward | None = None,
                  params_start_pos=None):
         super().__init__(each_control_params, TendonController_2p, rewarder, params_start_pos)
 
