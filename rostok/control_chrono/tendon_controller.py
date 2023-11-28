@@ -24,7 +24,7 @@ class ForceType(Enum):
 
 class PulleyForce(ABCForceCalculator):
 
-    def calculate_spatial_force(self, time: float, data) -> np.ndarray:
+    def calculate_spatial_force(self, time: float, data, events) -> np.ndarray:
         spatial_force = np.zeros(6)
         pre_point = data[0]
         point = data[1]
@@ -43,7 +43,7 @@ class PulleyForce(ABCForceCalculator):
 
 class TipForce(ABCForceCalculator):
 
-    def calculate_spatial_force(self, time: float, data) -> np.ndarray:
+    def calculate_spatial_force(self, time: float, data, events) -> np.ndarray:
         spatial_force = np.zeros(6)
         pre_point = data[0]
         point = data[1]
