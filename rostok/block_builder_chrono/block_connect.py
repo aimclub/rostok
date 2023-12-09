@@ -40,7 +40,7 @@ def make_fix_joint(prev_block: BuildingBody, next_block: BuildingBody, system: c
     system.Update()
 
 # the function places and connects a sequence of blocks. The sequence should start from the root block
-def place_and_connect(sequence: list[BLOCK_CLASS_TYPES], system: chrono.ChSystem):
+def place_and_connect(sequence: list[BLOCK_CLASS_TYPES], system: chrono.ChSystem, finger_number):
     # all connections occurs between bodies
     previous_body_block = None
     previous_joint = None
@@ -54,7 +54,11 @@ def place_and_connect(sequence: list[BLOCK_CLASS_TYPES], system: chrono.ChSystem
                     system.Update()
 
             else:
+                # it is a body that have to be connected to previous body
                 if not block.is_build:
+                    collision_model = block.body.GetCollisionModel()
+                    collision_model.SetFamily(finger_number)
+                    collision_model.SetFamilyMaskNoCollisionWithFamily(finger_number)
                     if sequence[it - 1].block_type is BlockType.TRANSFORM_INPUT:
                         i = 1
                         transform = True

@@ -78,7 +78,7 @@ class ChronoVisManager():
             self.vis.EndScene()
             # just to slow down the simulation
             if self.delay_flag:
-                time.sleep(0.00001)
+                time.sleep(0.01)
 
         else:
             self.step_counter += 1

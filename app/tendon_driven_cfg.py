@@ -15,7 +15,7 @@ HARD_OBJECT_SET_W = [1.0, 1.0]
 
 
 NORMAL_OBJECT_SET = [
-    get_object_box(0.14, 0.19, 0.28, 0, mass = 0.268),
+    get_object_box(0.014, 0.019, 0.028, 0, mass = 0.268),
     get_object_parametrized_trapezohedron(0.15, mass = 0.2),
     get_object_ellipsoid(0.14, 0.14, 0.22, 0, mass=0.188)
 ]
@@ -45,7 +45,7 @@ def get_default_tendon_params():
 
 
 rand_null_force = get_random_force_with_null_grav(10)
-default_simulation_config = SimulationConfig(0.0005, 4.5, GraspScenario, rand_null_force)
+default_simulation_config = SimulationConfig(0.00005, 4.5, GraspScenario, rand_null_force)
 fast_mock_simulation_config = SimulationConfig(0.001, 0.1, GraspScenario, rand_null_force)
 
 default_grasp_objective = GraspObjective(
@@ -53,10 +53,10 @@ default_grasp_objective = GraspObjective(
     NORMAL_OBJECT_SET,
     NORMAL_OBJECT_SET_W,
     # Event setup
-    event_time_no_contact_param=0.5,
+    event_time_no_contact_param=15,
     event_flying_apart_time_param=10,
     event_slipout_time_param=0.4,
-    event_grasp_time_param=1.5,
+    event_grasp_time_param=15,
     event_force_test_time_param=3,
     # Weight setup
     time_criterion_weight=3,

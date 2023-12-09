@@ -230,9 +230,9 @@ class ChronoRevolveJoint(BlockBridge):
 
     def set_prev_body_frame(self, prev_block: BuildingBody, system: chrono.ChSystem):
         # additional transform is just a translation along y axis to the radius of the joint
-        additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(self.offset, self.radius, 0),
-                                                  chrono.ChQuaternionD(1, 0, 0, 0))
-        additional_transform *= chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0),
+        #additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(self.offset, self.radius, 0),
+                                                  #chrono.ChQuaternionD(1, 0, 0, 0))
+        additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0),
                                                    rotation_z_q(self.starting_angle))
         transform = prev_block.transformed_frame_out.GetCoord()
         prev_block.transformed_frame_out.SetCoord(
@@ -240,12 +240,13 @@ class ChronoRevolveJoint(BlockBridge):
         system.Update()
 
     def set_next_body_frame(self, next_block: BuildingBody, system: chrono.ChSystem):
-        additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(self.offset, -self.radius, 0),
-                                                  chrono.ChQuaternionD(1, 0, 0, 0))
-        transform = next_block.transformed_frame_input.GetCoord()
-        next_block.transformed_frame_input.SetCoord(
-            transform * additional_transform)
-        system.Update()
+        pass
+        # additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(self.offset, -self.radius, 0),
+        #                                           chrono.ChQuaternionD(1, 0, 0, 0))
+        # transform = next_block.transformed_frame_input.GetCoord()
+        # next_block.transformed_frame_input.SetCoord(
+        #     transform * additional_transform)
+        # system.Update()
 
     def connect(self, in_block: BuildingBody, out_block: BuildingBody, system: chrono.ChSystem):
         """Joint is connected two bodies.
@@ -263,31 +264,45 @@ class ChronoRevolveJoint(BlockBridge):
         self.joint.Initialize(out_block.body, in_block.body,
                               chrono.ChFrameD(joint_transform))
         system.AddLink(self.joint)
+        self._add_limiting_link(in_block, out_block, system)
         if (self.stiffness != 0) or (self.damping != 0):
             self._add_spring_damper(in_block, out_block, system)
 
-        if (self.with_collision):
-            eps = 0.005
-            cylinder = chrono.ChBodyEasyCylinder(chrono.ChAxis_Z, self.radius - eps, self.length, self.density, True,
-                                                 True, self.material)
-            cylinder.SetCoord(joint_transform)
-            cylinder.SetNameString(self.name)
-            system.Add(cylinder)
-            system.Update()
-            fix_joint = chrono.ChLinkMateFix()
-            fix_joint.Initialize(cylinder, in_block.body,
-                                 chrono.ChFrameD(joint_transform))
-            system.Add(fix_joint)
-        else:
-            # Add cylinder visual only
-            cylinder = chrono.ChCylinder()
-            cylinder.p2 = chrono.ChVectorD(0, 0, self.length / 2)
-            cylinder.p1 = chrono.ChVectorD(0, 0, -self.length / 2)
-            cylinder.rad = self.radius
-            cylinder_asset = chrono.ChCylinderShape(cylinder)
-            self.joint.AddVisualShape(cylinder_asset)
+        # if (self.with_collision):
+        #     eps = 0.005
+        #     cylinder = chrono.ChBodyEasyCylinder(chrono.ChAxis_Z, self.radius - eps, self.length, self.density, True,
+        #                                          True, self.material)
+        #     cylinder.SetCoord(joint_transform)
+        #     cylinder.SetNameString(self.name)
+        #     system.Add(cylinder)
+        #     system.Update()
+        #     fix_joint = chrono.ChLinkMateFix()
+        #     fix_joint.Initialize(cylinder, in_block.body,
+        #                          chrono.ChFrameD(joint_transform))
+        #     system.Add(fix_joint)
+        # else:
+        #     # Add cylinder visual only
+        #     cylinder = chrono.ChCylinder()
+        #     cylinder.p2 = chrono.ChVectorD(0, 0, self.length / 2)
+        #     cylinder.p1 = chrono.ChVectorD(0, 0, -self.length / 2)
+        #     cylinder.rad = self.radius
+        #     cylinder_asset = chrono.ChCylinderShape(cylinder)
+        #     self.joint.AddVisualShape(cylinder_asset)
         system.Update()
 
+    def _add_limiting_link(self, in_block: BuildingBody, out_block: BuildingBody,
+                           system: chrono.ChSystem):
+        joint_limiting_link = chrono.ChLinkLockRevolute()
+        joint_limiting_link.Initialize(out_block.body, in_block.body,
+                                      in_block.transformed_frame_out.GetAbsCoord())
+        p = joint_limiting_link.GetLimit_Rz()
+        #joint_limiting_link.
+        p.SetActive(True)
+        p.SetMax(1)
+        p.SetMin(0)
+        system.AddLink(joint_limiting_link)
+        system.Update()
+        
     def _add_spring_damper(self, in_block: BuildingBody, out_block: BuildingBody,
                            system: chrono.ChSystem):
         self._joint_spring = chrono.ChLinkRSDA()

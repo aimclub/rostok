@@ -29,6 +29,37 @@ def rotation_z(alpha):
     return [quat_Z_ang_alpha.e0, quat_Z_ang_alpha.e1, quat_Z_ang_alpha.e2, quat_Z_ang_alpha.e3]
 
 
+import numpy as np
+import pychrono as chrono
+
+from rostok.block_builder_api.block_blueprints import (PrimitiveBodyBlueprint,
+                                                       RevolveJointBlueprint,
+                                                       TransformBlueprint)
+from rostok.block_builder_api.block_parameters import JointInputType
+from rostok.block_builder_api.easy_body_shapes import Box
+from rostok.block_builder_chrono.blocks_utils import FrameTransform
+from rostok.graph_grammar import rule_vocabulary
+from rostok.graph_grammar.node import ROOT
+from rostok.graph_grammar.node_vocabulary import NodeVocabulary
+from rostok.utils.dataset_materials.material_dataclass_manipulating import (
+    DefaultChronoMaterialNSC, DefaultChronoMaterialSMC)
+
+
+def get_density_box(mass: float, box: Box):
+    volume = box.height_z * box.length_y * box.width_x
+    return mass / volume
+
+
+def rotation_y(alpha):
+    quat_Y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))
+    return [quat_Y_ang_alpha.e0, quat_Y_ang_alpha.e1, quat_Y_ang_alpha.e2, quat_Y_ang_alpha.e3]
+
+
+def rotation_z(alpha):
+    quat_Z_ang_alpha = chrono.Q_from_AngZ(np.deg2rad(alpha))
+    return [quat_Z_ang_alpha.e0, quat_Z_ang_alpha.e1, quat_Z_ang_alpha.e2, quat_Z_ang_alpha.e3]
+
+
 def create_rules(tendon=True, smc=False):
 
     if smc:
@@ -36,10 +67,10 @@ def create_rules(tendon=True, smc=False):
     else:
         def_mat = DefaultChronoMaterialNSC()
     # blueprint for the palm
-    super_flat = PrimitiveBodyBlueprint(
-        Box(0.3, 0.01, 0.30), material=def_mat, color=[255, 0, 0])
+    body = PrimitiveBodyBlueprint(
+        Box(0.3, 0.3, 0.3), material=def_mat, color=[255, 0, 0])
     # blueprint for the base
-    base = PrimitiveBodyBlueprint(Box(0.03, 0.01, 0.03),
+    base = PrimitiveBodyBlueprint(Box(0.02, 0.05, 0.02),
                                   material=def_mat,
                                   color=[0, 120, 255],
                                   density=10000)
@@ -50,11 +81,13 @@ def create_rules(tendon=True, smc=False):
     # create link blueprints using mass and length parameters
     link = list(
         map(
-            lambda x: PrimitiveBodyBlueprint(Box(0.035, x, 0.027),
+            lambda x: PrimitiveBodyBlueprint(Box(0.02, x, 0.02),
                                              material=def_mat,
                                              color=[0, 120, 255],
                                              density=get_density_box(link_mass, Box(
-                                                 0.035, x, 0.027))), length_link))
+                                                 0.02, x, 0.02))), length_link))
+    dummy_link = PrimitiveBodyBlueprint(Box(0.01,0.000001,0.01), material=def_mat,density =0.0001)
+
 
     x_translation_values = [0.07, 0.107, 0.144]
     X_TRANSLATIONS = list(
@@ -138,17 +171,22 @@ def create_rules(tendon=True, smc=False):
     # Nodes
     node_vocab = NodeVocabulary()
     node_vocab.add_node(ROOT)
-    node_vocab.create_node(label="F")
-    node_vocab.create_node(label="RF")
-    node_vocab.create_node(label="PF")
-    node_vocab.create_node(label="NF")
-    node_vocab.create_node(label="RPF")
-    node_vocab.create_node(label="RNF")
-    node_vocab.create_node(label="FT", is_terminal=True,
-                           block_blueprint=super_flat)
+
+    node_vocab.create_node(label="Body", is_terminal=True,
+                           block_blueprint=body)
+    
+    node_vocab.create_node(label="LBL") # Left_Biped_Leg
+
+    node_vocab.create_node(label="RBL") # Right_Biped_Leg
+    
+    node_vocab.create_node(label="LFQL") # Left_Front_Quadruped_Leg
+    node_vocab.create_node(label="RFQL") # Right_Front_Quadruped_Leg
+    node_vocab.create_node(label="LHQL") # Left_Hind_Quadruped_Leg
+    node_vocab.create_node(label="RHQL") # Right_Hind_Quadruped_Leg
+
     node_vocab.create_node(label="RE", is_terminal=True,
-                           block_blueprint=reverse_transform)
-    node_vocab.create_node(label="RT")
+                           block_blueprint=reverse_transform) # Reverse
+    node_vocab.create_node(label="RT") 
     node_vocab.create_node(label="RT1",
                            is_terminal=True,
                            block_blueprint=x_translation_transform[0])
@@ -208,33 +246,11 @@ def create_rules(tendon=True, smc=False):
                            is_terminal=True,
                            block_blueprint=z_translation_negative_transforms[2])
 
-    node_vocab.create_node(label="TURN_P")
-    node_vocab.create_node(label="TURN_N")
-
-    node_vocab.create_node(label="TURN_P_0",
-                           is_terminal=True,
-                           block_blueprint=positive_turn_transform[0])
-    node_vocab.create_node(label="TURN_N_0",
-                           is_terminal=True,
-                           block_blueprint=negative_turn_transform[0])
-
-    node_vocab.create_node(label="TURN_P_1",
-                           is_terminal=True,
-                           block_blueprint=positive_turn_transform[1])
-    node_vocab.create_node(label="TURN_N_1",
-                           is_terminal=True,
-                           block_blueprint=negative_turn_transform[1])
-
-    node_vocab.create_node(label="TURN_P_2",
-                           is_terminal=True,
-                           block_blueprint=positive_turn_transform[2])
-    node_vocab.create_node(label="TURN_N_2",
-                           is_terminal=True,
-                           block_blueprint=negative_turn_transform[2])
 
     rule_vocab = rule_vocabulary.RuleVocabulary(node_vocab)
-    rule_vocab.create_rule("Init", ["ROOT"], ["FT", "F", "RF", "PF", "NF", "RPF", "RNF"], 0, 0,
-                           [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6)])
+
+    rule_vocab.create_rule("Init_Biped", ["ROOT"], ["FT", "LBL", "RBL"], 0, 0,
+                           [(0, 1), (0, 2)])
 
     rule_vocab.create_rule("AddFinger", ["F"], ["RT", "B", "JB", "L", "FG"], 0, 0, [(0, 1), (1, 2),
                                                                                     (2, 3), (3, 4)])

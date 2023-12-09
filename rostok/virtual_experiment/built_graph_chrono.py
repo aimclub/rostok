@@ -124,8 +124,8 @@ class BuiltGraphChrono:
         base = self.__graph.nodes[base_id].get("Blocks", None)
         base.body.SetPos(chrono_vector_position)
         base.body.SetRot(chrono_quat_rotation)
-        for line in block_chains:
-            place_and_connect(line, system)
+        for number, line in enumerate(block_chains):
+            place_and_connect(line, system, number+1)
 
     def fix_base(self):
         """Set body fixed for the base body"""
