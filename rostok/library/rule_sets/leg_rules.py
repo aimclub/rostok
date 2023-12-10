@@ -74,7 +74,12 @@ def create_rules(tendon=True, smc=False):
                                   material=def_mat,
                                   color=[0, 120, 255],
                                   density=10000)
+    
 
+    foot = PrimitiveBodyBlueprint(Box(0.1, 0.05, 0.02),
+                                  material=def_mat,
+                                  color=[0, 120, 255],
+                                  density=100)
     # sets effective density for the links, the real links are considered to be extendable.
     link_mass = (28 + 1.62 + 2.77) * 1e-3
     length_link = [0.05, 0.06, 0.075]
@@ -86,7 +91,7 @@ def create_rules(tendon=True, smc=False):
                                              color=[0, 120, 255],
                                              density=get_density_box(link_mass, Box(
                                                  0.02, x, 0.02))), length_link))
-    dummy_link = PrimitiveBodyBlueprint(Box(0.01,0.000001,0.01), material=def_mat,density =0.0001)
+    dummy_link = PrimitiveBodyBlueprint(Box(0.01,0.000001,0.01), material=def_mat, density =0.0001)
 
 
     x_translation_values = [0.07, 0.107, 0.144]
@@ -107,20 +112,12 @@ def create_rules(tendon=True, smc=False):
         [0, 0, 0], rotation_y(x)), turn_values))
     TURNS_NEGATIVE = list(map(lambda x: FrameTransform(
         [0, 0, 0], rotation_y(-x)), turn_values))
-
+    JOINT_TURN_POSITIVE = FrameTransform([0,0,0], rotation_y(90))
+    JOINT_TURN_NEGATIVE = FrameTransform([0,0,0], rotation_y(-90))
+    joint_turn_positive = TransformBlueprint(JOINT_TURN_POSITIVE)
+    joint_turn_negative = TransformBlueprint(JOINT_TURN_NEGATIVE)
     # create transform blueprints from the values
-    x_translation_transform = list(
-        map(lambda x: TransformBlueprint(x), X_TRANSLATIONS))
-    z_translation_positive_transforms = list(
-        map(lambda x: TransformBlueprint(x), Z_TRANSLATIONS_POSITIVE))
-    z_translation_negative_transforms = list(
-        map(lambda x: TransformBlueprint(x), Z_TRANSLATIONS_NEGATIVE))
     reverse_transform = TransformBlueprint(REVERSE_Y)
-    positive_turn_transform = list(
-        map(lambda x: TransformBlueprint(x), TURNS_POSITIVE))
-    negative_turn_transform = list(
-        map(lambda x: TransformBlueprint(x), TURNS_NEGATIVE))
-
     mass_joint = (10 / 3 + 0.51 * 2 + 0.64 + 1.3) * 1e-3  # 0.012
     joint_radius_base = 0.015
     joint_radius = 0.015
@@ -172,7 +169,7 @@ def create_rules(tendon=True, smc=False):
     node_vocab = NodeVocabulary()
     node_vocab.add_node(ROOT)
 
-    node_vocab.create_node(label="Body", is_terminal=True,
+    node_vocab.create_node(label="BO", is_terminal=True,
                            block_blueprint=body)
     
     node_vocab.create_node(label="LBL") # Left_Biped_Leg
@@ -186,7 +183,14 @@ def create_rules(tendon=True, smc=False):
 
     node_vocab.create_node(label="RE", is_terminal=True,
                            block_blueprint=reverse_transform) # Reverse
+    node_vocab.create_node(label="JT", is_terminal=True,
+                           block_blueprint=joint_turn_positive)
+    node_vocab.create_node(label="RJT", is_terminal=True,
+                           block_blueprint=joint_turn_negative)
     node_vocab.create_node(label="RT") 
+    node_vocab.create_node(label="DB", is_terminal=True, block_blueprint=dummy_link)
+    node_vocab.create_node(label="FT", is_terminal=True,
+                           block_blueprint=foot)
     node_vocab.create_node(label="RT1",
                            is_terminal=True,
                            block_blueprint=x_translation_transform[0])
@@ -225,40 +229,20 @@ def create_rules(tendon=True, smc=False):
                            block_blueprint=link[1])
     node_vocab.create_node(label="L3", is_terminal=True,
                            block_blueprint=link[2])
-    node_vocab.create_node(label="TP")
-    node_vocab.create_node(label="TP1",
-                           is_terminal=True,
-                           block_blueprint=z_translation_positive_transforms[0])
-    node_vocab.create_node(label="TP2",
-                           is_terminal=True,
-                           block_blueprint=z_translation_positive_transforms[1])
-    node_vocab.create_node(label="TP3",
-                           is_terminal=True,
-                           block_blueprint=z_translation_positive_transforms[2])
-    node_vocab.create_node(label="TN")
-    node_vocab.create_node(label="TN1",
-                           is_terminal=True,
-                           block_blueprint=z_translation_negative_transforms[0])
-    node_vocab.create_node(label="TN2",
-                           is_terminal=True,
-                           block_blueprint=z_translation_negative_transforms[1])
-    node_vocab.create_node(label="TN3",
-                           is_terminal=True,
-                           block_blueprint=z_translation_negative_transforms[2])
-
 
     rule_vocab = rule_vocabulary.RuleVocabulary(node_vocab)
 
-    rule_vocab.create_rule("Init_Biped", ["ROOT"], ["FT", "LBL", "RBL"], 0, 0,
+    rule_vocab.create_rule("Init_Biped", ["ROOT"], ["BO", "LBL", "RBL"], 0, 0,
                            [(0, 1), (0, 2)])
 
     rule_vocab.create_rule("AddFinger", ["F"], ["RT", "B", "JB", "L", "FG"], 0, 0, [(0, 1), (1, 2),
                                                                                     (2, 3), (3, 4)])
-    rule_vocab.create_rule("RemoveFinger", ["F"], [], 0, 0, [])
+    rule_vocab.create_rule("AddLeftLeg", ["LBL"], ["TN", "B", "JT", "J","DB","RJT","FG"],0,0,[(0, 1), (1, 2),
+                                                                                    (2, 3), (3, 4),(4,5),(5,6)])
+    rule_vocab.create_rule("AddRightLeg", ["RBL"], ["TP", "B", "JT", "J","DB","RJT","FG"],0,0,[(0, 1), (1, 2),
+                                                                                    (2, 3), (3, 4),(4,5),(5,6)])
+    
 
-    rule_vocab.create_rule("AddFinger_R", ["RF"], ["RE", "RT", "B", "JB", "L", "FG"], 0, 0,
-                           [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)])
-    rule_vocab.create_rule("RemoveFinger_R", ["RF"], [], 0, 0, [])
 
     rule_vocab.create_rule("Terminal_Radial_Translate1",
                            ["RT"], ["RT1"], 0, 0, [])
@@ -285,25 +269,9 @@ def create_rules(tendon=True, smc=False):
     rule_vocab.create_rule("Terminal_Link1", ["L"], ["L1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Link2", ["L"], ["L2"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Link3", ["L"], ["L3"], 0, 0, [])
-    rule_vocab.create_rule("Remove_FG", ["FG"], [], 0, 0, [])
+    #rule_vocab.create_rule("Remove_FG", ["FG"], [], 0, 0, [])
+    rule_vocab.create_rule("AddFoot", ["FG"], ["J", "FT"], 0, 0, [(0, 1), (1, 2)])
     # rule_vocab.create_rule("Remove_FG1", ["FG1"], [], 0, 0, [])
-
-    rule_vocab.create_rule("AddFinger_P", ["PF"], ["RT", "TP", "TURN_N", "B", "JB", "L", "FG"], 0,
-                           0, [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 6)])
-    rule_vocab.create_rule("RemoveFinger_P", ["PF"], [], 0, 0, [])
-
-    rule_vocab.create_rule("AddFinger_N", ["NF"], ["RT", "TN", "TURN_P", "B", "JB", "L", "FG"], 0,
-                           0, [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 6)])
-    rule_vocab.create_rule("RemoveFinger_N", ["NF"], [], 0, 0, [])
-
-    rule_vocab.create_rule("AddFinger_RP", ["RPF"],
-                           ["RE", "RT", "TP", "TURN_N", "B", "JB", "L", "FG"], 0, 0,
-                           [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 6), (6, 7)])
-    rule_vocab.create_rule("RemoveFinger_RP", ["RPF"], [], 0, 0, [])
-    rule_vocab.create_rule("AddFinger_RN", ["RNF"],
-                           ["RE", "RT", "TN", "TURN_P", "B", "JB", "L", "FG"], 0, 0,
-                           [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 6), (6, 7)])
-    rule_vocab.create_rule("RemoveFinger_RN", ["RNF"], [], 0, 0, [])
 
     rule_vocab.create_rule("Terminal_Positive_Translate1", [
                            "TP"], ["TP1"], 0, 0, [])
@@ -331,7 +299,18 @@ def create_rules(tendon=True, smc=False):
                            "TURN_N"], ["TURN_N_2"], 0, 0, [])
     return rule_vocab
 
+from rostok.graph_grammar.node import GraphGrammar
 
+def get_biped():
+    graph = GraphGrammar()
+    rules = [
+        "Init_Biped", "AddLeftLeg", "AddRightLeg", "Phalanx", "Phalanx", "AddFoot", "AddFoot", "Terminal_Link2", "Terminal_Link2"
+    ]
+    rule_vocabul = create_rules()
+    for rule in rules:
+        graph.apply_rule(rule_vocabul.get_rule(rule))
+
+    return graph
 # if __name__ == "__main__":
 #     rv, _ =create_rules()
 #     print(rv)
