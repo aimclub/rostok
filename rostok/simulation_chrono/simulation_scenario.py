@@ -136,6 +136,7 @@ from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
 from rostok.block_builder_api.easy_body_shapes import Box
 from rostok.utils.dataset_materials.material_dataclass_manipulating import (
     DefaultChronoMaterialNSC, DefaultChronoMaterialSMC)
+from rostok.block_builder_api.block_parameters import (DefaultFrame, FrameTransform)
 class WalkingScenario(ParametrizedSimulation):
     def __init__(self,
                  step_length,
@@ -170,7 +171,7 @@ class WalkingScenario(ParametrizedSimulation):
         if self.smc:
             system = ChronoSystems.chrono_SMC_system(gravity_list=[0, 0, 0])
         else:
-            system = ChronoSystems.chrono_NSC_system(gravity_list=[0, -10, 0])
+            system = ChronoSystems.chrono_NSC_system(gravity_list=[0, -1, 0])
         # setup the auxiliary
         env_creator = EnvCreator([])
         vis_manager = ChronoVisManager(delay)
@@ -180,7 +181,7 @@ class WalkingScenario(ParametrizedSimulation):
             def_mat = DefaultChronoMaterialSMC()
         else:
             def_mat = DefaultChronoMaterialNSC()
-        floor = creator.create_environment_body(EnvironmentBodyBlueprint(Box(3, 0.01, 3), material=def_mat, color=[255, 0, 0]))
+        floor = creator.create_environment_body(EnvironmentBodyBlueprint(Box(1, 0.1, 1), material=def_mat, color=[215, 255, 0]))
         floor.body.SetNameString("Floor")
         floor.body.SetPos(chrono.ChVectorD(0,0,0))
         #floor.body.SetBodyFixed(True)
@@ -192,10 +193,16 @@ class WalkingScenario(ParametrizedSimulation):
 
         # add design and determine the outer force
 
+        # simulation.add_design(graph,
+        #                         controller_data,
+        #                         self.controller_cls,
+        #                         Frame=FrameTransform([0, 0.25, 0], [3**0.5/2, 0, 0, 1/2]),
+        #                         starting_positions=starting_positions, is_fixed=False)
         simulation.add_design(graph,
                                 controller_data,
                                 self.controller_cls,
-                                starting_positions=starting_positions)
+                                Frame=FrameTransform([0, 0.25, 0], [0,0,0,1]),
+                                starting_positions=starting_positions, is_fixed=False)
          
         # setup parameters for the data store
 

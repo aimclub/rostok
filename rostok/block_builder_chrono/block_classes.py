@@ -264,9 +264,11 @@ class ChronoRevolveJoint(BlockBridge):
         self.joint.Initialize(out_block.body, in_block.body,
                               chrono.ChFrameD(joint_transform))
         system.AddLink(self.joint)
+        
         self._add_limiting_link(in_block, out_block, system)
-        if (self.stiffness != 0) or (self.damping != 0):
-            self._add_spring_damper(in_block, out_block, system)
+        
+        # if (self.stiffness != 0) or (self.damping != 0):
+        #     self._add_spring_damper(in_block, out_block, system)
 
         # if (self.with_collision):
         #     eps = 0.005
@@ -298,8 +300,8 @@ class ChronoRevolveJoint(BlockBridge):
         p = joint_limiting_link.GetLimit_Rz()
         #joint_limiting_link.
         p.SetActive(True)
-        p.SetMax(1)
-        p.SetMin(0)
+        p.SetMax(0.01)
+        p.SetMin(-0.01)
         system.AddLink(joint_limiting_link)
         system.Update()
         
@@ -337,7 +339,7 @@ class PrimitiveBody(BuildingBody):
                  color: Optional[list[int]] = None):
 
         # offset
-        eps = 0.001
+        eps = 0
         # Create body
         material = struct_material2object_material(material)
 
