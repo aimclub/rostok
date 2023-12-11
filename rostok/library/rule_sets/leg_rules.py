@@ -40,7 +40,7 @@ def create_rules(tendon=False, smc=False):
         Box(0.055*2, 0.055*2, 0.055*2), material=def_mat, color=[178, 82, 164])
     
     body_q = PrimitiveBodyBlueprint(
-        Box(0.3, 0.02, 0.2), material=def_mat, color=[178, 82, 164])
+        Box(0.3, 0.06, 0.2), material=def_mat, color=[178, 82, 164])
     # blueprint for the base
     base = PrimitiveBodyBlueprint(Box(0.02, 0.01, 0.02),
                                   material=def_mat,
