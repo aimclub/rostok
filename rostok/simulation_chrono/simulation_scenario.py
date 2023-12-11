@@ -183,7 +183,8 @@ class WalkingScenario(ParametrizedSimulation):
             def_mat = DefaultChronoMaterialNSC()
         floor = creator.create_environment_body(EnvironmentBodyBlueprint(Box(1, 0.1, 1), material=def_mat, color=[215, 255, 0]))
         floor.body.SetNameString("Floor")
-        floor.body.SetPos(chrono.ChVectorD(0,0,0))
+        floor.body.SetPos(chrono.ChVectorD(0,-0.05,0))
+        floor.body.GetVisualShape(0).SetTexture("D:\\Program\\miniconda\\envs\\rostok\\Library\\data\\textures\\bluewhite.png", 10, 10)
         #floor.body.SetBodyFixed(True)
 
 

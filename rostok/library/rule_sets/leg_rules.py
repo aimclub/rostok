@@ -37,10 +37,10 @@ def create_rules(tendon=False, smc=False):
         def_mat = DefaultChronoMaterialNSC()
     # blueprint for the palm
     body = PrimitiveBodyBlueprint(
-        Box(0.05, 0.02, 0.2), material=def_mat, color=[100, 100, 0])
+        Box(0.055*2, 0.055*2, 0.055*2), material=def_mat, color=[178, 82, 164])
     
     body_q = PrimitiveBodyBlueprint(
-        Box(0.3, 0.02, 0.2), material=def_mat, color=[100, 100, 0])
+        Box(0.3, 0.02, 0.2), material=def_mat, color=[178, 82, 164])
     # blueprint for the base
     base = PrimitiveBodyBlueprint(Box(0.02, 0.01, 0.02),
                                   material=def_mat,
@@ -48,13 +48,13 @@ def create_rules(tendon=False, smc=False):
                                   density=10000)
     
 
-    foot = PrimitiveBodyBlueprint(Box(0.05, 0.02, 0.03),
+    foot = PrimitiveBodyBlueprint(Box(0.07, 0.02, 0.05),
                                   material=def_mat,
-                                  color=[255, 0, 0],
+                                  color=[140, 150, 140],
                                   density=100)
     # sets effective density for the links, the real links are considered to be extendable.
     link_mass = (28 + 1.62 + 2.77) * 1e-3
-    length_link = [0.05, 0.06, 0.075]
+    length_link = [0.07, 0.085, 0.1]
     # create link blueprints using mass and length parameters
     link = list(
         map(
