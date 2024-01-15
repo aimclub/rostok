@@ -8,4 +8,4 @@ graph = get_quadruped()
 plot_graph(graph)
 control = controll_parameters = {"initial_value": [0]*26}
 
-scenario.run_simulation(graph, control, starting_positions=[[0,0,-5,5], [0,0,-5,5], [0, 30, -60, -30, 60], [0, 30, -60, -30, 60]], vis = True, delay=True)
+scenario.run_simulation(graph, control, starting_positions=[[0,0,-7,7], [0,0,-5,5], [0, 30, -60, -30, 60], [0, 30, -60, -30, 60]], vis = True, delay=True)
