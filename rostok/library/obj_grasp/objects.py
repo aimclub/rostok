@@ -70,7 +70,7 @@ def get_object_box_rotation(x,y,z, yaw=0, pitch=0, roll=0):
     return obj
 
 
-def get_object_cylinder(radius, length, alpha):
+def get_object_cylinder(radius, length, alpha, mass):
     material = DefaultChronoMaterialNSC()
     material.Friction = 0.2
     material.DampingF = 0.65
@@ -78,11 +78,12 @@ def get_object_cylinder(radius, length, alpha):
     obj = EnvironmentBodyBlueprint(shape=shape,
                                    material=material,
                                    pos=FrameTransform([0, 0, 0], rotation_x(alpha)), color=[215, 255, 0])
-
+    volume = calc_volume_body(obj)
+    obj.density  = mass / volume
     return obj
 
 
-def get_object_cylinder_rotation(radius, length, yaw=0, pitch=0, roll=0):
+def get_object_cylinder_rotation(radius, length, yaw=0, pitch=0, roll=0, mass = 0.1):
     quat = Rotation.from_euler('xyz', [yaw, pitch, roll], degrees=True).as_quat()
     shape_box = easy_body_shapes.Cylinder()
     shape_box.height_y = length
@@ -93,7 +94,8 @@ def get_object_cylinder_rotation(radius, length, yaw=0, pitch=0, roll=0):
     obj = EnvironmentBodyBlueprint(shape=shape_box,
                                    material=mat,
                                    pos=FrameTransform([0, 0, 0], quat), color=[215, 255, 0])
-
+    volume = calc_volume_body(obj)
+    obj.density  = mass / volume
     return obj
 
 

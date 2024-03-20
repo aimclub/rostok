@@ -5,15 +5,17 @@ from rostok.library.rule_sets.simple_designs import (
     get_three_link_one_finger,
     get_three_link_one_finger_independent,
     get_two_link_three_finger,
+    get_two_link_two_finger
 )
 if __name__ == "__main__":
     # create blueprint for object to grasp
     grasp_object_blueprint = get_object_sphere(0.05, mass=0.2)
 
-    control_optimizer = tendon_graph_evaluators.evaluator_tendon_standart_parallel
-
-    graph = get_three_link_one_finger_independent()
+    control_optimizer = tendon_graph_evaluators.evaluator_tendon_fast_debug
+    
+    # graph = get_three_link_one_finger_independent()
     graph = graph = get_two_link_three_finger()
+    # graph = graph = get_two_link_two_finger()
 
     rewsss = control_optimizer.calculate_reward(graph)
  
