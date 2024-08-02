@@ -1,4 +1,4 @@
-name: rostok_test_2
+name: rostok
 channels:
   - conda-forge
 dependencies:
