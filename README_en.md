@@ -8,7 +8,19 @@
 [![Documentation Status](https://readthedocs.org/projects/rostok/badge/?version=latest)](https://rostok.readthedocs.io/en/latest/?badge=latest)
 [![license](https://img.shields.io/github/license/aimclub/rostok)](https://github.com/aimclub/rostok/blob/master/LICENSE)
 [![Eng](https://img.shields.io/badge/lang-ru-yellow.svg)](/README.md)
-[![Mirror](https://camo.githubusercontent.com/9bd7b8c5b418f1364e72110a83629772729b29e8f3393b6c86bff237a6b784f6/68747470733a2f2f62616467656e2e6e65742f62616467652f6769746c61622f6d6972726f722f6f72616e67653f69636f6e3d6769746c6162)](https://gitlab.actcognitive.org/itmo-sai-code/rostok/)
+[![Mirror](https://img.shields.io/badge/mirror-GitLab-orange)](https://gitlab.actcognitive.org/itmo-sai-code/rostok/)
+# Run article tendon gripper generate
+* install env (see Installation in development mode)
+* activate rostok env by enter `conda activate rostok`
+* run pipline `python app\app_new_mcts_parallel.py` 
+
+# Structure tendon gripper pipiline 
+* `rostok\library\rule_sets\ruleset_simple_fingers.py` -- contains a set of rules
+* `rostok\library\obj_grasp\objects.py` -- contains a set of objects
+* `app\hyperparameters.py` -- contains a set of hyperparameters
+
+# How to change grasp objects
+Modify object `grasp_object_blueprint` in `python app\app_new_mcts_parallel.py`. Use predefined function from `rostok\library\obj_grasp\objects.py`.
 
 # Rostok
 
@@ -22,19 +34,6 @@ Currently the framework allows to perform co-design of open chain linkage mechan
     <img src="/docs/images/brick_anim.gif" width="700">
 </p>
 
-## Project desription
-
-There are four main blocks:  
-
-* Graph Grammar -- is needed for creation, modification, and extraction of the data from the graphs that contain the entire information of generated mechanisms
-* Virtual Experiment -- is the simulation needed for quantitative analysis of the behavior  and performance of generated mechanisms specified by grammar graphs
-* Trajectory Optimization -- finds suboptimal joint trajectories needed to efficiently perform the desired motion
-* Search Algorithm -- looks for optimal graph to represent mechanism topology
-
-![project_general](/docs/images/general_scheme.jpg)
-![project_algorithm](/docs/images/Algorithm_shceme.jpg)
-
-More detailed description of the [algorithms and methods](https://rostok.readthedocs.io/en/latest/advanced_usage/algorithm.html).
 
 ## Prerequisites
 
@@ -49,20 +48,10 @@ To modify the modules of the Rostok framework a user should install it in develo
 * Activate the environment `rostok`  
 * Install the package in development mode `pip3 install -e .`  
 
-### Known issues
-
-At some PC's one can see a problem with the tcl module `version conflict for package "Tcl": have 8.6.12, need exactly 8.6.10`, try to install tk 8.6.10 using `conda install tk=8.6.10`
-
-After the installation of the package one can get an error `Original error was: DLL load failed while importing _multiarray_umath: The specified module could not be found`, try to reinstall numpy in the rostok environment
-
 ## Documentation
 
 The description of the project and tutorials are available [at project website](https://rostok.readthedocs.io/en/latest/?badge=latest).
 
-## Examples
-
-An example of configuration and usage of the generative pipeline is in `rostok\app` directory.  
-Examples of usage of independent modules is in `rostok\examples` directory.
 
 ## Acknowledgments
 
