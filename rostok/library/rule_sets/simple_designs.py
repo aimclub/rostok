@@ -52,17 +52,15 @@ def get_three_link_one_finger_independent(smc = False):
 def get_two_link_three_finger():
     graph = GraphGrammar()
     rules = ["Init",
-        "AddFinger", "Terminal_Radial_Translate1", "Phalanx", "Phalanx", "Remove_FG",
-        
-        "AddFinger_P", "Terminal_Radial_Translate1", "Phalanx", "Phalanx", "Remove_FG", 
-    
-        "AddFinger_N", "Terminal_Radial_Translate1", "Phalanx", "Phalanx", "Remove_FG", 
-        
+        "AddFinger_R", "Phalanx", "Remove_FG", 
+        "Terminal_Radial_Translate1","Terminal_Base_Joint_1", 'Terminal_Link2', 'Terminal_Link2',
+        "AddFinger_P", "Terminal_Radial_Translate1", "Phalanx", "Remove_FG",
+        "Terminal_Negative_Turn_0",'Terminal_Positive_Translate1', 'Terminal_Link2', 'Terminal_Link2',
+        "AddFinger_N", "Terminal_Radial_Translate1", "Phalanx", "Remove_FG", 
+        "Terminal_Positive_Turn_0",'Terminal_Negative_Translate1', 'Terminal_Link2', 'Terminal_Link2',
         "RemoveFinger_RP",
         "RemoveFinger_RN",
-        "RemoveFinger_R",
-
-
+        "RemoveFinger",
     ]
     rule_vocabul = create_rules()
     for rule in rules:
@@ -70,6 +68,23 @@ def get_two_link_three_finger():
     rule_vocabul.make_graph_terminal(graph)
     return graph
 
+def get_two_link_two_finger():
+    graph = GraphGrammar()
+    rules = ["Init",
+        "AddFinger_R", "Phalanx", "Remove_FG", 
+        "Terminal_Radial_Translate1","Terminal_Base_Joint_1", 'Terminal_Link1', 'Terminal_Link1',
+        "AddFinger", "Terminal_Radial_Translate1", "Phalanx", "Remove_FG",
+        "Terminal_Base_Joint_1", 'Terminal_Link1', 'Terminal_Link1',
+        "RemoveFinger_RP",
+        "RemoveFinger_P",
+        "RemoveFinger_RN",
+        "RemoveFinger_N",
+    ]
+    rule_vocabul = create_rules()
+    for rule in rules:
+        graph.apply_rule(rule_vocabul.get_rule(rule))
+    rule_vocabul.make_graph_terminal(graph)
+    return graph
 
 def get_one_link_three_finger():
     graph = GraphGrammar()

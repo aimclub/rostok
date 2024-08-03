@@ -5,6 +5,7 @@ from rostok.library.rule_sets.simple_designs import (
     get_three_link_one_finger,
     get_three_link_one_finger_independent,
     get_two_link_three_finger,
+    get_two_link_two_finger
 )
 if __name__ == "__main__":
     # create blueprint for object to grasp
