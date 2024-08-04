@@ -130,7 +130,7 @@ class GraspScenario(ParametrizedSimulation):
     
     def get_scenario_name(self):
         return str(self.grasp_object_callback)
-    
+
 
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
 from rostok.block_builder_api.easy_body_shapes import Box

@@ -352,17 +352,17 @@ class GraphGrammar(nx.DiGraph):
         return False
 
     def get_sorted_root_based_paths(self):
-        """Sort root based paths by lengh and same lengths lexicographically."""
+        """Sort root based paths by length and same lengths lexicographically."""
         root_based_paths = self.get_root_based_paths()
 
         def primary_key(path):
             return len(path)
 
-        def secondaty_key(path):
+        def secondary_key(path):
             string_path = [self.get_node_by_id(x).label for x in path]
             return "".join(string_path)
 
-        root_based_paths.sort(key=secondaty_key)
+        root_based_paths.sort(key=secondary_key)
         root_based_paths.sort(key=primary_key)
         return root_based_paths
 
