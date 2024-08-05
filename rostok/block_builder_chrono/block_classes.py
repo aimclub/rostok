@@ -300,8 +300,8 @@ class ChronoRevolveJoint(BlockBridge):
         p = joint_limiting_link.GetLimit_Rz()
         #joint_limiting_link.
         p.SetActive(True)
-        p.SetMax(0.01)
-        p.SetMin(-0.01)
+        p.SetMax(1)
+        p.SetMin(-1)
         system.AddLink(joint_limiting_link)
         system.Update()
         
