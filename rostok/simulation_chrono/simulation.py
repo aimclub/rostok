@@ -87,7 +87,7 @@ class ChronoVisManager():
 class EnvCreator():
     """Setup environment for robot simulation.
 
-        Add external all objects to the simulation."""
+        Add all external objects to the simulation."""
 
     def __init__(self, object_list: List[Tuple[ChronoEasyShapeObject, bool]] = []):
         self.objects: List[ChronoEasyShapeObject] = []
@@ -118,7 +118,6 @@ class EnvCreator():
 
         self.objects.append(obj)
         if force_torque_controller:
-
             force_torque_controller.bind_body(obj.body)
             self.force_torque_container.add(force_torque_controller)
         if read_data:
@@ -276,7 +275,7 @@ class SingleRobotSimulation():
         visualize=False,
     ):
         """Execute a simulation.
-        
+
             Args:
                 number_of_steps(int): total number of steps in the simulation
                 step_length (float): the time length of a step
