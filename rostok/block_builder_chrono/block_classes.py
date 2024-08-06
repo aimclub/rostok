@@ -181,6 +181,7 @@ class ChronoRevolveJoint(BlockBridge):
                  damping: float = 0.,
                  equilibrium_position: float = 0.,
                  stopper: Optional[list[float]] = None,
+                 offset=[0.0, 0.0],
                  name='unnamed'
                  ):
         super().__init__()
@@ -192,6 +193,7 @@ class ChronoRevolveJoint(BlockBridge):
         self.equilibrium_position = equilibrium_position
         self.stopper = stopper
         self.name = name
+        self.offset = offset
 
     def set_prev_body_frame(self, prev_block: BuildingBody, system: chrono.ChSystem):
         """Turns previous body frame using the starting angle. The rotation of the slave body occurs around the z-axis.
@@ -200,7 +202,7 @@ class ChronoRevolveJoint(BlockBridge):
             prev_block (BuildingBody): the body block that is a master in the joint
             system (chrono.ChSystem): chrono system to be updated
         """
-        additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0),
+        additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(0,0, 0),
                                                   rotation_z_q(self.starting_angle))
         transform = prev_block.transformed_frame_out.GetCoord()
         prev_block.transformed_frame_out.SetCoord(
@@ -223,6 +225,9 @@ class ChronoRevolveJoint(BlockBridge):
         self.joint.SetNameString(self.name)
         # The position of the joint frame in the global coordinate system, the rotation is around z axis of that frame
         joint_transform = in_block.transformed_frame_out.GetAbsCoord()
+        # add offset
+        joint_transform = joint_transform * chrono.ChCoordsysD(chrono.ChVectorD(self.offset[0], self.offset[1], 0),
+                                                              chrono.ChQuaternionD(1, 0, 0, 0))
         # the signature is Slave Body, Master Body, Joint Frame
         self.joint.Initialize(out_block.body, in_block.body,
                               chrono.ChFrameD(joint_transform))

@@ -217,7 +217,7 @@ def get_two_link_one_finger():
             "RemoveFinger_P", 
             "RemoveFinger_RP"
     ]
-    rule_vocabul, _ = create_rules()
+    rule_vocabul = create_rules()
     for rule in rules:
         graph.apply_rule(rule_vocabul.get_rule(rule))
 
@@ -235,7 +235,7 @@ def get_one_link_one_finger():
             "RemoveFinger_P",
             "RemoveFinger_RP"
     ]
-    rule_vocabul, _ = create_rules()
+    rule_vocabul = create_rules()
     for rule in rules:
         graph.apply_rule(rule_vocabul.get_rule(rule))
 

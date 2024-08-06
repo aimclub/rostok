@@ -65,8 +65,8 @@ def place_and_connect(sequence: list[BLOCK_CLASS_TYPES], system: chrono.ChSystem
                     collision_model.SetFamilyMaskNoCollisionWithFamily(finger_number)
                     if sequence[it - 1].block_type is BlockType.TRANSFORM_INPUT:
                         # aggregate all transforms that should be applied to the input frame of the body
-                        # each body has its own initial position for input frame, and this transformation is additional to it, 
-                        # transformation is performed in the coordinate system of the body 
+                        # each body has its own initial position for input frame, and this transformation is additional to it,
+                        # transformation is performed in the coordinate system of the body
                         i = 1
                         transform = True
                         while transform:
