@@ -8,7 +8,7 @@ def get_palm():
         "Init", "RemoveFinger", "RemoveFinger_N", "RemoveFinger_R", "RemoveFinger_RN",
         "RemoveFinger_P", "RemoveFinger_RP"
     ]
-    rule_vocabul, _ = create_rules()
+    rule_vocabul= create_rules()
     for rule in rules:
         graph.apply_rule(rule_vocabul.get_rule(rule))
 
@@ -99,7 +99,7 @@ def get_one_link_three_finger():
             "AddFinger_RPT", "Terminal_Radial_Translate1", "Phalanx", "Remove_FG",
             "Terminal_Joint5", "Terminal_Link3"
     ]
-    rule_vocabul, _ = create_rules()
+    rule_vocabul = create_rules()
     for rule in rules:
         graph.apply_rule(rule_vocabul.get_rule(rule))
 

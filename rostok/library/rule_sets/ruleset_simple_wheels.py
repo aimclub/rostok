@@ -97,8 +97,7 @@ def create_rules(smc=False):
     #                                            density=density_joint,
     #                                            equilibrium_position=y), stiffness__values_base,
     #         preload_angle_values_base))
-    revolve = RevolveJointBlueprint(JointInputType.TORQUE, material=def_mat, radius=joint_radius_base,
-                                    length=joint_length, density=density_joint, stiffness=0.0, damping=0)
+    revolve = RevolveJointBlueprint(JointInputType.TORQUE,  stiffness=0, damping=0)
     # Nodes
     node_vocab = NodeVocabulary()
     node_vocab.add_node(ROOT)
