@@ -184,8 +184,8 @@ class WalkingScenario(ParametrizedSimulation):
         floor = creator.create_environment_body(EnvironmentBodyBlueprint(Box(1, 0.1, 1), material=def_mat, color=[215, 255, 0]))
         floor.body.SetNameString("Floor")
         floor.body.SetPos(chrono.ChVectorD(0,-0.05,0))
-        floor.body.GetVisualShape(0).SetTexture("/home/yefim-work/Packages/miniconda3/envs/rostok/share/chrono/data/textures/bluewhite.png", 10, 10)
-        #floor.body.SetBodyFixed(True)
+        #floor.body.GetVisualShape(0).SetTexture("/home/yefim-work/Packages/miniconda3/envs/rostok/share/chrono/data/textures/bluewhite.png", 10, 10)
+        floor.body.SetBodyFixed(True)
 
 
         simulation.env_creator.add_object(floor,
@@ -202,7 +202,7 @@ class WalkingScenario(ParametrizedSimulation):
         simulation.add_design(graph,
                                 controller_data,
                                 self.controller_cls,
-                                Frame=FrameTransform([0, 0.25, 0], [0,0,0,1]),
+                                Frame=FrameTransform([0, 0.2, 0], [0,0,0,1]),
                                 starting_positions=starting_positions, is_fixed=False)
          
         # setup parameters for the data store
@@ -218,4 +218,4 @@ class WalkingScenario(ParametrizedSimulation):
         return simulation.simulate(n_steps, self.step_length, 10000, event_list, vis)
     
     def get_scenario_name(self):
-        return str(self.grasp_object_callback)
+        return "Moving robot"

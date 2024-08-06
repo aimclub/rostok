@@ -265,7 +265,7 @@ class ChronoRevolveJoint(BlockBridge):
                               chrono.ChFrameD(joint_transform))
         system.AddLink(self.joint)
         
-        self._add_limiting_link(in_block, out_block, system)
+        #self._add_limiting_link(in_block, out_block, system)
         
         # if (self.stiffness != 0) or (self.damping != 0):
         #     self._add_spring_damper(in_block, out_block, system)
@@ -349,10 +349,12 @@ class PrimitiveBody(BuildingBody):
             pos_in_marker = chrono.ChVectorD(0, -shape.length_y * 0.5 - eps, 0)
             pos_out_marker = chrono.ChVectorD(0, shape.length_y * 0.5 + eps, 0)
         elif isinstance(shape, easy_body_shapes.Cylinder):
-            body = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, shape.radius, shape.height_y, density, True, True,
+            body = chrono.ChBodyEasyCylinder(chrono.ChAxis_Z, shape.radius, shape.height_y, density, True, True,
                                              material)
-            pos_in_marker = chrono.ChVectorD(0, -shape.height_y * 0.5 - eps, 0)
-            pos_out_marker = chrono.ChVectorD(0, shape.height_y * 0.5 + eps, 0)
+            #pos_in_marker = chrono.ChVectorD(0, -shape.height_y * 0.5 - eps, 0)
+            #pos_out_marker = chrono.ChVectorD(0, shape.height_y * 0.5 + eps, 0)
+            pos_in_marker = chrono.ChVectorD(0, 0, -shape.height_y * 0.5 - eps)
+            pos_out_marker = chrono.ChVectorD(0, 0, shape.height_y * 0.5 + eps)
         elif isinstance(shape, easy_body_shapes.Sphere):
             body = chrono.ChBodyEasySphere(
                 shape.radius, density, True, True, material)
