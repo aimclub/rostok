@@ -169,25 +169,29 @@ class WalkingScenario(ParametrizedSimulation):
         # build simulation from the subclasses
 
         if self.smc:
-            system = ChronoSystems.chrono_SMC_system(gravity_list=[0, 0, 0])
+            system = ChronoSystems.chrono_SMC_system(solver_iterations = 500, gravity_list=[0, -9, 0])
         else:
-            system = ChronoSystems.chrono_NSC_system(gravity_list=[0, -1, 0])
+            system = ChronoSystems.chrono_NSC_system(gravity_list=[0, -9, 0])
         # setup the auxiliary
         env_creator = EnvCreator([])
-        vis_manager = ChronoVisManager(delay)
+        vis_manager = ChronoVisManager(delay, is_follow_camera=False)
         simulation = SingleRobotSimulation(system, env_creator, vis_manager)
 
         if self.smc:
             def_mat = DefaultChronoMaterialSMC()
         else:
             def_mat = DefaultChronoMaterialNSC()
-        floor = creator.create_environment_body(EnvironmentBodyBlueprint(Box(1, 0.1, 1), material=def_mat, color=[215, 255, 0]))
+        floor = creator.create_environment_body(EnvironmentBodyBlueprint(Box(2, 0.1, 2), material=def_mat, color=[215, 255, 0]))
+        chrono_material = chrono.ChMaterialSurfaceNSC()
+        chrono_material = chrono.ChMaterialSurfaceSMC()
+        mesh = chrono.ChBodyEasyMesh("Body5.obj", 8000, True, True, True, chrono_material, 0.002)
+        #floor.body = mesh
         floor.body.SetNameString("Floor")
-        floor.body.SetPos(chrono.ChVectorD(0,-0.05,0))
-        #floor.body.GetVisualShape(0).SetTexture("/home/yefim-work/Packages/miniconda3/envs/rostok/share/chrono/data/textures/bluewhite.png", 10, 10)
+        floor.body.SetPos(chrono.ChVectorD(0.5,-0.07,0))
+        
         floor.body.SetBodyFixed(True)
 
-
+        
         simulation.env_creator.add_object(floor,
                                           read_data=True,
                                           is_fixed=True)

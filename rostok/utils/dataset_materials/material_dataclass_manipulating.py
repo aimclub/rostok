@@ -27,6 +27,7 @@ class DefaultChronoMaterialNSC(Material):
     def __hash__(self) -> int:
         return hash(("DefaultChronoMaterialNSC", self.Friction, self.Restitution, self.Compliance, self.ComplianceT, self.DampingF))
 
+@dataclass
 class DefaultChronoMaterialSMC(Material):
     name: str = "default_SMC"
     type_class: str = "ChMaterialSurfaceSMC"

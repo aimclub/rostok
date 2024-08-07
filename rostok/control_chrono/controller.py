@@ -3,7 +3,7 @@ from math import sin
 from typing import Dict, List
 
 import pychrono.core as chrono
-
+import keyboard
 from rostok.block_builder_chrono.block_classes import (ChronoRevolveJoint,
                                                        JointInputTypeChrono)
 from rostok.virtual_experiment.built_graph_chrono import BuiltGraphChrono
@@ -61,6 +61,27 @@ class ConstController(RobotControllerChrono):
 
     def update_functions(self, time, robot_data, environment_data):
         pass
+
+class SimpleKeyBoardController(RobotControllerChrono):
+    def __init__(self, built_graph: BuiltGraphChrono, parameters):
+        super().__init__(built_graph, parameters)
+
+    def update_functions(self, time, robot_data, environment_data):
+
+        if keyboard.is_pressed('w'):
+            for i, func in enumerate(self.functions):
+                func.Set_yconst(1.5)
+                print("W")
+        elif keyboard.is_pressed('s'):
+            for i, func in enumerate(self.functions):
+                func.Set_yconst(-1.5)
+                print("S")
+        else:
+            for i, func in enumerate(self.functions):
+                func.Set_yconst(0)
+                print("N")
+
+
 
 
 class SinControllerChrono(RobotControllerChrono):
