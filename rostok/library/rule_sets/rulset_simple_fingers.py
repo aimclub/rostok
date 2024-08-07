@@ -110,10 +110,6 @@ def create_rules(tendon=True, smc=False):
                                                stiffness=x,
                                                damping=0.01,
                                                offset=0.008,
-                                               material=def_mat,
-                                               radius=joint_radius,
-                                               length=joint_length,
-                                               density=density_joint,
                                                equilibrium_position=y), stiffness_values,
             preload_angle_values))
 

@@ -41,10 +41,28 @@ def create_rules(smc=False):
     # blueprint for the palm
     main_body = PrimitiveBodyBlueprint(
         Box(0.5, 0.1, 0.3), material=def_mat, color=[255, 0, 0])
-    
+
     wheel_body = PrimitiveBodyBlueprint(
         Cylinder(0.05, 0.03), material=def_mat, color=[0, 120, 255])
-    
+
+    # blueprint for the base
+    base = PrimitiveBodyBlueprint(Box(0.03, 0.01, 0.03),
+                                  material=def_mat,
+                                  color=[120, 120, 0],
+                                  density=1000)
+    # sets effective density for the links, the real links are considered to be extendable.
+    link_mass = (28 + 1.62 + 2.77) * 1e-3
+    length_link = [0.05, 0.06, 0.075]
+    # create link blueprints using mass and length parameters
+    link = list(
+        map(
+            lambda x: PrimitiveBodyBlueprint(Box(0.035, x, 0.027),
+                                             material=def_mat,
+                                             color=[0, 120, 255],
+                                             density=get_density_box(link_mass, Box(
+                                                 0.035, x, 0.027))), length_link))
+
+
     x_translation_values = [0.07, 0.107, 0.144]
     X_TRANSLATIONS_POSITIVE = list(
         map(lambda x: FrameTransform([x, 0, 0], [1, 0, 0, 0]), x_translation_values))
@@ -83,20 +101,16 @@ def create_rules(smc=False):
     joint_radius = 0.015
     joint_length = 0.025
     density_joint = (mass_joint / (0.03 * 3.14 * joint_radius**2))
-    # stiffness__values_base = [0.19, 0.095, 0.07]
-    # preload_angle_values_base = [0, 0, 0]
-    # no_control_base = list(
-    #     map(
-    #         lambda x, y: RevolveJointBlueprint(JointInputType.UNCONTROL,
-    #                                            stiffness=x,
-    #                                            damping=0.01,
-    #                                            offset=0,
-    #                                            material=def_mat,
-    #                                            radius=joint_radius_base,
-    #                                            length=joint_length,
-    #                                            density=density_joint,
-    #                                            equilibrium_position=y), stiffness__values_base,
-    #         preload_angle_values_base))
+    stiffness__values_base = [0.19, 0.095, 0.07]
+    preload_angle_values_base = [0, 0, 0]
+    no_control_base = list(
+        map(
+            lambda x, y: RevolveJointBlueprint(JointInputType.UNCONTROL,
+                                               stiffness=x,
+                                               damping=0.01,
+                                               offset=0,
+                                               equilibrium_position=y), stiffness__values_base,
+            preload_angle_values_base))
     revolve = RevolveJointBlueprint(JointInputType.TORQUE,  stiffness=0, damping=0)
     # Nodes
     node_vocab = NodeVocabulary()
@@ -110,6 +124,7 @@ def create_rules(smc=False):
     node_vocab.create_node(label="NXT")
     node_vocab.create_node(label="NZT")
 
+    node_vocab.create_node(label="B", is_terminal=True, block_blueprint=base)
     node_vocab.create_node(label="TP", is_terminal=True,block_blueprint=positive_turn_transform[0])
     node_vocab.create_node(label="TN", is_terminal=True,block_blueprint=negative_turn_transform[0])
 
@@ -131,14 +146,14 @@ def create_rules(smc=False):
 
     rule_vocab = rule_vocabulary.RuleVocabulary(node_vocab)
     rule_vocab.create_rule("Init", ["ROOT"], ["MB"], 0, 0,[])
-    rule_vocab.create_rule("Add_FR_W", ["MB"], ["MB","XT","ZT","M","W"], 0, 0,[(0, 1), (1, 2),
+    rule_vocab.create_rule("Add_FR_W", ["MB"], ["MB","XT","ZT","B", "G"], 0, 0,[(0, 1), (1, 2),
                                                                                     (2, 3), (3, 4)])
-    rule_vocab.create_rule("Add_FL_W", ["MB"], ["MB","XT","NZT","M","W"], 0, 0,[(0, 1), (1, 2),
+    rule_vocab.create_rule("Add_FL_W", ["MB"], ["MB","XT","NZT","B"], 0, 0,[(0, 1), (1, 2),
                                                                                     (2, 3), (3, 4)])
     
-    rule_vocab.create_rule("Add_BR_W", ["MB"], ["MB","NXT","ZT","M","W"], 0, 0,[(0, 1), (1, 2),
+    rule_vocab.create_rule("Add_BR_W", ["MB"], ["MB","NXT","ZT",], 0, 0,[(0, 1), (1, 2),
                                                                                     (2, 3), (3, 4)])
-    rule_vocab.create_rule("Add_BL_W", ["MB"], ["MB","NXT","NZT","M","W"], 0, 0,[(0, 1), (1, 2),
+    rule_vocab.create_rule("Add_BL_W", ["MB"], ["MB","NXT","NZT",], 0, 0,[(0, 1), (1, 2),
                                                                                     (2, 3), (3, 4)])
     
 
