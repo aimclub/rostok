@@ -181,7 +181,7 @@ class WalkingScenario(ParametrizedSimulation):
             def_mat = DefaultChronoMaterialSMC()
         else:
             def_mat = DefaultChronoMaterialNSC()
-        floor = creator.create_environment_body(EnvironmentBodyBlueprint(Box(1, 0.1, 1), material=def_mat, color=[215, 255, 0]))
+        floor = creator.create_environment_body(EnvironmentBodyBlueprint(Box(10, 0.1, 10), material=def_mat, color=[215, 255, 0]))
         floor.body.SetNameString("Floor")
         floor.body.SetPos(chrono.ChVectorD(0,-0.05,0))
         #floor.body.GetVisualShape(0).SetTexture("/home/yefim-work/Packages/miniconda3/envs/rostok/share/chrono/data/textures/bluewhite.png", 10, 10)
@@ -202,7 +202,7 @@ class WalkingScenario(ParametrizedSimulation):
         simulation.add_design(graph,
                                 controller_data,
                                 self.controller_cls,
-                                Frame=FrameTransform([0, 0.2, 0], [0,0,0,1]),
+                                Frame=FrameTransform([0, 0.25, 0], [0,0,0,1]),
                                 starting_positions=starting_positions, is_fixed=False)
          
         # setup parameters for the data store

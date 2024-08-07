@@ -47,6 +47,7 @@ class RevolveJointBlueprint(JointBlueprintType):
     stiffness: float = 0.
     damping: float = 0.
     equilibrium_position:float = 0.
+    stopper: Optional[list[float]] = None
 
 
 class RevolveJointBlueprintWithBody(JointBlueprintType):
@@ -61,6 +62,7 @@ class RevolveJointBlueprintWithBody(JointBlueprintType):
     offset: float = 0.
     equilibrium_position:float = 0.
     with_collision: bool = True
+    stopper: Optional[list[float]] = None
 
 
 @dataclass

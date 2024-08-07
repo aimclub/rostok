@@ -27,7 +27,6 @@ def rotation_y(alpha):
     quat_Y_ang_alpha = chrono.Q_from_AngY(np.deg2rad(alpha))
     return [quat_Y_ang_alpha.e0, quat_Y_ang_alpha.e1, quat_Y_ang_alpha.e2, quat_Y_ang_alpha.e3]
 
-
 def rotation_z(alpha):
     quat_Z_ang_alpha = chrono.Q_from_AngZ(np.deg2rad(alpha))
     return [quat_Z_ang_alpha.e0, quat_Z_ang_alpha.e1, quat_Z_ang_alpha.e2, quat_Z_ang_alpha.e3]
@@ -40,13 +39,13 @@ def create_rules(smc=False):
         def_mat = DefaultChronoMaterialNSC()
     # blueprint for the palm
     main_body = PrimitiveBodyBlueprint(
-        Box(0.5, 0.1, 0.3), material=def_mat, color=[255, 0, 0])
+        Box(0.5, 0.1, 0.3), material=def_mat, color=[255, 0, 0], density=1000)
 
     wheel_body = PrimitiveBodyBlueprint(
-        Cylinder(0.05, 0.03), material=def_mat, color=[0, 120, 255])
+        Cylinder(0.03, 0.01), material=def_mat, color=[0, 120, 255], density=1000)
 
     # blueprint for the base
-    base = PrimitiveBodyBlueprint(Box(0.03, 0.01, 0.03),
+    base = PrimitiveBodyBlueprint(Box(0.02, 0.03, 0.02),
                                   material=def_mat,
                                   color=[120, 120, 0],
                                   density=1000)
@@ -56,11 +55,11 @@ def create_rules(smc=False):
     # create link blueprints using mass and length parameters
     link = list(
         map(
-            lambda x: PrimitiveBodyBlueprint(Box(0.035, x, 0.027),
+            lambda x: PrimitiveBodyBlueprint(Box(0.02, x, 0.02),
                                              material=def_mat,
                                              color=[0, 120, 255],
                                              density=get_density_box(link_mass, Box(
-                                                 0.035, x, 0.027))), length_link))
+                                                 0.02, x, 0.02))), length_link))
 
 
     x_translation_values = [0.07, 0.107, 0.144]
@@ -97,16 +96,16 @@ def create_rules(smc=False):
         map(lambda x: TransformBlueprint(x), TURNS_NEGATIVE))
 
 
-    stiffness__values_base = [0.19, 0.095, 0.07]
+    stiffness__values_base = [0.9, 0.095, 0.07]
     preload_angle_values_base = [0, 0, 0]
     no_control_base = list(
         map(
             lambda x, y: RevolveJointBlueprint(JointInputType.UNCONTROL,
                                                stiffness=x,
-                                               damping=0.01,
+                                               damping=0.02,
                                                equilibrium_position=y), stiffness__values_base,
             preload_angle_values_base))
-    revolve = RevolveJointBlueprint(JointInputType.TORQUE,  stiffness=0, damping=0)
+    revolve = RevolveJointBlueprint(JointInputType.TORQUE,  stiffness=0, damping=0.0)
     # Nodes
     node_vocab = NodeVocabulary()
     node_vocab.add_node(ROOT)
@@ -140,7 +139,7 @@ def create_rules(smc=False):
     node_vocab.create_node(label="NZT0", is_terminal=True,block_blueprint=z_translation_negative_transforms[0])
     node_vocab.create_node(label="NZT1", is_terminal=True,block_blueprint=z_translation_negative_transforms[1])
     node_vocab.create_node(label="NZT2", is_terminal=True,block_blueprint=z_translation_negative_transforms[2])
-    node_vocab.create_node(label="J", is_terminal=True, block_blueprint=revolve)
+    node_vocab.create_node(label="J", is_terminal=True, block_blueprint=no_control_base[0])
 
     for i, bp in enumerate(link):
         node_vocab.create_node(label=f"L{i}", is_terminal=True, block_blueprint=bp)
@@ -198,9 +197,9 @@ def get_four_wheels():
     graph = GraphGrammar()
     rules = ["Init",
             'Add_FR_W',"Extension","Extension","Wheel",'Terminal_Positive_XTranslate_2', "Terminal_Positive_ZTranslate_1","Terminal_Link2","Terminal_Link1",
-            "Add_FL_W", 'Terminal_Positive_XTranslate_2', "Terminal_Negative_ZTranslate_2","Wheel",
-            "Add_BR_W", 'Terminal_Negative_XTranslate_2', "Terminal_Positive_ZTranslate_1","Wheel",
-            "Add_BL_W", 'Terminal_Negative_XTranslate_2', "Terminal_Negative_ZTranslate_2","Wheel"
+            "Add_FL_W", "Extension","Extension",'Terminal_Positive_XTranslate_2', "Terminal_Negative_ZTranslate_1","Wheel", "Terminal_Link2","Terminal_Link1",
+            "Add_BR_W", "Extension","Extension",'Terminal_Negative_XTranslate_2', "Terminal_Positive_ZTranslate_1","Wheel", "Terminal_Link2","Terminal_Link1",
+            "Add_BL_W", "Extension","Extension",'Terminal_Negative_XTranslate_2', "Terminal_Negative_ZTranslate_1","Wheel", "Terminal_Link2","Terminal_Link1",
     ]
     rule_vocabul = create_rules()
     for rule in rules:
