@@ -96,11 +96,7 @@ def create_rules(smc=False):
     negative_turn_transform = list(
         map(lambda x: TransformBlueprint(x), TURNS_NEGATIVE))
 
-    mass_joint = (10 / 3 + 0.51 * 2 + 0.64 + 1.3) * 1e-3  # 0.012
-    joint_radius_base = 0.015
-    joint_radius = 0.015
-    joint_length = 0.025
-    density_joint = (mass_joint / (0.03 * 3.14 * joint_radius**2))
+
     stiffness__values_base = [0.19, 0.095, 0.07]
     preload_angle_values_base = [0, 0, 0]
     no_control_base = list(
@@ -108,7 +104,6 @@ def create_rules(smc=False):
             lambda x, y: RevolveJointBlueprint(JointInputType.UNCONTROL,
                                                stiffness=x,
                                                damping=0.01,
-                                               offset=0,
                                                equilibrium_position=y), stiffness__values_base,
             preload_angle_values_base))
     revolve = RevolveJointBlueprint(JointInputType.TORQUE,  stiffness=0, damping=0)
@@ -119,6 +114,8 @@ def create_rules(smc=False):
                            block_blueprint=main_body)
     node_vocab.create_node(label="W", is_terminal=True,block_blueprint=wheel_body)
     node_vocab.create_node(label="M", is_terminal=True, block_blueprint=revolve)
+    node_vocab.create_node(label="G")
+    node_vocab.create_node(label="L")
     node_vocab.create_node(label="XT")
     node_vocab.create_node(label="ZT")
     node_vocab.create_node(label="NXT")
@@ -143,20 +140,29 @@ def create_rules(smc=False):
     node_vocab.create_node(label="NZT0", is_terminal=True,block_blueprint=z_translation_negative_transforms[0])
     node_vocab.create_node(label="NZT1", is_terminal=True,block_blueprint=z_translation_negative_transforms[1])
     node_vocab.create_node(label="NZT2", is_terminal=True,block_blueprint=z_translation_negative_transforms[2])
+    node_vocab.create_node(label="J", is_terminal=True, block_blueprint=revolve)
 
+    for i, bp in enumerate(link):
+        node_vocab.create_node(label=f"L{i}", is_terminal=True, block_blueprint=bp)
+
+    print(node_vocab.terminal_node_dict)
     rule_vocab = rule_vocabulary.RuleVocabulary(node_vocab)
     rule_vocab.create_rule("Init", ["ROOT"], ["MB"], 0, 0,[])
     rule_vocab.create_rule("Add_FR_W", ["MB"], ["MB","XT","ZT","B", "G"], 0, 0,[(0, 1), (1, 2),
                                                                                     (2, 3), (3, 4)])
-    rule_vocab.create_rule("Add_FL_W", ["MB"], ["MB","XT","NZT","B"], 0, 0,[(0, 1), (1, 2),
+    rule_vocab.create_rule("Add_FL_W", ["MB"], ["MB","XT","NZT","B", "G"], 0, 0,[(0, 1), (1, 2),
                                                                                     (2, 3), (3, 4)])
     
-    rule_vocab.create_rule("Add_BR_W", ["MB"], ["MB","NXT","ZT",], 0, 0,[(0, 1), (1, 2),
+    rule_vocab.create_rule("Add_BR_W", ["MB"], ["MB","NXT","ZT","B", "G"], 0, 0,[(0, 1), (1, 2),
                                                                                     (2, 3), (3, 4)])
-    rule_vocab.create_rule("Add_BL_W", ["MB"], ["MB","NXT","NZT",], 0, 0,[(0, 1), (1, 2),
+    rule_vocab.create_rule("Add_BL_W", ["MB"], ["MB","NXT","NZT","B", "G"], 0, 0,[(0, 1), (1, 2),
                                                                                     (2, 3), (3, 4)])
-    
 
+    rule_vocab.create_rule("Extension",["G"],["J","L", "G"], 0,2,[(0, 1), (1, 2)])
+
+    rule_vocab.create_rule('Stop_Extension',["G"], [],0,0,[])
+
+    rule_vocab.create_rule("Wheel",["G"], ["M","W"],0,0,[(0,1)])
     rule_vocab.create_rule("Terminal_Positive_XTranslate_0", [
                            "XT"], ["XT0"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Positive_XTranslate_1", [
@@ -182,16 +188,19 @@ def create_rules(smc=False):
                            "NZT"], ["NZT1"], 0, 0, [])
     rule_vocab.create_rule("Terminal_Negative_ZTranslate_2", [
                            "NZT"], ["NZT2"], 0, 0, [])
-    
+
+    for i, bp in enumerate(link):
+        rule_vocab.create_rule(f"Terminal_Link{i}", [
+                           "L"], [f"L{i}"], 0, 0, [])
     return rule_vocab
 
 def get_four_wheels():
     graph = GraphGrammar()
     rules = ["Init",
-            'Add_FR_W','Terminal_Positive_XTranslate_2', "Terminal_Positive_ZTranslate_1",
-            "Add_FL_W", 'Terminal_Positive_XTranslate_2', "Terminal_Negative_ZTranslate_2",
-            "Add_BR_W", 'Terminal_Negative_XTranslate_2', "Terminal_Positive_ZTranslate_1",
-            "Add_BL_W", 'Terminal_Negative_XTranslate_2', "Terminal_Negative_ZTranslate_2"
+            'Add_FR_W',"Extension","Extension","Wheel",'Terminal_Positive_XTranslate_2', "Terminal_Positive_ZTranslate_1","Terminal_Link2","Terminal_Link1",
+            "Add_FL_W", 'Terminal_Positive_XTranslate_2', "Terminal_Negative_ZTranslate_2","Wheel",
+            "Add_BR_W", 'Terminal_Negative_XTranslate_2', "Terminal_Positive_ZTranslate_1","Wheel",
+            "Add_BL_W", 'Terminal_Negative_XTranslate_2', "Terminal_Negative_ZTranslate_2","Wheel"
     ]
     rule_vocabul = create_rules()
     for rule in rules:
