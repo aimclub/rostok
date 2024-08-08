@@ -482,3 +482,31 @@ class EventStopExternalForceBuilder(EventBuilder):
             raise Exception(
                 'Event requires another event prebuilt: EventStopExternalForce <- EventGrasp')
         return event_list.append(EventStopExternalForce(force_test_time=self.force_test_time, grasp_event=grasp_event))
+    
+
+class EventBodyTooLow(SimulationSingleEvent):
+    def __init__(self, ref_height: float):
+        super().__init__()
+        self.ref_height = ref_height
+    
+    def event_check(self, current_time: float, step_n: int, robot_data: Sensor, env_data: Sensor):
+        robot_position = robot_data.get_body_trajectory_point()
+        # it works only with current rule set, where the palm/flat always has the smallest index among the bodies
+        main_body_pos = list(robot_position.items())[0][1]
+
+        if main_body_pos[1]<self.ref_height:
+            return EventCommands.STOP
+
+        return EventCommands.CONTINUE
+    
+
+class EventBodyTooLowBuilder(EventBuilder):
+    def __init__(self, ref_height: float):
+        super().__init__(event_class=EventStopExternalForce)
+        self.ref_height = ref_height
+    def build_event(self, event_list) -> EventBodyTooLow:
+        event = self.find_event(event_list=event_list)
+        if event:
+            raise Exception(
+                'Attempt to create two same events for a simulation: EventBodyTooLow')
+        return event_list.append(EventBodyTooLow(ref_height=self.ref_height))

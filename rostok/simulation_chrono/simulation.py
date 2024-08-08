@@ -32,7 +32,7 @@ class ChronoSystems():
         return system
 
     @staticmethod
-    def chrono_NSC_system(solver_iterations=100, force_tolerance=1e-4, gravity_list=[0, 0, 0]):
+    def chrono_NSC_system(solver_iterations=1000, force_tolerance=1e-4, gravity_list=[0, 0, 0]):
         system = chrono.ChSystemNSC()
         system.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
         system.SetSolverMaxIterations(solver_iterations)
