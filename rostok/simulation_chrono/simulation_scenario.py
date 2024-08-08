@@ -163,7 +163,8 @@ class WalkingScenario(ParametrizedSimulation):
                        controller_data,
                        starting_positions=None,
                        vis=False,
-                       delay=False):
+                       delay=False,
+                       is_follow_camera = False):
         # events should be reset before every simulation
         event_list = self.build_events()
         # build simulation from the subclasses
@@ -171,21 +172,21 @@ class WalkingScenario(ParametrizedSimulation):
         if self.smc:
             system = ChronoSystems.chrono_SMC_system(solver_iterations = 500, gravity_list=[0, -9, 0])
         else:
-            system = ChronoSystems.chrono_NSC_system(gravity_list=[0, -9, 0])
+            system = ChronoSystems.chrono_NSC_system(solver_iterations = 500, gravity_list=[0, -9, 0])
         # setup the auxiliary
         env_creator = EnvCreator([])
-        vis_manager = ChronoVisManager(delay, is_follow_camera=False)
+        vis_manager = ChronoVisManager(delay, is_follow_camera=is_follow_camera)
         simulation = SingleRobotSimulation(system, env_creator, vis_manager)
 
         if self.smc:
             def_mat = DefaultChronoMaterialSMC()
         else:
             def_mat = DefaultChronoMaterialNSC()
-        floor = creator.create_environment_body(EnvironmentBodyBlueprint(Box(2, 0.1, 2), material=def_mat, color=[215, 255, 0]))
-        chrono_material = chrono.ChMaterialSurfaceNSC()
-        chrono_material = chrono.ChMaterialSurfaceSMC()
-        mesh = chrono.ChBodyEasyMesh("Body5.obj", 8000, True, True, True, chrono_material, 0.002)
-        #floor.body = mesh
+        floor = creator.create_environment_body(EnvironmentBodyBlueprint(Box(5, 0.05, 5), material=def_mat, color=[215, 255, 0]))
+        # chrono_material = chrono.ChMaterialSurfaceNSC()
+        # chrono_material = chrono.ChMaterialSurfaceSMC()
+        # mesh = chrono.ChBodyEasyMesh("Body5.obj", 8000, True, True, True, chrono_material, 0.002)
+        # floor.body = mesh
         floor.body.SetNameString("Floor")
         floor.body.SetPos(chrono.ChVectorD(0.5,-0.07,0))
         

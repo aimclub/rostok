@@ -55,7 +55,7 @@ def create_rules():
     main_body = []
     for i in range(10):
         main_body.append(PrimitiveBodyBlueprint(
-            Box(0.5, 0.1, 0.3), material=def_mat, color=[255, 0, 0], density=100+i*100))
+            Box(0.5, 0.1, 0.3), material=def_mat, color=[255, 0, 0], density=100+i*100, is_collide=False))
 
     wheel_body_cyl = PrimitiveBodyBlueprint(
         Cylinder(0.03, 0.02), material=def_mat, color=[0, 120, 255], density=500)
@@ -148,6 +148,12 @@ def create_rules():
                                                 stiffness=x,
                                                 damping=0.02,
                                                 equilibrium_position=0), stiffness))
+    
+    no_control_joint.append(RevolveJointBlueprint(JointInputType.UNCONTROL,
+                                                stiffness=10,
+                                                damping=0.02,
+                                                equilibrium_position=0))
+
     motor_bp = RevolveJointBlueprint(JointInputType.TORQUE,  stiffness=0, damping=0.001)
     neutral_bp = RevolveJointBlueprint(JointInputType.UNCONTROL,  stiffness=0, damping=0.001)
 
@@ -201,7 +207,7 @@ def create_rules():
 
 # %%
 def get_wheels():
-    i=5
+    i=9
     graph = GraphGrammar()
     rules = ["Init",
         "Add_Leg_Base","Positive_Translation_X4","Positive_Translation_Z3","Rotation",
@@ -214,8 +220,55 @@ def get_wheels():
 
         "Add_Leg_Base","Negative_Translation_X4","Negative_Translation_Z0", "Extension","Extension",
         "Terminal_Link3","Terminal_Link3",f'Terminal_Joint{i}',f'Terminal_Joint{i}', "Wheel", "Ell_Wheel",
-        'Terminal_Main_Body3'
+        'Terminal_Main_Body1'
 
+    ]
+
+    rule_vocabul = create_rules()
+    for rule in rules:
+        graph.apply_rule(rule_vocabul.get_rule(rule))
+
+    return graph
+
+def get_stiff_wheels():
+    i = 10
+    graph = GraphGrammar()
+    rules = ["Init",
+        "Add_Leg_Base","Positive_Translation_X4","Positive_Translation_Z3","Rotation",
+        'Rotation_Y', "Extension","Extension","Rotation","R_Wheel", "Cyl_Wheel",
+        "Terminal_Link3","Terminal_Link3",f'Terminal_Joint{i}',f'Terminal_Joint{i}', 'Rotation_Y',
+
+        "Add_Leg_Base","Positive_Translation_X4","Negative_Translation_Z3","Rotation",
+        'Rotation_Y', "Extension","Extension","Rotation","L_Wheel", "Cyl_Wheel",
+        "Terminal_Link3","Terminal_Link3",f'Terminal_Joint{i}',f'Terminal_Joint{i}', 'Rotation_Y',
+
+        "Add_Leg_Base","Negative_Translation_X4","Negative_Translation_Z0", "Extension","Extension",
+        "Terminal_Link3","Terminal_Link3",f'Terminal_Joint{i}',f'Terminal_Joint{i}', "Wheel", "Ell_Wheel",
+        'Terminal_Main_Body1'
+    ]
+
+    rule_vocabul = create_rules()
+    for rule in rules:
+        graph.apply_rule(rule_vocabul.get_rule(rule))
+
+    return graph
+
+def get_stiff_wheels_ell():
+    i = 10
+    graph = GraphGrammar()
+    rules = ["Init",
+        "Add_Leg_Base","Positive_Translation_X4","Positive_Translation_Z3","Rotation",
+        'Rotation_Y', "Extension","Extension","Rotation","R_Wheel", "Ell_Wheel",
+        "Terminal_Link3","Terminal_Link3",f'Terminal_Joint{i}',f'Terminal_Joint{i}', 'Rotation_Y',
+
+        "Add_Leg_Base","Positive_Translation_X4","Negative_Translation_Z3","Rotation",
+        'Rotation_Y', "Extension","Extension","Rotation","L_Wheel", "Ell_Wheel",
+        "Terminal_Link3","Terminal_Link3",f'Terminal_Joint{i}',f'Terminal_Joint{i}', 'Rotation_Y',
+        
+
+        "Add_Leg_Base","Negative_Translation_X4","Negative_Translation_Z0", "Extension","Extension",
+        "Terminal_Link3","Terminal_Link3",f'Terminal_Joint{i}',f'Terminal_Joint{i}', "Wheel", "Ell_Wheel",
+        'Terminal_Main_Body1'
     ]
 
     rule_vocabul = create_rules()
