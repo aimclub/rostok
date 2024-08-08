@@ -445,20 +445,24 @@ class PrimitiveBody(BuildingBody):
                                              material)
             # pos_in_marker = chrono.ChVectorD(0, -shape.height_y * 0.5 - eps, 0)
             # pos_out_marker = chrono.ChVectorD(0, shape.height_y * 0.5 + eps, 0)
-            pos_in_marker = chrono.ChVectorD(0, 0, -shape.height_y * 0.5 - eps)
-            pos_out_marker = chrono.ChVectorD(0, 0, shape.height_y * 0.5 + eps)
+            pos_in_marker = chrono.ChVectorD(0, 0, 0)
+            pos_out_marker = chrono.ChVectorD(0, 0, 0)
         elif isinstance(shape, easy_body_shapes.Sphere):
             body = chrono.ChBodyEasySphere(
                 shape.radius, density, True, True, material)
-            pos_in_marker = chrono.ChVectorD(0, -shape.radius * 0.5 - eps, 0)
-            pos_out_marker = chrono.ChVectorD(0, shape.radius * 0.5 + eps, 0)
+            # pos_in_marker = chrono.ChVectorD(0, -shape.radius * 0.5 - eps, 0)
+            # pos_out_marker = chrono.ChVectorD(0, shape.radius * 0.5 + eps, 0)
+            pos_in_marker = chrono.ChVectorD(0, 0, 0)
+            pos_out_marker = chrono.ChVectorD(0, 0, 0)
         elif isinstance(shape, easy_body_shapes.Ellipsoid):
             body = chrono.ChBodyEasyEllipsoid(
                 chrono.ChVectorD(shape.radius_x, shape.radius_y,
                                  shape.radius_z), density, True,
                 True, material)
-            pos_in_marker = chrono.ChVectorD(0, -shape.radius_y * 0.5 - eps, 0)
-            pos_out_marker = chrono.ChVectorD(0, shape.radius_y * 0.5 + eps, 0)
+            #pos_in_marker = chrono.ChVectorD(0, -shape.radius_y * 0.5 - eps, 0)
+            #pos_out_marker = chrono.ChVectorD(0, shape.radius_y * 0.5 + eps, 0)
+            pos_in_marker = chrono.ChVectorD(0, 0, 0)
+            pos_out_marker = chrono.ChVectorD(0, 0, 0)
         else:
             raise Exception("Unknown shape for ChronoBodyEnv object")
 
