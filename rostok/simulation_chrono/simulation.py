@@ -21,7 +21,7 @@ class ChronoSystems():
     @staticmethod
     def chrono_SMC_system(solver_iterations=100,
                           force_tolerance=1e-4,
-                          use_mat_properties=False,
+                          use_mat_properties=True,
                           gravity_list=[0, 0, 0]):
         system = chrono.ChSystemSMC()
         system.UseMaterialProperties(use_mat_properties)
@@ -54,18 +54,19 @@ class ChronoVisManager():
     def initialize_vis(self, chrono_system, observed_body: chrono.ChBody = None):
         self.vis.AttachSystem(chrono_system)
         self.vis.SetWindowSize(1024, 768)
-        self.vis.SetWindowTitle('Grab demo')
+        self.vis.SetWindowTitle('Lets Ride')
         self.vis.Initialize()
         self.vis.AddSkyBox()
         self.vis.AddCamera(chrono.ChVectorD(-0.15, 0.35, 0.40), chrono.ChVectorD(0.0, 0.1, 0))
-        self.vis.AddLight(chrono.ChVectorD(0.3, 0.0, -0.3), 0.28, chrono.ChColor(0.7, 0.7, 0.7))
-        self.vis.AddLight(chrono.ChVectorD(0.3, 0.0, 0.3), 0.28, chrono.ChColor(0.7, 0.7, 0.7))
-        self.vis.AddLight(chrono.ChVectorD(-0.3, 0.0, -0.3), 0.28, chrono.ChColor(0.7, 0.7, 0.7))
-        self.vis.AddLight(chrono.ChVectorD(-0.3, 0.0, 0.3), 0.28, chrono.ChColor(0.7, 0.7, 0.7))
+        self.vis.AddLight(chrono.ChVectorD(0.0, 0.5, -0.3), 0.28, chrono.ChColor(0.7, 0.7, 0.7))
+        self.vis.AddLight(chrono.ChVectorD(0.3, 0.0, 0.3), 0.5, chrono.ChColor(0.7, 0.7, 0.7))
+        self.vis.AddLight(chrono.ChVectorD(-0.3, 0.0, -0.3), 0.5, chrono.ChColor(0.7, 0.7, 0.7))
+        self.vis.AddLight(chrono.ChVectorD(-0.3, 0.0, 0.3), 0.5, chrono.ChColor(0.7, 0.7, 0.7))
         self.vis.AddLight(chrono.ChVectorD(0.3, 0.4, -0.3), 0.5, chrono.ChColor(0.7, 0.7, 0.7))
         self.vis.AddLight(chrono.ChVectorD(0.3, 0.4, 0.3), 0.5, chrono.ChColor(0.7, 0.7, 0.7))
         self.vis.AddLight(chrono.ChVectorD(-0.3, 0.4, -0.3), 0.5, chrono.ChColor(0.7, 0.7, 0.7))
         self.vis.AddLight(chrono.ChVectorD(-0.3, 0.4, 0.3), 0.5, chrono.ChColor(0.7, 0.7, 0.7))
+        self.vis.AddTypicalLights()
         if observed_body:
             self.bind_camera_to_body(observed_body)
         # self.vis.AddTypicalLights()
@@ -96,12 +97,12 @@ class ChronoVisManager():
     def calculate_camera_position(self):
         
         # Setting camera in coordinate frame of Body
-        camera_cord = chrono.ChCoordsysD(chrono.ChVectorD(0.5, 0.5, 0))
+        camera_cord = chrono.ChCoordsysD(chrono.ChVectorD(0.5, -0.5, 0))
         
         transform = self.watched_body.GetFrame_COG_to_abs()
         position = self.watched_body.GetPos()
         
-        camera_cord_global = camera_cord * transform.coord
+        camera_cord_global =  transform.coord * camera_cord
         
         self.watched_body.GetCoord()
         self.vis.SetCameraTarget(position)
@@ -307,7 +308,7 @@ class SingleRobotSimulation():
                 visualize (bool): determine if run the visualization """
         self.initialize(number_of_steps)
         # Select observed body for camera
-        observed_body  = self.chrono_system.Get_bodylist()[-1]
+        observed_body  = self.chrono_system.Get_bodylist()[0]
         if visualize:
             self.vis_manager.initialize_vis(self.chrono_system, observed_body)
 
