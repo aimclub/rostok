@@ -222,14 +222,9 @@ simulation.add_design(graph, control, ConstController, is_fixed=False)
  
 n_steps = 10000
 
- 
-
 
 robot_data_dict = {}
 simulation.add_robot_data_type_dict(robot_data_dict)
 simulation.simulate(n_steps, 1e-3, 10000, [], vis_manager)
 
 #scenario.run_simulation(graph, control, starting_positions=[[0,0,-7,7], [0,0,-5,5], [0, 30, -60, -30, 60], [0, 30, -60, -30, 60]], vis = True, delay=True)
-
-
-
