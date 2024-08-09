@@ -23,6 +23,7 @@ class DefaultChronoMaterialNSC(Material):
     Compliance: float = 1e-6
     ComplianceT: float = 1e-6
     DampingF:float = 1e6
+    RollingFriction: float = 1e-4
     
     def __hash__(self) -> int:
         return hash(("DefaultChronoMaterialNSC", self.Friction, self.Restitution, self.Compliance, self.ComplianceT, self.DampingF))

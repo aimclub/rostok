@@ -1,4 +1,5 @@
 # %%
+from copy import deepcopy
 import numpy as np
 import pychrono as chrono
 
@@ -57,11 +58,15 @@ def create_rules():
         main_body.append(PrimitiveBodyBlueprint(
             Box(0.5, 0.1, 0.3), material=def_mat, color=[255, 0, 0], density=100+i*100, is_collide=False))
 
-    wheel_body_cyl = PrimitiveBodyBlueprint(
-        Cylinder(0.03, 0.02), material=def_mat, color=[0, 120, 255], density=500)
+    
+    def_mat_wheel = deepcopy(def_mat)
+    def_mat_wheel.Friction = 0.5
 
+    wheel_body_cyl = PrimitiveBodyBlueprint(
+        Cylinder(0.03, 0.02), material=def_mat_wheel, color=[0, 120, 255], density=500)
+    
     wheel_body_ell = PrimitiveBodyBlueprint(
-        Ellipsoid(0.06,0.06, 0.04), material=def_mat, color=[0, 120, 255], density=500)
+        Ellipsoid(0.07, 0.07, 0.04), material=def_mat_wheel, color=[0, 120, 255], density=500)
 
     # blueprint for the base
     base = PrimitiveBodyBlueprint(Box(0.02, 0.03, 0.02),
@@ -150,8 +155,8 @@ def create_rules():
                                                 equilibrium_position=0), stiffness))
     
     no_control_joint.append(RevolveJointBlueprint(JointInputType.UNCONTROL,
-                                                stiffness=10,
-                                                damping=0.02,
+                                                stiffness=80,
+                                                damping=0.08,
                                                 equilibrium_position=0))
 
     motor_bp = RevolveJointBlueprint(JointInputType.TORQUE,  stiffness=0, damping=0.001)
@@ -268,6 +273,35 @@ def get_stiff_wheels_ell():
 
         "Add_Leg_Base","Negative_Translation_X4","Negative_Translation_Z0", "Extension","Extension",
         "Terminal_Link3","Terminal_Link3",f'Terminal_Joint{i}',f'Terminal_Joint{i}', "Wheel", "Ell_Wheel",
+        'Terminal_Main_Body1'
+    ]
+
+    rule_vocabul = create_rules()
+    for rule in rules:
+        graph.apply_rule(rule_vocabul.get_rule(rule))
+
+    return graph
+
+def get_stiff_wheels_4():
+    i = 10
+    graph = GraphGrammar()
+    rules = ["Init",
+        "Add_Leg_Base","Positive_Translation_X4","Positive_Translation_Z3","Rotation",
+        'Rotation_Y', "Extension","Extension","Rotation","R_Wheel", "Ell_Wheel",
+        "Terminal_Link3","Terminal_Link3",f'Terminal_Joint{i}',f'Terminal_Joint{i}', 'Rotation_Y',
+
+        "Add_Leg_Base","Positive_Translation_X4","Negative_Translation_Z3","Rotation",
+        'Rotation_Y', "Extension","Extension","Rotation","L_Wheel", "Ell_Wheel",
+        "Terminal_Link3","Terminal_Link3",f'Terminal_Joint{i}',f'Terminal_Joint{i}', 'Rotation_Y',
+        
+        "Add_Leg_Base","Negative_Translation_X4","Positive_Translation_Z3","Rotation",
+        'Rotation_Y', "Extension","Extension","Rotation","R_Wheel", "Ell_Wheel",
+        "Terminal_Link3","Terminal_Link3",f'Terminal_Joint{i}',f'Terminal_Joint{i}', 'Rotation_Y',
+
+        "Add_Leg_Base","Negative_Translation_X4","Negative_Translation_Z3","Rotation",
+        'Rotation_Y', "Extension","Extension","Rotation","L_Wheel", "Ell_Wheel",
+        "Terminal_Link3","Terminal_Link3",f'Terminal_Joint{i}',f'Terminal_Joint{i}', 'Rotation_Y',
+
         'Terminal_Main_Body1'
     ]
 

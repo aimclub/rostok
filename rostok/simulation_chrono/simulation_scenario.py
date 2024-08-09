@@ -148,6 +148,7 @@ class WalkingScenario(ParametrizedSimulation):
         self.event_builder_container: List[EventBuilder] = []
         self.controller_cls = controller_cls
         self.smc = smc
+        self.floor = None
 
     def add_event_builder(self, event_builder):
         self.event_builder_container.append(event_builder)
@@ -157,6 +158,9 @@ class WalkingScenario(ParametrizedSimulation):
         for event_builder in self.event_builder_container:
             event_builder.build_event(event_list)
         return event_list
+    
+    def set_floor(self, floor: chrono.ChBody):
+        self.floor = floor
 
     def run_simulation(self,
                        graph: GraphGrammar,
@@ -182,20 +186,13 @@ class WalkingScenario(ParametrizedSimulation):
             def_mat = DefaultChronoMaterialSMC()
         else:
             def_mat = DefaultChronoMaterialNSC()
-        floor = creator.create_environment_body(EnvironmentBodyBlueprint(Box(5, 0.05, 5), material=def_mat, color=[215, 255, 0]))
-        # chrono_material = chrono.ChMaterialSurfaceNSC()
-        # chrono_material = chrono.ChMaterialSurfaceSMC()
-        # mesh = chrono.ChBodyEasyMesh("Body5.obj", 8000, True, True, True, chrono_material, 0.002)
-        # floor.body = mesh
-        floor.body.SetNameString("Floor")
-        floor.body.SetPos(chrono.ChVectorD(0.5,-0.07,0))
-        
-        floor.body.SetBodyFixed(True)
-
-        
-        simulation.env_creator.add_object(floor,
-                                          read_data=True,
-                                          is_fixed=True)
+        if self.floor:
+            simulation.env_creator.add_object(self.floor,read_data=True,is_fixed=True)
+        else:
+            floor = creator.create_environment_body(EnvironmentBodyBlueprint(Box(5, 0.05, 5), material=def_mat, color=[215, 255, 0]))
+            simulation.env_creator.add_object(floor,
+                                            read_data=True,
+                                            is_fixed=True)
 
         # add design and determine the outer force
 
