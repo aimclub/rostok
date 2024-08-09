@@ -231,12 +231,15 @@ class SuspensionCarScenario(ParametrizedSimulation):
     def __init__(self,
                  step_length,
                  simulation_length,
+                 initial_vertical_pos,
                  controller_cls = ConstController,
                  smc=False) -> None:
         super().__init__(step_length, simulation_length)
         self.event_builder_container: List[EventBuilder] = []
         self.controller_cls = controller_cls
         self.smc = smc
+        self.initial_vertical_pos = initial_vertical_pos
+
 
     def add_event_builder(self, event_builder):
         self.event_builder_container.append(event_builder)
@@ -260,7 +263,7 @@ class SuspensionCarScenario(ParametrizedSimulation):
         if self.smc:
             system = ChronoSystems.chrono_SMC_system(gravity_list=[0, 0, 0])
         else:
-            system = ChronoSystems.chrono_NSC_system(gravity_list=[0, -10, 0])
+            system = ChronoSystems.chrono_NSC_system(solver_iterations=500, gravity_list=[0, -10, 0])
         # setup the auxiliary
         env_creator = EnvCreator([])
         vis_manager = ChronoVisManager(delay)
@@ -284,7 +287,7 @@ class SuspensionCarScenario(ParametrizedSimulation):
         simulation.add_design(graph,
                                 controller_data,
                                 self.controller_cls,
-                                Frame=FrameTransform([0, 0.25, 0], [0,0,0,1]),
+                                Frame=FrameTransform([0, self.initial_vertical_pos, 0], [0,0,0,1]),
                                 starting_positions=starting_positions, is_fixed=False)
          
         # setup parameters for the data store
