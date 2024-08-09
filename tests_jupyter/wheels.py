@@ -155,7 +155,7 @@ def create_rules():
                                                 equilibrium_position=0), stiffness))
     
     no_control_joint.append(RevolveJointBlueprint(JointInputType.UNCONTROL,
-                                                stiffness=80,
+                                                stiffness=30,
                                                 damping=0.08,
                                                 equilibrium_position=0))
 

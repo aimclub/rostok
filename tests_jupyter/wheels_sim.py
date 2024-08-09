@@ -36,7 +36,7 @@ def create_track():
     return floor
 
 
-floor = create_bump_track()
+floor = create_track()
 
 scenario = WalkingScenario(0.001, 10000, SimpleKeyBoardController)
 scenario.set_floor(floor)
@@ -50,5 +50,5 @@ parameters["reverse_rotate"] = 0.3
 
  
 
-scenario.run_simulation(graph, parameters, starting_positions=[[-90,90,0], [90,-90,0], [-90,90,0], [90,-90,0]], vis = True, delay=True, is_follow_camera = True)
+scenario.run_simulation(graph, parameters, starting_positions=[[-60,60,0], [60,-60,0], [-60,60,0], [60,-60,0]], vis = True, delay=True, is_follow_camera = True)
 
