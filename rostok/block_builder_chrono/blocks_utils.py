@@ -72,8 +72,8 @@ class SpringTorque(chrono.TorqueFunctor):
             torque: torque, that is created by spring
         """
         torque = 0
-
-        torque = -self.spring_coef * (angle - rest_angle) - self.damping_coef * vel
+        if self.spring_coef > 10**-5:
+            torque = -self.spring_coef * (angle - rest_angle) - self.damping_coef * vel
             # if angle <= 0:
             #     torque = -self.spring_coef * (angle - rest_angle) - self.damping_coef * vel
             # else:

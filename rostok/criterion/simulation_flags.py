@@ -507,7 +507,7 @@ class EventContactInInitialPosition(SimulationSingleEvent):
         super().__init__()
 
     def event_check(self, current_time: float, step_n: int, robot_data: Sensor, env_data: Sensor):
-        if step_n == 0:
+        if step_n <=3:
             n_contacts = env_data.get_amount_contacts()
             if n_contacts[0] > 0:
                 return EventCommands.STOP
