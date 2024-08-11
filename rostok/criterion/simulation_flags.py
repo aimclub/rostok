@@ -115,9 +115,11 @@ class EventBuilder():
             if isinstance(event, self.even_class):
                 return event
         return None
+
     @abstractmethod
     def build_event(self, event_list):
         pass
+
 
 class EventContactBuilder(EventBuilder):
     def __init__(self, take_from_body: bool = False) -> None:
@@ -482,28 +484,54 @@ class EventStopExternalForceBuilder(EventBuilder):
             raise Exception(
                 'Event requires another event prebuilt: EventStopExternalForce <- EventGrasp')
         return event_list.append(EventStopExternalForce(force_test_time=self.force_test_time, grasp_event=grasp_event))
-    
+
 
 class EventBodyTooLow(SimulationSingleEvent):
     def __init__(self, ref_height: float):
         super().__init__()
         self.ref_height = ref_height
-    
+
     def event_check(self, current_time: float, step_n: int, robot_data: Sensor, env_data: Sensor):
         robot_position = robot_data.get_body_trajectory_point()
         # it works only with current rule set, where the palm/flat always has the smallest index among the bodies
         main_body_pos = list(robot_position.items())[0][1]
 
-        if main_body_pos[1]<self.ref_height:
+        if main_body_pos[1] < self.ref_height:
             return EventCommands.STOP
 
         return EventCommands.CONTINUE
-    
+
+
+class EventContactInInitialPosition(SimulationSingleEvent):
+    def __init__(self):
+        super().__init__()
+
+    def event_check(self, current_time: float, step_n: int, robot_data: Sensor, env_data: Sensor):
+        if step_n == 0:
+            n_contacts = env_data.get_amount_contacts()
+            if n_contacts[0] > 0:
+                return EventCommands.STOP
+
+        return EventCommands.CONTINUE
+
+
+class EventContactInInitialPositionBuilder(EventBuilder):
+    def __init__(self):
+        super().__init__(event_class=EventStopExternalForce)
+
+    def build_event(self, event_list) -> EventContactInInitialPosition:
+        event = self.find_event(event_list=event_list)
+        if event:
+            raise Exception(
+                'Attempt to create two same events for a simulation: EventContactInInitialPosition')
+        return event_list.append(EventContactInInitialPosition())
+
 
 class EventBodyTooLowBuilder(EventBuilder):
     def __init__(self, ref_height: float):
         super().__init__(event_class=EventStopExternalForce)
         self.ref_height = ref_height
+
     def build_event(self, event_list) -> EventBodyTooLow:
         event = self.find_event(event_list=event_list)
         if event:
