@@ -230,12 +230,13 @@ class SuspensionCarScenario(ParametrizedSimulation):
                  simulation_length,
                  initial_vertical_pos,
                  controller_cls = ConstController,
-                 smc=False) -> None:
+                 smc=False,is_fixed=False) -> None:
         super().__init__(step_length, simulation_length)
         self.event_builder_container: List[EventBuilder] = []
         self.controller_cls = controller_cls
         self.smc = smc
-        self.initial_vertical_pos = initial_vertical_pos
+        self.initial_vertical_pos = initial_ver
+        self.is_fixed=is_fixed
 
 
     def add_event_builder(self, event_builder):
@@ -285,7 +286,7 @@ class SuspensionCarScenario(ParametrizedSimulation):
                                 controller_data,
                                 self.controller_cls,
                                 Frame=FrameTransform([0, self.initial_vertical_pos, 0], [0,0,0,1]),
-                                starting_positions=starting_positions, is_fixed=False)
+                                starting_positions=starting_positions, is_fixed=self.is_fixed)
          
         # setup parameters for the data store
 
