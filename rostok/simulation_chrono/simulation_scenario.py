@@ -235,7 +235,7 @@ class SuspensionCarScenario(ParametrizedSimulation):
         self.event_builder_container: List[EventBuilder] = []
         self.controller_cls = controller_cls
         self.smc = smc
-        self.initial_vertical_pos = initial_ver
+        self.initial_vertical_pos = initial_vertical_pos
         self.is_fixed=is_fixed
 
 
