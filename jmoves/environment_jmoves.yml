@@ -1,0 +1,26 @@
+name: j_moves
+channels:
+  - conda-forge
+dependencies:
+  - python = 3.9
+  - numpy
+  - scipy  
+  - matplotlib 
+  - pip
+  - olivier.roussel::hpp-fcl
+  - olivier.roussel::example-robot-data
+  - olivier.roussel::pinocchio=2.99.0
+  - pip:
+    - networkx
+    - modern-robotics
+    - notebook
+    - mediapy
+    - tqdm
+    - trimesh==4.1.4
+    - meshcat
+    - numba
+    - joblib
+    - manifold3d
+    - git+https://github.com/hauptmech/odio_urdf.git
+    - pymoo
+    - ipywidgets
