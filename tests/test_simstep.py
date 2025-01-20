@@ -10,8 +10,9 @@ from rostok.block_builder_api.block_parameters import FrameTransform
 from rostok.block_builder_chrono.block_builder_chrono_api import \
     ChronoBlockCreatorInterface as creator
 from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
-from rostok.simulation_chrono.basic_simulation import RobotSimulationChrono
-
+#from rostok.simulation_chrono.basic_simulation import RobotSimulationChrono
+from rostok.simulation_chrono.simulation import (ChronoSystems, EnvCreator, SingleRobotSimulation,
+                                                 ChronoVisManager)
 
 def test_control_bind_and_create_sim():
     """
@@ -30,8 +31,11 @@ def test_control_bind_and_create_sim():
         times_step = 1e-3
 
         obj_bp = EnvironmentBodyBlueprint(pos=FrameTransform([0, 1, 0], [0, -0.048, 0.706, 0.706]))
-
-        sim = RobotSimulationChrono([])
+        system = ChronoSystems.chrono_NSC_system(gravity_list=[0, -10, 0])
+        env_creator = EnvCreator([])
+        vis_manager = ChronoVisManager(0.01)
+      
+        sim = SingleRobotSimulation(system, env_creator, vis_manager)
         sim.add_design(graph, controll_parameters)
         #shake = YaxisShaker(2, 2)
         sim.add_object(creator().create_environment_body(obj_bp), True)
