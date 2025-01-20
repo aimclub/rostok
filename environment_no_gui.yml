@@ -1,22 +1,25 @@
 # Environment without gui-part
-
-
 name: rostok_no_gui
 channels:
-  - https://conda.anaconda.org/intel
-  - https://conda.anaconda.org/conda-forge
+  - conda-forge
 dependencies:
   - python=3.10.8
-  - conda-forge::irrlicht=1.8.5
-  - projectchrono::pychrono=8.*
+  - projectchrono::pychrono=8.*=py310_3292
+  - irrlicht=1.8.5
   - numpy
+  - yapf
+  - mypy
+  - pylint
+  - tk
+  - pygraphviz
   - pip
   - pip:
     - networkx==2.8.6
-    - matplotlib==3.6.0
+    - matplotlib==3.9.0
     - scipy
     - mcts==1.0.4
     - pytest
     - open3d
     - thegolem==0.3.1
     - more-itertools
+    - keyboard

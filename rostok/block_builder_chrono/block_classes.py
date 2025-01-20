@@ -174,6 +174,96 @@ class JointInputTypeChrono(str, Enum):
 
 
 class ChronoRevolveJoint(BlockBridge):
+    def __init__(self,
+                 type_of_input: JointInputTypeChrono = JointInputTypeChrono.TORQUE,
+                 starting_angle=0.,
+                 stiffness: float = 0.,
+                 damping: float = 0.,
+                 equilibrium_position: float = 0.,
+                 stopper: Optional[list[float]] = None,
+                 offset=[0.0, 0.0],
+                 name='unnamed'
+                 ):
+        super().__init__()
+        self.input_type = type_of_input
+        self.joint = self.input_type.motor()
+        self.starting_angle = starting_angle
+        self.stiffness = stiffness
+        self.damping = damping
+        self.equilibrium_position = equilibrium_position
+        self.stopper = stopper
+        self.name = name
+        self.offset = offset
+
+    def set_prev_body_frame(self, prev_block: BuildingBody, system: chrono.ChSystem):
+        """Turns previous body frame using the starting angle. The rotation of the slave body occurs around the z-axis.
+
+        Args:
+            prev_block (BuildingBody): the body block that is a master in the joint
+            system (chrono.ChSystem): chrono system to be updated
+        """
+        additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(0,0, 0),
+                                                  rotation_z_q(self.starting_angle))
+        transform = prev_block.transformed_frame_out.GetCoord()
+        prev_block.transformed_frame_out.SetCoord(
+            transform * additional_transform)
+        system.Update()
+
+    def set_next_body_frame(self, next_block: BuildingBody, system: chrono.ChSystem):
+        pass
+
+    def connect(self, in_block: BuildingBody, out_block: BuildingBody, system: chrono.ChSystem):
+        """Joint is connected two bodies.
+
+        If we have two not initialize joints engine crash
+
+        Args:
+            in_block (BuildingBody): Slave body to connect
+            out_block (BuildingBody): Master body to connect
+        """
+        system.Update()
+        self.joint.SetNameString(self.name)
+        # The position of the joint frame in the global coordinate system, the rotation is around z axis of that frame
+        joint_transform = in_block.transformed_frame_out.GetAbsCoord()
+        # add offset
+        joint_transform = joint_transform * chrono.ChCoordsysD(chrono.ChVectorD(self.offset[0], self.offset[1], 0),
+                                                              chrono.ChQuaternionD(1, 0, 0, 0))
+        # the signature is Slave Body, Master Body, Joint Frame
+        self.joint.Initialize(out_block.body, in_block.body,
+                              chrono.ChFrameD(joint_transform))
+        system.AddLink(self.joint)
+        if self.stopper:
+            # additional link to create a stopper (In the current version of chrono I cannot directly create a motor with a stopper)
+            self._add_limiting_link(in_block, out_block, system)
+        if (self.stiffness != 0) or (self.damping != 0):
+            self._add_spring_damper(in_block, out_block, system)
+        system.Update()
+
+    def _add_limiting_link(self, in_block: BuildingBody, out_block: BuildingBody,
+                           system: chrono.ChSystem):
+        joint_limiting_link = chrono.ChLinkLockRevolute()
+        joint_limiting_link.Initialize(out_block.body, in_block.body,
+                                       in_block.transformed_frame_out.GetAbsCoord())
+        p = joint_limiting_link.GetLimit_Rz()
+        # joint_limiting_link.
+        p.SetActive(True)
+        p.SetMax(self.stopper[1])
+        p.SetMin(self.stopper[0])
+        system.AddLink(joint_limiting_link)
+        system.Update()
+
+    def _add_spring_damper(self, in_block: BuildingBody, out_block: BuildingBody,
+                           system: chrono.ChSystem):
+        self._joint_spring = chrono.ChLinkRSDA()
+        self._joint_spring.Initialize(out_block.body, in_block.body,
+                                      in_block.transformed_frame_out.GetAbsCoord())
+        self._torque_functor = SpringTorque(self.stiffness, self.damping)
+        self._joint_spring.SetRestAngle(self.equilibrium_position)
+        self._joint_spring.RegisterTorqueFunctor(self._torque_functor)
+        system.AddLink(self._joint_spring)
+
+
+class ChronoRevolveJointWithBody(BlockBridge):
     """The class represent revolute joint object in `pychrono <https://projectchrono.org/pychrono/>` 
     physical engine. It is the embodiment of joint nodes from the mechanism graph in
     simulation.
@@ -204,6 +294,7 @@ class ChronoRevolveJoint(BlockBridge):
                  stiffness: float = 0.,
                  damping: float = 0.,
                  equilibrium_position: float = 0.,
+                 stopper: Optional[list[float]] = None,
                  offset=0.0,
                  with_collision=True, name='unnamed'):
         super().__init__()
@@ -227,13 +318,12 @@ class ChronoRevolveJoint(BlockBridge):
         self.with_collision = with_collision
         self.name = name
         self.offset = offset
+        self.stopper = stopper
 
     def set_prev_body_frame(self, prev_block: BuildingBody, system: chrono.ChSystem):
         # additional transform is just a translation along y axis to the radius of the joint
         additional_transform = chrono.ChCoordsysD(chrono.ChVectorD(self.offset, self.radius, 0),
-                                                  chrono.ChQuaternionD(1, 0, 0, 0))
-        additional_transform *= chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0),
-                                                   rotation_z_q(self.starting_angle))
+                                                  rotation_z_q(self.starting_angle))
         transform = prev_block.transformed_frame_out.GetCoord()
         prev_block.transformed_frame_out.SetCoord(
             transform * additional_transform)
@@ -263,6 +353,11 @@ class ChronoRevolveJoint(BlockBridge):
         self.joint.Initialize(out_block.body, in_block.body,
                               chrono.ChFrameD(joint_transform))
         system.AddLink(self.joint)
+
+        if self.stopper:
+            # additional link to create a stopper (In the current version of chrono I cannot directly create a motor with a stopper)
+            self._add_limiting_link(in_block, out_block, system)
+
         if (self.stiffness != 0) or (self.damping != 0):
             self._add_spring_damper(in_block, out_block, system)
 
@@ -286,6 +381,20 @@ class ChronoRevolveJoint(BlockBridge):
             cylinder.rad = self.radius
             cylinder_asset = chrono.ChCylinderShape(cylinder)
             self.joint.AddVisualShape(cylinder_asset)
+
+        system.Update()
+
+    def _add_limiting_link(self, in_block: BuildingBody, out_block: BuildingBody,
+                           system: chrono.ChSystem):
+        joint_limiting_link = chrono.ChLinkLockRevolute()
+        joint_limiting_link.Initialize(out_block.body, in_block.body,
+                                       in_block.transformed_frame_out.GetAbsCoord())
+        p = joint_limiting_link.GetLimit_Rz()
+        # joint_limiting_link.
+        p.SetActive(True)
+        p.SetMax(self.stopper[1])
+        p.SetMin(self.stopper[0])
+        system.AddLink(joint_limiting_link)
         system.Update()
 
     def _add_spring_damper(self, in_block: BuildingBody, out_block: BuildingBody,
@@ -322,7 +431,7 @@ class PrimitiveBody(BuildingBody):
                  color: Optional[list[int]] = None):
 
         # offset
-        eps = 0.001
+        eps = 0
         # Create body
         material = struct_material2object_material(material)
 
@@ -332,22 +441,28 @@ class PrimitiveBody(BuildingBody):
             pos_in_marker = chrono.ChVectorD(0, -shape.length_y * 0.5 - eps, 0)
             pos_out_marker = chrono.ChVectorD(0, shape.length_y * 0.5 + eps, 0)
         elif isinstance(shape, easy_body_shapes.Cylinder):
-            body = chrono.ChBodyEasyCylinder(chrono.ChAxis_Y, shape.radius, shape.height_y, density, True, True,
+            body = chrono.ChBodyEasyCylinder(chrono.ChAxis_Z, shape.radius, shape.height_y, density, True, True,
                                              material)
-            pos_in_marker = chrono.ChVectorD(0, -shape.height_y * 0.5 - eps, 0)
-            pos_out_marker = chrono.ChVectorD(0, shape.height_y * 0.5 + eps, 0)
+            # pos_in_marker = chrono.ChVectorD(0, -shape.height_y * 0.5 - eps, 0)
+            # pos_out_marker = chrono.ChVectorD(0, shape.height_y * 0.5 + eps, 0)
+            pos_in_marker = chrono.ChVectorD(0, 0, 0)
+            pos_out_marker = chrono.ChVectorD(0, 0, 0)
         elif isinstance(shape, easy_body_shapes.Sphere):
             body = chrono.ChBodyEasySphere(
                 shape.radius, density, True, True, material)
-            pos_in_marker = chrono.ChVectorD(0, -shape.radius * 0.5 - eps, 0)
-            pos_out_marker = chrono.ChVectorD(0, shape.radius * 0.5 + eps, 0)
+            # pos_in_marker = chrono.ChVectorD(0, -shape.radius * 0.5 - eps, 0)
+            # pos_out_marker = chrono.ChVectorD(0, shape.radius * 0.5 + eps, 0)
+            pos_in_marker = chrono.ChVectorD(0, 0, 0)
+            pos_out_marker = chrono.ChVectorD(0, 0, 0)
         elif isinstance(shape, easy_body_shapes.Ellipsoid):
             body = chrono.ChBodyEasyEllipsoid(
                 chrono.ChVectorD(shape.radius_x, shape.radius_y,
                                  shape.radius_z), density, True,
                 True, material)
-            pos_in_marker = chrono.ChVectorD(0, -shape.radius_y * 0.5 - eps, 0)
-            pos_out_marker = chrono.ChVectorD(0, shape.radius_y * 0.5 + eps, 0)
+            #pos_in_marker = chrono.ChVectorD(0, -shape.radius_y * 0.5 - eps, 0)
+            #pos_out_marker = chrono.ChVectorD(0, shape.radius_y * 0.5 + eps, 0)
+            pos_in_marker = chrono.ChVectorD(0, 0, 0)
+            pos_out_marker = chrono.ChVectorD(0, 0, 0)
         else:
             raise Exception("Unknown shape for ChronoBodyEnv object")
 

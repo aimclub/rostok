@@ -17,13 +17,16 @@ def place_next_block(prev_block: BuildingBody, next_block: BuildingBody, system:
     system.Update()
     # prev_body is already added to the system
     next_body: chrono.ChBody = next_block.body
+    # total transformation is the transformation of the next block in global coordinates
     total_transformation = prev_block.transformed_frame_out.GetAbsCoord() * chrono.ChFrameD(
         next_block.transformed_frame_input).GetInverse().GetCoord()
+    # some information for debugging
     # print(prev_block.transformed_frame_out.GetAbsCoord().pos,
     #       prev_block.transformed_frame_out.GetAbsCoord().rot)
     # print(chrono.ChFrameD(next_block.transformed_frame_input).GetInverse().GetCoord().pos)
     # print(total_transformation.pos, total_transformation.rot)
     # print()
+    # we add the next body to the system at the total_transformation position
     next_body.SetCoord(total_transformation)
     system.Add(next_body)
     system.Update()
@@ -40,7 +43,7 @@ def make_fix_joint(prev_block: BuildingBody, next_block: BuildingBody, system: c
     system.Update()
 
 # the function places and connects a sequence of blocks. The sequence should start from the root block
-def place_and_connect(sequence: list[BLOCK_CLASS_TYPES], system: chrono.ChSystem):
+def place_and_connect(sequence: list[BLOCK_CLASS_TYPES], system: chrono.ChSystem, finger_number):
     # all connections occurs between bodies
     previous_body_block = None
     previous_joint = None
@@ -48,14 +51,22 @@ def place_and_connect(sequence: list[BLOCK_CLASS_TYPES], system: chrono.ChSystem
         if block.block_type is BlockType.BODY:
             if previous_body_block is None:
                 # the body is first in sequence
+                # currently the first body will be placed in its position specified during body creation. 
                 previous_body_block = block
                 if not block.is_build:
                     system.AddBody(block.body)
                     system.Update()
 
             else:
-                if not block.is_build:
+                # it is a body that have to be connected to previous body
+                if not block.is_build: # the block is to be placed in the system and connected to the previous body
+                    collision_model = block.body.GetCollisionModel()
+                    collision_model.SetFamily(finger_number)
+                    collision_model.SetFamilyMaskNoCollisionWithFamily(finger_number)
                     if sequence[it - 1].block_type is BlockType.TRANSFORM_INPUT:
+                        # aggregate all transforms that should be applied to the input frame of the body
+                        # each body has its own initial position for input frame, and this transformation is additional to it,
+                        # transformation is performed in the coordinate system of the body
                         i = 1
                         transform = True
                         while transform:

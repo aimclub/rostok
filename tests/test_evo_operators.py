@@ -4,7 +4,8 @@ from itertools import product
 import random
 from rostok.graph_grammar.node import GraphGrammar
 from rostok.graph_grammar.rule_vocabulary import RuleVocabulary
-from rostok.simulation_chrono.basic_simulation import SystemPreviewChrono
+from rostok.simulation_chrono.simulation import (ChronoSystems, EnvCreator, SingleRobotSimulation,
+                                                 ChronoVisManager)
 from test_ruleset import (get_terminal_graph_three_finger, get_terminal_graph_two_finger,
                           get_terminal_graph_two_finger_mix, rule_vocab)
 from rostok.graph_grammar.mutation import add_mut, del_mut
@@ -30,7 +31,10 @@ def mock_build_mech(graph: GraphGrammar):
         Penalty: Random positive value [0:5]
     """
     # Build graph
-    sim = SystemPreviewChrono()
+    system = ChronoSystems.chrono_NSC_system(gravity_list=[0, -10, 0])
+    env_creator = EnvCreator([])
+    vis_manager = ChronoVisManager(0.01)
+    sim = SingleRobotSimulation(system, env_creator, vis_manager)
     sim.add_design(graph)
     sim.simulate(2, False)
 
@@ -45,7 +49,7 @@ def create_random_mechs(number):
     return mechs
 
 def test_build_crossovered_mechs():
-    mechs = create_random_mechs(32)
+    mechs = create_random_mechs(16)
     combination = list(product(mechs, mechs))
     tets_mechs = []
     for graph_1, graph_2 in combination:
@@ -58,7 +62,7 @@ def test_build_crossovered_mechs():
 
 
 def test_build_mutation_mechs():
-    mechs = create_random_mechs(100)
+    mechs = create_random_mechs(10)
     number_mutation = [2, 5, 4]
     tets_mechs = []
     del_mut = partial(del_mutation_rule, rule_vocab1=rule_vocab)

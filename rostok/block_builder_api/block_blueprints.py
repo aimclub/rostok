@@ -43,6 +43,15 @@ class TransformBlueprint(TransformBlueprintType):
 @dataclass
 class RevolveJointBlueprint(JointBlueprintType):
     type_of_input: JointInputType = JointInputType.TORQUE
+    starting_angle: float = 0.
+    stiffness: float = 0.
+    damping: float = 0.
+    equilibrium_position:float = 0.
+    stopper: Optional[list[float]] = None
+
+
+class RevolveJointBlueprintWithBody(JointBlueprintType):
+    type_of_input: JointInputType = JointInputType.TORQUE
     radius: float = 0.015
     length: float = 0.03
     material: Material = DefaultChronoMaterialNSC()
@@ -53,6 +62,7 @@ class RevolveJointBlueprint(JointBlueprintType):
     offset: float = 0.
     equilibrium_position:float = 0.
     with_collision: bool = True
+    stopper: Optional[list[float]] = None
 
 
 @dataclass
@@ -109,6 +119,11 @@ class BlockCreatorInterface:
 
     @classmethod
     @abstractmethod
+    def create_revolve_joint_with_body(cls, blueprint: RevolveJointBlueprintWithBody):
+        raise NotImplementedErrorCreatorInterface()
+
+    @classmethod
+    @abstractmethod
     def create_primitive_body(cls, blueprint: PrimitiveBodyBlueprint):
         raise NotImplementedErrorCreatorInterface()
 
@@ -138,6 +153,11 @@ class BlockCreatorInterface:
     @init_block_from_blueprint.register
     @classmethod
     def _(cls, blueprint: RevolveJointBlueprint):
+        return cls.create_revolve_joint(blueprint)
+
+    @init_block_from_blueprint.register
+    @classmethod
+    def _(cls, blueprint: RevolveJointBlueprintWithBody):
         return cls.create_revolve_joint(blueprint)
 
     @init_block_from_blueprint.register

@@ -21,7 +21,7 @@ class ChronoSystems():
     @staticmethod
     def chrono_SMC_system(solver_iterations=100,
                           force_tolerance=1e-4,
-                          use_mat_properties=False,
+                          use_mat_properties=True,
                           gravity_list=[0, 0, 0]):
         system = chrono.ChSystemSMC()
         system.UseMaterialProperties(use_mat_properties)
@@ -44,27 +44,32 @@ class ChronoSystems():
 
 class ChronoVisManager():
 
-    def __init__(self, fps=100, delay: bool = False):
+    def __init__(self, fps=100, delay: bool = False, is_follow_camera = False):
         self.vis = chronoirr.ChVisualSystemIrrlicht()
         self.delay_flag = delay
         self.fps = fps
         self.step_counter = 0
+        self.is_follow_camera = is_follow_camera
 
-    def initialize_vis(self, chrono_system):
+    def initialize_vis(self, chrono_system, observed_body: chrono.ChBody = None):
         self.vis.AttachSystem(chrono_system)
         self.vis.SetWindowSize(1024, 768)
-        self.vis.SetWindowTitle('Grab demo')
+        self.vis.SetWindowTitle('Lets Ride')
         self.vis.Initialize()
         self.vis.AddSkyBox()
         self.vis.AddCamera(chrono.ChVectorD(-0.15, 0.35, 0.40), chrono.ChVectorD(0.0, 0.1, 0))
-        self.vis.AddLight(chrono.ChVectorD(0.4, 0.0, -0.4), 0.28, chrono.ChColor(1, 1, 1))
-        self.vis.AddLight(chrono.ChVectorD(0.4, 0.0, 0.4), 0.28, chrono.ChColor(1, 1, 1))
-        self.vis.AddLight(chrono.ChVectorD(-0.4, 0.0, -0.4), 0.28, chrono.ChColor(1, 1, 1))
-        self.vis.AddLight(chrono.ChVectorD(-0.4, 0.0, 0.4), 0.28, chrono.ChColor(1, 1, 1))
-        self.vis.AddLight(chrono.ChVectorD(0.4, 0.8, -0.4), 0.28, chrono.ChColor(1, 1, 1))
-        self.vis.AddLight(chrono.ChVectorD(0.4, 0.8, 0.4), 0.28, chrono.ChColor(1, 1, 1))
-        self.vis.AddLight(chrono.ChVectorD(-0.4, 0.8, -0.4), 0.28, chrono.ChColor(1, 1, 1))
-        self.vis.AddLight(chrono.ChVectorD(-0.4, 0.8, 0.4), 0.28, chrono.ChColor(1, 1, 1))
+        # self.vis.AddLight(chrono.ChVectorD(0.0, 0.5, -0.3), 0.28, chrono.ChColor(0.7, 0.7, 0.7))
+        # self.vis.AddLight(chrono.ChVectorD(0.3, 0.0, 0.3), 0.5, chrono.ChColor(0.7, 0.7, 0.7))
+        # self.vis.AddLight(chrono.ChVectorD(-0.3, 0.0, -0.3), 0.5, chrono.ChColor(0.7, 0.7, 0.7))
+        # self.vis.AddLight(chrono.ChVectorD(-0.3, 0.0, 0.3), 0.5, chrono.ChColor(0.7, 0.7, 0.7))
+        # self.vis.AddLight(chrono.ChVectorD(0.3, 0.4, -0.3), 0.5, chrono.ChColor(0.7, 0.7, 0.7))
+        # self.vis.AddLight(chrono.ChVectorD(0.3, 0.4, 0.3), 0.5, chrono.ChColor(0.7, 0.7, 0.7))
+        # self.vis.AddLight(chrono.ChVectorD(-0.3, 0.4, -0.3), 0.5, chrono.ChColor(0.7, 0.7, 0.7))
+        # self.vis.AddLight(chrono.ChVectorD(-0.3, 0.4, 0.3), 0.5, chrono.ChColor(0.7, 0.7, 0.7))
+        self.vis.AddTypicalLights()
+        if observed_body:
+            self.bind_camera_to_body(observed_body)
+        # self.vis.AddTypicalLights()
 
     def enable_collision_shape(self):
         self.vis.EnableCollisionShapeDrawing(True)
@@ -74,20 +79,39 @@ class ChronoVisManager():
             self.step_counter = 0
             self.vis.Run()
             self.vis.BeginScene(True, True, chrono.ChColor(0.1, 0.1, 0.1))
+            if self.is_follow_camera:
+                self.calculate_camera_position()
             self.vis.Render()
             self.vis.EndScene()
+            
             # just to slow down the simulation
             if self.delay_flag:
-                time.sleep(0.00001)
+                time.sleep(0.01)
 
         else:
             self.step_counter += 1
 
+    def bind_camera_to_body(self, ch_body: chrono.ChBody):
+        self.watched_body = ch_body
 
+    def calculate_camera_position(self):
+        
+        # Setting camera in coordinate frame of Body
+        camera_cord = chrono.ChCoordsysD(chrono.ChVectorD(0.5, -0.5, 0))
+        
+        transform = self.watched_body.GetFrame_COG_to_abs()
+        position = self.watched_body.GetPos()
+        
+        camera_cord_global =  transform.coord * camera_cord
+        
+        self.watched_body.GetCoord()
+        self.vis.SetCameraTarget(position)
+        self.vis.SetCameraPosition(camera_cord_global.pos)
+ 
 class EnvCreator():
     """Setup environment for robot simulation.
 
-        Add external all objects to the simulation."""
+        Add all external objects to the simulation."""
 
     def __init__(self, object_list: List[Tuple[ChronoEasyShapeObject, bool]] = []):
         self.objects: List[ChronoEasyShapeObject] = []
@@ -118,7 +142,6 @@ class EnvCreator():
 
         self.objects.append(obj)
         if force_torque_controller:
-
             force_torque_controller.bind_body(obj.body)
             self.force_torque_container.add(force_torque_controller)
         if read_data:
@@ -276,7 +299,7 @@ class SingleRobotSimulation():
         visualize=False,
     ):
         """Execute a simulation.
-        
+
             Args:
                 number_of_steps(int): total number of steps in the simulation
                 step_length (float): the time length of a step
@@ -284,8 +307,10 @@ class SingleRobotSimulation():
                 flag_container: container of flags that controls simulation
                 visualize (bool): determine if run the visualization """
         self.initialize(number_of_steps)
+        # Select observed body for camera
+        observed_body  = self.chrono_system.Get_bodylist()[0]
         if visualize:
-            self.vis_manager.initialize_vis(self.chrono_system)
+            self.vis_manager.initialize_vis(self.chrono_system, observed_body)
 
         self.vis_manager.fps = fps
         stop_flag = False
