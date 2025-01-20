@@ -6,7 +6,7 @@ from test_ruleset import (get_terminal_graph_no_joints,
                           get_terminal_graph_two_finger)
 
 from rostok.block_builder_api.block_blueprints import EnvironmentBodyBlueprint
-from rostok.block_builder_api.block_parameters import FrameTransform, Material
+from rostok.block_builder_api.block_parameters import FrameTransform
 from rostok.block_builder_chrono.block_builder_chrono_api import \
     ChronoBlockCreatorInterface as creator
 from rostok.graph_grammar.node_block_typing import get_joint_vector_from_graph
@@ -28,11 +28,8 @@ def test_control_bind_and_create_sim():
         const_torque_koef = [random.random() for _ in range(n_joints)]
         controll_parameters = {"initial_value": const_torque_koef}
         times_step = 1e-3
-        mat = Material()
-        mat.Friction = 0.65
-        mat.DampingF = 0.65
-        obj_bp = EnvironmentBodyBlueprint(material=mat,
-                                          pos=FrameTransform([0, 1, 0], [0, -0.048, 0.706, 0.706]))
+
+        obj_bp = EnvironmentBodyBlueprint(pos=FrameTransform([0, 1, 0], [0, -0.048, 0.706, 0.706]))
 
         sim = RobotSimulationChrono([])
         sim.add_design(graph, controll_parameters)
