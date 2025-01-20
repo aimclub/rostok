@@ -34,7 +34,7 @@ def mock_build_mech(graph: GraphGrammar):
     system = ChronoSystems.chrono_NSC_system(gravity_list=[0, -10, 0])
     env_creator = EnvCreator([])
     vis_manager = ChronoVisManager(0.01)
-    sim = SystemPreviewChrono(system, env_creator, vis_manager)
+    sim = SingleRobotSimulation(system, env_creator, vis_manager)
     sim.add_design(graph)
     sim.simulate(2, False)
 
