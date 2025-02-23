@@ -1,6 +1,7 @@
 {
     "python.analysis.extraPaths": [
-        "./src"
+        "./src",
+        "./app"
     ],
     "python.formatting.provider": "yapf",
     "python.formatting.yapfArgs": [

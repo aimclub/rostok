@@ -2,6 +2,7 @@
 /__pycache__
 /examples/__pycache__
 *.pyc
+#/gym-examples
 /html/
 /rostok.egg-info/
 /results/
